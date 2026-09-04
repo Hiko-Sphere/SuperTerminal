@@ -50,6 +50,14 @@ jobs:
         working-directory: Packages/SuperTerminalKit
         run: swift test
 
+      - name: The RSA patch still reproduces the vendored tree
+        run: |
+          # A patch that has drifted from the tree is worse than no patch: it applies
+          # cleanly and produces a *different* library. This regenerates it and fails if
+          # the result differs from what is committed.
+          ./scripts/regenerate-niossh-patch.sh
+          git diff --exit-code -- patches/niossh-rsa.patch
+
       - name: Vendored swift-nio-ssh — upstream's own tests
         working-directory: Packages/swift-nio-ssh-rsa
         # The vendored fork is security-critical code we now maintain. Running upstream's

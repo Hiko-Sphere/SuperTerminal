@@ -211,6 +211,27 @@ simulators and screenshotted. That found a real defect: on iPad the split view o
 with the sidebar collapsed, so a fresh install showed "No session" and no visible way to
 add one. Fixed by starting at `.all` visibility.
 
+### Ciphers — 8 tests
+
+`CipherInteropTests` and `AESCTRCounterTests`. `swift-nio-ssh` ships only AES-GCM;
+hardening guides routinely narrow a server's `Ciphers` to the CTR family, which would
+otherwise make such a server unreachable however modern it is.
+
+Asserting from the client that a connection "used AES-CTR" would be circular — the client
+reporting on itself. Instead the server is configured to offer **only** that scheme, so
+the connection is the evidence: it negotiates CTR or it does not happen.
+
+| Test | What a pass proves |
+| --- | --- |
+| A CTR-with-ETM-only server is reachable | No AES-GCM is on offer at all |
+| A long session over CTR stays in sync | 400 KB in one burst. CTR is a stream cipher: a counter advanced wrongly gives one good packet and then garbage, which a single command would not notice |
+| AES-GCM still preferred when both are offered | Adding a scheme did not disturb the existing preference |
+| Counter arithmetic (5 tests) | Blocks not bytes, carry across byte boundaries, a large increment, and wrapping at the top rather than trapping |
+
+`hmac-sha2-256` without `-etm` is deliberately not implemented: it would let a server
+negotiate the construction that authenticates plaintext and encrypts the length, so a
+receiver has to decrypt before it can authenticate.
+
 ### RSA — 9 tests, proved against OpenSSH and adversarially
 
 `RSAInteropTests`. The change separates a key's blob identifier (`ssh-rsa`) from its

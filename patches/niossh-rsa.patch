@@ -11,6 +11,30 @@ index d558d9b..062b088 100644
                  .product(name: "NIOFoundationCompat", package: "swift-nio"),
                  .product(name: "Crypto", package: "swift-crypto"),
                  .product(name: "Atomics", package: "swift-atomics"),
+diff --git a/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/Constants.swift b/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/Constants.swift
+index 51b43b8..d46c518 100644
+--- a/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/Constants.swift
++++ b/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/Constants.swift
+@@ -39,6 +39,19 @@ public enum Constants: Sendable {
+             AES256GCMOpenSSHTransportProtection.self, AES128GCMOpenSSHTransportProtection.self,
+         ]
+ 
++    /// Added by SuperTerminal: the bundled schemes as the plain protocol type.
++    ///
++    /// `NIOSSHTransportProtection` is public and `transportProtectionSchemes` accepts
++    /// additions, so a cipher can be supplied from outside this module — but the array
++    /// above is typed with an internal marker protocol, which makes it impossible to
++    /// append to. This exposes the same schemes in a form that can be.
++    /// Computed rather than stored: an array of metatypes is not `Sendable`, so a stored
++    /// static would be a concurrency warning for no benefit — the value is trivially
++    /// cheap to rebuild.
++    public static var bundledTransportProtectionSchemesErased: [NIOSSHTransportProtection.Type] {
++        bundledTransportProtectionSchemes
++    }
++
+     /// The default value for `SSHServerConfiguration.maxAuthAttempts`: the maximum number of
+     /// `SSH_MSG_USERAUTH_REQUEST` messages a server processes on a single connection before
+     /// disconnecting the client.
 diff --git a/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/Key Exchange/SSHKeyExchangeStateMachine.swift b/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/Key Exchange/SSHKeyExchangeStateMachine.swift
 index 3ef830d..dce2f3f 100644
 --- a/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/Key Exchange/SSHKeyExchangeStateMachine.swift	

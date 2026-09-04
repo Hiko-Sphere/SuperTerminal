@@ -40,6 +40,7 @@ This file is the resumable state of the work. It records what is *proven*, what 
 | **Throughput, measured** | Release: 9.0 MB/s plain text, 12.7 MB/s coloured, 8.0 MB/s CJK; reflow of a full 5 000-line scrollback in 18 ms. Floors are asserted per configuration, so a regression fails rather than being noticed later as "sluggish" |
 | **Render cost, measured** | A full redraw of both an 80×24 and a 200×55 grid fits inside a 60 Hz frame on the simulator; run coalescing is asserted directly on the run count |
 | Selection and find gestures | UI tests: long-press-and-drag selects and offers Copy, and the find bar reports a match count |
+| **AES-CTR ciphers** | Proved by removing the alternative: a server offering *only* `aes256-ctr` with encrypt-then-MAC is reachable, and a 400 KB burst over it stays in sync — which is what catches a counter advanced wrongly |
 | **Accessibility, run for real** | UI tests launch the app with accessibility text sizes, Reduce Transparency and Bold Text actually enabled, and assert every control carries a label. Screenshots are attached to the result bundle. |
 | **Key generation, import and export** | Generated keys are read by `ssh-keygen`, which agrees on the fingerprint, and both algorithms authenticate against a real `sshd` that trusts only the generated key. A UI test generates one through the interface. |
 

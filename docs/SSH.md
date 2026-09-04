@@ -76,7 +76,7 @@ The SSH implementation is built on `swift-nio-ssh`, with RSA added
 A P-384 or P-521 **host** key is accepted, but a P-384 or P-521 **user** key cannot be
 imported: the key-file parser handles Ed25519, ECDSA P-256 and RSA. If you have one, the
 import fails with a message saying so rather than a generic error.
-| Ciphers | `aes128-gcm@openssh.com`, `aes256-gcm@openssh.com` |
+| Ciphers | `aes128-gcm@openssh.com`, `aes256-gcm@openssh.com`, `aes256-ctr` with `hmac-sha2-256-etm@openssh.com` |
 
 **Not supported, deliberately:**
 
@@ -85,8 +85,14 @@ import fails with a message saying so rather than a generic error.
   could ask for. Use `rsa-sha2-256` or `rsa-sha2-512`; any OpenSSH from 7.2 onwards offers
   them for the same key, so no new key is needed.
 * DSA — removed from OpenSSH entirely in 10.0.
-* `aes*-ctr` and `chacha20-poly1305@openssh.com` — a server that has disabled AES-GCM
-  cannot currently be reached. This is a real gap, recorded in `../PROJECT_STATUS.md`.
+* `hmac-sha2-256` without `-etm` — AES-CTR is supported only with encrypt-then-MAC. SSH's
+  original construction authenticates the plaintext and encrypts the length, so a receiver
+  must decrypt before it can authenticate; the ETM variant rejects a forged packet before
+  the cipher touches it. Every server that offers CTR with the plain MAC also offers it
+  with the ETM one, so nothing is lost by declining the weaker option.
+* `chacha20-poly1305@openssh.com` — not implemented. A server offering only ChaCha20
+  cannot be reached; in practice such a configuration is rare, since disabling both AES
+  families is unusual.
 
 If a handshake fails on algorithms, the app says so specifically rather than reporting a
 generic failure.

@@ -109,7 +109,8 @@ public actor SSHConnection {
                     role: .client(
                         SSHClientConfiguration(
                             userAuthDelegate: chain,
-                            serverAuthDelegate: hostKeyVerifier
+                            serverAuthDelegate: hostKeyVerifier,
+                            transportProtectionSchemes: Self.transportProtectionSchemes
                         )
                     ),
                     allocator: channel.allocator,
@@ -160,6 +161,16 @@ public actor SSHConnection {
             credentialChain: chain,
             log: log
         )
+    }
+
+    /// The ciphers offered, strongest first.
+    ///
+    /// AES-GCM is preferred; every OpenSSH since 6.2 offers it. AES-CTR with
+    /// encrypt-then-MAC is included because hardening guides routinely narrow a server's
+    /// `Ciphers` list to the CTR family, and such a server would otherwise be unreachable
+    /// however modern it is. See ``AES256CTRSHA256ETMTransportProtection``.
+    static var transportProtectionSchemes: [NIOSSHTransportProtection.Type] {
+        Constants.bundledTransportProtectionSchemesErased + [AES256CTRSHA256ETMTransportProtection.self]
     }
 
     /// The transport channel's closed future, so callers can observe disconnection.

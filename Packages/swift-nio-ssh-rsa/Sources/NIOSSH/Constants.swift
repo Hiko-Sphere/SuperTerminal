@@ -39,6 +39,19 @@ public enum Constants: Sendable {
             AES256GCMOpenSSHTransportProtection.self, AES128GCMOpenSSHTransportProtection.self,
         ]
 
+    /// Added by SuperTerminal: the bundled schemes as the plain protocol type.
+    ///
+    /// `NIOSSHTransportProtection` is public and `transportProtectionSchemes` accepts
+    /// additions, so a cipher can be supplied from outside this module — but the array
+    /// above is typed with an internal marker protocol, which makes it impossible to
+    /// append to. This exposes the same schemes in a form that can be.
+    /// Computed rather than stored: an array of metatypes is not `Sendable`, so a stored
+    /// static would be a concurrency warning for no benefit — the value is trivially
+    /// cheap to rebuild.
+    public static var bundledTransportProtectionSchemesErased: [NIOSSHTransportProtection.Type] {
+        bundledTransportProtectionSchemes
+    }
+
     /// The default value for `SSHServerConfiguration.maxAuthAttempts`: the maximum number of
     /// `SSH_MSG_USERAUTH_REQUEST` messages a server processes on a single connection before
     /// disconnecting the client.
