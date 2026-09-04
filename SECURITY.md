@@ -13,6 +13,8 @@ what it does not defend against.
 | Cloudflare service tokens | Keychain, `WhenUnlockedThisDeviceOnly` | Long-lived machine access |
 | Known host keys | App container, `.completeFileProtection`, excluded from backup | Not secret; but if an attacker can *modify* it, the MITM warning disappears |
 | Terminal scrollback | Memory; not persisted by default | Whatever the session displayed |
+| Command history | Off by default; when on, app container, `.completeFileProtection`, excluded from backup, capped at 500 entries | A record of what someone was doing, and any secret typed on a command line |
+| Snippets | App container, `.completeFileProtection` | Whatever the user chose to save; treated as user content, so it *is* backed up |
 
 ## Threat model
 
@@ -139,6 +141,34 @@ source is a tracked improvement, not a solved problem.
 *Status:* App Switcher snapshot protection, paste confirmation for multi-line content,
 and clipboard expiry are designed but not yet implemented. Tracked in
 `PROJECT_STATUS.md` — this section will be updated when they land, and not before.
+
+### T-11 · Command history as a secondary store of secrets
+
+A terminal history is one of the most revealing things a device can hold. It names hosts,
+paths, usernames and internal service names, and it captures anything a person typed on a
+command line — including the secrets that do not belong there but are typed anyway
+(`mysql -p…`, a token pasted into a `curl` call, a one-time code).
+
+*Mitigation:* the feature is **off by default**, and the check is made inside
+`SnippetStore.record` rather than at the call sites, so no future caller can record by
+forgetting. Turning it off deletes the file rather than hiding it, and a store opened
+while the setting is off does not read an existing file back — so re-enabling never
+resurrects an older record. The file is written with `.completeFileProtection`, which
+makes it unreadable while the device is locked, and excluded from backup, so the history
+does not travel to a new device. It is capped at 500 entries.
+
+*Deliberate limitation:* what is recorded is reconstructed from keystrokes, and a line the
+remote line editor may have altered — history recall, cursor movement, tab completion — is
+dropped rather than guessed at. This loses entries. That is the intended trade: an
+inaccurate history is worse than a short one, because a wrong command shown as something
+the user ran would be trusted.
+
+*Not mitigated:* history is not filtered for secrets. Attempting to recognise a password
+on a command line is unreliable in both directions, and a filter that mostly works would
+invite the belief that it always does. If a secret is typed on a command line it is
+recorded, exactly as the shell's own history would record it. The defences are that the
+feature is off unless asked for, that it can be cleared in one action from Settings, and
+that it never leaves the device.
 
 ## Cryptography policy
 

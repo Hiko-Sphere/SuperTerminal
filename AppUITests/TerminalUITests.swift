@@ -349,3 +349,192 @@ final class AccessibilityUITests: XCTestCase {
         }
     }
 }
+
+/// Snippets and history against the live server.
+///
+/// The unit tests prove the store's rules. These prove the two things only the real
+/// interface and a real shell can show: that a snippet lands in the terminal *without*
+/// running, and that what gets recorded as history is the command the user actually
+/// typed — reconstructed from keystrokes, not scraped from the shell's echo.
+final class SnippetUITests: XCTestCase {
+    private var app: XCUIApplication!
+
+    override func setUpWithError() throws {
+        continueAfterFailure = false
+        let environment = ProcessInfo.processInfo.environment
+        try XCTSkipUnless(
+            environment["ST_UITEST_SEED"] == "1",
+            "run scripts/ui-terminal-e2e.sh to provide a server"
+        )
+        app = XCUIApplication()
+        for key in [
+            "ST_UITEST_SEED", "ST_UITEST_HOST", "ST_UITEST_PORT", "ST_UITEST_USER",
+            "ST_UITEST_KEY", "ST_UITEST_TRUST_HOST_KEYS", "ST_UITEST_NAME",
+        ] {
+            if let value = environment[key] { app.launchEnvironment[key] = value }
+        }
+        app.launch()
+    }
+
+    private var terminal: XCUIElement {
+        app.otherElements.matching(NSPredicate(format: "label BEGINSWITH %@", "Terminal for")).firstMatch
+    }
+
+    private func openTerminal() throws {
+        let byName = app.buttons.containing(
+            NSPredicate(format: "label CONTAINS %@", "Local Test Server")
+        ).firstMatch
+        XCTAssertTrue(byName.waitForExistence(timeout: 10), "the seeded connection should be listed")
+        byName.tap()
+        XCTAssertTrue(terminal.waitForExistence(timeout: 30), "the terminal screen should appear")
+        if terminal.isHittable { terminal.tap() }
+        XCTAssertTrue(app.keyboards.element.waitForExistence(timeout: 10), "the keyboard should be up")
+    }
+
+    @discardableResult
+    private func waitForScreen(containing needle: String, timeout: TimeInterval = 30) -> String {
+        let deadline = Date().addingTimeInterval(timeout)
+        var latest = ""
+        while Date() < deadline {
+            latest = terminal.value as? String ?? ""
+            if latest.contains(needle) { return latest }
+            usleep(200_000)
+        }
+        return latest
+    }
+
+    private func screenDoesNotContain(_ needle: String, within seconds: TimeInterval) -> Bool {
+        let deadline = Date().addingTimeInterval(seconds)
+        while Date() < deadline {
+            if (terminal.value as? String ?? "").contains(needle) { return false }
+            usleep(200_000)
+        }
+        return true
+    }
+
+    private func openSnippets() {
+        app.buttons["Session"].tap()
+        let snippets = app.buttons["Snippets…"]
+        XCTAssertTrue(snippets.waitForExistence(timeout: 5), "the session menu should offer snippets")
+        snippets.tap()
+    }
+
+    /// Switches a settings toggle on and waits for it to take.
+    ///
+    /// Taps the switch itself rather than the row. XCUITest aims a plain `tap()` at the
+    /// centre of the row's accessibility element, which on this OS activates nothing —
+    /// verified by watching a neighbouring toggle ignore the same tap.
+    private func turnOn(_ toggle: XCUIElement) {
+        XCTAssertTrue(toggle.waitForExistence(timeout: 5), "the setting should exist")
+        var scrolls = 0
+        while !toggle.isHittable, scrolls < 6 {
+            app.swipeUp()
+            scrolls += 1
+        }
+        // Let the scroll settle: a tap dispatched mid-momentum lands wherever the row has
+        // moved to by then, which is not necessarily this row.
+        var frame = toggle.frame
+        for _ in 0 ..< 20 {
+            usleep(150_000)
+            let current = toggle.frame
+            if current == frame { break }
+            frame = current
+        }
+        XCTAssertEqual(toggle.value as? String, "0", "\(toggle.label) should start off")
+        toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+        var value = toggle.value as? String
+        for _ in 0 ..< 20 where value != "1" {
+            usleep(150_000)
+            value = toggle.value as? String
+        }
+        XCTAssertEqual(value, "1", "tapping should turn \(toggle.label) on")
+    }
+
+    func testASnippetIsTypedIntoTheTerminalButNotRun() throws {
+        try openTerminal()
+        openSnippets()
+
+        app.buttons["New snippet"].tap()
+        let name = app.textFields["Name"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5), "the editor should appear")
+        name.tap()
+        name.typeText("Marker")
+
+        // A command whose output is unmistakable, and which the shell assembles so the
+        // echoed command line cannot be mistaken for having run.
+        let editor = app.textViews["Snippet command"]
+        XCTAssertTrue(editor.waitForExistence(timeout: 5), "the command editor should exist")
+        editor.tap()
+        XCTAssertTrue(app.keyboards.element.waitForExistence(timeout: 5), "the editor should take focus")
+        app.typeText("printf 'SNIP_%s\\n' RAN")
+        app.buttons["Save"].tap()
+
+        let saved = app.buttons.containing(NSPredicate(format: "label CONTAINS %@", "Marker")).firstMatch
+        XCTAssertTrue(saved.waitForExistence(timeout: 5), "the snippet should be listed")
+        saved.tap()
+
+        // Inserted, so the text is on screen…
+        let afterInsert = waitForScreen(containing: "printf", timeout: 10)
+        XCTAssertTrue(afterInsert.contains("SNIP_"), "the snippet text should be in the terminal: \(afterInsert)")
+        // …and not run, so its output is not. This is the whole point of the default.
+        XCTAssertTrue(
+            screenDoesNotContain("SNIP_RAN", within: 3),
+            "a snippet must not run until the user presses Return"
+        )
+
+        app.typeText("\n")
+        let afterReturn = waitForScreen(containing: "SNIP_RAN")
+        XCTAssertTrue(afterReturn.contains("SNIP_RAN"), "pressing Return should run it: \(afterReturn)")
+    }
+
+    func testHistoryIsEmptyUntilTurnedOnAndThenRecordsWhatWasTyped() throws {
+        // Off by default: the feature is visible, but nothing has been kept.
+        try openTerminal()
+        app.typeText("printf 'BEFORE_%s\\n' OPTIN\n")
+        _ = waitForScreen(containing: "BEFORE_OPTIN")
+
+        openSnippets()
+        app.segmentedControls.buttons["History"].tap()
+        XCTAssertTrue(
+            app.staticTexts["History is off"].waitForExistence(timeout: 5),
+            "history should be off until the user asks for it"
+        )
+        app.buttons["Done"].tap()
+
+        // Turn it on through the interface, the way a user would.
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        let settings = app.buttons["Settings"]
+        XCTAssertTrue(settings.waitForExistence(timeout: 10), "the host list should offer settings")
+        settings.tap()
+        turnOn(app.switches["Record command history"])
+        app.buttons["Done"].tap()
+
+        try openTerminal()
+        app.typeText("printf 'AFTER_%s\\n' OPTIN\n")
+        _ = waitForScreen(containing: "AFTER_OPTIN")
+
+        openSnippets()
+        app.segmentedControls.buttons["History"].tap()
+
+        // Match on the part of the command line that is distinctive, not on the output
+        // it produces — those are different strings, and only the command is recorded.
+        let recorded = app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS %@", "AFTER_")
+        ).firstMatch
+        XCTAssertTrue(
+            recorded.waitForExistence(timeout: 5),
+            "the typed command should be recorded; the list showed: "
+                + app.staticTexts.allElementsBoundByIndex.map { $0.label }.joined(separator: " | ")
+        )
+        // Recorded from keystrokes, so it is the command alone — no prompt, no output.
+        XCTAssertEqual(
+            recorded.label, "printf 'AFTER_%s\\n' OPTIN",
+            "history should hold exactly what was typed, not the shell's rendering of it"
+        )
+        // What was typed before opting in must not appear retroactively.
+        XCTAssertFalse(
+            app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "BEFORE_")).firstMatch.exists,
+            "turning history on must not resurrect commands run before it was on"
+        )
+    }
+}

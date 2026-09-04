@@ -39,6 +39,12 @@ struct SettingsView: View {
                     Toggle("Confirm multi-line pastes", isOn: $settings.confirmMultilinePaste)
                     Toggle("Hide content in the App Switcher", isOn: $settings.hideContentInAppSwitcher)
                     Toggle("Record command history", isOn: $settings.commandHistoryEnabled)
+                        .onChange(of: settings.commandHistoryEnabled) { _, isEnabled in
+                            // The footer promises that turning it off deletes what was
+                            // recorded. Making that true here means the promise holds
+                            // however the toggle is reached.
+                            if !isEnabled { container.snippetStore.clearHistory() }
+                        }
                 } header: {
                     Text("Privacy")
                 } footer: {
@@ -58,6 +64,10 @@ struct SettingsView: View {
                     Text("Terminal")
                 }
 
+                Section("Commands") {
+                    NavigationLink("Snippets") { SnippetLibraryView() }
+                }
+
                 Section("Security") {
                     NavigationLink("Keys") { KeyManagementView() }
                     NavigationLink("Known hosts") { KnownHostsView() }
@@ -68,6 +78,9 @@ struct SettingsView: View {
 
                 Section {
                     Button("Export diagnostics") { showsDiagnostics = true }
+                    if container.settings.commandHistoryEnabled {
+                        Button("Clear command history") { container.snippetStore.clearHistory() }
+                    }
                     Button("Delete all data", role: .destructive) { confirmingDeletion = true }
                 } header: {
                     Text("Data")
@@ -93,6 +106,7 @@ struct SettingsView: View {
                 Button("Delete everything", role: .destructive) {
                     container.sessionManager.closeAll()
                     container.hostStore.removeAll()
+                    container.snippetStore.removeAll()
                     try? container.vault.deleteEverything()
                 }
             } message: {

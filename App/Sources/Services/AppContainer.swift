@@ -15,6 +15,7 @@ import STSSH
 @MainActor
 final class AppContainer {
     let hostStore: HostStore
+    let snippetStore: SnippetStore
     let sessionManager: SessionManager
     let settings: AppSettings
     let vault: CredentialVault
@@ -23,6 +24,7 @@ final class AppContainer {
 
     private init(
         hostStore: HostStore,
+        snippetStore: SnippetStore,
         sessionManager: SessionManager,
         settings: AppSettings,
         vault: CredentialVault,
@@ -30,6 +32,7 @@ final class AppContainer {
         diagnostics: DiagnosticsCentre
     ) {
         self.hostStore = hostStore
+        self.snippetStore = snippetStore
         self.sessionManager = sessionManager
         self.settings = settings
         self.vault = vault
@@ -54,6 +57,7 @@ final class AppContainer {
         )
         let container = AppContainer(
             hostStore: HostStore(directory: directory),
+            snippetStore: SnippetStore(directory: directory, settings: settings),
             sessionManager: sessionManager,
             settings: settings,
             vault: vault,

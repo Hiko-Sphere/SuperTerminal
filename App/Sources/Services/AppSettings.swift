@@ -20,9 +20,37 @@ final class AppSettings {
         static let hideContentInAppSwitcher = "settings.hideContentInAppSwitcher"
         static let cursorBlink = "settings.cursorBlink"
         static let bellEnabled = "settings.bellEnabled"
+
+        static let all = [
+            themeID, lightThemeID, followSystemAppearance, fontSize, scrollbackLimit,
+            keepAwakeWhileConnected, commandHistoryEnabled, confirmMultilinePaste,
+            hideContentInAppSwitcher, cursorBlink, bellEnabled,
+        ]
     }
 
     private let defaults: UserDefaults
+
+    #if DEBUG
+    /// Puts every preference back to its shipped default.
+    ///
+    /// For automated runs only: preferences outlive an app launch, so without this a UI
+    /// test inherits whatever the run before it left behind — and a test that depends on
+    /// a default starts passing or failing according to what ran previously.
+    func resetToDefaults() {
+        for key in Key.all { defaults.removeObject(forKey: key) }
+        themeID = defaults.string(forKey: Key.themeID) ?? TerminalTheme.midnight.id
+        lightThemeID = defaults.string(forKey: Key.lightThemeID) ?? TerminalTheme.daylight.id
+        followSystemAppearance = defaults.bool(forKey: Key.followSystemAppearance)
+        fontSize = defaults.double(forKey: Key.fontSize)
+        scrollbackLimit = defaults.integer(forKey: Key.scrollbackLimit)
+        keepAwakeWhileConnected = defaults.bool(forKey: Key.keepAwakeWhileConnected)
+        commandHistoryEnabled = defaults.bool(forKey: Key.commandHistoryEnabled)
+        confirmMultilinePaste = defaults.bool(forKey: Key.confirmMultilinePaste)
+        hideContentInAppSwitcher = defaults.bool(forKey: Key.hideContentInAppSwitcher)
+        cursorBlink = defaults.bool(forKey: Key.cursorBlink)
+        bellEnabled = defaults.bool(forKey: Key.bellEnabled)
+    }
+    #endif
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults

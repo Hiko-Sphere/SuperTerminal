@@ -74,7 +74,7 @@ Legend: ✅ done and proven · 🟡 written, awaiting verification · ⬜ not st
 
 ## Phase 5 — Product features ⬜
 
-Key generation, import and export ✅ · Snippets · searchable local history (off by default) · host tags and folders · iCloud
+Key generation, import and export ✅ · Snippets ✅ · searchable local history (off by default) ✅ · host tags and folders · iCloud
 sync for non-sensitive config · theme and font customisation · Face ID / Touch ID gating
 · redacted diagnostics export · App Intents · Spotlight. Port forwarding and SFTP only if
 they can be shipped with full security tests.

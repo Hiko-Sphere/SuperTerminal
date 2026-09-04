@@ -211,6 +211,146 @@ final class TerminalSession: Identifiable {
         await send(Data(text.utf8))
     }
 
+    /// Inserts a snippet's command, and optionally runs it.
+    ///
+    /// Multi-line snippets go through bracketed paste when the remote program supports
+    /// it, for the same reason a multi-line paste does: without it, each newline runs
+    /// what precedes it the moment it arrives.
+    func insert(snippet: Snippet) async {
+        guard shell != nil else { return }
+        await insertText(snippet.command)
+        if snippet.runsImmediately {
+            noteTypedInput(Data("\r".utf8))
+            await send("\r")
+        }
+    }
+
+    /// Puts literal text on the remote line as if it had been typed.
+    ///
+    /// Goes through the same accounting as typing, so a snippet or a paste followed by
+    /// Return is recorded in history exactly like the same command typed by hand — the
+    /// bracketed-paste markers excluded, since they are framing rather than content.
+    private func insertText(_ text: String) async {
+        let needsBrackets = text.contains(where: \.isNewline) && modes.bracketedPaste
+        noteTypedInput(Data(text.utf8))
+        if needsBrackets {
+            await send("\u{1B}[200~" + text + "\u{1B}[201~")
+        } else {
+            await send(text)
+        }
+    }
+
+    /// The last command the user submitted, for the history recorder.
+    ///
+    /// Tracked here rather than by watching the terminal, because the terminal's echo is
+    /// the *shell's* rendering — it includes the prompt, and for a shell with completion
+    /// or syntax highlighting it is not the literal text that was typed.
+    private var submittedCommands: [String] = []
+    /// Whether the pending line still matches what the remote line editor holds.
+    private var lineIsTrustworthy = true
+    private enum EscapeState { case ground, escape, csi, string, stringEscape }
+    private var escapeState: EscapeState = .ground
+
+    /// Buffer of what the user has typed since the last Return.
+    private var pendingInput = ""
+
+    /// Notes typed bytes so a submitted command can be recorded.
+    func noteTypedInput(_ data: Data) {
+        guard let text = String(data: data, encoding: .utf8) else { return }
+        for character in text {
+            if escapeState != .ground {
+                advanceEscape(character)
+                continue
+            }
+            switch character {
+            case "\u{1B}":
+                escapeState = .escape
+                // An escape sequence mid-line means the shell is editing the line for us
+                // — recalling from its own history, or moving the cursor so that what is
+                // typed next lands somewhere we cannot see. From here the reconstruction
+                // would be a guess, and a wrong command in history is worse than none.
+                if !pendingInput.isEmpty { lineIsTrustworthy = false }
+            case "\r", "\n":
+                let command = pendingInput.trimmingCharacters(in: .whitespaces)
+                let trustworthy = lineIsTrustworthy
+                pendingInput = ""
+                lineIsTrustworthy = true
+                // A list, not a single value: one paste can submit several lines, and
+                // dropping all but the last would silently lose them.
+                if trustworthy, !command.isEmpty {
+                    submittedCommands.append(command)
+                    for observe in submittedCommandObservers.values { observe(command) }
+                }
+            case "\u{7F}", "\u{08}":
+                if !pendingInput.isEmpty { pendingInput.removeLast() }
+            case "\u{03}", "\u{04}", "\u{1A}", "\u{15}":
+                // Interrupt, EOF, suspend and kill-line abandon the line rather than
+                // submitting it.
+                pendingInput = ""
+                lineIsTrustworthy = true
+            default:
+                if character.isLetter || character.isNumber || character.isPunctuation
+                    || character.isSymbol || character == " "
+                {
+                    pendingInput.append(character)
+                } else {
+                    // Some other control byte — a completion key, a readline binding.
+                    // Whatever it does to the line, we did not see it.
+                    if !pendingInput.isEmpty { lineIsTrustworthy = false }
+                }
+            }
+        }
+    }
+
+    /// Consumes the rest of an escape sequence so its bytes are never mistaken for typing.
+    ///
+    /// Enough of ECMA-48 to recognise where a sequence ends: CSI and the string-carrying
+    /// introducers run until a final byte, everything else is two bytes long.
+    private func advanceEscape(_ character: Character) {
+        guard let scalar = character.unicodeScalars.first else { return }
+        switch escapeState {
+        case .ground:
+            return
+        case .escape:
+            switch character {
+            case "[": escapeState = .csi
+            case "P", "]", "X", "^", "_": escapeState = .string
+            default: escapeState = .ground
+            }
+        case .csi:
+            // Parameter and intermediate bytes, then a final byte in 0x40...0x7E.
+            if (0x40 ... 0x7E).contains(scalar.value) { escapeState = .ground }
+        case .string:
+            // ST (ESC \) or BEL terminates; a bare ESC starts the two-byte terminator.
+            if scalar.value == 0x07 { escapeState = .ground }
+            if character == "\u{1B}" { escapeState = .stringEscape }
+        case .stringEscape:
+            escapeState = character == "\\" ? .ground : .string
+        }
+    }
+
+    /// Returns the commands submitted since the last call, and forgets them.
+    func takeSubmittedCommands() -> [String] {
+        defer { submittedCommands.removeAll() }
+        return submittedCommands
+    }
+
+    /// Every command submitted from now on, whatever sent it.
+    ///
+    /// A stream rather than a callback because the recorder is a view that comes and
+    /// goes, while the session outlives it.
+    var submittedCommandStream: AsyncStream<String> {
+        AsyncStream { continuation in
+            let id = UUID()
+            submittedCommandObservers[id] = { continuation.yield($0) }
+            continuation.onTermination = { [weak self] _ in
+                Task { @MainActor in self?.submittedCommandObservers[id] = nil }
+            }
+        }
+    }
+
+    private var submittedCommandObservers: [UUID: (String) -> Void] = [:]
+
     func send(_ data: Data) async {
         guard let shell else { return }
         do {
@@ -248,11 +388,7 @@ final class TerminalSession: Identifiable {
     func paste(_ text: String) async {
         guard shell != nil else { return }
         pendingPaste = nil
-        if modes.bracketedPaste {
-            await send("\u{1B}[200~" + text + "\u{1B}[201~")
-        } else {
-            await send(text)
-        }
+        await insertText(text)
     }
 
     func cancelPendingPaste() { pendingPaste = nil }

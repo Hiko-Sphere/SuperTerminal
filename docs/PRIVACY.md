@@ -13,7 +13,8 @@ value your privacy" is not a claim anyone can check.
 | Cloudflare Access tokens | Keychain, `AfterFirstUnlockThisDeviceOnly` | Only back to Cloudflare, as the credential for your own connection |
 | Known host keys | App container, complete file protection, excluded from backup | No |
 | Terminal scrollback | Memory only | No |
-| Command history | **Not recorded** unless you turn it on; local only | No |
+| Command history | **Not recorded** unless you turn it on. Then: app container, complete file protection, excluded from backup, last 500 commands, deleted the moment you turn it off | No |
+| Snippets | App container, complete file protection | No |
 | Settings | `UserDefaults` | No |
 
 Every Keychain item is `ThisDeviceOnly` and explicitly non-synchronisable, so nothing can

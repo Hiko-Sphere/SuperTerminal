@@ -13,6 +13,7 @@ struct TerminalView: View {
 
     @State private var showsControlRow = false
     @State private var isSearching = false
+    @State private var showsSnippets = false
     @State private var searchQuery = ""
     @State private var searchCaseSensitive = false
 
@@ -85,6 +86,21 @@ struct TerminalView: View {
         .toolbar { toolbarContent }
         .sheet(item: promptBinding) { prompt in
             PromptSheet(session: session, prompt: prompt)
+        }
+        .sheet(isPresented: $showsSnippets) {
+            SnippetPickerView(session: session)
+        }
+        .task(id: session.id) {
+            // Snippets, pastes and the accessory keys reach the session without passing
+            // through the keyboard's input callback, so history is drained here as well
+            // — one place that sees every submitted command, whatever sent it.
+            for await command in session.submittedCommandStream {
+                container.snippetStore.record(
+                    command: command,
+                    hostID: session.host.id,
+                    hostName: session.host.name
+                )
+            }
         }
         .confirmationDialog(
             "Open this link?",
@@ -251,6 +267,9 @@ struct TerminalView: View {
                 }
                 Button("Disconnect", systemImage: "bolt.slash") {
                     Task { await session.disconnect() }
+                }
+                Button("Snippets…", systemImage: "text.badge.plus") {
+                    showsSnippets = true
                 }
                 Button("Find…", systemImage: "magnifyingglass") {
                     isSearching = true

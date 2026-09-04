@@ -48,6 +48,10 @@ enum UITestSeeding {
     @MainActor
     static func apply(to container: AppContainer) {
         guard let seed = seedFromEnvironment else { return }
+        // Preferences and snippets outlive the app, so a run that changes one would
+        // otherwise decide the outcome of the next.
+        container.settings.resetToDefaults()
+        container.snippetStore.removeAll()
         container.hostStore.removeAll()
         try? container.vault.deleteEverything()
         try? container.vault.storePrivateKey(seed.privateKeyPEM, id: seed.keyID, requireBiometrics: false)

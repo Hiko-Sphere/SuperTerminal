@@ -41,7 +41,10 @@ struct TerminalScreenView: UIViewRepresentable {
     final class Coordinator {
         func attach(to view: TerminalInputView, session: TerminalSession, confirmMultilinePaste: Bool) {
             view.onInput = { data in
-                Task { @MainActor in await session.send(data) }
+                Task { @MainActor in
+                    session.noteTypedInput(data)
+                    await session.send(data)
+                }
             }
             view.onPaste = { text in
                 Task { @MainActor in

@@ -21,7 +21,7 @@ left out.
 ```bash
 cd Packages/SuperTerminalKit
 swift build          # 0 errors, 0 warnings from project code
-swift test           # 109 tests in 15 suites passed in 9.9s
+swift test           # 131 tests in 19 suites passed in 10.0s
 swift test -c release --filter TerminalThroughputTests   # the numbers below
 
 cd ..
@@ -38,8 +38,11 @@ xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal \
   CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
 # ** BUILD SUCCEEDED ** — arm64 device build compiles
 
-./scripts/app-integration-e2e.sh   # 14 tests on iPhone 17 Pro simulator, ** TEST SUCCEEDED **
-./scripts/ui-terminal-e2e.sh       # 5 UI tests driving the real interface, ** TEST SUCCEEDED **
+./scripts/app-integration-e2e.sh   # 42 app tests on iPhone 17 Pro simulator, ** TEST SUCCEEDED **
+./scripts/ui-terminal-e2e.sh       # 13 UI tests driving the real interface, ** TEST SUCCEEDED **
+
+cd Packages/swift-nio-ssh-rsa
+swift test           # Executed 347 tests, with 0 failures
 ```
 
 Warning counts were measured, not assumed:
@@ -171,7 +174,7 @@ machine, with the emulator attached.
 | A host key the app has not seen is refused until approved | The prompt machinery gates the connection, the fingerprint offered matches the server's real one, and refusing fails the session with `.hostKey` |
 | Host model (3 tests) | A Cloudflare host is recorded against port 443 rather than the origin's SSH port; validation reports every problem |
 
-### UI tests — 5 tests, driving the real interface
+### UI tests — 13 tests, driving the real interface
 
 `scripts/ui-terminal-e2e.sh` starts an `sshd`, seeds a connection through a Debug-only
 environment hook, and drives the app the way a person would.
@@ -188,13 +191,15 @@ environment hook, and drives the app the way a person would.
 | The host list survives every accessibility text size | Launched at AccessibilityM and AccessibilityXXXL, with screenshots attached |
 | Settings stay usable with Reduce Transparency and Bold Text | Both actually enabled; every section remains reachable |
 | Every control on the host list is labelled | An unlabelled button reads out as "button" and is unusable without sight |
+| A snippet is typed into the terminal but not run | Created through the editor, tapped, and asserted against a real shell: the command text is on the line and its output is **not**, for three seconds. Pressing Return then produces the output. The absence is the assertion — a snippet that ran on tap would pass a test that only looked for the text |
+| History is empty until turned on, then records what was typed | A command run before opting in leaves history off and empty; the setting is turned on through Settings; a second command is then recorded as exactly the typed string — no prompt, no output — and the earlier command does not reappear |
 
 Running these rather than reading the code found a layout defect immediately: at
 `AccessibilityXXXL` the server icon sat across the wrapped connection name, and the
 hostname — the thing that tells two connections apart — was truncated. Rows now stack
 vertically and let the subtitle wrap at accessibility sizes.
 
-Writing these found two defects that no unit test could have:
+Writing these found four defects that no unit test could have:
 
 * **On iPhone, tapping a connection opened a session but never showed it.** The list
   started the connection and the split-view detail column would have displayed it, but a
@@ -203,6 +208,22 @@ Writing these found two defects that no unit test could have:
   that drew it, while typed characters arrive through `insertText` on the input view — so
   it highlighted correctly and modified nothing. Tapping ctrl then `c` typed a literal
   `c`. On a phone that means no way to interrupt a running command at all.
+* **Snippets and pastes were missing from history.** The recorder started life in the
+  keyboard's input callback, which is the one path a snippet or a paste does not take. A
+  command inserted either way and then run was silently absent. The accounting moved into
+  the session, so there is one place that sees every submitted command whatever sent it.
+* **UI runs were not repeatable.** Preferences live in `UserDefaults` and outlive the app,
+  so a run that switched history on decided the outcome of the next run — the history test
+  passed once and then failed, against unchanged code. The Debug-only seeding now resets
+  preferences and snippets alongside the hosts and the Keychain.
+
+A defect the *unit* tests caught, worth recording because the naive implementation is the
+obvious one: reconstructing the typed command by appending printable characters put the
+bytes of the arrow keys into the command. `ls`, Up, Return recorded `ls[A`. Worse, Up
+recalls a different command from the shell's own history, so after any line editing the
+line is no longer the one we watched being typed. The parser now consumes escape
+sequences whole, and a line the remote editor may have changed is dropped rather than
+guessed at — a wrong command in history is worse than no command.
 
 ### Manual inspection
 
@@ -210,6 +231,22 @@ The app was installed and launched on the iPhone 17 Pro and iPad Pro 13-inch (M5
 simulators and screenshotted. That found a real defect: on iPad the split view opened
 with the sidebar collapsed, so a fresh install showed "No session" and no visible way to
 add one. Fixed by starting at `.all` visibility.
+
+### Snippets and command history — 24 app tests
+
+Run on the iPhone 17 Pro simulator as part of `scripts/app-integration-e2e.sh`.
+
+| Area | What is asserted |
+| --- | --- |
+| The history setting is honoured at the source | `record` refuses while the setting is off, and no file is written — off means nothing is kept, not merely nothing shown. A store opened while the setting is off does not read an existing file back |
+| Clearing | `clearHistory` removes the file, not just the array; a file left behind would return if the setting were re-enabled |
+| Bounds | 600 recorded commands leave exactly 500, oldest dropped — opting in does not create an unbounded record of everything, ever |
+| Consecutive repeats | Collapsed, so a repeated command does not push out older ones |
+| Search | Filters by text, by host, and by both |
+| The starter set | Idempotent, read-only (no `rm`, `dd`, `mkfs`, `kill`, restarts), and nothing in it runs on tap |
+| Typed-command reconstruction (12) | Character-at-a-time, whole-line chunks, multi-line paste, backspace, `^C`/`^D`/`^Z`/`^U`, CSI sequences, OSC-with-BEL, DCS-with-ST, empty lines, and destructive `take` |
+| Line editing | `ls`, Up, Return records **nothing**; so do a cursor move followed by typing, and a tab completion |
+| Every input path | Typed, pasted and snippet-inserted commands all reach the same recorder, verified through the session's stream |
 
 ### Ciphers — 8 tests
 
