@@ -46,7 +46,9 @@ cp -R "$WORK/upstream/Tests" "$VENDOR/Tests"
 cp "$WORK/upstream/LICENSE.txt" "$VENDOR/LICENSE.txt"
 echo "$COMMIT" > "$VENDOR/UPSTREAM_COMMIT"
 
-cd "$VENDOR"
+# Applied from the repository root: the patch carries repository-relative paths, so it
+# would not find its targets from inside the vendored directory.
+cd "$ROOT"
 if ! git apply --check "$PATCH" 2>/dev/null; then
   echo "::error:: The RSA patch no longer applies to $TAG." >&2
   echo "Rebase patches/niossh-rsa.patch by hand, or check whether upstream has added RSA" >&2

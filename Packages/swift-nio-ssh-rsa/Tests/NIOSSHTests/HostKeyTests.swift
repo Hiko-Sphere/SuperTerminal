@@ -254,11 +254,30 @@ final class HostKeyTests: XCTestCase {
 
     func testUnrecognisedKey() throws {
         var buffer = ByteBufferAllocator().buffer(capacity: 1024)
-        buffer.writeSSHString("ssh-rsa".utf8)
+        // Modified by SuperTerminal: this used "ssh-rsa", which is now a key type this
+        // library understands. The behaviour under test — an unknown algorithm is
+        // rejected — is unchanged; only the example had to move to an algorithm that is
+        // still genuinely unknown. `ssh-dss` qualifies: OpenSSH removed DSA entirely in
+        // 10.0 and this library has never supported it.
+        buffer.writeSSHString("ssh-dss".utf8)
 
         XCTAssertThrowsError(try buffer.readSSHHostKey()) { error in
             XCTAssertEqual((error as? NIOSSHError).map { $0.type }, .unknownPublicKey)
         }
+    }
+
+    /// Added by SuperTerminal, so the case the test above used to cover is not lost: a
+    /// recognised algorithm with a truncated body must not yield a key.
+    func testTruncatedRSAKeyIsRejected() throws {
+        var buffer = ByteBufferAllocator().buffer(capacity: 1024)
+        buffer.writeSSHString("ssh-rsa".utf8)
+        // No exponent, no modulus.
+        XCTAssertNoThrow(XCTAssertNil(try buffer.readSSHHostKey()))
+
+        var partial = ByteBufferAllocator().buffer(capacity: 1024)
+        partial.writeSSHString("ssh-rsa".utf8)
+        partial.writeSSHString([0x01, 0x00, 0x01])  // exponent only
+        XCTAssertNoThrow(XCTAssertNil(try partial.readSSHHostKey()))
     }
 
     func testInvalidDomainParametersForECDSAP256() throws {

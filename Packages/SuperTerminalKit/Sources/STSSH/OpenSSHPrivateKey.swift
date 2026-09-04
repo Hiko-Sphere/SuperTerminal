@@ -1,5 +1,6 @@
 import Crypto
 import Foundation
+import _CryptoExtras
 import NIOSSH
 import STCore
 
@@ -180,6 +181,42 @@ public enum OpenSSHPrivateKeyParser {
             let signingKey = try P256.Signing.PrivateKey(rawRepresentation: raw)
             let comment = reader.readStringUTF8()
             let nioKey = NIOSSHPrivateKey(p256Key: signingKey)
+            return SSHPrivateKeyMaterial(
+                key: nioKey,
+                algorithm: keyType,
+                comment: comment.flatMap { $0.isEmpty ? nil : $0 },
+                publicKey: try SSHHostKey(nioKey.publicKey)
+            )
+
+        case "ssh-rsa":
+            // OpenSSH stores the private half as n, e, d, iqmp, p, q — modulus first,
+            // which is the reverse of the public blob's e-then-n. swift-crypto wants the
+            // CRT form (n, e, d, p, q), so iqmp is read and discarded.
+            guard let modulus = reader.readMPInt(),
+                  let exponent = reader.readMPInt(),
+                  let privateExponent = reader.readMPInt(),
+                  reader.readMPInt() != nil,
+                  let primeP = reader.readMPInt(),
+                  let primeQ = reader.readMPInt()
+            else {
+                throw SSHKeyParseError.malformed("RSA key fields are malformed")
+            }
+            let signingKey: _RSA.Signing.PrivateKey
+            do {
+                signingKey = try _RSA.Signing.PrivateKey(
+                    n: modulus,
+                    e: exponent,
+                    d: privateExponent,
+                    p: primeP,
+                    q: primeQ
+                )
+            } catch {
+                // Most often a modulus below swift-crypto's minimum. Refusing beats
+                // storing a key that cannot authenticate.
+                throw SSHKeyParseError.malformed("RSA key could not be loaded: \(error)")
+            }
+            let comment = reader.readStringUTF8()
+            let nioKey = NIOSSHPrivateKey(rsaKey: signingKey)
             return SSHPrivateKeyMaterial(
                 key: nioKey,
                 algorithm: keyType,

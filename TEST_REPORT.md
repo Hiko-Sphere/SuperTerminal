@@ -203,6 +203,25 @@ simulators and screenshotted. That found a real defect: on iPad the split view o
 with the sidebar collapsed, so a fresh install showed "No session" and no visible way to
 add one. Fixed by starting at `.all` visibility.
 
+### RSA — 9 tests, proved against OpenSSH and adversarially
+
+`RSAInteropTests`. The change separates a key's blob identifier (`ssh-rsa`) from its
+negotiated algorithm name (`rsa-sha2-256` / `rsa-sha2-512`), which RFC 8332 makes
+different for RSA alone. Every test exists because that separation is easy to get subtly
+wrong.
+
+| Test | What a pass proves |
+| --- | --- |
+| An RSA user key authenticates against a real `sshd` | The whole chain: parse, negotiate, sign with the declared algorithm, and be accepted |
+| A server offering **only** an RSA host key can be reached | No Ed25519 or ECDSA host key exists on that server, so the connection can only have gone through RSA host-key verification — and the remembered key is the server's real one |
+| An RSA key works over the Cloudflare carrier | The carrier is only a byte stream, but that is how transport-specific bugs survive |
+| `ssh-keygen` and this parser agree on the fingerprint | The `e`-before-`n` ordering is exactly the kind of thing that yields a plausible key that is not the user's |
+| A signature claiming the wrong RSA algorithm does not verify | If the algorithm came from the key rather than the signature, this would pass |
+| An RSA key rejects a non-RSA algorithm name, including `ssh-rsa` | `ssh-rsa` names SHA-1 and is refused even though it is the blob's own name |
+| An Ed25519 key rejects an RSA algorithm name | The relaxed check must not have become no check |
+| A tampered signature does not verify | |
+| A signature over different bytes does not verify | |
+
 ### Key generation — 8 cases, verified against OpenSSH itself
 
 `SSHKeyGenerationTests`. The strongest check here is interoperability, because a key
@@ -216,13 +235,21 @@ format only this app understands would make the app a place keys go to be trappe
 | Two keys differ | No accidental reuse |
 | The public line is `authorized_keys`-shaped | Three fields, valid base64, the comment preserved |
 
-### Vendored swift-nio-ssh — 346 upstream tests
+### Vendored swift-nio-ssh — 347 upstream tests
 
 `Packages/swift-nio-ssh-rsa` is Apple's library at tag `0.15.0`, vendored so RSA can be
-added. It was committed **unmodified first** and upstream's own suite was run against the
-copy: 346 tests, 0 failures. That establishes the vendor is faithful before any change of
-ours lands on it, and the suite now runs in CI so a future re-sync is verifiable rather
-than assumed safe.
+added. It was committed **unmodified first** and upstream's own suite was run against the copy:
+346 tests, 0 failures. That established the vendor was faithful before any change of ours
+landed on it.
+
+With the RSA patch applied the suite is 347 tests, 0 failures. One upstream test used
+`ssh-rsa` as its example of an unrecognised algorithm; since that is now a type this
+library understands, the example moved to `ssh-dss` — which OpenSSH removed entirely in
+10.0 — and a new test was added so the truncated-key case it also covered is not lost. The
+behaviour under test is unchanged.
+
+`patches/niossh-rsa.patch` was verified to apply cleanly to a freshly cloned pristine
+upstream at tag `0.15.0`, so a future re-sync is mechanical rather than a hand-merge.
 
 ## Not verified
 
@@ -242,7 +269,6 @@ Stated plainly, because a test report that omits these would be misleading:
 | **High contrast and Reduce Transparency** | Both are implemented — increased contrast selects the high-contrast theme, and bar backgrounds go solid — but verified by reading the code, not by running with the settings enabled. |
 | **Pointer and hover on iPad** | Hover reporting is implemented; it has not been driven with a trackpad. |
 | **Keychain behaviour** | `KeychainSecureStore` is written but untested; Keychain semantics differ enough in a macOS unit-test process that a passing test there would prove little. Needs device tests. |
-| **RSA keys** | Unsupported. The library is vendored and verified faithful, and D-007 now specifies every site the patch must change, but it is not written. Mitigated by in-app key generation, which does not help an RSA-only host. A capability gap, not a test gap. |
 | **Instruments profiling** | Not run. `XCTest`'s measurement was used instead because it produces a number on every run, in CI as well as on a desk, and fails on a regression. An Instruments trace remains the better tool for finding *why* something is slow, and is worth doing before release. |
 
 ## Observed environment issue

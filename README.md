@@ -70,7 +70,7 @@ Packages/SuperTerminalKit/     all logic, testable on macOS without a simulator
     STCore/                    transport protocol, error taxonomy, redacting logger
     STSecureStore/             Keychain with explicit protection classes
     STCloudflare/              Access discovery, JWKS, tokens, login, WebSocket carrier
-    STSSH/                     SSH client, host-key policy, key parsing, sessions
+    STSSH/                     SSH client, host-key policy, key parsing, generation, sessions
     CBcryptPBKDF/              vendored OpenBSD bcrypt_pbkdf (see THIRD_PARTY_NOTICES)
     STTerminal/                VT/ANSI emulation
     STTestSupport/             real sshd harness, carrier server reproducing the edge
@@ -95,9 +95,6 @@ docs/                          Cloudflare setup, SSH guide, operations
 
 These are real and are not worked around silently:
 
-* **RSA keys are not supported.** `swift-nio-ssh` 0.15.0 implements no RSA key type, so
-  RSA user keys cannot authenticate and servers offering only RSA host keys cannot be
-  reached. See `DECISIONS.md` D-002 for the plan.
 * **Cloudflare Access has not been verified against a live account.** The protocol is
   implemented and the carrier is tested locally, but no local harness can authenticate a
   real identity. See `PROJECT_STATUS.md` B-2.

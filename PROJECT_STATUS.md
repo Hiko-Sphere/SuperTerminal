@@ -69,32 +69,20 @@ Intents · Spotlight.
 
 ## Blocking issues
 
-### B-1 · RSA keys are not supported *(open, high — fix under way)*
+### B-1 · RSA keys — **closed**
 
-`swift-nio-ssh` implements no RSA key type at any released version, nor on `main`
-(verified at commit `3ec2814`). RSA **user keys** cannot authenticate and servers offering
-only RSA **host keys** cannot be reached.
+`rsa-sha2-256` and `rsa-sha2-512` are implemented in the vendored `swift-nio-ssh` and
+verified against OpenSSH: an RSA user key authenticates against a real `sshd`, a server
+offering **only** an RSA host key can be reached, and the same works over the Cloudflare
+carrier. `ssh-keygen` and this app agree on an RSA key's fingerprint.
 
-**Progress:** the library is vendored at `Packages/swift-nio-ssh-rsa/`, committed
-unmodified first and verified by running upstream's own 346 tests against it. The patch
-itself is **specified but not written**: `DECISIONS.md` D-007 now maps every site it has
-to change — eight files, roughly 500 lines, reaching into the key-exchange and user-auth
-state machines. The root cause is that NIOSSH treats a key's blob identifier and its
-negotiated algorithm name as the same string, which RFC 8332 makes false for RSA.
+`ssh-rsa` (SHA-1) is **not** supported and will not be — OpenSSH disabled it by default in
+8.8, and accepting it would ship a downgrade a server could ask for.
 
-It is deliberately not being attempted in a single sitting. A half-verified change to SSH
-signature verification would be worse than the gap it closes.
-
-**Mitigation, shipped:** in-app key generation. Someone whose only key is RSA can generate
-an Ed25519 key on the device and add it to the server in under a minute. That does not
-help an RSA-only *host*, and it does not help someone whose key is issued by their
-organisation — so the gap is reduced, not closed. Until the patch lands the app reports
-the limitation precisely rather than as a generic failure.
-
-### B-2 · Live Cloudflare verification needs an account *(open, blocking acceptance)*
-
-Nothing local can prove Access authentication works. The exact inputs required are
-listed under **What is needed from the project owner** below.
+The change is `patches/niossh-rsa.patch`, which applies cleanly to pristine upstream at
+tag `0.15.0`. Upstream's own suite still passes (347 tests, up from 346: one test used
+`ssh-rsa` as its example of an unrecognised algorithm and was moved to `ssh-dss`, with a
+new test added so the truncated-key case it covered is not lost).
 
 ### B-4 · Archiving is blocked on a development team *(open)*
 

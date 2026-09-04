@@ -32,7 +32,16 @@ import NIOCore
 internal struct UserAuthSignablePayload {
     private(set) var bytes: ByteBuffer
 
-    init(sessionIdentifier: ByteBuffer, userName: String, serviceName: String, publicKey: NIOSSHPublicKey) {
+    /// - Parameter algorithmName: the public key algorithm name, which RFC 8332 §3.1
+    ///   makes distinct from the key blob's identifier for RSA. Defaults to the key
+    ///   prefix, which is correct for every other algorithm.
+    init(
+        sessionIdentifier: ByteBuffer,
+        userName: String,
+        serviceName: String,
+        publicKey: NIOSSHPublicKey,
+        algorithmName: String? = nil
+    ) {
         // We use the session identifier as the base buffer and just append to it. We ask for 1kB because it's likely
         // enough for this data.
         var sessionIdentifier = sessionIdentifier
@@ -45,7 +54,7 @@ internal struct UserAuthSignablePayload {
         newBuffer.writeSSHString(serviceName.utf8)
         newBuffer.writeSSHString("publickey".utf8)
         newBuffer.writeSSHBoolean(true)
-        newBuffer.writeSSHString(publicKey.keyPrefix)
+        newBuffer.writeSSHString((algorithmName ?? String(publicKey.keyPrefix)).utf8)
         newBuffer.writeCompositeSSHString { buffer in
             buffer.writeSSHHostKey(publicKey)
         }

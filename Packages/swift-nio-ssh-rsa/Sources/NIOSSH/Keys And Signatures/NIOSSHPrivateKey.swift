@@ -13,6 +13,7 @@
 //===----------------------------------------------------------------------===//
 
 @preconcurrency import Crypto
+import _CryptoExtras
 import NIOCore
 
 #if canImport(FoundationEssentials)
@@ -58,6 +59,11 @@ public struct NIOSSHPrivateKey: Sendable {
     }
     #endif
 
+    /// Creates a private key from RSA key material.
+    public init(rsaKey key: _RSA.Signing.PrivateKey) {
+        self.backingKey = .rsa(key)
+    }
+
     // The algorithms that apply to this host key.
     internal var hostKeyAlgorithms: [Substring] {
         switch self.backingKey {
@@ -69,6 +75,14 @@ public struct NIOSSHPrivateKey: Sendable {
             return ["ecdsa-sha2-nistp384"]
         case .ecdsaP521:
             return ["ecdsa-sha2-nistp521"]
+        case .rsa:
+            // Only SHA-512 is advertised for a *host* key. `sign(digest:)` has no way to
+            // learn which variant was negotiated, so offering both would let a peer pick
+            // SHA-256 and then receive a SHA-512 signature. Advertising one makes the
+            // negotiated algorithm and the signing algorithm the same by construction.
+            // Client-side user auth is unaffected: it chooses and declares its own
+            // algorithm, and verification accepts either.
+            return ["rsa-sha2-512"]
         #if canImport(Darwin)
         case .secureEnclaveP256:
             return ["ecdsa-sha2-nistp256"]
@@ -84,6 +98,7 @@ extension NIOSSHPrivateKey {
         case ecdsaP256(P256.Signing.PrivateKey)
         case ecdsaP384(P384.Signing.PrivateKey)
         case ecdsaP521(P521.Signing.PrivateKey)
+        case rsa(_RSA.Signing.PrivateKey)
 
         #if canImport(Darwin)
         case secureEnclaveP256(SecureEnclave.P256.Signing.PrivateKey)
@@ -115,6 +130,13 @@ extension NIOSSHPrivateKey {
             }
             return NIOSSHSignature(backingSignature: .ecdsaP521(signature))
 
+        case .rsa(let key):
+            // Matches the single algorithm `hostKeyAlgorithms` advertises for RSA.
+            let algorithm = NIOSSHRSASignatureAlgorithm.sha512
+            let signature = try digest.withUnsafeBytes { ptr in
+                try algorithm.signature(for: Array(ptr), using: key)
+            }
+            return NIOSSHSignature(backingSignature: .rsa(algorithm: algorithm, bytes: .data(signature)))
         #if canImport(Darwin)
         case .secureEnclaveP256(let key):
             let signature = try digest.withUnsafeBytes { ptr in
@@ -125,7 +147,15 @@ extension NIOSSHPrivateKey {
         }
     }
 
-    func sign(_ payload: UserAuthSignablePayload) throws -> NIOSSHSignature {
+    /// Signs a user authentication payload.
+    ///
+    /// - Parameter rsaAlgorithm: which RSA variant to use. Ignored for every other key
+    ///   type. It must match the algorithm name written into the request and into the
+    ///   signed payload, or the server will reject the signature.
+    func sign(
+        _ payload: UserAuthSignablePayload,
+        rsaAlgorithm: NIOSSHRSASignatureAlgorithm = .sha512
+    ) throws -> NIOSSHSignature {
         switch self.backingKey {
         case .ed25519(let key):
             let signature = try key.signature(for: payload.bytes.readableBytesView)
@@ -139,6 +169,12 @@ extension NIOSSHPrivateKey {
         case .ecdsaP521(let key):
             let signature = try key.signature(for: payload.bytes.readableBytesView)
             return NIOSSHSignature(backingSignature: .ecdsaP521(signature))
+        case .rsa(let key):
+            let signature = try rsaAlgorithm.signature(
+                for: Array(payload.bytes.readableBytesView),
+                using: key
+            )
+            return NIOSSHSignature(backingSignature: .rsa(algorithm: rsaAlgorithm, bytes: .data(signature)))
         #if canImport(Darwin)
         case .secureEnclaveP256(let key):
             let signature = try key.signature(for: payload.bytes.readableBytesView)
@@ -160,6 +196,8 @@ extension NIOSSHPrivateKey {
             return NIOSSHPublicKey(backingKey: .ecdsaP384(privateKey.publicKey))
         case .ecdsaP521(let privateKey):
             return NIOSSHPublicKey(backingKey: .ecdsaP521(privateKey.publicKey))
+        case .rsa(let privateKey):
+            return NIOSSHPublicKey(backingKey: .rsa(privateKey.publicKey))
         #if canImport(Darwin)
         case .secureEnclaveP256(let privateKey):
             return NIOSSHPublicKey(backingKey: .ecdsaP256(privateKey.publicKey))

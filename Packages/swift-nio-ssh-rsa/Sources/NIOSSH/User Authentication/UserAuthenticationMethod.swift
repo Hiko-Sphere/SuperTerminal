@@ -242,13 +242,21 @@ extension SSHMessage.UserAuthRequestMessage {
 
         switch request.offer {
         case .privateKey(let privateKeyRequest):
+            // For RSA the algorithm name and the key blob's identifier differ, and the
+            // same algorithm name must appear in three places: the request, the signed
+            // payload, and the signature itself. Choosing it once here is what keeps them
+            // consistent.
+            let rsaAlgorithm = NIOSSHRSASignatureAlgorithm.sha512
+            let algorithmName = privateKeyRequest.publicKey.signatureAlgorithmNames.first
+                ?? String(privateKeyRequest.publicKey.keyPrefix)
             let dataToSign = UserAuthSignablePayload(
                 sessionIdentifier: sessionID,
                 userName: self.username,
                 serviceName: self.service,
-                publicKey: privateKeyRequest.publicKey
+                publicKey: privateKeyRequest.publicKey,
+                algorithmName: algorithmName
             )
-            let signature = try privateKeyRequest.privateKey.sign(dataToSign)
+            let signature = try privateKeyRequest.privateKey.sign(dataToSign, rsaAlgorithm: rsaAlgorithm)
             self.method = .publicKey(.known(key: privateKeyRequest.publicKey, signature: signature))
         case .password(let passwordRequest):
             self.method = .password(passwordRequest.password)

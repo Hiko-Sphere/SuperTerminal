@@ -22,8 +22,17 @@ public final class OpenSSHTestServer: @unchecked Sendable {
         public let clientKeyPassphrase: String
         /// PEM text of an unencrypted ECDSA P-256 client key in `authorized_keys`.
         public let clientECDSAPrivateKeyPEM: String
+        /// PEM text of an unencrypted RSA client key in `authorized_keys`.
+        public let clientRSAPrivateKeyPEM: String
         /// The server's Ed25519 host key in `authorized_keys` one-line form.
         public let hostKeyOpenSSH: String
+    }
+
+    /// Host key types the test server can be configured to offer.
+    public enum HostKeyAlgorithm: String, Sendable, Hashable {
+        case ed25519
+        case ecdsa
+        case rsa
     }
 
     public enum StartupError: Error, CustomStringConvertible {
@@ -49,7 +58,15 @@ public final class OpenSSHTestServer: @unchecked Sendable {
 
     /// - Parameter extraAuthorizedKeys: additional `authorized_keys` lines to trust, so a
     ///   test can prove a key it generated itself is accepted by a real server.
-    public init(extraAuthorizedKeys: [String] = []) throws {
+    /// - Parameters:
+    ///   - extraAuthorizedKeys: additional `authorized_keys` lines to trust.
+    ///   - hostKeyAlgorithms: which host keys the server offers. Restricting this to RSA
+    ///     is how a client's RSA host-key support is proved: with no Ed25519 or ECDSA host
+    ///     key present, a connection can only succeed through RSA.
+    public init(
+        extraAuthorizedKeys: [String] = [],
+        hostKeyAlgorithms: Set<HostKeyAlgorithm> = [.ed25519, .ecdsa]
+    ) throws {
         guard FileManager.default.isExecutableFile(atPath: Self.sshdPath) else {
             throw StartupError.sshdMissing(Self.sshdPath)
         }
@@ -61,10 +78,18 @@ public final class OpenSSHTestServer: @unchecked Sendable {
         let port = try Self.reserveEphemeralPort()
         let username = NSUserName()
 
-        try Self.keygen(["-t", "ed25519", "-f", root.appendingPathComponent("host_ed25519").path, "-N", "", "-q", "-C", "st-test-host"])
-        try Self.keygen(["-t", "ecdsa", "-b", "256", "-f", root.appendingPathComponent("host_ecdsa").path, "-N", "", "-q", "-C", "st-test-host"])
+        if hostKeyAlgorithms.contains(.ed25519) {
+            try Self.keygen(["-t", "ed25519", "-f", root.appendingPathComponent("host_ed25519").path, "-N", "", "-q", "-C", "st-test-host"])
+        }
+        if hostKeyAlgorithms.contains(.ecdsa) {
+            try Self.keygen(["-t", "ecdsa", "-b", "256", "-f", root.appendingPathComponent("host_ecdsa").path, "-N", "", "-q", "-C", "st-test-host"])
+        }
+        if hostKeyAlgorithms.contains(.rsa) {
+            try Self.keygen(["-t", "rsa", "-b", "3072", "-f", root.appendingPathComponent("host_rsa").path, "-N", "", "-q", "-C", "st-test-host"])
+        }
         try Self.keygen(["-t", "ed25519", "-f", root.appendingPathComponent("client_ed25519").path, "-N", "", "-q", "-C", "st-test-client"])
         try Self.keygen(["-t", "ecdsa", "-b", "256", "-f", root.appendingPathComponent("client_ecdsa").path, "-N", "", "-q", "-C", "st-test-client-ecdsa"])
+        try Self.keygen(["-t", "rsa", "-b", "3072", "-f", root.appendingPathComponent("client_rsa").path, "-N", "", "-q", "-C", "st-test-client-rsa"])
 
         let passphrase = "correct horse battery staple"
         let encryptedPath = root.appendingPathComponent("client_ed25519_encrypted")
@@ -76,6 +101,7 @@ public final class OpenSSHTestServer: @unchecked Sendable {
 
         var authorizedKeys = try String(contentsOf: root.appendingPathComponent("client_ed25519.pub"), encoding: .utf8)
             + (try String(contentsOf: root.appendingPathComponent("client_ecdsa.pub"), encoding: .utf8))
+            + (try String(contentsOf: root.appendingPathComponent("client_rsa.pub"), encoding: .utf8))
         for line in extraAuthorizedKeys {
             authorizedKeys += line.hasSuffix("\n") ? line : line + "\n"
         }
@@ -83,11 +109,21 @@ public final class OpenSSHTestServer: @unchecked Sendable {
         try authorizedKeys.write(to: authorizedKeysURL, atomically: true, encoding: .utf8)
         try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: authorizedKeysURL.path)
 
+        let hostKeyLines = hostKeyAlgorithms
+            .sorted { $0.rawValue < $1.rawValue }
+            .map { algorithm -> String in
+                switch algorithm {
+                case .ed25519: "HostKey \(root.appendingPathComponent("host_ed25519").path)"
+                case .ecdsa: "HostKey \(root.appendingPathComponent("host_ecdsa").path)"
+                case .rsa: "HostKey \(root.appendingPathComponent("host_rsa").path)"
+                }
+            }
+            .joined(separator: "\n")
+
         let config = """
         Port \(port)
         ListenAddress 127.0.0.1
-        HostKey \(root.appendingPathComponent("host_ed25519").path)
-        HostKey \(root.appendingPathComponent("host_ecdsa").path)
+        \(hostKeyLines)
         PidFile \(root.appendingPathComponent("sshd.pid").path)
         AuthorizedKeysFile \(authorizedKeysURL.path)
         PasswordAuthentication no
@@ -120,8 +156,13 @@ public final class OpenSSHTestServer: @unchecked Sendable {
             encryptedClientPrivateKeyPEM: try String(contentsOf: encryptedPath, encoding: .utf8),
             clientKeyPassphrase: passphrase,
             clientECDSAPrivateKeyPEM: try String(contentsOf: root.appendingPathComponent("client_ecdsa"), encoding: .utf8),
-            hostKeyOpenSSH: try String(contentsOf: root.appendingPathComponent("host_ed25519.pub"), encoding: .utf8)
-                .trimmingCharacters(in: .whitespacesAndNewlines)
+            clientRSAPrivateKeyPEM: try String(contentsOf: root.appendingPathComponent("client_rsa"), encoding: .utf8),
+            hostKeyOpenSSH: try String(
+                contentsOf: root.appendingPathComponent(
+                    hostKeyAlgorithms.contains(.ed25519) ? "host_ed25519.pub" : "host_rsa.pub"
+                ),
+                encoding: .utf8
+            ).trimmingCharacters(in: .whitespacesAndNewlines)
         )
 
         try waitUntilListening(port: port)

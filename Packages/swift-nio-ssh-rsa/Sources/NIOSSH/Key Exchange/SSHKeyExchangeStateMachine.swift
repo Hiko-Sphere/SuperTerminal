@@ -289,7 +289,11 @@ struct SSHKeyExchangeStateMachine {
         case .keyExchangeInitSent(exchange: var exchanger, let negotiated):
             switch self.role {
             case .client:
-                guard message.hostKey.keyPrefix.elementsEqual(negotiated.negotiatedHostKeyAlgorithm.utf8) else {
+                // For RSA the negotiated algorithm (`rsa-sha2-*`) is not the key blob's
+                // identifier (`ssh-rsa`), so this asks whether the key can be used with
+                // the negotiated algorithm. A server presenting a key that cannot is
+                // still rejected.
+                guard message.hostKey.supportsSignatureAlgorithm(negotiated.negotiatedHostKeyAlgorithm.utf8) else {
                     throw NIOSSHError.invalidHostKeyForKeyExchange(
                         expected: negotiated.negotiatedHostKeyAlgorithm,
                         got: message.hostKey.keyPrefix
@@ -601,8 +605,12 @@ extension SSHKeyExchangeStateMachine {
     }
 
     /// All known host key algorithms.
+    ///
+    /// `ssh-rsa` is deliberately absent: it names SHA-1, which OpenSSH disabled by default
+    /// in 8.8. Only the SHA-2 variants from RFC 8332 are offered.
     static let supportedServerHostKeyAlgorithms: [Substring] = [
         "ssh-ed25519", "ecdsa-sha2-nistp384", "ecdsa-sha2-nistp256", "ecdsa-sha2-nistp521",
+        "rsa-sha2-512", "rsa-sha2-256",
     ]
 }
 

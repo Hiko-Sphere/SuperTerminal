@@ -349,6 +349,16 @@ extension NIOSSHCertifiedPublicKey {
 
     static let ed25519KeyPrefix = "ssh-ed25519-cert-v01@openssh.com".utf8
 
+    /// Certificate algorithm names.
+    ///
+    /// RSA certificates are not supported: the base key would need its own
+    /// `rsa-sha2-*-cert-v01@openssh.com` names, and nothing in this project uses
+    /// certified keys. Reporting only the certificate's own prefix keeps behaviour
+    /// exactly as it was before RSA was added.
+    internal var signatureAlgorithmNames: [String] {
+        [String(self.keyPrefix)]
+    }
+
     internal var keyPrefix: String.UTF8View {
         switch self.key.backingKey {
         case .ed25519:
@@ -359,6 +369,10 @@ extension NIOSSHCertifiedPublicKey {
             return Self.p384KeyPrefix
         case .ecdsaP521:
             return Self.p521KeyPrefix
+        case .rsa:
+            // Certified RSA keys are not supported; nothing constructs one, and the
+            // certificate name would need its own rsa-sha2-*-cert-v01 spelling.
+            preconditionFailure("RSA certified keys are not supported")
         case .certified:
             preconditionFailure("base key cannot be certified")
         }

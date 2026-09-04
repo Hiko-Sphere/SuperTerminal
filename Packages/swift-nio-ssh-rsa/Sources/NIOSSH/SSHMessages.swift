@@ -694,7 +694,11 @@ extension ByteBuffer {
                         return nil
                     }
 
-                    guard algorithmName.readableBytesView.elementsEqual(publicKey.keyPrefix) else {
+                    // For RSA the declared algorithm (`rsa-sha2-*`) and the key blob's
+                    // identifier (`ssh-rsa`) are different strings, so this asks whether
+                    // the algorithm is valid *for* the key rather than equal to its
+                    // prefix. A mismatched pair is still refused.
+                    guard publicKey.supportsSignatureAlgorithm(algorithmName.readableBytesView) else {
                         throw NIOSSHError.invalidSSHMessage(reason: "algorithm and key mismatch in user auth request")
                     }
 
@@ -770,8 +774,9 @@ extension ByteBuffer {
                 return nil
             }
 
-            // Validate consistency here.
-            guard publicKeyType.readableBytesView.elementsEqual(publicKey.keyPrefix) else {
+            // Validate consistency here. As above, RSA's algorithm name and blob
+            // identifier differ, so equality would reject a well-formed message.
+            guard publicKey.supportsSignatureAlgorithm(publicKeyType.readableBytesView) else {
                 throw NIOSSHError.invalidSSHMessage(reason: "inconsistent key type")
             }
 
@@ -1373,7 +1378,15 @@ extension ByteBuffer {
         case .publicKey(.known(key: let key, signature: let signature)):
             writtenBytes += self.writeSSHString("publickey".utf8)
             writtenBytes += self.writeSSHBoolean(signature != nil)
-            writtenBytes += self.writeSSHString(key.keyPrefix)
+            // The *algorithm* name, which for RSA is not the key blob's identifier. When
+            // a signature is present its algorithm is authoritative: it is the one the
+            // signed payload committed to, and declaring a different one here would make
+            // the signature fail to verify.
+            let algorithmName =
+                signature?.rsaAlgorithm?.rawValue
+                ?? key.signatureAlgorithmNames.first
+                ?? String(key.keyPrefix)
+            writtenBytes += self.writeSSHString(algorithmName.utf8)
             writtenBytes += self.writeCompositeSSHString { buffer in
                 buffer.writeSSHHostKey(key)
             }
@@ -1407,7 +1420,12 @@ extension ByteBuffer {
 
     mutating func writeUserAuthPKOKMessage(_ message: SSHMessage.UserAuthPKOKMessage) -> Int {
         var writtenBytes = 0
-        writtenBytes += self.writeSSHString(message.key.keyPrefix)
+        // Server-side reply. The key's preferred algorithm is used because the request's
+        // algorithm is not carried into this message; for RSA that is `rsa-sha2-512`,
+        // which is also the only variant this library advertises for a host key.
+        let algorithmName =
+            message.key.signatureAlgorithmNames.first ?? String(message.key.keyPrefix)
+        writtenBytes += self.writeSSHString(algorithmName.utf8)
         writtenBytes += self.writeCompositeSSHString { buffer in
             buffer.writeSSHHostKey(message.key)
         }

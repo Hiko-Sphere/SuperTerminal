@@ -9,9 +9,11 @@ import STCore
 /// The list is short on purpose. Ed25519 is the right default for anyone who does not
 /// have a specific reason to choose otherwise: small, fast, and with no parameter choices
 /// to get wrong. ECDSA P-256 exists for environments whose policy still demands a NIST
-/// curve. RSA is absent because the SSH layer cannot yet use it — see `DECISIONS.md`
-/// D-007 — and offering to generate a key the app cannot authenticate with would be a
-/// trap.
+/// curve.
+///
+/// RSA is deliberately absent from *generation* even though the SSH layer now supports
+/// it. A newly generated key should be the best available, and there is no reason to
+/// create an RSA key today; support exists so that keys people already have keep working.
 public enum SSHKeyAlgorithm: String, Sendable, CaseIterable, Identifiable {
     case ed25519
     case ecdsaP256

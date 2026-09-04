@@ -1,0 +1,788 @@
+diff --git a/Packages/swift-nio-ssh-rsa/Package.swift b/Packages/swift-nio-ssh-rsa/Package.swift
+index d558d9b..062b088 100644
+--- a/Packages/swift-nio-ssh-rsa/Package.swift
++++ b/Packages/swift-nio-ssh-rsa/Package.swift
+@@ -47,6 +47,8 @@ let package = Package(
+             dependencies: [
+                 .product(name: "NIOCore", package: "swift-nio"),
+                 .product(name: "NIOConcurrencyHelpers", package: "swift-nio"),
++                // Added by SuperTerminal for RSA; see DECISIONS.md D-007.
++                .product(name: "_CryptoExtras", package: "swift-crypto"),
+                 .product(name: "NIOFoundationCompat", package: "swift-nio"),
+                 .product(name: "Crypto", package: "swift-crypto"),
+                 .product(name: "Atomics", package: "swift-atomics"),
+diff --git a/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/Key Exchange/SSHKeyExchangeStateMachine.swift b/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/Key Exchange/SSHKeyExchangeStateMachine.swift
+index 3ef830d..dce2f3f 100644
+--- a/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/Key Exchange/SSHKeyExchangeStateMachine.swift	
++++ b/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/Key Exchange/SSHKeyExchangeStateMachine.swift	
+@@ -289,7 +289,11 @@ struct SSHKeyExchangeStateMachine {
+         case .keyExchangeInitSent(exchange: var exchanger, let negotiated):
+             switch self.role {
+             case .client:
+-                guard message.hostKey.keyPrefix.elementsEqual(negotiated.negotiatedHostKeyAlgorithm.utf8) else {
++                // For RSA the negotiated algorithm (`rsa-sha2-*`) is not the key blob's
++                // identifier (`ssh-rsa`), so this asks whether the key can be used with
++                // the negotiated algorithm. A server presenting a key that cannot is
++                // still rejected.
++                guard message.hostKey.supportsSignatureAlgorithm(negotiated.negotiatedHostKeyAlgorithm.utf8) else {
+                     throw NIOSSHError.invalidHostKeyForKeyExchange(
+                         expected: negotiated.negotiatedHostKeyAlgorithm,
+                         got: message.hostKey.keyPrefix
+@@ -601,8 +605,12 @@ extension SSHKeyExchangeStateMachine {
+     }
+ 
+     /// All known host key algorithms.
++    ///
++    /// `ssh-rsa` is deliberately absent: it names SHA-1, which OpenSSH disabled by default
++    /// in 8.8. Only the SHA-2 variants from RFC 8332 are offered.
+     static let supportedServerHostKeyAlgorithms: [Substring] = [
+         "ssh-ed25519", "ecdsa-sha2-nistp384", "ecdsa-sha2-nistp256", "ecdsa-sha2-nistp521",
++        "rsa-sha2-512", "rsa-sha2-256",
+     ]
+ }
+ 
+diff --git a/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/Keys And Signatures/NIOSSHCertifiedPublicKey.swift b/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/Keys And Signatures/NIOSSHCertifiedPublicKey.swift
+index f850df8..e3efb25 100644
+--- a/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/Keys And Signatures/NIOSSHCertifiedPublicKey.swift	
++++ b/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/Keys And Signatures/NIOSSHCertifiedPublicKey.swift	
+@@ -349,6 +349,16 @@ extension NIOSSHCertifiedPublicKey {
+ 
+     static let ed25519KeyPrefix = "ssh-ed25519-cert-v01@openssh.com".utf8
+ 
++    /// Certificate algorithm names.
++    ///
++    /// RSA certificates are not supported: the base key would need its own
++    /// `rsa-sha2-*-cert-v01@openssh.com` names, and nothing in this project uses
++    /// certified keys. Reporting only the certificate's own prefix keeps behaviour
++    /// exactly as it was before RSA was added.
++    internal var signatureAlgorithmNames: [String] {
++        [String(self.keyPrefix)]
++    }
++
+     internal var keyPrefix: String.UTF8View {
+         switch self.key.backingKey {
+         case .ed25519:
+@@ -359,6 +369,10 @@ extension NIOSSHCertifiedPublicKey {
+             return Self.p384KeyPrefix
+         case .ecdsaP521:
+             return Self.p521KeyPrefix
++        case .rsa:
++            // Certified RSA keys are not supported; nothing constructs one, and the
++            // certificate name would need its own rsa-sha2-*-cert-v01 spelling.
++            preconditionFailure("RSA certified keys are not supported")
+         case .certified:
+             preconditionFailure("base key cannot be certified")
+         }
+diff --git a/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/Keys And Signatures/NIOSSHPrivateKey.swift b/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/Keys And Signatures/NIOSSHPrivateKey.swift
+index 501d84d..a9fc0c5 100644
+--- a/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/Keys And Signatures/NIOSSHPrivateKey.swift	
++++ b/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/Keys And Signatures/NIOSSHPrivateKey.swift	
+@@ -13,6 +13,7 @@
+ //===----------------------------------------------------------------------===//
+ 
+ @preconcurrency import Crypto
++import _CryptoExtras
+ import NIOCore
+ 
+ #if canImport(FoundationEssentials)
+@@ -58,6 +59,11 @@ public struct NIOSSHPrivateKey: Sendable {
+     }
+     #endif
+ 
++    /// Creates a private key from RSA key material.
++    public init(rsaKey key: _RSA.Signing.PrivateKey) {
++        self.backingKey = .rsa(key)
++    }
++
+     // The algorithms that apply to this host key.
+     internal var hostKeyAlgorithms: [Substring] {
+         switch self.backingKey {
+@@ -69,6 +75,14 @@ public struct NIOSSHPrivateKey: Sendable {
+             return ["ecdsa-sha2-nistp384"]
+         case .ecdsaP521:
+             return ["ecdsa-sha2-nistp521"]
++        case .rsa:
++            // Only SHA-512 is advertised for a *host* key. `sign(digest:)` has no way to
++            // learn which variant was negotiated, so offering both would let a peer pick
++            // SHA-256 and then receive a SHA-512 signature. Advertising one makes the
++            // negotiated algorithm and the signing algorithm the same by construction.
++            // Client-side user auth is unaffected: it chooses and declares its own
++            // algorithm, and verification accepts either.
++            return ["rsa-sha2-512"]
+         #if canImport(Darwin)
+         case .secureEnclaveP256:
+             return ["ecdsa-sha2-nistp256"]
+@@ -84,6 +98,7 @@ extension NIOSSHPrivateKey {
+         case ecdsaP256(P256.Signing.PrivateKey)
+         case ecdsaP384(P384.Signing.PrivateKey)
+         case ecdsaP521(P521.Signing.PrivateKey)
++        case rsa(_RSA.Signing.PrivateKey)
+ 
+         #if canImport(Darwin)
+         case secureEnclaveP256(SecureEnclave.P256.Signing.PrivateKey)
+@@ -115,6 +130,13 @@ extension NIOSSHPrivateKey {
+             }
+             return NIOSSHSignature(backingSignature: .ecdsaP521(signature))
+ 
++        case .rsa(let key):
++            // Matches the single algorithm `hostKeyAlgorithms` advertises for RSA.
++            let algorithm = NIOSSHRSASignatureAlgorithm.sha512
++            let signature = try digest.withUnsafeBytes { ptr in
++                try algorithm.signature(for: Array(ptr), using: key)
++            }
++            return NIOSSHSignature(backingSignature: .rsa(algorithm: algorithm, bytes: .data(signature)))
+         #if canImport(Darwin)
+         case .secureEnclaveP256(let key):
+             let signature = try digest.withUnsafeBytes { ptr in
+@@ -125,7 +147,15 @@ extension NIOSSHPrivateKey {
+         }
+     }
+ 
+-    func sign(_ payload: UserAuthSignablePayload) throws -> NIOSSHSignature {
++    /// Signs a user authentication payload.
++    ///
++    /// - Parameter rsaAlgorithm: which RSA variant to use. Ignored for every other key
++    ///   type. It must match the algorithm name written into the request and into the
++    ///   signed payload, or the server will reject the signature.
++    func sign(
++        _ payload: UserAuthSignablePayload,
++        rsaAlgorithm: NIOSSHRSASignatureAlgorithm = .sha512
++    ) throws -> NIOSSHSignature {
+         switch self.backingKey {
+         case .ed25519(let key):
+             let signature = try key.signature(for: payload.bytes.readableBytesView)
+@@ -139,6 +169,12 @@ extension NIOSSHPrivateKey {
+         case .ecdsaP521(let key):
+             let signature = try key.signature(for: payload.bytes.readableBytesView)
+             return NIOSSHSignature(backingSignature: .ecdsaP521(signature))
++        case .rsa(let key):
++            let signature = try rsaAlgorithm.signature(
++                for: Array(payload.bytes.readableBytesView),
++                using: key
++            )
++            return NIOSSHSignature(backingSignature: .rsa(algorithm: rsaAlgorithm, bytes: .data(signature)))
+         #if canImport(Darwin)
+         case .secureEnclaveP256(let key):
+             let signature = try key.signature(for: payload.bytes.readableBytesView)
+@@ -160,6 +196,8 @@ extension NIOSSHPrivateKey {
+             return NIOSSHPublicKey(backingKey: .ecdsaP384(privateKey.publicKey))
+         case .ecdsaP521(let privateKey):
+             return NIOSSHPublicKey(backingKey: .ecdsaP521(privateKey.publicKey))
++        case .rsa(let privateKey):
++            return NIOSSHPublicKey(backingKey: .rsa(privateKey.publicKey))
+         #if canImport(Darwin)
+         case .secureEnclaveP256(let privateKey):
+             return NIOSSHPublicKey(backingKey: .ecdsaP256(privateKey.publicKey))
+diff --git a/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/Keys And Signatures/NIOSSHPublicKey.swift b/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/Keys And Signatures/NIOSSHPublicKey.swift
+index 20fa63e..dfcc1fc 100644
+--- a/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/Keys And Signatures/NIOSSHPublicKey.swift	
++++ b/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/Keys And Signatures/NIOSSHPublicKey.swift	
+@@ -13,6 +13,7 @@
+ //===----------------------------------------------------------------------===//
+ 
+ @preconcurrency import Crypto
++import _CryptoExtras
+ import Foundation
+ import NIOCore
+ import NIOFoundationCompat
+@@ -94,12 +95,20 @@ extension NIOSSHPublicKey {
+             return digest.withUnsafeBytes { digestPtr in
+                 key.isValidSignature(sig, for: digestPtr)
+             }
++        case (.rsa(let key), .rsa(let algorithm, let sig)):
++            // The algorithm comes from the signature, not from the key, so a signature
++            // claiming a different algorithm verifies against that algorithm's digest or
++            // not at all.
++            return digest.withUnsafeBytes { digestPtr in
++                algorithm.isValidSignature(sig.dataRepresentation, for: Array(digestPtr), using: key)
++            }
+         case (.certified(let key), _):
+             return key.isValidSignature(signature, for: digest)
+         case (.ed25519, _),
+             (.ecdsaP256, _),
+             (.ecdsaP384, _),
+-            (.ecdsaP521, _):
++            (.ecdsaP521, _),
++            (.rsa, _):
+             return false
+         }
+     }
+@@ -116,12 +125,19 @@ extension NIOSSHPublicKey {
+             return key.isValidSignature(sig, for: bytes.readableBytesView)
+         case (.ecdsaP521(let key), .ecdsaP521(let sig)):
+             return key.isValidSignature(sig, for: bytes.readableBytesView)
++        case (.rsa(let key), .rsa(let algorithm, let sig)):
++            return algorithm.isValidSignature(
++                sig.dataRepresentation,
++                for: Array(bytes.readableBytesView),
++                using: key
++            )
+         case (.certified(let key), _):
+             return key.isValidSignature(signature, for: bytes)
+         case (.ed25519, _),
+             (.ecdsaP256, _),
+             (.ecdsaP384, _),
+-            (.ecdsaP521, _):
++            (.ecdsaP521, _),
++            (.rsa, _):
+             return false
+         }
+     }
+@@ -138,12 +154,19 @@ extension NIOSSHPublicKey {
+             return key.isValidSignature(sig, for: payload.bytes.readableBytesView)
+         case (.ecdsaP521(let key), .ecdsaP521(let sig)):
+             return key.isValidSignature(sig, for: payload.bytes.readableBytesView)
++        case (.rsa(let key), .rsa(let algorithm, let sig)):
++            return algorithm.isValidSignature(
++                sig.dataRepresentation,
++                for: Array(payload.bytes.readableBytesView),
++                using: key
++            )
+         case (.certified(let key), _):
+             return key.isValidSignature(signature, for: payload)
+         case (.ed25519, _),
+             (.ecdsaP256, _),
+             (.ecdsaP384, _),
+-            (.ecdsaP521, _):
++            (.ecdsaP521, _),
++            (.rsa, _):
+             return false
+         }
+     }
+@@ -157,6 +180,7 @@ extension NIOSSHPublicKey {
+         case ecdsaP256(P256.Signing.PublicKey)
+         case ecdsaP384(P384.Signing.PublicKey)
+         case ecdsaP521(P521.Signing.PublicKey)
++        case rsa(_RSA.Signing.PublicKey)
+         case certified(NIOSSHCertifiedPublicKey)  // This case recursively contains `NIOSSHPublicKey`.
+     }
+ 
+@@ -172,6 +196,45 @@ extension NIOSSHPublicKey {
+     /// The prefix of a P521 ECDSA public key.
+     internal static let ecdsaP521PublicKeyPrefix = "ecdsa-sha2-nistp521".utf8
+ 
++    /// The prefix of an RSA public key *blob*.
++    ///
++    /// RFC 8332 §3 keeps this as `ssh-rsa` whatever signature algorithm was negotiated;
++    /// only the signature carries `rsa-sha2-256` or `rsa-sha2-512`. See
++    /// ``signatureAlgorithmNames`` for the names used in negotiation.
++    internal static let rsaPublicKeyPrefix = NIOSSHRSAKeyBlob.prefix
++
++    /// The algorithm names that may be negotiated for this key.
++    ///
++    /// For every algorithm except RSA this is the key prefix. For RSA the two differ, and
++    /// treating them as the same string is the classic bug in this feature.
++    internal var signatureAlgorithmNames: [String] {
++        switch self.backingKey {
++        case .rsa:
++            return NIOSSHRSASignatureAlgorithm.preferenceOrder.map(\.rawValue)
++        case .certified(let base):
++            return base.signatureAlgorithmNames
++        case .ed25519, .ecdsaP256, .ecdsaP384, .ecdsaP521:
++            return [String(self.keyPrefix)]
++        }
++    }
++
++    /// Whether `name` is an algorithm that may be used with this key.
++    internal func supportsSignatureAlgorithm<Bytes: Collection>(_ name: Bytes) -> Bool
++    where Bytes.Element == UInt8 {
++        self.signatureAlgorithmNames.contains { $0.utf8.elementsEqual(name) }
++    }
++
++    /// Exposed for tests in dependent packages, which cannot see internal members.
++    ///
++    /// The blob-versus-algorithm split is the crux of RSA support, so it needs to be
++    /// assertable from outside rather than only inferable from behaviour.
++    public var algorithmNamesForTesting: [String] { self.signatureAlgorithmNames }
++
++    /// Exposed for tests; see ``algorithmNamesForTesting``.
++    public func supportsSignatureAlgorithmForTesting(_ name: String) -> Bool {
++        self.supportsSignatureAlgorithm(Array(name.utf8))
++    }
++
+     internal var keyPrefix: String.UTF8View {
+         switch self.backingKey {
+         case .ed25519:
+@@ -182,15 +245,23 @@ extension NIOSSHPublicKey {
+             return Self.ecdsaP384PublicKeyPrefix
+         case .ecdsaP521:
+             return Self.ecdsaP521PublicKeyPrefix
++        case .rsa:
++            return Self.rsaPublicKeyPrefix
+         case .certified(let base):
+             return base.keyPrefix
+         }
+     }
+ 
++    /// Algorithm names that may appear on the wire and be understood.
++    ///
++    /// This is the *negotiation* vocabulary, so it carries `rsa-sha2-*` rather than
++    /// `ssh-rsa`. `ssh-rsa` is absent on purpose: it names SHA-1, which OpenSSH disabled
++    /// by default in 8.8 and which this library will not sign or verify.
+     internal static var knownAlgorithms: [String.UTF8View] {
+         [
+             Self.ed25519PublicKeyPrefix, Self.ecdsaP384PublicKeyPrefix, Self.ecdsaP256PublicKeyPrefix,
+             Self.ecdsaP521PublicKeyPrefix,
++            NIOSSHRSASignatureAlgorithm.sha512.rawValue.utf8, NIOSSHRSASignatureAlgorithm.sha256.rawValue.utf8,
+         ]
+     }
+ }
+@@ -207,12 +278,15 @@ extension NIOSSHPublicKey.BackingKey: Equatable {
+             return lhs.rawRepresentation == rhs.rawRepresentation
+         case (.ecdsaP521(let lhs), .ecdsaP521(let rhs)):
+             return lhs.rawRepresentation == rhs.rawRepresentation
++        case (.rsa(let lhs), .rsa(let rhs)):
++            return lhs.derRepresentation == rhs.derRepresentation
+         case (.certified(let lhs), .certified(let rhs)):
+             return lhs == rhs
+         case (.ed25519, _),
+             (.ecdsaP256, _),
+             (.ecdsaP384, _),
+             (.ecdsaP521, _),
++            (.rsa, _),
+             (.certified, _):
+             return false
+         }
+@@ -234,6 +308,9 @@ extension NIOSSHPublicKey.BackingKey: Hashable {
+         case .ecdsaP521(let pkey):
+             hasher.combine(4)
+             hasher.combine(pkey.rawRepresentation)
++        case .rsa(let pkey):
++            hasher.combine(6)
++            hasher.combine(pkey.derRepresentation)
+         case .certified(let pkey):
+             hasher.combine(5)
+             hasher.combine(pkey)
+@@ -260,6 +337,10 @@ extension ByteBuffer {
+         case .ecdsaP521(let key):
+             writtenBytes += self.writeSSHString(NIOSSHPublicKey.ecdsaP521PublicKeyPrefix)
+             writtenBytes += self.writeECDSAP521PublicKey(baseKey: key)
++        case .rsa(let key):
++            // The blob identifier is `ssh-rsa` whatever algorithm was negotiated.
++            writtenBytes += self.writeSSHString(NIOSSHPublicKey.rsaPublicKeyPrefix)
++            writtenBytes += (try? self.writeRSAPublicKeyBody(key)) ?? 0
+         case .certified(let key):
+             return self.writeCertifiedKey(key)
+         }
+@@ -281,6 +362,8 @@ extension ByteBuffer {
+             return self.writeECDSAP384PublicKey(baseKey: key)
+         case .ecdsaP521(let key):
+             return self.writeECDSAP521PublicKey(baseKey: key)
++        case .rsa(let key):
++            return (try? self.writeRSAPublicKeyBody(key)) ?? 0
+         case .certified:
+             preconditionFailure("Certified keys are the only callers of this method, and cannot contain themselves")
+         }
+@@ -310,6 +393,8 @@ extension ByteBuffer {
+                 return try buffer.readECDSAP384PublicKey()
+             } else if keyIdentifierBytes.elementsEqual(NIOSSHPublicKey.ecdsaP521PublicKeyPrefix) {
+                 return try buffer.readECDSAP521PublicKey()
++            } else if keyIdentifierBytes.elementsEqual(NIOSSHPublicKey.rsaPublicKeyPrefix) {
++                return try buffer.readRSAPublicKeyBody().map { NIOSSHPublicKey(backingKey: .rsa($0)) }
+             } else {
+                 // We don't know this public key type. Maybe the certified keys do.
+                 return try buffer.readCertifiedKeyWithoutKeyPrefix(keyIdentifierBytes).map(NIOSSHPublicKey.init)
+diff --git a/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/Keys And Signatures/NIOSSHSignature.swift b/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/Keys And Signatures/NIOSSHSignature.swift
+index 3cc36c0..9df7e3f 100644
+--- a/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/Keys And Signatures/NIOSSHSignature.swift	
++++ b/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/Keys And Signatures/NIOSSHSignature.swift	
+@@ -13,6 +13,7 @@
+ //===----------------------------------------------------------------------===//
+ 
+ @preconcurrency import Crypto
++import _CryptoExtras
+ import Foundation
+ import NIOCore
+ import NIOFoundationCompat
+@@ -42,9 +43,23 @@ extension NIOSSHSignature {
+ 
+         case ecdsaP521(P521.Signing.ECDSASignature)
+ 
++        /// An RSA signature carries the algorithm it was made with, because the key blob
++        /// cannot say: RFC 8332 keeps that as `ssh-rsa` regardless.
++        case rsa(algorithm: NIOSSHRSASignatureAlgorithm, bytes: RawBytes)
++
+         internal enum RawBytes {
+             case byteBuffer(ByteBuffer)
+             case data(Data)
++
++            /// The bytes as `Data`, whichever representation is held.
++            var dataRepresentation: Data {
++                switch self {
++                case .byteBuffer(let buffer):
++                    return Data(buffer.readableBytesView)
++                case .data(let data):
++                    return data
++                }
++            }
+         }
+     }
+ 
+@@ -59,6 +74,12 @@ extension NIOSSHSignature {
+ 
+     /// The prefix of a P521 ECDSA public key.
+     fileprivate static let ecdsaP521SignaturePrefix = "ecdsa-sha2-nistp521".utf8
++
++    /// The RSA signature algorithm this signature was made with, if it is an RSA one.
++    internal var rsaAlgorithm: NIOSSHRSASignatureAlgorithm? {
++        if case .rsa(let algorithm, _) = self.backingSignature { return algorithm }
++        return nil
++    }
+ }
+ 
+ extension NIOSSHSignature.BackingSignature.RawBytes: Equatable {
+@@ -93,10 +114,13 @@ extension NIOSSHSignature.BackingSignature: Equatable {
+             return lhs.rawRepresentation == rhs.rawRepresentation
+         case (.ecdsaP521(let lhs), .ecdsaP521(let rhs)):
+             return lhs.rawRepresentation == rhs.rawRepresentation
++        case (.rsa(let lhsAlgorithm, let lhsBytes), .rsa(let rhsAlgorithm, let rhsBytes)):
++            return lhsAlgorithm == rhsAlgorithm && lhsBytes == rhsBytes
+         case (.ed25519, _),
+             (.ecdsaP256, _),
+             (.ecdsaP384, _),
+-            (.ecdsaP521, _):
++            (.ecdsaP521, _),
++            (.rsa, _):
+             return false
+         }
+     }
+@@ -117,6 +141,10 @@ extension NIOSSHSignature.BackingSignature: Hashable {
+         case .ecdsaP521(let sig):
+             hasher.combine(3)
+             hasher.combine(sig.rawRepresentation)
++        case .rsa(let algorithm, let bytes):
++            hasher.combine(4)
++            hasher.combine(algorithm)
++            hasher.combine(bytes)
+         }
+     }
+ }
+@@ -134,9 +162,26 @@ extension ByteBuffer {
+             return self.writeECDSAP384Signature(baseSignature: sig)
+         case .ecdsaP521(let sig):
+             return self.writeECDSAP521Signature(baseSignature: sig)
++        case .rsa(let algorithm, let bytes):
++            return self.writeRSASignature(algorithm: algorithm, signatureBytes: bytes)
+         }
+     }
+ 
++    /// Writes an RSA signature: the *algorithm* name, then the raw PKCS#1 v1.5 blob.
++    private mutating func writeRSASignature(
++        algorithm: NIOSSHRSASignatureAlgorithm,
++        signatureBytes: NIOSSHSignature.BackingSignature.RawBytes
++    ) -> Int {
++        var writtenLength = self.writeSSHString(algorithm.utf8Name)
++        switch signatureBytes {
++        case .byteBuffer(var buf):
++            writtenLength += self.writeSSHString(&buf)
++        case .data(let d):
++            writtenLength += self.writeSSHString(d)
++        }
++        return writtenLength
++    }
++
+     private mutating func writeEd25519Signature(signatureBytes: NIOSSHSignature.BackingSignature.RawBytes) -> Int {
+         // The Ed25519 signature format is easy: the ed25519 signature prefix, followed by
+         // the raw signature bytes.
+@@ -229,6 +274,8 @@ extension ByteBuffer {
+                 return try buffer.readECDSAP384Signature()
+             } else if bytesView.elementsEqual(NIOSSHSignature.ecdsaP521SignaturePrefix) {
+                 return try buffer.readECDSAP521Signature()
++            } else if let rsaAlgorithm = NIOSSHRSASignatureAlgorithm(wireName: bytesView) {
++                return try buffer.readRSASignature(algorithm: rsaAlgorithm)
+             } else {
+                 // We don't know this signature type.
+                 let signature =
+@@ -252,6 +299,19 @@ extension ByteBuffer {
+         return NIOSSHSignature(backingSignature: .ed25519(.byteBuffer(sigBytes)))
+     }
+ 
++    /// A helper function that reads an RSA signature.
++    ///
++    /// Not safe to call from arbitrary code as this does not return the reader index on failure: it relies on the caller performing
++    /// the rewind.
++    private mutating func readRSASignature(
++        algorithm: NIOSSHRSASignatureAlgorithm
++    ) throws -> NIOSSHSignature? {
++        guard let sigBytes = self.readSSHString() else {
++            return nil
++        }
++        return NIOSSHSignature(backingSignature: .rsa(algorithm: algorithm, bytes: .byteBuffer(sigBytes)))
++    }
++
+     /// A helper function that reads an ECDSA P-256 signature.
+     ///
+     /// Not safe to call from arbitrary code as this does not return the reader index on failure: it relies on the caller performing
+diff --git a/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/Keys And Signatures/RSASupport.swift b/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/Keys And Signatures/RSASupport.swift
+new file mode 100644
+index 0000000..fbe9ebc
+--- /dev/null
++++ b/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/Keys And Signatures/RSASupport.swift	
+@@ -0,0 +1,110 @@
++//===----------------------------------------------------------------------===//
++//
++// Added by SuperTerminal. Not part of upstream swift-nio-ssh.
++//
++// See patches/niossh-rsa.patch and DECISIONS.md D-007 in the SuperTerminal
++// repository for why this exists and what maintaining it obliges.
++//
++//===----------------------------------------------------------------------===//
++
++import Crypto
++import Foundation
++import NIOCore
++import _CryptoExtras
++
++/// The RSA signature algorithms this library supports.
++///
++/// SHA-1 `ssh-rsa` is deliberately absent. OpenSSH disabled it by default in 8.8 because
++/// SHA-1 chosen-prefix collisions are practical, and supporting it would mean shipping a
++/// downgrade a server could ask for.
++public enum NIOSSHRSASignatureAlgorithm: String, Sendable, Hashable, CaseIterable {
++    case sha256 = "rsa-sha2-256"
++    case sha512 = "rsa-sha2-512"
++
++    /// Preference order: strongest first, which is also OpenSSH's order.
++    public static let preferenceOrder: [NIOSSHRSASignatureAlgorithm] = [.sha512, .sha256]
++
++    var utf8Name: String.UTF8View { rawValue.utf8 }
++
++
++    init?<Bytes: Collection>(wireName: Bytes) where Bytes.Element == UInt8 {
++        for candidate in NIOSSHRSASignatureAlgorithm.allCases
++        where wireName.elementsEqual(candidate.rawValue.utf8) {
++            self = candidate
++            return
++        }
++        return nil
++    }
++
++    /// Signs `bytes` with this algorithm's digest.
++    public func signature(for bytes: some DataProtocol, using key: _RSA.Signing.PrivateKey) throws -> Data {
++        // RFC 8332 §3 specifies PKCS#1 v1.5, not PSS. `insecurePKCS1v1_5` names the
++        // padding, not a weakness in this context.
++        let signature: _RSA.Signing.RSASignature
++        switch self {
++        case .sha256:
++            signature = try key.signature(for: SHA256.hash(data: bytes), padding: .insecurePKCS1v1_5)
++        case .sha512:
++            signature = try key.signature(for: SHA512.hash(data: bytes), padding: .insecurePKCS1v1_5)
++        }
++        return Data(signature.rawRepresentation)
++    }
++
++    public func isValidSignature(_ signature: Data, for bytes: some DataProtocol, using key: _RSA.Signing.PublicKey) -> Bool {
++        let rsaSignature = _RSA.Signing.RSASignature(rawRepresentation: signature)
++        switch self {
++        case .sha256:
++            return key.isValidSignature(rsaSignature, for: SHA256.hash(data: bytes), padding: .insecurePKCS1v1_5)
++        case .sha512:
++            return key.isValidSignature(rsaSignature, for: SHA512.hash(data: bytes), padding: .insecurePKCS1v1_5)
++        }
++    }
++}
++
++/// The wire identifier of an RSA *key blob*.
++///
++/// RFC 8332 §3: the blob is always `ssh-rsa`, whichever signature algorithm was
++/// negotiated. Only the signature carries `rsa-sha2-256` or `rsa-sha2-512`. Conflating
++/// the two is the classic implementation error in this feature, so the two names are kept
++/// as separate concepts throughout.
++enum NIOSSHRSAKeyBlob {
++    static let prefix = "ssh-rsa".utf8
++}
++
++extension ByteBuffer {
++    /// Writes an RSA public key blob: `mpint e`, `mpint n`.
++    ///
++    /// The exponent comes before the modulus, which is the reverse of most encodings and
++    /// an easy thing to get backwards.
++    mutating func writeRSAPublicKeyBody(_ key: _RSA.Signing.PublicKey) throws -> Int {
++        let primitives = try key.getKeyPrimitives()
++        var written = self.writePositiveMPInt(Array(primitives.publicExponent))
++        written += self.writePositiveMPInt(Array(primitives.modulus))
++        return written
++    }
++
++    /// Reads an RSA public key body, having already consumed the `ssh-rsa` identifier.
++    mutating func readRSAPublicKeyBody() throws -> _RSA.Signing.PublicKey? {
++        guard let eBytes = self.readSSHString(), let nBytes = self.readSSHString() else {
++            return nil
++        }
++        let exponent = Self.strippingLeadingZeros(Data(eBytes.readableBytesView))
++        let modulus = Self.strippingLeadingZeros(Data(nBytes.readableBytesView))
++        do {
++            return try _RSA.Signing.PublicKey(n: modulus, e: exponent)
++        } catch {
++            // A modulus below swift-crypto's floor, or otherwise unusable. Refusing is
++            // right: a key we cannot verify with must not be treated as trusted.
++            throw NIOSSHError.invalidSSHMessage(reason: "unusable RSA public key")
++        }
++    }
++
++    /// An SSH `mpint` carries a sign byte that the raw magnitude must not keep.
++    static func strippingLeadingZeros(_ data: Data) -> Data {
++        var bytes = data
++        while bytes.first == 0, bytes.count > 1 {
++            bytes = bytes.dropFirst()
++        }
++        return bytes
++    }
++}
+diff --git a/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/SSHMessages.swift b/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/SSHMessages.swift
+index a127d33..d1a2588 100644
+--- a/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/SSHMessages.swift
++++ b/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/SSHMessages.swift
+@@ -694,7 +694,11 @@ extension ByteBuffer {
+                         return nil
+                     }
+ 
+-                    guard algorithmName.readableBytesView.elementsEqual(publicKey.keyPrefix) else {
++                    // For RSA the declared algorithm (`rsa-sha2-*`) and the key blob's
++                    // identifier (`ssh-rsa`) are different strings, so this asks whether
++                    // the algorithm is valid *for* the key rather than equal to its
++                    // prefix. A mismatched pair is still refused.
++                    guard publicKey.supportsSignatureAlgorithm(algorithmName.readableBytesView) else {
+                         throw NIOSSHError.invalidSSHMessage(reason: "algorithm and key mismatch in user auth request")
+                     }
+ 
+@@ -770,8 +774,9 @@ extension ByteBuffer {
+                 return nil
+             }
+ 
+-            // Validate consistency here.
+-            guard publicKeyType.readableBytesView.elementsEqual(publicKey.keyPrefix) else {
++            // Validate consistency here. As above, RSA's algorithm name and blob
++            // identifier differ, so equality would reject a well-formed message.
++            guard publicKey.supportsSignatureAlgorithm(publicKeyType.readableBytesView) else {
+                 throw NIOSSHError.invalidSSHMessage(reason: "inconsistent key type")
+             }
+ 
+@@ -1373,7 +1378,15 @@ extension ByteBuffer {
+         case .publicKey(.known(key: let key, signature: let signature)):
+             writtenBytes += self.writeSSHString("publickey".utf8)
+             writtenBytes += self.writeSSHBoolean(signature != nil)
+-            writtenBytes += self.writeSSHString(key.keyPrefix)
++            // The *algorithm* name, which for RSA is not the key blob's identifier. When
++            // a signature is present its algorithm is authoritative: it is the one the
++            // signed payload committed to, and declaring a different one here would make
++            // the signature fail to verify.
++            let algorithmName =
++                signature?.rsaAlgorithm?.rawValue
++                ?? key.signatureAlgorithmNames.first
++                ?? String(key.keyPrefix)
++            writtenBytes += self.writeSSHString(algorithmName.utf8)
+             writtenBytes += self.writeCompositeSSHString { buffer in
+                 buffer.writeSSHHostKey(key)
+             }
+@@ -1407,7 +1420,12 @@ extension ByteBuffer {
+ 
+     mutating func writeUserAuthPKOKMessage(_ message: SSHMessage.UserAuthPKOKMessage) -> Int {
+         var writtenBytes = 0
+-        writtenBytes += self.writeSSHString(message.key.keyPrefix)
++        // Server-side reply. The key's preferred algorithm is used because the request's
++        // algorithm is not carried into this message; for RSA that is `rsa-sha2-512`,
++        // which is also the only variant this library advertises for a host key.
++        let algorithmName =
++            message.key.signatureAlgorithmNames.first ?? String(message.key.keyPrefix)
++        writtenBytes += self.writeSSHString(algorithmName.utf8)
+         writtenBytes += self.writeCompositeSSHString { buffer in
+             buffer.writeSSHHostKey(message.key)
+         }
+diff --git a/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/User Authentication/UserAuthSignablePayload.swift b/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/User Authentication/UserAuthSignablePayload.swift
+index fce8834..1cf6f3a 100644
+--- a/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/User Authentication/UserAuthSignablePayload.swift	
++++ b/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/User Authentication/UserAuthSignablePayload.swift	
+@@ -32,7 +32,16 @@ import NIOCore
+ internal struct UserAuthSignablePayload {
+     private(set) var bytes: ByteBuffer
+ 
+-    init(sessionIdentifier: ByteBuffer, userName: String, serviceName: String, publicKey: NIOSSHPublicKey) {
++    /// - Parameter algorithmName: the public key algorithm name, which RFC 8332 §3.1
++    ///   makes distinct from the key blob's identifier for RSA. Defaults to the key
++    ///   prefix, which is correct for every other algorithm.
++    init(
++        sessionIdentifier: ByteBuffer,
++        userName: String,
++        serviceName: String,
++        publicKey: NIOSSHPublicKey,
++        algorithmName: String? = nil
++    ) {
+         // We use the session identifier as the base buffer and just append to it. We ask for 1kB because it's likely
+         // enough for this data.
+         var sessionIdentifier = sessionIdentifier
+@@ -45,7 +54,7 @@ internal struct UserAuthSignablePayload {
+         newBuffer.writeSSHString(serviceName.utf8)
+         newBuffer.writeSSHString("publickey".utf8)
+         newBuffer.writeSSHBoolean(true)
+-        newBuffer.writeSSHString(publicKey.keyPrefix)
++        newBuffer.writeSSHString((algorithmName ?? String(publicKey.keyPrefix)).utf8)
+         newBuffer.writeCompositeSSHString { buffer in
+             buffer.writeSSHHostKey(publicKey)
+         }
+diff --git a/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/User Authentication/UserAuthenticationMethod.swift b/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/User Authentication/UserAuthenticationMethod.swift
+index a88e9fd..33581d1 100644
+--- a/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/User Authentication/UserAuthenticationMethod.swift	
++++ b/Packages/swift-nio-ssh-rsa/Sources/NIOSSH/User Authentication/UserAuthenticationMethod.swift	
+@@ -242,13 +242,21 @@ extension SSHMessage.UserAuthRequestMessage {
+ 
+         switch request.offer {
+         case .privateKey(let privateKeyRequest):
++            // For RSA the algorithm name and the key blob's identifier differ, and the
++            // same algorithm name must appear in three places: the request, the signed
++            // payload, and the signature itself. Choosing it once here is what keeps them
++            // consistent.
++            let rsaAlgorithm = NIOSSHRSASignatureAlgorithm.sha512
++            let algorithmName = privateKeyRequest.publicKey.signatureAlgorithmNames.first
++                ?? String(privateKeyRequest.publicKey.keyPrefix)
+             let dataToSign = UserAuthSignablePayload(
+                 sessionIdentifier: sessionID,
+                 userName: self.username,
+                 serviceName: self.service,
+-                publicKey: privateKeyRequest.publicKey
++                publicKey: privateKeyRequest.publicKey,
++                algorithmName: algorithmName
+             )
+-            let signature = try privateKeyRequest.privateKey.sign(dataToSign)
++            let signature = try privateKeyRequest.privateKey.sign(dataToSign, rsaAlgorithm: rsaAlgorithm)
+             self.method = .publicKey(.known(key: privateKeyRequest.publicKey, signature: signature))
+         case .password(let passwordRequest):
+             self.method = .password(passwordRequest.password)
+diff --git a/Packages/swift-nio-ssh-rsa/Tests/NIOSSHTests/HostKeyTests.swift b/Packages/swift-nio-ssh-rsa/Tests/NIOSSHTests/HostKeyTests.swift
+index 15260a8..0ae6592 100644
+--- a/Packages/swift-nio-ssh-rsa/Tests/NIOSSHTests/HostKeyTests.swift
++++ b/Packages/swift-nio-ssh-rsa/Tests/NIOSSHTests/HostKeyTests.swift
+@@ -254,13 +254,32 @@ final class HostKeyTests: XCTestCase {
+ 
+     func testUnrecognisedKey() throws {
+         var buffer = ByteBufferAllocator().buffer(capacity: 1024)
+-        buffer.writeSSHString("ssh-rsa".utf8)
++        // Modified by SuperTerminal: this used "ssh-rsa", which is now a key type this
++        // library understands. The behaviour under test — an unknown algorithm is
++        // rejected — is unchanged; only the example had to move to an algorithm that is
++        // still genuinely unknown. `ssh-dss` qualifies: OpenSSH removed DSA entirely in
++        // 10.0 and this library has never supported it.
++        buffer.writeSSHString("ssh-dss".utf8)
+ 
+         XCTAssertThrowsError(try buffer.readSSHHostKey()) { error in
+             XCTAssertEqual((error as? NIOSSHError).map { $0.type }, .unknownPublicKey)
+         }
+     }
+ 
++    /// Added by SuperTerminal, so the case the test above used to cover is not lost: a
++    /// recognised algorithm with a truncated body must not yield a key.
++    func testTruncatedRSAKeyIsRejected() throws {
++        var buffer = ByteBufferAllocator().buffer(capacity: 1024)
++        buffer.writeSSHString("ssh-rsa".utf8)
++        // No exponent, no modulus.
++        XCTAssertNoThrow(XCTAssertNil(try buffer.readSSHHostKey()))
++
++        var partial = ByteBufferAllocator().buffer(capacity: 1024)
++        partial.writeSSHString("ssh-rsa".utf8)
++        partial.writeSSHString([0x01, 0x00, 0x01])  // exponent only
++        XCTAssertNoThrow(XCTAssertNil(try partial.readSSHHostKey()))
++    }
++
+     func testInvalidDomainParametersForECDSAP256() throws {
+         var buffer = ByteBufferAllocator().buffer(capacity: 1024)
+         buffer.writeSSHString("ecdsa-sha2-nistp256".utf8)

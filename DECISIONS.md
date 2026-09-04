@@ -257,15 +257,20 @@ That is roughly 500 lines across eight files, in the two state machines where a 
 either an interop failure or — worse, because it is invisible — accepting a signature that
 should have been refused.
 
-**Status: deliberately not attempted in a single sitting.** The map above exists so the
-work can be done carefully, with adversarial tests at each site, rather than rushed to fit
-a work session. Landing a half-verified change to SSH signature verification would be
-worse than the gap it closes.
+**Status: implemented and verified.** `patches/niossh-rsa.patch` — 788 lines across the
+ten files above — applies cleanly to pristine upstream at tag `0.15.0`. Upstream's suite
+passes (347 tests), and the change is proved against OpenSSH rather than against itself:
+an RSA user key authenticates to a real `sshd`, a server offering only an RSA host key is
+reachable, `ssh-keygen` agrees on the fingerprint, and five adversarial tests check that
+the relaxed algorithm-name comparison did not become no comparison.
 
-**Interim mitigation, shipped:** in-app key generation, import and export. Someone whose
-only key is RSA can generate an Ed25519 key on the device and add it to the server in
-under a minute. That does not help an RSA-only *host*, and it does not help someone whose
-key is issued by their organisation — so it mitigates the gap rather than closing it.
+One design choice worth stating, because it is a deliberate restriction rather than an
+oversight: a private key used as a **host** key advertises only `rsa-sha2-512`.
+`sign(digest:)` has no way to learn which variant a peer negotiated, so offering both
+would let a peer choose SHA-256 and then receive a SHA-512 signature. Advertising one
+makes the negotiated and signing algorithms identical by construction. Client-side user
+authentication is unaffected: it chooses and declares its own algorithm, and verification
+accepts either.
 
 ### Implementation notes for the patch
 
