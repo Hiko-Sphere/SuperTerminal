@@ -12,6 +12,7 @@ let package = Package(
         .library(name: "STSecureStore", targets: ["STSecureStore"]),
         .library(name: "STCloudflare", targets: ["STCloudflare"]),
         .library(name: "STSSH", targets: ["STSSH"]),
+        .library(name: "STTerminal", targets: ["STTerminal"]),
         .library(name: "STTestSupport", targets: ["STTestSupport"]),
     ],
     dependencies: [
@@ -77,6 +78,7 @@ let package = Package(
                 "STCore",
                 "STCloudflare",
                 "STSSH",
+                "STTerminal",
                 .product(name: "NIOCore", package: "swift-nio"),
                 .product(name: "NIOPosix", package: "swift-nio"),
                 .product(name: "NIOHTTP1", package: "swift-nio"),
@@ -87,7 +89,9 @@ let package = Package(
                 .product(name: "Sodium", package: "swift-sodium"),
             ]
         ),
+        .target(name: "STTerminal", dependencies: ["STCore"]),
         .testTarget(name: "STCoreTests", dependencies: ["STCore"]),
+        .testTarget(name: "STTerminalTests", dependencies: ["STTerminal", "STSSH", "STTestSupport"]),
         .testTarget(name: "STSSHTests", dependencies: ["STSSH", "STTestSupport"]),
         .testTarget(name: "STCloudflareTests", dependencies: ["STCloudflare", "STTestSupport"]),
     ]

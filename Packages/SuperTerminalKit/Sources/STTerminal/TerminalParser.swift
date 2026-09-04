@@ -100,6 +100,14 @@ public struct TerminalParser: Sendable {
     private var subParameters: [[Int?]] = []
     private var currentSubParameters: [Int?] = []
     private var currentParameter: Int?
+    private var currentSubParameter: Int?
+    /// True once a colon has been seen in the current parameter, so digits belong to a
+    /// sub-parameter rather than to the main value.
+    private var collectingSubParameter = false
+    /// True once anything belonging to a parameter has been seen. Without it, `CSI H`
+    /// would yield one omitted parameter instead of none — and "no parameters" and "one
+    /// defaulted parameter" mean different things to several sequences.
+    private var hasParameter = false
     private var privateMarker: UInt8?
     private var intermediates: [UInt8] = []
     private var stringBuffer: String = ""
@@ -294,12 +302,23 @@ public struct TerminalParser: Sendable {
             sink(.execute(byte))
         case 0x30 ... 0x39:
             let digit = Int(byte - 0x30)
+            hasParameter = true
             // Saturate rather than overflow: `CSI 99999999999999999999 H` must not trap.
-            let existing = currentParameter ?? 0
-            currentParameter = existing > 65535 ? 65535 : existing * 10 + digit
+            if collectingSubParameter {
+                let existing = currentSubParameter ?? 0
+                currentSubParameter = existing > 65535 ? 65535 : existing * 10 + digit
+            } else {
+                let existing = currentParameter ?? 0
+                currentParameter = existing > 65535 ? 65535 : existing * 10 + digit
+            }
         case 0x3A:
-            currentSubParameters.append(currentParameter)
-            currentParameter = nil
+            hasParameter = true
+            if collectingSubParameter {
+                currentSubParameters.append(currentSubParameter)
+                currentSubParameter = nil
+            } else {
+                collectingSubParameter = true
+            }
         case 0x3B:
             finishParameter()
         case 0x20 ... 0x2F:
@@ -354,6 +373,7 @@ public struct TerminalParser: Sendable {
     private mutating func dcsParam(_ byte: UInt8) {
         switch byte {
         case 0x30 ... 0x39:
+            hasParameter = true
             let existing = currentParameter ?? 0
             currentParameter = existing > 65535 ? 65535 : existing * 10 + Int(byte - 0x30)
         case 0x3B:
@@ -362,7 +382,7 @@ public struct TerminalParser: Sendable {
             appendIntermediate(byte)
             state = .dcsIntermediate
         case 0x40 ... 0x7E:
-            finishParameter()
+            if hasParameter { finishParameter() }
             intermediates.append(byte)
             stringBuffer = ""
             stringTruncated = false
@@ -415,7 +435,7 @@ public struct TerminalParser: Sendable {
     // MARK: - Dispatch
 
     private mutating func dispatchCSI(final: UInt8, sink: (TerminalAction) -> Void) {
-        finishParameter()
+        if hasParameter { finishParameter() }
         sink(.csi(CSISequence(
             parameters: parameters,
             subParameters: subParameters,
@@ -463,16 +483,27 @@ public struct TerminalParser: Sendable {
         subParameters = []
         currentSubParameters = []
         currentParameter = nil
+        currentSubParameter = nil
+        collectingSubParameter = false
+        hasParameter = false
         privateMarker = nil
         intermediates = []
     }
 
     private mutating func finishParameter() {
+        hasParameter = true
+        if collectingSubParameter {
+            currentSubParameters.append(currentSubParameter)
+        }
+        defer {
+            currentParameter = nil
+            currentSubParameter = nil
+            currentSubParameters = []
+            collectingSubParameter = false
+        }
         guard parameters.count < Self.maximumParameters else { return }
         parameters.append(currentParameter)
         subParameters.append(currentSubParameters)
-        currentParameter = nil
-        currentSubParameters = []
     }
 
     private mutating func appendIntermediate(_ byte: UInt8) {
