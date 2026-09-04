@@ -21,7 +21,8 @@ left out.
 ```bash
 cd Packages/SuperTerminalKit
 swift build          # 0 errors, 0 warnings from project code
-swift test           # 104 tests in 14 suites passed in 8.0s
+swift test           # 109 tests in 15 suites passed in 9.9s
+swift test -c release --filter TerminalThroughputTests   # the numbers below
 
 cd ..
 xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal \
@@ -80,6 +81,42 @@ WebSocket upgrade as Cloudflare's edge and bridges binary frames to a real `sshd
 | `Cf-Access-Jump-Destination` is sent | Bastion mode reaches the wire |
 | Each edge failure is classified (4 cases) | Access-login redirect, 403, 502 and 530 each map to their own category with an actionable recovery |
 | A plaintext carrier refuses non-loopback hosts | The test-only transport mode cannot weaken a real connection |
+
+### Performance — measured, not asserted
+
+Two halves: how fast the emulator consumes bytes, and how fast Core Text draws the
+result. Both produce a number on every run and fail when it regresses.
+
+**Emulator throughput** (`TerminalThroughputTests`, Apple silicon Mac):
+
+| Workload | Release | Debug |
+| --- | --- | --- |
+| Plain text, 120 columns | 9.0 MB/s | 2.9 MB/s |
+| Per-character colour changes | 12.7 MB/s | 5.1 MB/s |
+| CJK | 8.0 MB/s | 1.8 MB/s |
+| Reflow of a full 5 000-line scrollback | 18 ms | 56 ms |
+
+9 MB/s is about 72 Mbit of continuous output — more than an interactive SSH session
+delivers and far more than a person can read. Floors are asserted **per configuration**,
+because `swift test` runs Debug by default and Debug is genuinely two to three times
+slower; a single Release-calibrated threshold would either fail every ordinary run or be
+too low to catch anything.
+
+The first measurement read 5.7 MB/s in Release. Two hot paths accounted for most of it:
+the parser ran grapheme breaking on every character to decide whether it extended the
+previous cluster, and cell-width lookup allocated a scalar array per character. A
+conservative fast path — nothing below U+0300 can extend a cluster — and an ASCII
+shortcut in the width table took it to 9.0 MB/s.
+
+**Render cost** (`RenderPerformanceTests`, iPhone 17 Pro simulator): a full redraw of both
+an 80×24 and a 200×55 grid completes inside a 60 Hz frame budget, asserted rather than
+eyeballed. A terminal rarely redraws every frame, so this is a ceiling, but a full redraw
+that misses the budget means a burst of output visibly stutters.
+
+Run coalescing is asserted **on the run count**, not on elapsed time. The first version of
+that test compared wall-clock between a uniform row and a hundred-colour row; the two
+measured within 1% of each other because fixed per-frame cost dominated, so it passed or
+failed at random and proved nothing.
 
 ### Mouse reporting — 10 unit tests plus a live round-trip
 
@@ -144,6 +181,8 @@ environment hook, and drives the app the way a person would.
 | The terminal connects and shows a prompt | Tapping a connection reaches a terminal, typed text arrives at the server, and `UI_TERMINAL_READY` renders back. A screenshot is attached to the result bundle. |
 | The accessory key row sends control characters | Latching ctrl then `c` interrupts `sleep 30`, and the shell answers afterwards — the only way to send ^C on a phone |
 | The host list survives an accessibility text size | Relaunched at `UICTContentSizeCategoryAccessibilityL`; the list and its rows stay reachable |
+| Long-press selects and offers Copy | The gesture is recognised, dragging extends the selection, the bar reports a size, and copying clears it |
+| Find searches the scrollback | The find bar opens, searches the buffer and reports a match count |
 | Launch and editor validation (2) | The empty state offers a way forward; Save stays disabled until the form is usable |
 
 Writing these found two defects that no unit test could have:
@@ -175,14 +214,14 @@ Stated plainly, because a test report that omits these would be misleading:
 | **Archive and TestFlight** | `xcodebuild archive` fails with *"Signing for SuperTerminal requires a development team"*. Recorded as `PROJECT_STATUS.md` B-4. |
 | **External keyboard and pointer** | The key mapping is implemented and unit-testable, but has not been exercised against real hardware. |
 | **Accessibility** | VoiceOver, Dynamic Type and high-contrast passes have not been run. |
-| **Selection gestures** | The selection model, copy semantics and search have 11 unit tests, but the gestures that drive them — long-press, drag to extend, double-tap — have not been exercised by a test or by hand. |
+| **Double-tap to select a line** | Implemented and unit-tested at the model level; not driven by a UI test. Long-press-and-drag selection and find both are. |
 | **Mouse reporting** | Modes are parsed and surfaced; nothing sends mouse events yet. |
 | **VoiceOver** | Dynamic Type is verified on the host list, and the terminal exposes its rendered text as an accessibility value, but no VoiceOver session has been run. |
 | **High contrast and Reduce Transparency** | Both are implemented — increased contrast selects the high-contrast theme, and bar backgrounds go solid — but verified by reading the code, not by running with the settings enabled. |
 | **Pointer and hover on iPad** | Hover reporting is implemented; it has not been driven with a trackpad. |
 | **Keychain behaviour** | `KeychainSecureStore` is written but untested; Keychain semantics differ enough in a macOS unit-test process that a passing test there would prove little. Needs device tests. |
 | **RSA keys** | Unsupported — see `DECISIONS.md` D-002. Not a test gap; a capability gap. |
-| **Instruments profiling** | Not run. Rendering does not exist yet, so there is nothing meaningful to profile. |
+| **Instruments profiling** | Not run. `XCTest`'s measurement was used instead because it produces a number on every run, in CI as well as on a desk, and fails on a regression. An Instruments trace remains the better tool for finding *why* something is slow, and is worth doing before release. |
 
 ## Observed environment issue
 

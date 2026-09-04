@@ -19,7 +19,7 @@ import UIKit
 final class TerminalRenderView: UIView {
     /// One horizontal run of cells sharing the same attributes, which is the unit both
     /// background fills and glyph drawing work in.
-    private struct Run {
+    struct Run {
         var text: String
         var column: Int
         var width: Int
@@ -306,7 +306,12 @@ final class TerminalRenderView: UIView {
     }
 
     /// Groups adjacent cells that share attributes into runs.
-    private func coalesce(_ line: TerminalLine) -> [Run] {
+    ///
+    /// This is the renderer's main optimisation: a row of uniformly styled text becomes
+    /// one Core Text line rather than one per cell. Internal rather than private so a test
+    /// can assert the run count directly — measuring it through wall-clock time is
+    /// dominated by fixed per-frame cost and gives a flaky answer.
+    func coalesce(_ line: TerminalLine) -> [Run] {
         var runs: [Run] = []
         var current: Run?
 

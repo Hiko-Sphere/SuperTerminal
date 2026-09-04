@@ -106,6 +106,69 @@ final class TerminalUITests: XCTestCase {
         )
     }
 
+    /// Long-press then drag selects, and the Copy affordance appears with a plausible
+    /// character count.
+    ///
+    /// The selection model has unit coverage; this covers the part only a real gesture
+    /// can reach — that the press is recognised at all, that dragging extends rather than
+    /// restarting it, and that the bar the user acts on actually appears.
+    func testLongPressSelectsTextAndOffersCopy() throws {
+        try openTerminal()
+
+        app.typeText("printf 'SELECTABLE_%s\\n' TEXT\n")
+        _ = waitForScreen(containing: "SELECTABLE_TEXT")
+
+        let terminal = app.otherElements.matching(
+            NSPredicate(format: "label BEGINSWITH %@", "Terminal for")
+        ).firstMatch
+        let frame = terminal.frame
+        // Press near the top-left of the grid and drag right, across the text that was
+        // just printed.
+        let start = terminal.coordinate(withNormalizedOffset: .zero)
+            .withOffset(CGVector(dx: 8, dy: 40))
+        let end = terminal.coordinate(withNormalizedOffset: .zero)
+            .withOffset(CGVector(dx: min(frame.width - 8, 240), dy: 40))
+        start.press(forDuration: 0.8, thenDragTo: end)
+
+        let copy = app.buttons["Copy"]
+        XCTAssertTrue(copy.waitForExistence(timeout: 5), "a selection should offer Copy")
+
+        // The bar reports how much is selected; a drag across a populated row must have
+        // caught something rather than collapsing to nothing.
+        let counter = app.staticTexts.matching(
+            NSPredicate(format: "label ENDSWITH %@", "characters")
+        ).firstMatch
+        XCTAssertTrue(counter.waitForExistence(timeout: 5), "the selection bar should report a size")
+
+        copy.tap()
+        XCTAssertFalse(
+            app.buttons["Copy"].exists,
+            "copying should clear the selection so the bar does not linger"
+        )
+    }
+
+    /// Find opens, searches the buffer, and reports how many matches it found.
+    func testFindSearchesTheScrollback() throws {
+        try openTerminal()
+
+        app.typeText("printf 'NEEDLE_%s\\n' ONE; printf 'NEEDLE_%s\\n' TWO\n")
+        _ = waitForScreen(containing: "NEEDLE_TWO")
+
+        app.buttons["Session"].tap()
+        app.buttons["Find…"].tap()
+
+        let field = app.textFields["Find in scrollback"]
+        XCTAssertTrue(field.waitForExistence(timeout: 5), "the find bar should appear")
+        field.tap()
+        field.typeText("NEEDLE_")
+
+        // Two printed lines plus the shell's echo of the command that printed them.
+        let counter = app.staticTexts.matching(
+            NSPredicate(format: "label CONTAINS %@", " of ")
+        ).firstMatch
+        XCTAssertTrue(counter.waitForExistence(timeout: 5), "search should report a match count")
+    }
+
     func testDynamicTypeDoesNotBreakTheHostList() throws {
         // The terminal grid deliberately ignores Dynamic Type — it must match the geometry
         // the remote program was told about — but every other surface must honour it.

@@ -204,21 +204,39 @@ public struct TerminalParser: Sendable {
         }
     }
 
+    /// The first code point that can extend a grapheme cluster.
+    ///
+    /// U+0300 is the start of Combining Diacritical Marks; every scalar below it is a
+    /// cluster starter. Nothing under this value — all of ASCII and Latin-1 — can attach
+    /// to the preceding character, so the expensive grapheme-breaking check can be
+    /// skipped for the overwhelming majority of terminal output.
+    private static let firstPossibleCombiningScalar: UInt32 = 0x0300
+
     private mutating func appendPrintable(_ scalar: Unicode.Scalar, sink: (TerminalAction) -> Void) {
         guard let pending = pendingCharacter else {
-            pendingCharacter = Character(String(scalar))
+            pendingCharacter = Character(scalar)
             return
         }
+
+        // Fast path: a scalar that cannot possibly combine ends the held cluster. This
+        // avoids building a candidate string and running grapheme breaking on it for
+        // every character of ordinary output, which measured as the single largest cost
+        // in the parser.
+        if scalar.value < Self.firstPossibleCombiningScalar {
+            sink(.print(pending))
+            pendingCharacter = Character(scalar)
+            return
+        }
+
         // Grow the held cluster if the new scalar attaches to it — that is how `e` plus
-        // U+0301 becomes one `Character` occupying one cell. Otherwise the held cluster
-        // is complete and can be emitted.
+        // U+0301 becomes one `Character` occupying one cell.
         var candidate = String(pending)
         candidate.unicodeScalars.append(scalar)
         if candidate.count == 1 {
             pendingCharacter = Character(candidate)
         } else {
             sink(.print(pending))
-            pendingCharacter = Character(String(scalar))
+            pendingCharacter = Character(scalar)
         }
     }
 

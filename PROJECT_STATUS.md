@@ -37,6 +37,9 @@ This file is the resumable state of the work. It records what is *proven*, what 
 | Selection, copy and scrollback search | 11 tests: soft wraps copy without an injected newline, block selection, wide characters copy once, selection reaches into history, search crosses wraps and is bounded |
 | Mouse reporting | 10 unit tests covering both encodings, modifiers, wheel, drag/motion gating and the legacy coordinate ceiling — plus a live round-trip: a remote program enables tracking, and `cat -v` on the far end shows the exact bytes a real terminal would have sent |
 | CI | `.github/workflows/ci.yml` — package build/test with a zero-warning gate, app Debug and unsigned-Release builds, both integration suites, and hygiene checks for placeholders and committed secrets |
+| **Throughput, measured** | Release: 9.0 MB/s plain text, 12.7 MB/s coloured, 8.0 MB/s CJK; reflow of a full 5 000-line scrollback in 18 ms. Floors are asserted per configuration, so a regression fails rather than being noticed later as "sluggish" |
+| **Render cost, measured** | A full redraw of both an 80×24 and a 200×55 grid fits inside a 60 Hz frame on the simulator; run coalescing is asserted directly on the run count |
+| Selection and find gestures | UI tests: long-press-and-drag selects and offers Copy, and the find bar reports a match count |
 
 ### Written, builds, not yet proven end to end
 
@@ -49,13 +52,11 @@ This file is the resumable state of the work. It records what is *proven*, what 
 
 ### Written and running, but not yet verified against a person
 
-Selection and search have unit coverage and are wired into the UI, but the *gestures*
-that drive them — long-press to select, drag to extend, double-tap for a logical line —
-have not been exercised by a test or by hand. The same is true of the pointer path: hover
-reporting is implemented but has not been driven with a trackpad. VoiceOver reads the
-terminal's rendered text, which is wired but has not been heard. The high-contrast theme
-is selected automatically under increased contrast, verified by reading the code rather
-than by running with the setting on.
+Double-tap to select a logical line is implemented and unit-tested at the model level but
+not driven by a UI test. Hover reporting is implemented but has not been driven with a
+trackpad. VoiceOver reads the terminal's rendered text, which is wired but has not been
+heard. The high-contrast theme is selected automatically under increased contrast,
+verified by reading the code rather than by running with the setting on.
 
 ### Not started
 

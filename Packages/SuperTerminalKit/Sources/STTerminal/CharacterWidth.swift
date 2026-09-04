@@ -43,6 +43,13 @@ public enum CharacterWidth {
     /// * otherwise the cluster is as wide as its widest scalar, which for a base plus
     ///   combining marks is the base.
     public static func of(_ character: Character) -> Int {
+        // Fast path for printable ASCII, which is most of what a terminal ever renders.
+        // Building a scalar array for every `x` in a log file is pure overhead.
+        if character.isASCII {
+            guard let ascii = character.asciiValue else { return 1 }
+            return ascii >= 0x20 && ascii < 0x7F ? 1 : 0
+        }
+
         let scalars = Array(character.unicodeScalars)
         guard let base = scalars.first else { return 1 }
 

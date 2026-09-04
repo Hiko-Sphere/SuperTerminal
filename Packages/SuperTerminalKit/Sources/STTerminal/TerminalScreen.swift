@@ -175,6 +175,17 @@ public struct TerminalScreen: Sendable {
     /// Writes one grapheme cluster at the cursor, handling wrapping and wide characters.
     public mutating func write(_ character: Character) {
         let width = CharacterWidth.of(character)
+        // Fast path for the common case: a single-width character landing in a cell that
+        // holds nothing wide, with no wrap pending. Skips the wide-character bookkeeping
+        // entirely, which is most of the cost of writing ordinary text.
+        if width == 1, !pendingWrap, cursor.column + 1 < columns {
+            let existing = lines[cursor.row][cursor.column]
+            if !existing.isWideContinuation, existing.character == nil || existing.character!.isASCII {
+                lines[cursor.row][cursor.column] = TerminalCell(character: character, attributes: attributes)
+                cursor.column += 1
+                return
+            }
+        }
 
         if pendingWrap {
             lines[cursor.row].isWrapped = true
