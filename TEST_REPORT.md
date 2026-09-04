@@ -183,6 +183,7 @@ environment hook, and drives the app the way a person would.
 | The host list survives an accessibility text size | Relaunched at `UICTContentSizeCategoryAccessibilityL`; the list and its rows stay reachable |
 | Long-press selects and offers Copy | The gesture is recognised, dragging extends the selection, the bar reports a size, and copying clears it |
 | Find searches the scrollback | The find bar opens, searches the buffer and reports a match count |
+| Generating a key shows something pastable | Reached through Settings → Keys, the key is created and its `authorized_keys` line is displayed with a copy action, then appears in the list |
 | Launch and editor validation (2) | The empty state offers a way forward; Save stays disabled until the form is usable |
 
 Writing these found two defects that no unit test could have:
@@ -201,6 +202,19 @@ The app was installed and launched on the iPhone 17 Pro and iPad Pro 13-inch (M5
 simulators and screenshotted. That found a real defect: on iPad the split view opened
 with the sidebar collapsed, so a fresh install showed "No session" and no visible way to
 add one. Fixed by starting at `.all` visibility.
+
+### Key generation — 8 cases, verified against OpenSSH itself
+
+`SSHKeyGenerationTests`. The strongest check here is interoperability, because a key
+format only this app understands would make the app a place keys go to be trapped.
+
+| Test | What a pass proves |
+| --- | --- |
+| Round-trips through this app's parser (Ed25519, P-256) | The container this app writes is one it can read back; also checked inside the generator itself, so a key that fails to re-parse is never saved |
+| `ssh-keygen` reads it and agrees on the fingerprint | `ssh-keygen -y` derives the public key and `-l` reports the same SHA-256 the app shows the user — real interop, not self-consistency |
+| Authenticates against a real `sshd` (both algorithms) | The server's `authorized_keys` contains *only* the generated key, so a pass means that key worked rather than another credential being picked up |
+| Two keys differ | No accidental reuse |
+| The public line is `authorized_keys`-shaped | Three fields, valid base64, the comment preserved |
 
 ### Vendored swift-nio-ssh — 346 upstream tests
 
@@ -228,7 +242,7 @@ Stated plainly, because a test report that omits these would be misleading:
 | **High contrast and Reduce Transparency** | Both are implemented — increased contrast selects the high-contrast theme, and bar backgrounds go solid — but verified by reading the code, not by running with the settings enabled. |
 | **Pointer and hover on iPad** | Hover reporting is implemented; it has not been driven with a trackpad. |
 | **Keychain behaviour** | `KeychainSecureStore` is written but untested; Keychain semantics differ enough in a macOS unit-test process that a passing test there would prove little. Needs device tests. |
-| **RSA keys** | Unsupported. The library is vendored and verified faithful, but the RSA patch is not written yet — see `DECISIONS.md` D-007. A capability gap, not a test gap. |
+| **RSA keys** | Unsupported. The library is vendored and verified faithful, and D-007 now specifies every site the patch must change, but it is not written. Mitigated by in-app key generation, which does not help an RSA-only host. A capability gap, not a test gap. |
 | **Instruments profiling** | Not run. `XCTest`'s measurement was used instead because it produces a number on every run, in CI as well as on a desk, and fails on a regression. An Instruments trace remains the better tool for finding *why* something is slow, and is worth doing before release. |
 
 ## Observed environment issue

@@ -40,6 +40,7 @@ This file is the resumable state of the work. It records what is *proven*, what 
 | **Throughput, measured** | Release: 9.0 MB/s plain text, 12.7 MB/s coloured, 8.0 MB/s CJK; reflow of a full 5 000-line scrollback in 18 ms. Floors are asserted per configuration, so a regression fails rather than being noticed later as "sluggish" |
 | **Render cost, measured** | A full redraw of both an 80×24 and a 200×55 grid fits inside a 60 Hz frame on the simulator; run coalescing is asserted directly on the run count |
 | Selection and find gestures | UI tests: long-press-and-drag selects and offers Copy, and the find bar reports a match count |
+| **Key generation, import and export** | Generated keys are read by `ssh-keygen`, which agrees on the fingerprint, and both algorithms authenticate against a real `sshd` that trusts only the generated key. A UI test generates one through the interface. |
 
 ### Written, builds, not yet proven end to end
 
@@ -74,12 +75,21 @@ Intents · Spotlight.
 (verified at commit `3ec2814`). RSA **user keys** cannot authenticate and servers offering
 only RSA **host keys** cannot be reached.
 
-**Progress:** the library is now vendored at `Packages/swift-nio-ssh-rsa/`, committed
-unmodified first and verified by running upstream's own 346 tests against it. The RSA
-patch itself is not yet written — the decision, the alternatives weighed, the maintenance
-obligation this creates and the RFC 8332 pitfalls are recorded in `DECISIONS.md` D-007.
+**Progress:** the library is vendored at `Packages/swift-nio-ssh-rsa/`, committed
+unmodified first and verified by running upstream's own 346 tests against it. The patch
+itself is **specified but not written**: `DECISIONS.md` D-007 now maps every site it has
+to change — eight files, roughly 500 lines, reaching into the key-exchange and user-auth
+state machines. The root cause is that NIOSSH treats a key's blob identifier and its
+negotiated algorithm name as the same string, which RFC 8332 makes false for RSA.
 
-Until it lands the app reports this precisely rather than as a generic failure.
+It is deliberately not being attempted in a single sitting. A half-verified change to SSH
+signature verification would be worse than the gap it closes.
+
+**Mitigation, shipped:** in-app key generation. Someone whose only key is RSA can generate
+an Ed25519 key on the device and add it to the server in under a minute. That does not
+help an RSA-only *host*, and it does not help someone whose key is issued by their
+organisation — so the gap is reduced, not closed. Until the patch lands the app reports
+the limitation precisely rather than as a generic failure.
 
 ### B-2 · Live Cloudflare verification needs an account *(open, blocking acceptance)*
 

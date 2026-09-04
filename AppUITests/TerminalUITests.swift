@@ -189,3 +189,66 @@ final class TerminalUITests: XCTestCase {
         add(shot)
     }
 }
+
+/// Key management is reachable and can generate a usable key without a server.
+final class KeyManagementUITests: XCTestCase {
+    override func setUpWithError() throws {
+        continueAfterFailure = false
+    }
+
+    func testGeneratingAKeyShowsSomethingTheUserCanPasteIntoAServer() throws {
+        let app = XCUIApplication()
+        app.launch()
+
+        app.buttons["Settings"].tap()
+        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 10))
+
+        // A NavigationLink inside a Form is not always exposed as a button, and the
+        // Security section may be below the fold, so scroll to it and match on any
+        // element carrying the label.
+        let keysLink = app.descendants(matching: .any).matching(
+            NSPredicate(format: "label == %@", "Keys")
+        ).firstMatch
+        if !keysLink.waitForExistence(timeout: 3) {
+            app.swipeUp()
+        }
+        XCTAssertTrue(keysLink.waitForExistence(timeout: 5), "Settings should offer a Keys screen")
+        keysLink.tap()
+        XCTAssertTrue(app.navigationBars["Keys"].waitForExistence(timeout: 5))
+
+        // Reached through the toolbar rather than the empty state. Keys persist in the app
+        // container between launches, so a test that depends on the list being empty
+        // passes once and then fails for the rest of time.
+        app.buttons["Add key"].tap()
+        let generateItem = app.buttons["Generate…"]
+        XCTAssertTrue(generateItem.waitForExistence(timeout: 5), "the add-key menu should offer Generate")
+        generateItem.tap()
+
+        // A unique name so leftovers from an earlier run cannot satisfy the assertions.
+        let keyName = "Phone-\(Int(Date().timeIntervalSince1970))"
+        let nameField = app.textFields["Name"]
+        XCTAssertTrue(nameField.waitForExistence(timeout: 5))
+        nameField.tap()
+        nameField.typeText(keyName)
+
+        app.buttons["Generate"].tap()
+
+        // What the user needs next is the public key line, in a form they can copy.
+        XCTAssertTrue(
+            app.navigationBars["Key Created"].waitForExistence(timeout: 10),
+            "generating should land on a screen showing the new key"
+        )
+        let publicKey = app.staticTexts.containing(
+            NSPredicate(format: "label BEGINSWITH %@", "ssh-ed25519 ")
+        ).firstMatch
+        XCTAssertTrue(publicKey.waitForExistence(timeout: 5), "the public key should be shown for copying")
+        XCTAssertTrue(app.buttons["Copy public key"].exists)
+
+        app.buttons["Done"].tap()
+        // And it should now be listed.
+        XCTAssertTrue(
+            app.staticTexts[keyName].waitForExistence(timeout: 5),
+            "the generated key should appear in the list"
+        )
+    }
+}

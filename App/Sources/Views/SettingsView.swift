@@ -59,6 +59,7 @@ struct SettingsView: View {
                 }
 
                 Section("Security") {
+                    NavigationLink("Keys") { KeyManagementView() }
                     NavigationLink("Known hosts") { KnownHostsView() }
                     Button("Sign out of all Cloudflare Access apps") {
                         try? container.vault.deleteAllAccessTokens()

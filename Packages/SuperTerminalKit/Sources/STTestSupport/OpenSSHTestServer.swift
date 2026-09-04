@@ -47,7 +47,9 @@ public final class OpenSSHTestServer: @unchecked Sendable {
     private let process: Process
     private let logURL: URL
 
-    public init() throws {
+    /// - Parameter extraAuthorizedKeys: additional `authorized_keys` lines to trust, so a
+    ///   test can prove a key it generated itself is accepted by a real server.
+    public init(extraAuthorizedKeys: [String] = []) throws {
         guard FileManager.default.isExecutableFile(atPath: Self.sshdPath) else {
             throw StartupError.sshdMissing(Self.sshdPath)
         }
@@ -72,8 +74,11 @@ public final class OpenSSHTestServer: @unchecked Sendable {
         )
         try Self.keygen(["-p", "-f", encryptedPath.path, "-P", "", "-N", passphrase, "-q"])
 
-        let authorizedKeys = try String(contentsOf: root.appendingPathComponent("client_ed25519.pub"), encoding: .utf8)
+        var authorizedKeys = try String(contentsOf: root.appendingPathComponent("client_ed25519.pub"), encoding: .utf8)
             + (try String(contentsOf: root.appendingPathComponent("client_ecdsa.pub"), encoding: .utf8))
+        for line in extraAuthorizedKeys {
+            authorizedKeys += line.hasSuffix("\n") ? line : line + "\n"
+        }
         let authorizedKeysURL = root.appendingPathComponent("authorized_keys")
         try authorizedKeys.write(to: authorizedKeysURL, atomically: true, encoding: .utf8)
         try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: authorizedKeysURL.path)

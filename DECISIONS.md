@@ -234,6 +234,39 @@ survivable, and they are obligations, not conveniences:
 **Revisit immediately if upstream adds RSA** — at that point this package should be
 deleted and the dependency pointed back at upstream.
 
+### Why the patch is bigger than "add an enum case", and where it has to change
+
+Mapped against the vendored source on 2026-09-05. The root cause is that NIOSSH models a
+key's blob identifier and its negotiated algorithm name as **the same string**, which is
+true for every algorithm it currently supports and false for RSA under RFC 8332. Those two
+roles have to be separated first, and that separation reaches into key exchange and user
+authentication:
+
+| Site | Change required |
+| --- | --- |
+| `NIOSSHPublicKey.swift` | `.rsa` case; `keyPrefix` returns `ssh-rsa`; new `signatureAlgorithmNames` (`rsa-sha2-512`, `rsa-sha2-256`); `knownAlgorithms` extended; verification for each variant |
+| `NIOSSHPrivateKey.swift` | `.rsa` case; `sign` takes the algorithm to use; `hostKeyAlgorithms` extended |
+| `NIOSSHSignature.swift` | `.rsa(algorithm:bytes:)` case; read and write, keyed on the signature algorithm name rather than the key type |
+| `UserAuthSignablePayload.swift:48` | Writes `publicKey.keyPrefix` into the signed blob; RFC 8332 §3.1 requires the *algorithm* name there, so it must be passed in |
+| `UserAuthenticationMethod.swift:251` | Must choose a variant, build the payload with that name, and sign with it |
+| `SSHMessages.swift:697, :774` | `algorithmName == publicKey.keyPrefix` becomes "this algorithm is valid for this key" |
+| `SSHMessages.swift:1376, :1410` | Writes `key.keyPrefix` as the algorithm name; must write the signature algorithm |
+| `SSHKeyExchangeStateMachine.swift:292, :605` | Same equality check on the host key, plus the advertised algorithm list |
+
+That is roughly 500 lines across eight files, in the two state machines where a mistake is
+either an interop failure or — worse, because it is invisible — accepting a signature that
+should have been refused.
+
+**Status: deliberately not attempted in a single sitting.** The map above exists so the
+work can be done carefully, with adversarial tests at each site, rather than rushed to fit
+a work session. Landing a half-verified change to SSH signature verification would be
+worse than the gap it closes.
+
+**Interim mitigation, shipped:** in-app key generation, import and export. Someone whose
+only key is RSA can generate an Ed25519 key on the device and add it to the server in
+under a minute. That does not help an RSA-only *host*, and it does not help someone whose
+key is issued by their organisation — so it mitigates the gap rather than closing it.
+
 ### Implementation notes for the patch
 
 Recorded here because they are the parts that are easy to get wrong:
