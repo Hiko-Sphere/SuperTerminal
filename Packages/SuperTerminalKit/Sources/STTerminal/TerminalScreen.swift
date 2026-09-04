@@ -401,17 +401,26 @@ public struct TerminalScreen: Sendable {
     ///
     /// Rows are added at the bottom, and removed from the top by pushing them into
     /// scrollback rather than discarding them — losing the top of the screen on every
-    /// keyboard show/hide would be maddening. Column changes truncate or pad; reflow of
-    /// wrapped lines is a separate, larger piece of work tracked in `PROJECT_STATUS.md`.
-    public mutating func resize(columns newColumns: Int, rows newRows: Int) {
+    /// keyboard show/hide would be maddening.
+    ///
+    /// - Parameter reflowOnColumnChange: whether wrapped lines are re-wrapped to the new
+    ///   width. True for the primary screen, where the history is the user's and must
+    ///   survive a rotation intact. False for the alternate screen, whose content belongs
+    ///   to a full-screen program that will redraw it from scratch — re-wrapping there
+    ///   would scramble a layout the program is about to overwrite anyway.
+    public mutating func resize(columns newColumns: Int, rows newRows: Int, reflowOnColumnChange: Bool = true) {
         let targetColumns = max(1, newColumns)
         let targetRows = max(1, newRows)
         guard targetColumns != columns || targetRows != rows else { return }
 
-        for index in lines.indices {
-            lines[index].resize(to: targetColumns)
+        if reflowOnColumnChange, targetColumns != columns {
+            reflow(toColumns: targetColumns)
+        } else {
+            for index in lines.indices {
+                lines[index].resize(to: targetColumns)
+            }
+            columns = targetColumns
         }
-        columns = targetColumns
 
         if targetRows < rows {
             let excess = rows - targetRows
@@ -438,6 +447,26 @@ public struct TerminalScreen: Sendable {
         cursor.column = min(cursor.column, columns - 1)
         scrollTop = 0
         scrollBottom = rows - 1
+        pendingWrap = false
+    }
+
+    /// Installs the result of a reflow. Kept separate so the reflow logic can live in
+    /// its own file without making the screen's stored properties settable from outside.
+    mutating func applyReflow(
+        scrollback newScrollback: [TerminalLine],
+        lines newLines: [TerminalLine],
+        columns newColumns: Int,
+        cursorRow: Int,
+        cursorColumn: Int
+    ) {
+        scrollback = newScrollback
+        lines = newLines
+        columns = newColumns
+        rows = newLines.count
+        cursor.row = min(max(0, cursorRow), max(0, rows - 1))
+        cursor.column = min(max(0, cursorColumn), max(0, columns - 1))
+        scrollTop = 0
+        scrollBottom = max(0, rows - 1)
         pendingWrap = false
     }
 

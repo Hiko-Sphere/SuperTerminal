@@ -53,9 +53,22 @@ final class TerminalRenderView: UIView {
         didSet { if showsCursor != oldValue { setNeedsDisplay() } }
     }
 
-    /// Selected region in grid coordinates, or `nil`.
-    var selection: TerminalSelection? {
+    /// Selected region, in absolute coordinates that include scrollback.
+    ///
+    /// Absolute rather than screen-relative so a selection made three screens back stays
+    /// on the text it was made on as new output arrives.
+    var selection: TerminalRange? {
         didSet { if selection != oldValue { setNeedsDisplay() } }
+    }
+
+    /// Search hits to highlight, also in absolute coordinates.
+    var searchMatches: [TerminalRange] = [] {
+        didSet { setNeedsDisplay() }
+    }
+
+    /// The match the user is currently on, drawn more strongly than the rest.
+    var focusedMatch: TerminalRange? {
+        didSet { if focusedMatch != oldValue { setNeedsDisplay() } }
     }
 
     private(set) var metrics = Metrics(
@@ -106,12 +119,19 @@ final class TerminalRenderView: UIView {
         return (columns, rows)
     }
 
-    /// Converts a point to a grid position, clamped to the grid.
-    func gridPosition(at point: CGPoint) -> (row: Int, column: Int) {
-        guard let screen else { return (0, 0) }
-        let column = min(max(0, Int(point.x / metrics.cellWidth)), screen.columns - 1)
-        let row = min(max(0, Int(point.y / metrics.cellHeight)), screen.rows - 1)
-        return (row, column)
+    /// Converts a point to a position in the buffer's absolute coordinate space.
+    func position(at point: CGPoint) -> TerminalPosition? {
+        guard let screen else { return nil }
+        let column = min(max(0, Int(point.x / metrics.cellWidth)), max(0, screen.columns - 1))
+        let displayRow = min(max(0, Int(point.y / metrics.cellHeight)), max(0, screen.rows - 1))
+        return TerminalPosition(row: absoluteRow(forDisplayRow: displayRow), column: column)
+    }
+
+    /// The absolute index of a visible row, taking the scrollback offset into account.
+    func absoluteRow(forDisplayRow displayRow: Int) -> Int {
+        guard let screen else { return displayRow }
+        let firstVisible = screen.scrollback.count - min(scrollbackOffset, screen.scrollback.count)
+        return firstVisible + displayRow
     }
 
     // MARK: - Fonts
@@ -210,9 +230,8 @@ final class TerminalRenderView: UIView {
         for run in runs {
             let attributes = effectiveAttributes(run.attributes)
             let background = theme.resolve(attributes.background, isForeground: false, bold: false)
-            let isSelected = isSelected(row: row, column: run.column)
-            guard background != theme.background || isSelected else { continue }
-            context.setFillColor(isSelected ? theme.selection.cgColor : background.cgColor)
+            guard background != theme.background else { continue }
+            context.setFillColor(background.cgColor)
             context.fill(CGRect(
                 x: CGFloat(run.column) * metrics.cellWidth,
                 y: flippedTop,
@@ -220,6 +239,10 @@ final class TerminalRenderView: UIView {
                 height: metrics.cellHeight
             ))
         }
+
+        // Selection and search highlights are painted per cell over the run backgrounds,
+        // because a selection boundary rarely lines up with an attribute boundary.
+        drawHighlights(row: row, lineWidth: line.width, flippedTop: flippedTop, in: context)
 
         drawRuns(runs, atFlippedTop: flippedTop, in: context)
     }
@@ -357,9 +380,29 @@ final class TerminalRenderView: UIView {
         }
     }
 
-    private func isSelected(row: Int, column: Int) -> Bool {
-        guard let selection else { return false }
-        return selection.contains(row: row, column: column)
+    private func drawHighlights(row: Int, lineWidth: Int, flippedTop: CGFloat, in context: CGContext) {
+        let absolute = absoluteRow(forDisplayRow: row)
+        for column in 0 ..< lineWidth {
+            let position = TerminalPosition(row: absolute, column: column)
+            let color: CGColor?
+            if selection?.contains(position) == true {
+                color = theme.selection.cgColor
+            } else if focusedMatch?.contains(position) == true {
+                color = theme.cursor.cgColor.copy(alpha: 0.55)
+            } else if searchMatches.contains(where: { $0.contains(position) }) {
+                color = theme.selection.cgColor.copy(alpha: 0.7)
+            } else {
+                color = nil
+            }
+            guard let color else { continue }
+            context.setFillColor(color)
+            context.fill(CGRect(
+                x: CGFloat(column) * metrics.cellWidth,
+                y: flippedTop,
+                width: metrics.cellWidth,
+                height: metrics.cellHeight
+            ))
+        }
     }
 
     // MARK: - Cursor blink
@@ -397,35 +440,5 @@ final class TerminalRenderView: UIView {
             width: metrics.cellWidth * 2,
             height: metrics.cellHeight
         )
-    }
-}
-
-/// A rectangular or linear selection in grid coordinates.
-struct TerminalSelection: Equatable {
-    var startRow: Int
-    var startColumn: Int
-    var endRow: Int
-    var endColumn: Int
-
-    /// Normalised so that start precedes end in reading order.
-    var normalised: TerminalSelection {
-        if startRow < endRow || (startRow == endRow && startColumn <= endColumn) { return self }
-        return TerminalSelection(
-            startRow: endRow,
-            startColumn: endColumn,
-            endRow: startRow,
-            endColumn: startColumn
-        )
-    }
-
-    func contains(row: Int, column: Int) -> Bool {
-        let range = normalised
-        if row < range.startRow || row > range.endRow { return false }
-        if range.startRow == range.endRow {
-            return column >= range.startColumn && column <= range.endColumn
-        }
-        if row == range.startRow { return column >= range.startColumn }
-        if row == range.endRow { return column <= range.endColumn }
-        return true
     }
 }

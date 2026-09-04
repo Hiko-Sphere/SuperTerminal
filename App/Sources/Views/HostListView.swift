@@ -5,6 +5,9 @@ struct HostListView: View {
     @Environment(AppContainer.self) private var container
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
+    /// Called after a session is opened, so a stack-based layout can push to it.
+    let onOpen: (TerminalSession) -> Void
+
     @State private var searchText = ""
     @State private var editingHost: Host?
     @State private var isCreating = false
@@ -15,7 +18,13 @@ struct HostListView: View {
             if !container.sessionManager.sessions.isEmpty {
                 Section("Open sessions") {
                     ForEach(container.sessionManager.sessions) { session in
-                        SessionRow(session: session)
+                        Button {
+                            container.sessionManager.selectedSessionID = session.id
+                            onOpen(session)
+                        } label: {
+                            SessionRow(session: session)
+                        }
+                        .buttonStyle(.plain)
                             .tag(session.id)
                             .swipeActions {
                                 Button("Close", systemImage: "xmark", role: .destructive) {
@@ -48,8 +57,9 @@ struct HostListView: View {
 
                 ForEach(filteredHosts) { host in
                     HostRow(host: host) {
-                        container.sessionManager.open(host)
+                        let session = container.sessionManager.open(host)
                         container.hostStore.markConnected(host)
+                        onOpen(session)
                     }
                     .swipeActions(edge: .trailing) {
                         Button("Delete", systemImage: "trash", role: .destructive) {
@@ -83,11 +93,6 @@ struct HostListView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .stNewConnectionRequested)) { _ in
             isCreating = true
-        }
-        .navigationDestination(for: TerminalSession.ID.self) { id in
-            if let session = container.sessionManager.sessions.first(where: { $0.id == id }) {
-                TerminalView(session: session)
-            }
         }
     }
 

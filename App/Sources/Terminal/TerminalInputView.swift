@@ -16,14 +16,28 @@ final class TerminalInputView: UIView, UIKeyInput {
     var onGridSizeChange: ((Int, Int) -> Void)?
     /// Called when the user asks to paste, so the session can apply bracketed paste.
     var onPaste: ((String) -> Void)?
+    /// Called when a selection is made or cleared, so the UI can offer Copy.
+    var onSelectionChange: ((TerminalRange?) -> Void)?
+    /// Supplies the current screen so gestures can resolve positions and extract text.
+    var currentScreen: (() -> TerminalScreen?)?
 
     /// Modes the remote program has set, which change what several keys send.
     var modes = TerminalModes()
 
+    /// Whether the on-screen Control key is armed for the next character.
+    ///
+    /// The latch has to live here rather than in the button that sets it, because typed
+    /// characters arrive through `insertText` on this view. A latch held anywhere else
+    /// can be toggled and displayed but can never actually modify a keystroke — which is
+    /// how a Control key ends up looking like it works and doing nothing.
+    var controlLatched = false
+    /// Called once a latched Control has been applied, so the UI can un-highlight it.
+    var onControlConsumed: (() -> Void)?
+
     let renderView = TerminalRenderView()
 
     private var lastReportedGrid: (columns: Int, rows: Int) = (0, 0)
-    private var selectionAnchor: (row: Int, column: Int)?
+    private var selectionAnchor: TerminalPosition?
 
     // MARK: - Lifecycle
 
@@ -43,6 +57,17 @@ final class TerminalInputView: UIView, UIKeyInput {
 
     override var canBecomeFirstResponder: Bool { true }
 
+    /// Only offer Copy while something is selected, so the edit menu never shows an
+    /// action that would do nothing.
+    override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
+        switch action {
+        case #selector(copySelection):
+            return renderView.selection != nil
+        default:
+            return super.canPerformAction(action, withSender: sender)
+        }
+    }
+
     override func becomeFirstResponder() -> Bool {
         let became = super.becomeFirstResponder()
         if became { renderView.setNeedsDisplay() }
@@ -53,6 +78,16 @@ final class TerminalInputView: UIView, UIKeyInput {
         let resigned = super.resignFirstResponder()
         if resigned { renderView.setNeedsDisplay() }
         return resigned
+    }
+
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        // Opening a terminal means wanting to type in it. Making the view first responder
+        // as soon as it is on screen raises the keyboard immediately, rather than making
+        // the user tap the terminal before they can use it.
+        if window != nil, !isFirstResponder {
+            _ = becomeFirstResponder()
+        }
     }
 
     override func layoutSubviews() {
@@ -69,6 +104,22 @@ final class TerminalInputView: UIView, UIKeyInput {
 
     /// The software keyboard sends text through here, one insertion at a time.
     func insertText(_ text: String) {
+        if controlLatched, let scalar = text.unicodeScalars.first,
+           let control = Self.controlByte(for: scalar)
+        {
+            controlLatched = false
+            onControlConsumed?()
+            send(Data([control]))
+            return
+        }
+        if controlLatched {
+            // The latch applies to the next character whatever it is; a character with no
+            // control equivalent simply consumes it rather than being sent as a literal
+            // the user did not intend.
+            controlLatched = false
+            onControlConsumed?()
+            return
+        }
         // A newline from the on-screen keyboard means Return, which a terminal expects as
         // carriage return, not line feed.
         let normalised = text == "\n" ? "\r" : text
@@ -220,6 +271,12 @@ final class TerminalInputView: UIView, UIKeyInput {
     override var keyCommands: [UIKeyCommand]? {
         [
             UIKeyCommand(
+                title: "Copy",
+                action: #selector(copySelection),
+                input: "c",
+                modifierFlags: .command
+            ),
+            UIKeyCommand(
                 title: "Paste",
                 action: #selector(pasteFromPasteboard),
                 input: "v",
@@ -240,6 +297,13 @@ final class TerminalInputView: UIView, UIKeyInput {
         ]
     }
 
+    @objc func copySelection() {
+        guard let text = selectedText() else { return }
+        UIPasteboard.general.string = text
+        clearSelection()
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+    }
+
     @objc private func pasteFromPasteboard() {
         guard let text = UIPasteboard.general.string else { return }
         onPaste?(text)
@@ -256,6 +320,13 @@ final class TerminalInputView: UIView, UIKeyInput {
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap))
         addGestureRecognizer(tap)
 
+        let doubleTap = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap))
+        doubleTap.numberOfTapsRequired = 2
+        addGestureRecognizer(doubleTap)
+        // Without this the single tap fires first and swallows the second, so
+        // double-tap-to-select would never trigger.
+        tap.require(toFail: doubleTap)
+
         // Two-finger pan scrolls the scrollback. One finger is reserved for selection, so
         // the two gestures cannot fight.
         let pan = UIPanGestureRecognizer(target: self, action: #selector(handlePan))
@@ -269,7 +340,40 @@ final class TerminalInputView: UIView, UIKeyInput {
     }
 
     @objc private func handleTap() {
+        // A tap with a selection showing dismisses it rather than raising the keyboard —
+        // otherwise the only way out of a selection is to make another one.
+        if renderView.selection != nil {
+            clearSelection()
+            return
+        }
         if !isFirstResponder { _ = becomeFirstResponder() }
+    }
+
+    /// Double-tap selects the whole logical line, following soft wraps — the line a
+    /// person sees, not the row the terminal happened to break it into.
+    @objc private func handleDoubleTap(_ recognizer: UITapGestureRecognizer) {
+        guard let screen = currentScreen?(),
+              let position = renderView.position(at: recognizer.location(in: renderView)),
+              let range = screen.logicalLineRange(containing: position.row)
+        else { return }
+        setSelection(range)
+        UISelectionFeedbackGenerator().selectionChanged()
+    }
+
+    func setSelection(_ range: TerminalRange?) {
+        renderView.selection = range
+        onSelectionChange?(range)
+    }
+
+    func clearSelection() {
+        setSelection(nil)
+    }
+
+    /// The selected text, ready for the pasteboard.
+    func selectedText() -> String? {
+        guard let selection = renderView.selection, let screen = currentScreen?() else { return nil }
+        let text = screen.text(in: selection)
+        return text.isEmpty ? nil : text
     }
 
     private var panAccumulator: CGFloat = 0
@@ -293,27 +397,19 @@ final class TerminalInputView: UIView, UIKeyInput {
     }
 
     @objc private func handleLongPress(_ recognizer: UILongPressGestureRecognizer) {
-        let point = recognizer.location(in: renderView)
-        let position = renderView.gridPosition(at: point)
+        guard let position = renderView.position(at: recognizer.location(in: renderView)) else { return }
         switch recognizer.state {
         case .began:
             selectionAnchor = position
-            renderView.selection = TerminalSelection(
-                startRow: position.row,
-                startColumn: position.column,
-                endRow: position.row,
-                endColumn: position.column
-            )
+            setSelection(TerminalRange(start: position, end: position))
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         case .changed:
             guard let anchor = selectionAnchor else { return }
-            renderView.selection = TerminalSelection(
-                startRow: anchor.row,
-                startColumn: anchor.column,
-                endRow: position.row,
-                endColumn: position.column
-            )
-        case .ended, .cancelled, .failed:
+            setSelection(TerminalRange(start: anchor, end: position))
+        case .ended:
+            selectionAnchor = nil
+            onSelectionChange?(renderView.selection)
+        case .cancelled, .failed:
             selectionAnchor = nil
         default:
             break

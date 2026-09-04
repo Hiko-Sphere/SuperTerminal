@@ -13,6 +13,11 @@ struct RootView: View {
     // the user staring at "No session" with no visible way to add one. The list is the
     // app's primary surface, so it starts visible and the user can hide it.
     @State private var columnVisibility = NavigationSplitViewVisibility.all
+    /// The compact layout's navigation stack. A split view drives its detail column from
+    /// the selection, but a stack has to be pushed explicitly — opening a session and
+    /// showing it are two different things, and conflating them is how tapping a host
+    /// ends up starting a connection the user never sees.
+    @State private var path: [TerminalSession.ID] = []
 
     var body: some View {
         Group {
@@ -26,14 +31,29 @@ struct RootView: View {
     }
 
     private var compactLayout: some View {
-        NavigationStack {
-            HostListView()
+        NavigationStack(path: $path) {
+            HostListView { session in
+                path.append(session.id)
+            }
+            .navigationDestination(for: TerminalSession.ID.self) { id in
+                if let session = container.sessionManager.sessions.first(where: { $0.id == id }) {
+                    TerminalView(session: session)
+                } else {
+                    EmptyStateView(
+                        title: "Session closed",
+                        message: "This session is no longer open.",
+                        systemImage: "terminal"
+                    )
+                }
+            }
         }
     }
 
     private var regularLayout: some View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
-            HostListView()
+            // In a split view the detail column follows the selection, so opening a
+            // session is all that is needed.
+            HostListView { _ in }
                 .navigationSplitViewColumnWidth(min: 260, ideal: 320, max: 420)
         } detail: {
             if let session = container.sessionManager.selectedSession {

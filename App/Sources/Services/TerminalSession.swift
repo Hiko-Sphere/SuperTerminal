@@ -46,6 +46,28 @@ final class TerminalSession: Identifiable {
     private(set) var size = TerminalSize.default
     /// How far the user has scrolled back, in rows.
     var scrollbackOffset = 0
+    /// The current selection, in absolute buffer coordinates.
+    var selection: TerminalRange?
+    /// Whether the on-screen Control key is armed for the next character typed.
+    var controlLatched = false
+    /// Search state for the find bar.
+    private(set) var searchMatches: [TerminalSearchMatch] = []
+    private(set) var focusedMatchIndex: Int?
+    /// Text waiting on the user's confirmation before being pasted.
+    var pendingPaste: PendingPaste?
+
+    /// A paste the user must confirm.
+    ///
+    /// Multi-line pasted text is the classic way to run a command you did not mean to:
+    /// the newline executes it the instant it arrives. Bracketed paste protects modern
+    /// shells, but not every remote program supports it, so the confirmation exists for
+    /// the cases where the terminal cannot know.
+    struct PendingPaste: Identifiable, Equatable {
+        let id = UUID()
+        let text: String
+        var lineCount: Int { text.split(separator: "\n", omittingEmptySubsequences: false).count }
+        var isBracketed: Bool
+    }
 
     private var emulator: TerminalEmulator
     private var connection: SSHConnection?
@@ -105,10 +127,13 @@ final class TerminalSession: Identifiable {
             let transport = try await makeTransport()
             state = .connecting(step: "Exchanging keys")
 
+            let approval: any HostKeyApprovalDelegate = Self.automaticHostKeyTrust
+                ? TrustOnFirstUseApproval()
+                : promptCoordinator
             let verifier = HostKeyVerifier(
                 identity: host.knownHostIdentity,
                 store: knownHosts,
-                approval: promptCoordinator,
+                approval: approval,
                 log: log
             )
             let credentials = try await resolveCredentials()
@@ -191,6 +216,23 @@ final class TerminalSession: Identifiable {
         }
     }
 
+    /// Offers text for pasting, asking first when that is the safer thing to do.
+    func requestPaste(_ text: String, confirmMultiline: Bool) async {
+        guard shell != nil else { return }
+        switch PastePolicy.decide(
+            text: text,
+            confirmMultiline: confirmMultiline,
+            bracketedPaste: modes.bracketedPaste
+        ) {
+        case .ignore:
+            return
+        case .confirm:
+            pendingPaste = PendingPaste(text: text, isBracketed: modes.bracketedPaste)
+        case .send:
+            await paste(text)
+        }
+    }
+
     /// Sends pasted text, wrapping it in bracketed-paste markers when the remote program
     /// asked for them.
     ///
@@ -198,11 +240,68 @@ final class TerminalSession: Identifiable {
     /// tell pasted text from typed text and refuse to execute a pasted newline.
     func paste(_ text: String) async {
         guard shell != nil else { return }
+        pendingPaste = nil
         if modes.bracketedPaste {
             await send("\u{1B}[200~" + text + "\u{1B}[201~")
         } else {
             await send(text)
         }
+    }
+
+    func cancelPendingPaste() { pendingPaste = nil }
+
+    // MARK: - Selection and search
+
+    /// The selected text, ready for the pasteboard.
+    var selectedText: String? {
+        guard let selection else { return nil }
+        let text = screen.text(in: selection)
+        return text.isEmpty ? nil : text
+    }
+
+    func search(for query: String, caseSensitive: Bool) {
+        guard !query.isEmpty else {
+            clearSearch()
+            return
+        }
+        searchMatches = screen.search(for: query, caseSensitive: caseSensitive)
+        // Start at the most recent match: when someone searches a terminal they are
+        // almost always looking for the latest occurrence, not the first.
+        focusedMatchIndex = searchMatches.isEmpty ? nil : searchMatches.count - 1
+        scrollToFocusedMatch()
+    }
+
+    func clearSearch() {
+        searchMatches = []
+        focusedMatchIndex = nil
+    }
+
+    func focusNextMatch(reverse: Bool = false) {
+        guard !searchMatches.isEmpty else { return }
+        let current = focusedMatchIndex ?? 0
+        let next = reverse
+            ? (current - 1 + searchMatches.count) % searchMatches.count
+            : (current + 1) % searchMatches.count
+        focusedMatchIndex = next
+        scrollToFocusedMatch()
+    }
+
+    var focusedMatch: TerminalRange? {
+        guard let focusedMatchIndex, searchMatches.indices.contains(focusedMatchIndex) else { return nil }
+        return searchMatches[focusedMatchIndex].range
+    }
+
+    private func scrollToFocusedMatch() {
+        guard let match = focusedMatch else { return }
+        let historyCount = screen.scrollback.count
+        // Rows at or below `historyCount` are already on screen.
+        if match.start.row >= historyCount {
+            scrollbackOffset = 0
+            return
+        }
+        // Put the match a third of the way down, so there is context above and below it.
+        let desired = historyCount - match.start.row + (size.rows / 3)
+        scrollbackOffset = min(max(0, desired), historyCount)
     }
 
     func resize(columns: Int, rows: Int) async {
@@ -377,6 +476,19 @@ final class TerminalSession: Identifiable {
     }
 
     static let userAgent = "SuperTerminal/\(Bundle.main.shortVersion) (iOS)"
+
+    /// Whether to accept a first-seen host key without asking.
+    ///
+    /// Only ever true in a Debug build driven by an automated UI run, where a modal sheet
+    /// would block the very screen the run exists to exercise. A release build has no code
+    /// path that sets it, so a real user is always asked.
+    private static var automaticHostKeyTrust: Bool {
+        #if DEBUG
+        UITestSeeding.trustsHostKeysAutomatically
+        #else
+        false
+        #endif
+    }
 }
 
 extension Bundle {

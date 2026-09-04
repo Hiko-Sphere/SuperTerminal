@@ -134,8 +134,8 @@ public struct TerminalEmulator: Sendable {
     }
 
     public mutating func resize(columns: Int, rows: Int) {
-        screen.resize(columns: columns, rows: rows)
-        alternateScreen.resize(columns: columns, rows: rows)
+        screen.resize(columns: columns, rows: rows, reflowOnColumnChange: true)
+        alternateScreen.resize(columns: columns, rows: rows, reflowOnColumnChange: false)
         tabStops = Set(stride(from: 8, to: max(columns, 8), by: 8))
     }
 

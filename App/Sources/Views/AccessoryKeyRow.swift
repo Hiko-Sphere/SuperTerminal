@@ -9,8 +9,6 @@ struct AccessoryKeyRow: View {
     let session: TerminalSession
     let theme: TerminalTheme
 
-    @State private var controlLatched = false
-
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: DesignTokens.Spacing.sm) {
@@ -33,7 +31,7 @@ struct AccessoryKeyRow: View {
     /// another key is awkward on a touchscreen, so tapping ctrl then `c` sends ^C.
     private var latchButton: some View {
         Button {
-            controlLatched.toggle()
+            session.controlLatched.toggle()
             UISelectionFeedbackGenerator().selectionChanged()
         } label: {
             Text("ctrl")
@@ -42,12 +40,12 @@ struct AccessoryKeyRow: View {
                 .padding(.vertical, DesignTokens.Spacing.sm)
                 .background(
                     RoundedRectangle(cornerRadius: DesignTokens.Radius.sm)
-                        .fill(controlLatched ? theme.cursor.swiftUIColor.opacity(0.3) : Color(uiColor: .tertiarySystemFill))
+                        .fill(session.controlLatched ? theme.cursor.swiftUIColor.opacity(0.3) : Color(uiColor: .tertiarySystemFill))
                 )
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Control")
-        .accessibilityValue(controlLatched ? "On" : "Off")
+        .accessibilityValue(session.controlLatched ? "On" : "Off")
         .accessibilityHint("Latches Control for the next key you press")
     }
 
@@ -84,7 +82,7 @@ struct AccessoryKeyRow: View {
         case .pageDown: bytes = Data("\u{1B}[6~".utf8)
         }
         await session.send(bytes)
-        controlLatched = false
+        session.controlLatched = false
     }
 
     private func cursor(_ letter: String) -> Data {

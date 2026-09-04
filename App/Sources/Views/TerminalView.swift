@@ -9,8 +9,10 @@ struct TerminalView: View {
 
     let session: TerminalSession
 
-    @State private var promptText = ""
     @State private var showsControlRow = false
+    @State private var isSearching = false
+    @State private var searchQuery = ""
+    @State private var searchCaseSensitive = false
 
     private var theme: TerminalTheme {
         container.settings.theme(for: colorScheme == .dark, hostOverride: session.host.themeID)
@@ -21,14 +23,41 @@ struct TerminalView: View {
             theme.background.swiftUIColor.ignoresSafeArea()
 
             VStack(spacing: 0) {
+                if isSearching {
+                    FindBar(
+                        query: $searchQuery,
+                        caseSensitive: $searchCaseSensitive,
+                        matchCount: session.searchMatches.count,
+                        focusedIndex: session.focusedMatchIndex,
+                        onSubmit: { session.search(for: searchQuery, caseSensitive: searchCaseSensitive) },
+                        onNext: { session.focusNextMatch() },
+                        onPrevious: { session.focusNextMatch(reverse: true) },
+                        onClose: {
+                            session.clearSearch()
+                            isSearching = false
+                            searchQuery = ""
+                        }
+                    )
+                }
+
                 TerminalScreenView(
                     session: session,
                     theme: theme,
                     fontSize: container.settings.fontSize,
-                    blinkCursor: container.settings.cursorBlink
+                    blinkCursor: container.settings.cursorBlink,
+                    confirmMultilinePaste: container.settings.confirmMultilinePaste
                 )
+                .accessibilityElement(children: .ignore)
                 .accessibilityLabel("Terminal for \(session.host.name)")
+                // VoiceOver reads the screen contents, which is the only way the terminal
+                // is usable without sight — the grid itself is a drawing, not a view
+                // hierarchy, so there is nothing else to announce.
                 .accessibilityValue(session.screen.visibleText)
+                .accessibilityAddTraits(.updatesFrequently)
+
+                if session.selection != nil {
+                    selectionBar
+                }
 
                 if session.scrollbackOffset > 0 {
                     scrollbackBanner
@@ -50,6 +79,71 @@ struct TerminalView: View {
         .sheet(item: promptBinding) { prompt in
             PromptSheet(session: session, prompt: prompt)
         }
+        .confirmationDialog(
+            pasteDialogTitle,
+            isPresented: pasteBinding,
+            titleVisibility: .visible
+        ) {
+            Button("Paste") {
+                if let pending = session.pendingPaste {
+                    Task { await session.paste(pending.text) }
+                }
+            }
+            Button("Cancel", role: .cancel) { session.cancelPendingPaste() }
+        } message: {
+            Text(pasteDialogMessage)
+        }
+    }
+
+    private var pasteBinding: Binding<Bool> {
+        Binding(
+            get: { session.pendingPaste != nil },
+            set: { if !$0 { session.cancelPendingPaste() } }
+        )
+    }
+
+    private var pasteDialogTitle: String {
+        guard let pending = session.pendingPaste else { return "Paste" }
+        return "Paste \(pending.lineCount) lines?"
+    }
+
+    private var pasteDialogMessage: String {
+        guard let pending = session.pendingPaste else { return "" }
+        return pending.isBracketed
+            ? "The remote program supports bracketed paste, so the text will be inserted without running it. Check it before pressing Return."
+            : "This text contains newlines and the remote program does not support bracketed paste, so each line will run as soon as it arrives."
+    }
+
+    /// Shown while text is selected. A bar rather than a floating menu because on a phone
+    /// the menu tends to land under the user's own finger.
+    private var selectionBar: some View {
+        HStack(spacing: DesignTokens.Spacing.lg) {
+            Button {
+                if let text = session.selectedText {
+                    UIPasteboard.general.string = text
+                    session.selection = nil
+                    UINotificationFeedbackGenerator().notificationOccurred(.success)
+                }
+            } label: {
+                Label("Copy", systemImage: "doc.on.doc")
+            }
+            Button {
+                session.selection = nil
+            } label: {
+                Label("Clear", systemImage: "xmark")
+            }
+            Spacer()
+            if let text = session.selectedText {
+                Text("\(text.count) characters")
+                    .font(DesignTokens.Typography.caption)
+                    .foregroundStyle(DesignTokens.Color.labelSecondary)
+            }
+        }
+        .font(DesignTokens.Typography.callout)
+        .padding(.horizontal, DesignTokens.Spacing.lg)
+        .padding(.vertical, DesignTokens.Spacing.sm)
+        .background(.bar)
+        .overlay(alignment: .top) { Divider() }
     }
 
     // MARK: - Overlays
@@ -122,6 +216,9 @@ struct TerminalView: View {
                 }
                 Button("Disconnect", systemImage: "bolt.slash") {
                     Task { await session.disconnect() }
+                }
+                Button("Find…", systemImage: "magnifyingglass") {
+                    isSearching = true
                 }
                 Divider()
                 Toggle("Show Key Row", isOn: $showsControlRow)

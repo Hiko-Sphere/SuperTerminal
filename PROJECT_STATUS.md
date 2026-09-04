@@ -1,7 +1,7 @@
 # Project status
 
-**Updated:** 2026-09-05 · **Phase:** 4 of 7 — the app builds, runs and connects on
-simulator; Cloudflare carrier implemented and awaiting live credentials
+**Updated:** 2026-09-05 · **Phase:** 4 of 7 — the app is driven end to end through its
+own interface; Cloudflare carrier implemented and awaiting live credentials
 
 This file is the resumable state of the work. It records what is *proven*, what is
 *written but unproven*, and what is *not started* — kept separate on purpose, because
@@ -30,6 +30,11 @@ This file is the resumable state of the work. It records what is *proven*, what 
 | The host-key prompt gates the connection | Same suite: refusing the prompt fails the session with `.hostKey`, and the fingerprint offered matches the server's real one |
 | App launches on iPhone and iPad | Installed and launched on both simulators; UI tests pass |
 | Debug and Release both build | Simulator and unsigned device builds, zero warnings from app code |
+| **The UI reaches a live terminal** | `scripts/ui-terminal-e2e.sh` — XCUITest taps a connection, the terminal appears, typed text reaches the server and `UI_TERMINAL_READY` renders back; screenshot attached to the result bundle |
+| The on-screen Control key sends control characters | Same suite: latching ctrl then `c` interrupts `sleep 30` and the shell stays responsive |
+| The host list survives an accessibility text size | Same suite, relaunched at `UICTContentSizeCategoryAccessibilityL` |
+| Reflow on column change | 9 tests: widening rejoins, narrowing re-wraps, hard breaks survive, round-trip is stable, wide characters stay whole, attributes and cursor follow, alternate screen is left alone, scrollback stays bounded |
+| Selection, copy and scrollback search | 11 tests: soft wraps copy without an injected newline, block selection, wide characters copy once, selection reaches into history, search crosses wraps and is bounded |
 
 ### Written, builds, not yet proven end to end
 
@@ -42,17 +47,16 @@ This file is the resumable state of the work. It records what is *proven*, what 
 
 ### Written and running, but not yet verified against a person
 
-The app's UI exists and works — host list, connection editor, terminal, prompts,
-settings, known hosts, diagnostics export — but only the empty states and the connection
-path have been exercised. Selection, copy/paste, mouse reporting, search over scrollback
-and the pointer/drag-and-drop work on iPad are implemented in outline or not at all.
+Selection and search have unit coverage and are wired into the UI, but the *gestures*
+that drive them — long-press to select, drag to extend, double-tap for a logical line —
+have not been exercised by a test or by hand. Mouse reporting is parsed but nothing sends
+it yet. VoiceOver reads the terminal's rendered text, which has been wired but not heard.
 
 ### Not started
 
-Multi-scene (`UISceneSession`) support · Instruments profiling of the renderer · CI ·
-snippets · command history · iCloud sync · SFTP · port forwarding · App Intents ·
-Spotlight. Line reflow on column resize is also outstanding: content is preserved and
-truncated or padded, but wrapped lines are not re-flowed.
+Multi-scene (`UISceneSession`) support · pointer and drag-and-drop on iPad · Instruments
+profiling of the renderer · CI · snippets · command history · iCloud sync · SFTP · port
+forwarding · App Intents · Spotlight.
 
 ---
 

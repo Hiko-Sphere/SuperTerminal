@@ -37,8 +37,8 @@ xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal \
   CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
 # ** BUILD SUCCEEDED ** — arm64 device build compiles
 
-./scripts/app-integration-e2e.sh   # 5 tests on iPhone 17 Pro simulator, ** TEST SUCCEEDED **
-xcodebuild test ... -only-testing:SuperTerminalUITests   # 2 UI tests, ** TEST SUCCEEDED **
+./scripts/app-integration-e2e.sh   # 14 tests on iPhone 17 Pro simulator, ** TEST SUCCEEDED **
+./scripts/ui-terminal-e2e.sh       # 5 UI tests driving the real interface, ** TEST SUCCEEDED **
 ```
 
 Warning counts were measured, not assumed:
@@ -123,11 +123,27 @@ machine, with the emulator attached.
 | A host key the app has not seen is refused until approved | The prompt machinery gates the connection, the fingerprint offered matches the server's real one, and refusing fails the session with `.hostKey` |
 | Host model (3 tests) | A Cloudflare host is recorded against port 443 rather than the origin's SSH port; validation reports every problem |
 
-### UI tests — 2 tests
+### UI tests — 5 tests, driving the real interface
 
-Launch and connection-editor validation on the simulator. Deliberately structural rather
-than pixel-based: "the empty state offers a way forward" should stay true across design
-changes.
+`scripts/ui-terminal-e2e.sh` starts an `sshd`, seeds a connection through a Debug-only
+environment hook, and drives the app the way a person would.
+
+| Test | What a pass proves |
+| --- | --- |
+| The terminal connects and shows a prompt | Tapping a connection reaches a terminal, typed text arrives at the server, and `UI_TERMINAL_READY` renders back. A screenshot is attached to the result bundle. |
+| The accessory key row sends control characters | Latching ctrl then `c` interrupts `sleep 30`, and the shell answers afterwards — the only way to send ^C on a phone |
+| The host list survives an accessibility text size | Relaunched at `UICTContentSizeCategoryAccessibilityL`; the list and its rows stay reachable |
+| Launch and editor validation (2) | The empty state offers a way forward; Save stays disabled until the form is usable |
+
+Writing these found two defects that no unit test could have:
+
+* **On iPhone, tapping a connection opened a session but never showed it.** The list
+  started the connection and the split-view detail column would have displayed it, but a
+  navigation stack has to be pushed explicitly. On a phone the terminal was unreachable.
+* **The on-screen Control key did nothing.** The latch was held in the SwiftUI button
+  that drew it, while typed characters arrive through `insertText` on the input view — so
+  it highlighted correctly and modified nothing. Tapping ctrl then `c` typed a literal
+  `c`. On a phone that means no way to interrupt a running command at all.
 
 ### Manual inspection
 
@@ -148,7 +164,9 @@ Stated plainly, because a test report that omits these would be misleading:
 | **Archive and TestFlight** | `xcodebuild archive` fails with *"Signing for SuperTerminal requires a development team"*. Recorded as `PROJECT_STATUS.md` B-4. |
 | **External keyboard and pointer** | The key mapping is implemented and unit-testable, but has not been exercised against real hardware. |
 | **Accessibility** | VoiceOver, Dynamic Type and high-contrast passes have not been run. |
-| **Selection, copy/paste, mouse reporting** | Implemented in outline in the render and input layers; no tests and no manual verification yet. |
+| **Selection gestures** | The selection model, copy semantics and search have 11 unit tests, but the gestures that drive them — long-press, drag to extend, double-tap — have not been exercised by a test or by hand. |
+| **Mouse reporting** | Modes are parsed and surfaced; nothing sends mouse events yet. |
+| **VoiceOver, high contrast, Reduce Transparency** | Dynamic Type is verified on the host list. The terminal exposes its rendered text as an accessibility value, but no VoiceOver session has been run. |
 | **Keychain behaviour** | `KeychainSecureStore` is written but untested; Keychain semantics differ enough in a macOS unit-test process that a passing test there would prove little. Needs device tests. |
 | **RSA keys** | Unsupported — see `DECISIONS.md` D-002. Not a test gap; a capability gap. |
 | **Instruments profiling** | Not run. Rendering does not exist yet, so there is nothing meaningful to profile. |

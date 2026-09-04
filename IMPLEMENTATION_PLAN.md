@@ -47,8 +47,11 @@ Legend: ✅ done and proven · 🟡 written, awaiting verification · ⬜ not st
 * ✅ Unicode widths from generated UCD tables; CJK, emoji, ZWJ sequences, flags
 * ✅ 256-colour and true colour, in both the semicolon and colon notations
 * ✅ Core Text renderer with run coalescing
-* ⬜ Selection, copy/paste, bracketed paste UI, mouse reporting, OSC 8 link opening
-* ⬜ Reflow on resize; search over scrollback
+* ✅ Selection model, copy that respects soft wraps, block selection, logical-line selection
+* ✅ Reflow on resize, including wide characters, attributes and the cursor
+* ✅ Search over the whole buffer, including terms split across a wrap
+* ✅ Bracketed paste, with a confirmation for multi-line pastes
+* ⬜ Mouse reporting output, OSC 8 link opening
 * ⬜ Instruments measurement (deferred to phase 6, where there is a real workload)
 
 ## Phase 4 — Application 🟡 ← current
@@ -60,8 +63,10 @@ Legend: ✅ done and proven · 🟡 written, awaiting verification · ⬜ not st
 * ✅ iPhone accessory key row with a latching Control
 * ✅ Hardware keyboard mapping, including application cursor mode and Meta
 * ✅ Runs on iPhone and iPad simulators; app-hosted integration test connects to a real server
+* ✅ Terminal reachable through the interface on iPhone, verified by a UI test that types and reads back
+* ✅ Selection bar, find bar, paste confirmation
 * 🟡 iPad: split view works; Stage Manager, multi-scene, pointer and drag & drop outstanding
-* ⬜ Accessibility pass: VoiceOver, Dynamic Type, high contrast, Reduce Transparency
+* 🟡 Accessibility: Dynamic Type verified on the host list, VoiceOver value wired for the terminal; high contrast and Reduce Transparency not yet checked
 
 ## Phase 5 — Product features ⬜
 

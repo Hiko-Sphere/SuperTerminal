@@ -52,7 +52,7 @@ final class AppContainer {
             settings: settings,
             diagnostics: diagnostics
         )
-        return AppContainer(
+        let container = AppContainer(
             hostStore: HostStore(directory: directory),
             sessionManager: sessionManager,
             settings: settings,
@@ -60,6 +60,10 @@ final class AppContainer {
             knownHosts: knownHosts,
             diagnostics: diagnostics
         )
+        #if DEBUG
+        UITestSeeding.apply(to: container)
+        #endif
+        return container
     }
 }
 
