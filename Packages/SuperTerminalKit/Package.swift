@@ -93,6 +93,6 @@ let package = Package(
         .testTarget(name: "STCoreTests", dependencies: ["STCore"]),
         .testTarget(name: "STTerminalTests", dependencies: ["STTerminal", "STSSH", "STTestSupport"]),
         .testTarget(name: "STSSHTests", dependencies: ["STSSH", "STTestSupport"]),
-        .testTarget(name: "STCloudflareTests", dependencies: ["STCloudflare", "STTestSupport"]),
+        .testTarget(name: "STCloudflareTests", dependencies: ["STCloudflare", "STSSH", "STTerminal", "STTestSupport"]),
     ]
 )

@@ -1,7 +1,7 @@
 # Project status
 
-**Updated:** 2026-09-04 · **Phase:** 2 of 7 — SSH core proven, Cloudflare carrier
-implemented and awaiting live verification
+**Updated:** 2026-09-05 · **Phase:** 3 of 7 — SSH core and terminal emulator proven
+against real programs; Cloudflare carrier implemented and awaiting live credentials
 
 This file is the resumable state of the work. It records what is *proven*, what is
 *written but unproven*, and what is *not started* — kept separate on purpose, because
@@ -21,7 +21,11 @@ This file is the resumable state of the work. It records what is *proven*, what 
 | Interactive PTY allocation | `SSHIntegrationTests.interactivePTYSession` — `stty size` on the remote reports the geometry we requested |
 | Terminal resize propagation | `SSHIntegrationTests.terminalResizePropagates` |
 | Trust-on-first-use records the server's real host key | `SSHIntegrationTests.trustOnFirstUseRecordsKey` |
+| SSH over the WebSocket carrier | `CarrierIntegrationTests` — a full session, a 256 KiB burst, the Access and service-token headers, and each edge failure mode |
+| The terminal runs real full-screen programs | `TUIIntegrationTests` — `vim` and `less` over a real SSH PTY, with alternate-screen restore, mid-session resize honoured by vim, and CJK/emoji rendering |
+| Unicode cell widths | `CharacterWidthTests` against generated UCD 17.0.0 tables — CJK, halfwidth kana, combining marks, ZWJ sequences, flags, variation selectors |
 | Package builds clean under Swift 6 strict concurrency | `swift build` — zero errors, zero warnings from project code |
+| Whole suite | 73 tests in 11 suites, 7.0s; the live Cloudflare suite skips cleanly without credentials |
 
 ### Written, builds, not yet proven end to end
 
@@ -34,9 +38,10 @@ This file is the resumable state of the work. It records what is *proven*, what 
 
 ### Not started
 
-Terminal emulator · SwiftUI app · design system · iPad multi-scene · hardware keyboard ·
+SwiftUI app · design system · rendering layer · iPad multi-scene · hardware keyboard ·
 accessibility · Xcode project and app target · CI · snippets, history, SFTP, port
-forwarding, App Intents.
+forwarding, App Intents. Line reflow on column resize is also outstanding: content is
+preserved and truncated or padded, but wrapped lines are not re-flowed.
 
 ---
 
@@ -71,20 +76,30 @@ and B-2 cannot be worked around.
 These are the only things that cannot be produced locally. Each is listed with the
 verification it unblocks, so nothing is requested speculatively.
 
-**Not needed yet** — the request will be made when the code is ready to run the
-verification the same day. Do not send credentials in chat; the intake procedure is in
-`docs/CLOUDFLARE.md`.
+**Ready to run now.** `scripts/live-e2e.sh` and `LiveCloudflareE2ETests` exist and are
+skipped only because the environment is unset. Supplying items 1–3 makes a real
+end-to-end run possible immediately, with no further code needed.
 
-1. **A Cloudflare Access-protected SSH hostname** (e.g. `ssh-test.example.com`) fronted
-   by a Cloudflare Tunnel whose ingress points at a test SSH server.
-   *Unblocks:* the full chain — discovery, login, carrier, SSH handshake, PTY.
-2. **A test identity** allowed by that application's policy, ideally with MFA enabled.
-   *Unblocks:* SSO/MFA login, token expiry and re-authentication.
-3. **An Access service token** (client ID + secret) for the same application.
-   *Unblocks:* automated, browser-free end-to-end runs in CI.
-4. **An Apple Developer team ID** and a device provisioning profile.
-   *Unblocks:* on-device runs, archive, TestFlight. A paired iPhone 16 Pro is already
-   visible to the build machine, and two Apple Development signing identities exist.
+Do **not** paste secrets into chat. Export them in a shell, or keep them in a file
+outside the working tree and `source` it — the script's header documents the variables.
+
+1. **A Cloudflare Access-protected SSH hostname** fronted by a Cloudflare Tunnel whose
+   ingress points at a test SSH server. → `ST_LIVE_CF_HOSTNAME`
+   *Unblocks:* discovery, carrier, SSH handshake, interactive PTY over the real edge.
+2. **An Access service token** (client ID + secret) authorised by that application's
+   policy. → `ST_LIVE_CF_SERVICE_TOKEN_ID`, `ST_LIVE_CF_SERVICE_TOKEN_SECRET`
+   *Unblocks:* the automated run, with no browser in the loop. This is the smallest
+   thing that turns the central product claim from "implemented" into "verified".
+3. **An SSH credential for that host** — a key path or a password, plus the username.
+   → `ST_LIVE_SSH_USER` and one of `ST_LIVE_SSH_KEY_PATH` / `ST_LIVE_SSH_PASSWORD`
+
+Needed later, not now:
+
+4. **A test identity with MFA** for the interactive SSO login. That path runs through
+   `ASWebAuthenticationSession`, so it can only be exercised once the app target exists.
+5. **An Apple Developer team ID.** A paired iPhone 16 Pro is already visible to the
+   build machine and two Apple Development signing identities exist, so this is needed
+   for distribution rather than for device testing.
 
 ---
 
