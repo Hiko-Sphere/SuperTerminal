@@ -116,45 +116,67 @@ struct HostListView: View {
 }
 
 private struct HostRow: View {
-    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let host: Host
     let open: () -> Void
 
     var body: some View {
         Button(action: open) {
-            HStack(spacing: DesignTokens.Spacing.md) {
-                Image(systemName: host.transport.isCloudflare ? "point.3.connected.trianglepath.dotted" : "server.rack")
-                    .foregroundStyle(host.transport.isCloudflare ? DesignTokens.Color.info : DesignTokens.Color.labelSecondary)
-                    .frame(width: 24)
-
-                VStack(alignment: .leading, spacing: DesignTokens.Spacing.xxs) {
-                    Text(host.name)
-                        .font(DesignTokens.Typography.body)
-                        .foregroundStyle(DesignTokens.Color.label)
-                    Text(host.subtitle)
-                        .font(DesignTokens.Typography.caption)
-                        .foregroundStyle(DesignTokens.Color.labelSecondary)
-                        .lineLimit(1)
+            // At accessibility text sizes the name wraps to several lines, and a
+            // side-by-side icon ends up sitting across them. Stacking vertically is the
+            // only layout that survives — found by screenshotting the app at
+            // AccessibilityXXXL rather than by reading the code.
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
+                    HStack(spacing: DesignTokens.Spacing.sm) {
+                        icon
+                        if host.transport.isCloudflare { accessBadge }
+                    }
+                    labels
                 }
-
-                Spacer()
-
-                if host.transport.isCloudflare {
-                    Text("Access")
-                        .font(DesignTokens.Typography.caption)
-                        .padding(.horizontal, DesignTokens.Spacing.sm)
-                        .padding(.vertical, DesignTokens.Spacing.xxs)
-                        .background(
-                            Capsule().fill(DesignTokens.Color.info.opacity(0.15))
-                        )
-                        .foregroundStyle(DesignTokens.Color.info)
+                .contentShape(Rectangle())
+            } else {
+                HStack(spacing: DesignTokens.Spacing.md) {
+                    icon.frame(width: 24)
+                    labels
+                    Spacer()
+                    if host.transport.isCloudflare { accessBadge }
                 }
+                .contentShape(Rectangle())
             }
-            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(host.name), \(host.subtitle)")
         .accessibilityHint("Opens a terminal session")
+    }
+
+    private var icon: some View {
+        Image(systemName: host.transport.isCloudflare ? "point.3.connected.trianglepath.dotted" : "server.rack")
+            .foregroundStyle(host.transport.isCloudflare ? DesignTokens.Color.info : DesignTokens.Color.labelSecondary)
+    }
+
+    private var labels: some View {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.xxs) {
+            Text(host.name)
+                .font(DesignTokens.Typography.body)
+                .foregroundStyle(DesignTokens.Color.label)
+            Text(host.subtitle)
+                .font(DesignTokens.Typography.caption)
+                .foregroundStyle(DesignTokens.Color.labelSecondary)
+                // Truncating a hostname at accessibility sizes hides the very thing that
+                // tells two connections apart, so it is allowed to wrap there.
+                .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
+        }
+    }
+
+    private var accessBadge: some View {
+        Text("Access")
+            .font(DesignTokens.Typography.caption)
+            .padding(.horizontal, DesignTokens.Spacing.sm)
+            .padding(.vertical, DesignTokens.Spacing.xxs)
+            .background(Capsule().fill(DesignTokens.Color.info.opacity(0.15)))
+            .foregroundStyle(DesignTokens.Color.info)
     }
 }
 

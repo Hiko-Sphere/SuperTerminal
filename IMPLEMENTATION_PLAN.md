@@ -69,7 +69,8 @@ Legend: ✅ done and proven · 🟡 written, awaiting verification · ⬜ not st
 * 🟡 iPad: split view works; Stage Manager, multi-scene, pointer and drag & drop outstanding
 * ✅ Reduce Transparency honoured through a single modifier rather than per-view
 * ✅ Increased contrast selects the high-contrast terminal theme automatically
-* 🟡 Accessibility: Dynamic Type verified on the host list; VoiceOver wired but not heard
+* ✅ Accessibility run for real: text sizes, Reduce Transparency, Bold Text, label coverage
+* 🟡 VoiceOver wired and asserted structurally, but not heard
 
 ## Phase 5 — Product features ⬜
 

@@ -40,6 +40,7 @@ This file is the resumable state of the work. It records what is *proven*, what 
 | **Throughput, measured** | Release: 9.0 MB/s plain text, 12.7 MB/s coloured, 8.0 MB/s CJK; reflow of a full 5 000-line scrollback in 18 ms. Floors are asserted per configuration, so a regression fails rather than being noticed later as "sluggish" |
 | **Render cost, measured** | A full redraw of both an 80×24 and a 200×55 grid fits inside a 60 Hz frame on the simulator; run coalescing is asserted directly on the run count |
 | Selection and find gestures | UI tests: long-press-and-drag selects and offers Copy, and the find bar reports a match count |
+| **Accessibility, run for real** | UI tests launch the app with accessibility text sizes, Reduce Transparency and Bold Text actually enabled, and assert every control carries a label. Screenshots are attached to the result bundle. |
 | **Key generation, import and export** | Generated keys are read by `ssh-keygen`, which agrees on the fingerprint, and both algorithms authenticate against a real `sshd` that trusts only the generated key. A UI test generates one through the interface. |
 
 ### Written, builds, not yet proven end to end
@@ -55,9 +56,11 @@ This file is the resumable state of the work. It records what is *proven*, what 
 
 Double-tap to select a logical line is implemented and unit-tested at the model level but
 not driven by a UI test. Hover reporting is implemented but has not been driven with a
-trackpad. VoiceOver reads the terminal's rendered text, which is wired but has not been
-heard. The high-contrast theme is selected automatically under increased contrast,
-verified by reading the code rather than by running with the setting on.
+trackpad. The terminal exposes its rendered text as an accessibility value and every
+control is labelled, but no VoiceOver session has been *heard* — the tests check structure,
+which is not the same as listening to it. Increase Contrast selecting the high-contrast
+terminal theme is still verified by reading the code, because the terminal itself needs a
+live connection to screenshot at that setting.
 
 ### Not started
 

@@ -4,9 +4,9 @@ An SSH terminal for iPhone and iPad that connects to servers published through
 **Cloudflare Tunnel** and protected by **Cloudflare Access** — with no helper binary on
 the device, and a real native interactive PTY at the end of it.
 
-> **Status: in development.** The SSH core and the Cloudflare carrier are implemented
-> and covered by tests that run against a real OpenSSH server. Live Cloudflare Access
-> verification, the terminal emulator and the app UI are not done yet.
+> **Status: in development.** The app builds, runs, and connects — with the SSH stack,
+> the terminal and the interface each covered by tests that run against a real OpenSSH
+> server. Live Cloudflare Access verification is the significant piece still outstanding.
 > [`PROJECT_STATUS.md`](PROJECT_STATUS.md) is the authoritative account of what is
 > proven, what is merely written, and what is missing — read it before believing
 > anything here.
@@ -90,6 +90,16 @@ docs/                          Cloudflare setup, SSH guide, operations
 | [`SECURITY.md`](SECURITY.md) | Threat model, key handling, and stated residual risk |
 | [`TEST_REPORT.md`](TEST_REPORT.md) | Commands actually run, when, and what they produced |
 | [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) | Dependencies, licences, and exactly what was modified in vendored code |
+
+### Guides
+
+| Document | What it covers |
+| --- | --- |
+| [`docs/CLOUDFLARE.md`](docs/CLOUDFLARE.md) | Publishing an SSH server through Cloudflare Tunnel and Access, service tokens, diagnosing each edge failure, revoking access |
+| [`docs/SSH.md`](docs/SSH.md) | Using the app: connections, keys, host key verification, the algorithm matrix, terminal gestures |
+| [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) | Building, testing, signing, and maintaining the vendored `swift-nio-ssh` |
+| [`docs/RELEASE.md`](docs/RELEASE.md) | App Store and TestFlight checklist, privacy answers, likely review questions |
+| [`docs/PRIVACY.md`](docs/PRIVACY.md) | What is stored, where, and what leaves the device |
 
 ## Known limitations
 

@@ -1,0 +1,117 @@
+# Release checklist
+
+Everything here is a check someone can actually perform, with the command that performs
+it. A checklist of intentions is not a checklist.
+
+## Before a build is worth submitting
+
+### Gates that must be green
+
+```bash
+cd Packages/SuperTerminalKit && swift test
+cd ../swift-nio-ssh-rsa && swift test
+cd ../.. && ./scripts/app-integration-e2e.sh
+./scripts/ui-terminal-e2e.sh
+./scripts/live-e2e.sh          # needs the Cloudflare test environment
+```
+
+- [ ] Zero errors and zero warnings from project code, in Debug **and** Release
+- [ ] Every suite passes, including the live Cloudflare run
+- [ ] `patches/niossh-rsa.patch` still applies to the pinned upstream tag
+- [ ] No placeholder implementations, no committed credentials (both gated in CI)
+
+### Verified on hardware, not only in a simulator
+
+- [ ] Plain SSH connects on a physical iPhone and iPad
+- [ ] Cloudflare Access sign-in completes on device, including the MFA step
+- [ ] A Cloudflare-tunnelled host reaches an interactive PTY on device
+- [ ] Token expiry triggers re-authentication rather than a dead session
+- [ ] A changed host key is refused on device
+- [ ] `vim` and `tmux` render and respond correctly
+- [ ] External keyboard shortcuts work, including Control and Option
+- [ ] Rotation, Split View and Stage Manager resize the terminal correctly
+- [ ] Backgrounding and returning does not lose a session
+
+### Accessibility
+
+- [ ] VoiceOver can read the terminal and reach every control
+- [ ] Dynamic Type at accessibility sizes does not break any screen
+- [ ] Increase Contrast selects the high-contrast terminal theme
+- [ ] Reduce Transparency makes bars solid
+- [ ] Reduce Motion stops the cursor blinking
+
+### Performance
+
+- [ ] `swift test -c release --filter TerminalThroughputTests` meets its floors
+- [ ] An Instruments trace of sustained output shows no runaway allocation
+- [ ] Memory is bounded under a long-running high-output session
+
+## Signing and identifiers
+
+- [ ] Development team set on the `SuperTerminal` target
+- [ ] Bundle identifier registered (`dev.superterminal.app`, or your own)
+- [ ] `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` bumped
+- [ ] Distribution certificate and provisioning profile valid
+
+```bash
+xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal \
+  -configuration Release -destination 'generic/platform=iOS' \
+  -archivePath build/SuperTerminal.xcarchive archive
+```
+
+## App Store Connect
+
+### Privacy
+
+- [ ] **Data collected: none.** Nothing is collected, linked or used for tracking
+- [ ] **Tracking: no**
+- [ ] `PrivacyInfo.xcprivacy` declares only the two required-reason APIs actually used —
+      file timestamps (`C617.1`) and `UserDefaults` (`CA92.1`)
+
+See [PRIVACY.md](PRIVACY.md) for the reasoning behind each answer.
+
+### Export compliance
+
+The app uses encryption: SSH, TLS, and the cryptographic primitives underneath. It uses
+only standard algorithms provided by the platform and by audited libraries, and implements
+none of its own — which is the ordinary case for the exemption most apps claim. Confirm
+the current wording of the questions in App Store Connect rather than relying on this
+paragraph, and take advice if the app will be distributed somewhere with its own rules.
+
+### Review notes
+
+Reviewers cannot test a Cloudflare-protected host without credentials. Provide:
+
+- [ ] A test hostname reachable from outside your network
+- [ ] A test account, with MFA disabled or a shared TOTP secret
+- [ ] A short note explaining that the app speaks Cloudflare's tunnel protocol directly
+      and needs no companion install — this pre-empts the obvious question
+
+Also worth stating: the app opens sign-in in `ASWebAuthenticationSession`, which is the
+supported mechanism, and it is not a web view masquerading as a terminal.
+
+### Likely review questions
+
+| Question | Answer |
+| --- | --- |
+| Does this need another app installed? | No. `cloudflared` is not required on the device |
+| Is the terminal a web view? | No. It is a Core Text renderer over a native SSH implementation |
+| Why does it need Keychain access? | To store SSH private keys and passwords. There is no server component |
+| Does it use private API? | No |
+| Does it download executable code? | No |
+
+## TestFlight
+
+- [ ] Build uploaded and processed
+- [ ] Export compliance answered
+- [ ] "What to test" names the paths that need real infrastructure — Cloudflare sign-in,
+      token expiry, host key change
+- [ ] Known limitations listed for testers, taken from `../PROJECT_STATUS.md` rather than
+      summarised from memory
+
+## After release
+
+- [ ] Tag the commit
+- [ ] `PROJECT_STATUS.md` and `TEST_REPORT.md` reflect what actually shipped
+- [ ] Check <https://github.com/apple/swift-nio-ssh/releases> — if upstream has added RSA,
+      open the work to delete the vendored fork

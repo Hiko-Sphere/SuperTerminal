@@ -185,6 +185,14 @@ environment hook, and drives the app the way a person would.
 | Find searches the scrollback | The find bar opens, searches the buffer and reports a match count |
 | Generating a key shows something pastable | Reached through Settings → Keys, the key is created and its `authorized_keys` line is displayed with a copy action, then appears in the list |
 | Launch and editor validation (2) | The empty state offers a way forward; Save stays disabled until the form is usable |
+| The host list survives every accessibility text size | Launched at AccessibilityM and AccessibilityXXXL, with screenshots attached |
+| Settings stay usable with Reduce Transparency and Bold Text | Both actually enabled; every section remains reachable |
+| Every control on the host list is labelled | An unlabelled button reads out as "button" and is unusable without sight |
+
+Running these rather than reading the code found a layout defect immediately: at
+`AccessibilityXXXL` the server icon sat across the wrapped connection name, and the
+hostname — the thing that tells two connections apart — was truncated. Rows now stack
+vertically and let the subtitle wrap at accessibility sizes.
 
 Writing these found two defects that no unit test could have:
 
@@ -265,8 +273,8 @@ Stated plainly, because a test report that omits these would be misleading:
 | **Accessibility** | VoiceOver, Dynamic Type and high-contrast passes have not been run. |
 | **Double-tap to select a line** | Implemented and unit-tested at the model level; not driven by a UI test. Long-press-and-drag selection and find both are. |
 | **Mouse reporting** | Modes are parsed and surfaced; nothing sends mouse events yet. |
-| **VoiceOver** | Dynamic Type is verified on the host list, and the terminal exposes its rendered text as an accessibility value, but no VoiceOver session has been run. |
-| **High contrast and Reduce Transparency** | Both are implemented — increased contrast selects the high-contrast theme, and bar backgrounds go solid — but verified by reading the code, not by running with the settings enabled. |
+| **VoiceOver, heard** | Every control is labelled and the terminal exposes its rendered text, both asserted by tests. Nobody has listened to an actual VoiceOver session, which is a different thing. |
+| **Increase Contrast selecting the high-contrast theme** | Still verified by reading the code. Screenshotting it needs a live terminal at that setting, which the current harness does not drive. |
 | **Pointer and hover on iPad** | Hover reporting is implemented; it has not been driven with a trackpad. |
 | **Keychain behaviour** | `KeychainSecureStore` is written but untested; Keychain semantics differ enough in a macOS unit-test process that a passing test there would prove little. Needs device tests. |
 | **Instruments profiling** | Not run. `XCTest`'s measurement was used instead because it produces a number on every run, in CI as well as on a desk, and fails on a regression. An Instruments trace remains the better tool for finding *why* something is slow, and is worth doing before release. |

@@ -1,0 +1,126 @@
+# Using SuperTerminal with a plain SSH server
+
+Everything here applies whether the server is reached directly or through a Cloudflare
+Tunnel — the SSH layer is the same code either way.
+
+## Adding a connection
+
+Settings are minimal on purpose:
+
+| Field | Notes |
+| --- | --- |
+| Name | What you will see in the list |
+| Hostname | A hostname, an IPv4 address, or an IPv6 address in brackets |
+| Username | The account on the server |
+| Port | Direct connections only. Cloudflare hosts are always reached on 443 |
+| Through Cloudflare Tunnel | See [the Cloudflare guide](CLOUDFLARE.md) |
+| Private key | Chosen from the keys you have generated or imported |
+| Offer a password | Leave the password blank to be asked each time rather than storing it |
+
+Credentials are offered in the order they are listed, and the app skips any method the
+server has already refused — so a server with `MaxAuthTries 2` is not locked out by
+offering keys it will never accept.
+
+## Keys
+
+**Generating one** — Settings → Keys → Generate. Ed25519 is the default and the right
+choice unless a policy demands otherwise. The app shows the public key as an
+`authorized_keys` line; add it to the server:
+
+```bash
+# On the server
+echo 'ssh-ed25519 AAAA... phone@superterminal' >> ~/.ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys
+```
+
+Keys are written in the same `openssh-key-v1` format `ssh-keygen` produces, so one
+generated on the phone can be exported and used from a laptop.
+
+**Importing one** — paste the private key or choose a file. Passphrase-protected keys are
+supported; the passphrase unlocks the key and is not stored.
+
+**Biometric protection** — a key can require Face ID or Touch ID at every use. It is
+per-key rather than global, because a key for a production jump host deserves the prompt
+and one for a scratch VM does not. Enrolling a new face or finger invalidates the key,
+which is deliberate: someone who learns the passcode still cannot add a biometric and use
+your key.
+
+## Host keys
+
+The first time you connect, the app shows the server's SHA-256 fingerprint and asks you to
+confirm it. Check it against the server:
+
+```bash
+ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub
+```
+
+A fingerprint nobody checks is decoration, so the sheet is written to be read.
+
+If the key later **changes**, the app refuses to connect and shows both fingerprints. That
+happens when a server is rebuilt or rekeyed — and it is also exactly what an interception
+attack looks like. Continuing is possible but deliberately not the obvious action.
+
+Settings → Known hosts lists everything remembered, with the option to forget an entry.
+
+## Algorithm support
+
+The SSH implementation is built on `swift-nio-ssh`, with RSA added
+(see `../DECISIONS.md` D-007).
+
+| | Supported |
+| --- | --- |
+| Key exchange | `curve25519-sha256`, `curve25519-sha256@libssh.org`, `ecdh-sha2-nistp256/384/521` |
+| Host keys | `ssh-ed25519`, `ecdsa-sha2-nistp256/384/521`, `rsa-sha2-512`, `rsa-sha2-256` |
+| User keys | `ssh-ed25519`, `ecdsa-sha2-nistp256`, `rsa-sha2-512`, `rsa-sha2-256` |
+
+A P-384 or P-521 **host** key is accepted, but a P-384 or P-521 **user** key cannot be
+imported: the key-file parser handles Ed25519, ECDSA P-256 and RSA. If you have one, the
+import fails with a message saying so rather than a generic error.
+| Ciphers | `aes128-gcm@openssh.com`, `aes256-gcm@openssh.com` |
+
+**Not supported, deliberately:**
+
+* `ssh-rsa` — this names SHA-1, which OpenSSH disabled by default in 8.8 because
+  chosen-prefix collisions are practical. Supporting it would ship a downgrade a server
+  could ask for. Use `rsa-sha2-256` or `rsa-sha2-512`; any OpenSSH from 7.2 onwards offers
+  them for the same key, so no new key is needed.
+* DSA — removed from OpenSSH entirely in 10.0.
+* `aes*-ctr` and `chacha20-poly1305@openssh.com` — a server that has disabled AES-GCM
+  cannot currently be reached. This is a real gap, recorded in `../PROJECT_STATUS.md`.
+
+If a handshake fails on algorithms, the app says so specifically rather than reporting a
+generic failure.
+
+## The terminal
+
+**On iPhone**, the accessory row above the keyboard carries the keys a phone keyboard
+lacks: Escape, Tab, arrows, Home, End, Page Up/Down, and a **latching Control** — tap
+`ctrl` then `c` to send ^C. Latching rather than chording, because holding a modifier
+while tapping is awkward on glass.
+
+**With a hardware keyboard**, keys map as you would expect, including Option as Meta and
+the application-cursor mode that makes arrows work in `vim`. ⌘ is reserved for the app and
+the system, so ⌘C copies rather than being sent to the remote host. Hold ⌘ on iPad to see
+the shortcuts.
+
+**Selecting text** — long-press and drag, or double-tap to select a whole line. A line
+that wrapped is treated as one line, and copying it gives back the text *without* the
+wrap's newline; pasting a newline into a shell would run half a command.
+
+**Pasting** — multi-line pastes ask for confirmation first, for the same reason. The
+confirmation can be turned off in Settings. Bracketed paste is used when the remote
+program asks for it.
+
+**Searching** — Session menu → Find searches the whole scrollback, including text that
+wrapped across lines.
+
+**Scrolling** — two fingers. One finger is reserved for selection so the two gestures
+cannot fight. When a program has enabled mouse reporting, two-finger scrolling becomes
+wheel events for that program instead.
+
+## Diagnostics
+
+Settings → Export diagnostics produces a report that contains **no** commands, terminal
+output, hostnames, passwords, keys or tokens. That is a property of how records are
+written rather than of a scrubbing pass: values are redacted at the point they are logged,
+so there is nothing sensitive to remove afterwards.

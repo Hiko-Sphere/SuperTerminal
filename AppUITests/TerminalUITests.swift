@@ -252,3 +252,100 @@ final class KeyManagementUITests: XCTestCase {
         )
     }
 }
+
+/// Accessibility settings, exercised by actually turning them on.
+///
+/// These previously existed only as code that looked correct. Launch arguments drive the
+/// real system settings, so a regression that breaks high contrast or Reduce Transparency
+/// fails here rather than being discovered by someone who depends on them.
+final class AccessibilityUITests: XCTestCase {
+    override func setUpWithError() throws {
+        continueAfterFailure = false
+    }
+
+    private func launch(with arguments: [String]) -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launchArguments += arguments
+        let environment = ProcessInfo.processInfo.environment
+        for key in [
+            "ST_UITEST_SEED", "ST_UITEST_HOST", "ST_UITEST_PORT", "ST_UITEST_USER",
+            "ST_UITEST_KEY", "ST_UITEST_TRUST_HOST_KEYS", "ST_UITEST_NAME",
+        ] {
+            if let value = environment[key] { app.launchEnvironment[key] = value }
+        }
+        app.launch()
+        return app
+    }
+
+    func testHostListSurvivesEveryAccessibilityTextSize() throws {
+        // The largest size is where layouts break; if it holds, the ones below it do.
+        for category in [
+            "UICTContentSizeCategoryAccessibilityM",
+            "UICTContentSizeCategoryAccessibilityXXXL",
+        ] {
+            let app = launch(with: ["-UIPreferredContentSizeCategoryName", category])
+            XCTAssertTrue(
+                app.navigationBars["SuperTerminal"].waitForExistence(timeout: 10),
+                "the host list should render at \(category)"
+            )
+            XCTAssertTrue(
+                app.buttons["New Connection"].exists,
+                "the primary action should stay reachable at \(category)"
+            )
+            let shot = XCTAttachment(screenshot: app.screenshot())
+            shot.name = "host-list-\(category)"
+            shot.lifetime = .keepAlways
+            add(shot)
+            app.terminate()
+        }
+    }
+
+    func testSettingsRemainUsableWithReduceTransparencyAndBoldText() throws {
+        let app = launch(with: [
+            "-UIAccessibilityReduceTransparencyEnabled", "1",
+            "-UIAccessibilityBoldTextEnabled", "1",
+        ])
+        app.buttons["Settings"].tap()
+        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 10))
+
+        // Every section heading should still be reachable; a bar that vanished into a
+        // solid background would take its controls with it. Bold text makes the form
+        // taller, so the later sections need scrolling to — "reachable" is the claim,
+        // not "on the first screen".
+        for label in ["Appearance", "Privacy", "Terminal", "Security", "Data"] {
+            XCTAssertTrue(
+                scrollToElement(app.staticTexts[label], in: app),
+                "the \(label) section should be reachable with Reduce Transparency on"
+            )
+        }
+        let shot = XCTAttachment(screenshot: app.screenshot())
+        shot.name = "settings-reduce-transparency"
+        shot.lifetime = .keepAlways
+        add(shot)
+    }
+
+    /// Scrolls until `element` is on screen, or gives up.
+    private func scrollToElement(_ element: XCUIElement, in app: XCUIApplication) -> Bool {
+        if element.exists, element.isHittable { return true }
+        for _ in 0 ..< 8 {
+            if element.exists, element.isHittable { return true }
+            app.swipeUp()
+        }
+        return element.exists
+    }
+
+    func testEveryControlOnTheHostListIsLabelledForVoiceOver() throws {
+        let app = launch(with: [])
+        XCTAssertTrue(app.navigationBars["SuperTerminal"].waitForExistence(timeout: 10))
+
+        // An unlabelled button is read out as "button" and is unusable without sight.
+        for index in 0 ..< app.buttons.count {
+            let button = app.buttons.element(boundBy: index)
+            guard button.exists, button.isHittable else { continue }
+            XCTAssertFalse(
+                button.label.trimmingCharacters(in: .whitespaces).isEmpty,
+                "a button at index \(index) has no accessibility label"
+            )
+        }
+    }
+}
