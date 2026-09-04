@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  Deliberately minimal. The app needs no Network Extension, no VPN, no background
+	  modes and no app groups: the Cloudflare tunnel is an ordinary outbound TLS
+	  connection made in-process, which is what keeps App Review straightforward.
+	-->
+	<key>keychain-access-groups</key>
+	<array>
+		<string>$(AppIdentifierPrefix)dev.superterminal.app</string>
+	</array>
+</dict>
+</plist>

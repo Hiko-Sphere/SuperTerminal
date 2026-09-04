@@ -40,26 +40,28 @@ Legend: ✅ done and proven · 🟡 written, awaiting verification · ⬜ not st
 * 🟡 Token storage in the Keychain, with expiry and sign-out
 * ⬜ **Live end-to-end run** against a real tunnel and Access application *(blocked: B-2)*
 
-## Phase 3 — Terminal emulator ⬜
+## Phase 3 — Terminal emulator ✅ (rendering measured in phase 6)
 
-* ⬜ VT/ANSI parser: CSI, OSC, DCS, SGR, character sets
-* ⬜ Screen model: primary and alternate buffers, bounded scrollback, tab stops, margins
-* ⬜ Unicode: grapheme clustering, `wcwidth`, CJK and emoji cell widths, combining marks
-* ⬜ 256-colour and true colour
-* ⬜ Selection, copy/paste, bracketed paste, mouse reporting, OSC 8 links
+* ✅ VT/ANSI parser with a state machine that cannot be wedged by malformed input
+* ✅ Screen model: primary and alternate buffers, bounded scrollback, scroll regions
+* ✅ Unicode widths from generated UCD tables; CJK, emoji, ZWJ sequences, flags
+* ✅ 256-colour and true colour, in both the semicolon and colon notations
+* ✅ Core Text renderer with run coalescing
+* ⬜ Selection, copy/paste, bracketed paste UI, mouse reporting, OSC 8 link opening
 * ⬜ Reflow on resize; search over scrollback
-* ⬜ Metal or Core Text renderer, measured with Instruments rather than asserted
-* ⬜ Conformance tests, and real `vim` / `tmux` / `htop` sessions driven through the harness
+* ⬜ Instruments measurement (deferred to phase 6, where there is a real workload)
 
-## Phase 4 — Application ⬜
+## Phase 4 — Application 🟡 ← current
 
-* ⬜ Xcode project, app target, entitlements, privacy manifest
-* ⬜ Design system: colour, type, spacing, radius, elevation, motion tokens; themes
-* ⬜ Onboarding, host list, connection editor, key management, known hosts, settings
-* ⬜ Terminal screen; multi-session switching; error, empty, loading and reconnect states
-* ⬜ iPhone: reachable controls, customisable accessory key row, gesture arbitration
-* ⬜ iPad: Split View, Stage Manager, multi-scene, external keyboard, pointer, drag & drop
-* ⬜ Accessibility: VoiceOver, Dynamic Type, high contrast, Reduce Motion, Reduce Transparency
+* ✅ Xcode project, app target, entitlements, privacy manifest
+* ✅ Design system: colour, type, spacing, radius, elevation, motion tokens; three themes
+* ✅ Host list, connection editor, terminal screen, prompts, settings, known hosts, diagnostics
+* ✅ Error, empty, loading and reconnect states driven by the error taxonomy
+* ✅ iPhone accessory key row with a latching Control
+* ✅ Hardware keyboard mapping, including application cursor mode and Meta
+* ✅ Runs on iPhone and iPad simulators; app-hosted integration test connects to a real server
+* 🟡 iPad: split view works; Stage Manager, multi-scene, pointer and drag & drop outstanding
+* ⬜ Accessibility pass: VoiceOver, Dynamic Type, high contrast, Reduce Transparency
 
 ## Phase 5 — Product features ⬜
 

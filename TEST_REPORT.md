@@ -21,11 +21,29 @@ left out.
 ```bash
 cd Packages/SuperTerminalKit
 swift build          # 0 errors, 0 warnings from project code
-swift test           # 69 tests in 10 suites passed in 7.1s
+swift test           # 73 tests in 11 suites passed in 7.6s
+
+cd ..
+xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal \
+  -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
+# ** BUILD SUCCEEDED **, 0 warnings from App/
+
+xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal \
+  -configuration Release -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
+# ** BUILD SUCCEEDED **
+
+xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal \
+  -configuration Release -destination 'generic/platform=iOS' \
+  CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
+# ** BUILD SUCCEEDED ** — arm64 device build compiles
+
+./scripts/app-integration-e2e.sh   # 5 tests on iPhone 17 Pro simulator, ** TEST SUCCEEDED **
+xcodebuild test ... -only-testing:SuperTerminalUITests   # 2 UI tests, ** TEST SUCCEEDED **
 ```
 
-Warning count from project sources was measured with
-`swift build 2>&1 | grep -cE "Sources/.*warning:"` → **0**.
+Warning counts were measured, not assumed:
+`swift build 2>&1 | grep -cE "Sources/.*warning:"` → **0**, and
+`xcodebuild ... build 2>&1 | grep -cE "warning:.*repo/superterminal/App"` → **0**.
 
 ## What the suite covers
 
@@ -91,6 +109,33 @@ The account's real shell is a themed zsh that repaints its prompt and rewrites t
 title on a timer, which would make "is the shell ready?" and "did the program set the
 title?" unanswerable. This is a test-harness decision, not a product limitation.
 
+### The app itself — 5 tests, on an iPhone 17 Pro simulator
+
+`AppTests/AppSSHIntegrationTests.swift` runs **inside the app** against a real `sshd`
+started on the host by `scripts/app-integration-e2e.sh`. The package tests prove the SSH
+and terminal layers work when driven directly; these prove they work when driven the way
+the app drives them — through the real Keychain, through `TerminalSession`'s state
+machine, with the emulator attached.
+
+| Test | What a pass proves |
+| --- | --- |
+| The app connects, allocates a PTY, and renders real remote output | End to end through app code: the emulator showed `APP_STACK_OK`, and the remote reported `28 90` — the geometry the app asked for, so the PTY and the resize both reached the server |
+| A host key the app has not seen is refused until approved | The prompt machinery gates the connection, the fingerprint offered matches the server's real one, and refusing fails the session with `.hostKey` |
+| Host model (3 tests) | A Cloudflare host is recorded against port 443 rather than the origin's SSH port; validation reports every problem |
+
+### UI tests — 2 tests
+
+Launch and connection-editor validation on the simulator. Deliberately structural rather
+than pixel-based: "the empty state offers a way forward" should stay true across design
+changes.
+
+### Manual inspection
+
+The app was installed and launched on the iPhone 17 Pro and iPad Pro 13-inch (M5)
+simulators and screenshotted. That found a real defect: on iPad the split view opened
+with the sidebar collapsed, so a fresh install showed "No session" and no visible way to
+add one. Fixed by starting at `.all` visibility.
+
 ## Not verified
 
 Stated plainly, because a test report that omits these would be misleading:
@@ -99,9 +144,11 @@ Stated plainly, because a test report that omits these would be misleading:
 | --- | --- |
 | **Cloudflare Access authentication (live)** | No local harness can authenticate a real identity. Needs a Cloudflare account with a tunnel, an Access application and a test identity. The local carrier server deliberately does **not** pretend to be Access. |
 | **Access token expiry and re-authentication** | Same dependency. |
-| **On-device runs** | No app target exists yet. A paired iPhone 16 Pro and two Apple Development signing identities are available on the build machine. |
-| **iPhone/iPad layout, external keyboard, accessibility** | No UI exists yet. |
-| **Release build, archive, TestFlight** | No app target yet. |
+| **On-device runs** | Needs a development team. The unsigned `generic/platform=iOS` Release build succeeds, so the code is device-ready; a paired iPhone 16 Pro and two Apple Development identities are already on the machine. |
+| **Archive and TestFlight** | `xcodebuild archive` fails with *"Signing for SuperTerminal requires a development team"*. Recorded as `PROJECT_STATUS.md` B-4. |
+| **External keyboard and pointer** | The key mapping is implemented and unit-testable, but has not been exercised against real hardware. |
+| **Accessibility** | VoiceOver, Dynamic Type and high-contrast passes have not been run. |
+| **Selection, copy/paste, mouse reporting** | Implemented in outline in the render and input layers; no tests and no manual verification yet. |
 | **Keychain behaviour** | `KeychainSecureStore` is written but untested; Keychain semantics differ enough in a macOS unit-test process that a passing test there would prove little. Needs device tests. |
 | **RSA keys** | Unsupported — see `DECISIONS.md` D-002. Not a test gap; a capability gap. |
 | **Instruments profiling** | Not run. Rendering does not exist yet, so there is nothing meaningful to profile. |
