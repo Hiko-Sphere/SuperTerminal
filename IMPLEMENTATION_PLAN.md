@@ -1,0 +1,85 @@
+# Implementation plan
+
+Phases are ordered by risk, not by visibility. The Cloudflare transport is the thing
+most likely to be impossible, so it is settled before any pixel is drawn.
+
+Legend: ✅ done and proven · 🟡 written, awaiting verification · ⬜ not started
+
+---
+
+## Phase 0 — Environment and protocol research ✅
+
+* ✅ Toolchain, simulators, devices and signing identities surveyed
+* ✅ `cloudflared` source read; carrier and login protocol characterised (`DECISIONS.md` D-001)
+* ✅ SSH and crypto dependencies evaluated and chosen (D-002, D-004)
+* ✅ Local OpenSSH test server working, unprivileged, on an ephemeral port
+* ✅ Quick-tunnel route to a live edge attempted and found unavailable (`PROJECT_STATUS.md` B-3)
+
+## Phase 1 — SSH core ✅
+
+* ✅ `ByteStreamTransport` abstraction; both transports vend an identical `Channel`
+* ✅ `DirectTCPTransport` on Network.framework
+* ✅ `SSHConnection` / `SSHShellSession` over `swift-nio-ssh`
+* ✅ Host-key policy with a hard stop on a changed key
+* ✅ OpenSSH private key parsing, including bcrypt-protected keys
+* ✅ Credential chain that skips methods the server has ruled out and fails fast when exhausted
+* ✅ Handshake monitor: `connect` resolves on `UserAuthSuccessEvent`, or fails with the *first* recorded error
+* ✅ Integration tests against a real `sshd`
+
+## Phase 2 — Cloudflare Access transport 🟡 ← current
+
+* ✅ Access application discovery with a signature-verified metadata JWT
+* ✅ JWKS provider with caching, rate-limited refresh, RS256-only, `kid` pinning
+* ✅ Token validation: audience, issuer, lifetime
+* ✅ Interactive login: ephemeral key pair, CLI URL, transfer-service poll, `crypto_box_open`
+* ✅ WebSocket carrier with masking, fragment forwarding, ping/pong, close handshake
+* ✅ Edge failure classification (Access redirect, 403, 404, 502/503/504, 530)
+* ✅ `WebSocketCarrierTestServer` reproducing the edge's protocol and failure responses
+* 🟡 Carrier tests: SSH over WebSocket, service-token headers, each failure mode
+* 🟡 Access unit tests against a controlled local identity (own JWKS and signed tokens)
+* 🟡 Token storage in the Keychain, with expiry and sign-out
+* ⬜ **Live end-to-end run** against a real tunnel and Access application *(blocked: B-2)*
+
+## Phase 3 — Terminal emulator ⬜
+
+* ⬜ VT/ANSI parser: CSI, OSC, DCS, SGR, character sets
+* ⬜ Screen model: primary and alternate buffers, bounded scrollback, tab stops, margins
+* ⬜ Unicode: grapheme clustering, `wcwidth`, CJK and emoji cell widths, combining marks
+* ⬜ 256-colour and true colour
+* ⬜ Selection, copy/paste, bracketed paste, mouse reporting, OSC 8 links
+* ⬜ Reflow on resize; search over scrollback
+* ⬜ Metal or Core Text renderer, measured with Instruments rather than asserted
+* ⬜ Conformance tests, and real `vim` / `tmux` / `htop` sessions driven through the harness
+
+## Phase 4 — Application ⬜
+
+* ⬜ Xcode project, app target, entitlements, privacy manifest
+* ⬜ Design system: colour, type, spacing, radius, elevation, motion tokens; themes
+* ⬜ Onboarding, host list, connection editor, key management, known hosts, settings
+* ⬜ Terminal screen; multi-session switching; error, empty, loading and reconnect states
+* ⬜ iPhone: reachable controls, customisable accessory key row, gesture arbitration
+* ⬜ iPad: Split View, Stage Manager, multi-scene, external keyboard, pointer, drag & drop
+* ⬜ Accessibility: VoiceOver, Dynamic Type, high contrast, Reduce Motion, Reduce Transparency
+
+## Phase 5 — Product features ⬜
+
+Snippets · searchable local history (off by default) · host tags and folders · iCloud
+sync for non-sensitive config · theme and font customisation · Face ID / Touch ID gating
+· redacted diagnostics export · App Intents · Spotlight. Port forwarding and SFTP only if
+they can be shipped with full security tests.
+
+## Phase 6 — Hardening and release ⬜
+
+Threat-model review pass · dependency and licence audit · Instruments profiling ·
+Release build and archive · TestFlight · on-device verification on iPhone and iPad ·
+App Store privacy disclosures.
+
+---
+
+## Working rules
+
+1. Nothing is marked ✅ until it has been *executed*, not merely compiled.
+2. Every error a user can hit gets a category and a specific recovery action.
+3. No `TODO`, no placeholder, no fixed return value standing in for real work.
+4. A limitation that cannot be fixed now goes in `PROJECT_STATUS.md` — never hidden.
+5. Tests are never weakened to go green.
