@@ -21,7 +21,7 @@ struct AccessoryKeyRow: View {
             .padding(.horizontal, DesignTokens.Spacing.md)
             .padding(.vertical, DesignTokens.Spacing.sm)
         }
-        .background(.bar)
+        .stBarBackground()
         .overlay(alignment: .top) {
             Divider()
         }

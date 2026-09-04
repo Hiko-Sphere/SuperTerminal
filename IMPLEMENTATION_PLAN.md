@@ -51,7 +51,8 @@ Legend: ✅ done and proven · 🟡 written, awaiting verification · ⬜ not st
 * ✅ Reflow on resize, including wide characters, attributes and the cursor
 * ✅ Search over the whole buffer, including terms split across a wrap
 * ✅ Bracketed paste, with a confirmation for multi-line pastes
-* ⬜ Mouse reporting output, OSC 8 link opening
+* ✅ Mouse reporting output, in both encodings, with a live round-trip test
+* ✅ OSC 8 link opening, behind a confirmation that shows the destination
 * ⬜ Instruments measurement (deferred to phase 6, where there is a real workload)
 
 ## Phase 4 — Application 🟡 ← current
@@ -66,7 +67,9 @@ Legend: ✅ done and proven · 🟡 written, awaiting verification · ⬜ not st
 * ✅ Terminal reachable through the interface on iPhone, verified by a UI test that types and reads back
 * ✅ Selection bar, find bar, paste confirmation
 * 🟡 iPad: split view works; Stage Manager, multi-scene, pointer and drag & drop outstanding
-* 🟡 Accessibility: Dynamic Type verified on the host list, VoiceOver value wired for the terminal; high contrast and Reduce Transparency not yet checked
+* ✅ Reduce Transparency honoured through a single modifier rather than per-view
+* ✅ Increased contrast selects the high-contrast terminal theme automatically
+* 🟡 Accessibility: Dynamic Type verified on the host list; VoiceOver wired but not heard
 
 ## Phase 5 — Product features ⬜
 
@@ -80,6 +83,10 @@ they can be shipped with full security tests.
 Threat-model review pass · dependency and licence audit · Instruments profiling ·
 Release build and archive · TestFlight · on-device verification on iPhone and iPad ·
 App Store privacy disclosures.
+
+CI is already in place (`.github/workflows/ci.yml`): package build and test with a
+zero-warning gate, app builds for simulator and unsigned device, both integration suites,
+and hygiene checks for placeholder implementations and committed credentials.
 
 ---
 

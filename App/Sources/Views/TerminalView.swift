@@ -6,6 +6,8 @@ struct TerminalView: View {
     @Environment(AppContainer.self) private var container
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
+    @Environment(\.colorSchemeContrast) private var colorSchemeContrast
 
     let session: TerminalSession
 
@@ -15,7 +17,12 @@ struct TerminalView: View {
     @State private var searchCaseSensitive = false
 
     private var theme: TerminalTheme {
-        container.settings.theme(for: colorScheme == .dark, hostOverride: session.host.themeID)
+        TerminalThemeResolver(settings: container.settings).theme(
+            colorScheme: colorScheme,
+            differentiateWithoutColor: differentiateWithoutColor,
+            increaseContrast: colorSchemeContrast == .increased,
+            hostOverride: session.host.themeID
+        )
     }
 
     var body: some View {
@@ -80,6 +87,27 @@ struct TerminalView: View {
             PromptSheet(session: session, prompt: prompt)
         }
         .confirmationDialog(
+            "Open this link?",
+            isPresented: linkBinding,
+            titleVisibility: .visible
+        ) {
+            if let link = session.pendingLink, let url = URL(string: link.url) {
+                Button("Open") {
+                    session.pendingLink = nil
+                    UIApplication.shared.open(url)
+                }
+            }
+            Button("Copy Link") {
+                UIPasteboard.general.string = session.pendingLink?.url
+                session.pendingLink = nil
+            }
+            Button("Cancel", role: .cancel) { session.pendingLink = nil }
+        } message: {
+            // The full URL is shown because the point of the confirmation is that the
+            // user can read where they are about to be sent.
+            Text(session.pendingLink?.url ?? "")
+        }
+        .confirmationDialog(
             pasteDialogTitle,
             isPresented: pasteBinding,
             titleVisibility: .visible
@@ -93,6 +121,13 @@ struct TerminalView: View {
         } message: {
             Text(pasteDialogMessage)
         }
+    }
+
+    private var linkBinding: Binding<Bool> {
+        Binding(
+            get: { session.pendingLink != nil },
+            set: { if !$0 { session.pendingLink = nil } }
+        )
     }
 
     private var pasteBinding: Binding<Bool> {
@@ -142,7 +177,7 @@ struct TerminalView: View {
         .font(DesignTokens.Typography.callout)
         .padding(.horizontal, DesignTokens.Spacing.lg)
         .padding(.vertical, DesignTokens.Spacing.sm)
-        .background(.bar)
+        .stBarBackground()
         .overlay(alignment: .top) { Divider() }
     }
 
@@ -159,7 +194,7 @@ struct TerminalView: View {
                     .foregroundStyle(DesignTokens.Color.labelSecondary)
             }
             .padding(DesignTokens.Spacing.xl)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: DesignTokens.Radius.lg))
+            .stOverlayBackground()
             .stCardShadow()
             .transition(.opacity)
 
@@ -193,7 +228,7 @@ struct TerminalView: View {
                 .padding(.vertical, DesignTokens.Spacing.sm)
                 .frame(maxWidth: .infinity)
         }
-        .background(.thinMaterial)
+        .stBarBackground()
         .buttonStyle(.plain)
     }
 
@@ -267,7 +302,7 @@ struct ConnectionErrorView: View {
         }
         .padding(DesignTokens.Spacing.xl)
         .frame(maxWidth: 420)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: DesignTokens.Radius.lg))
+        .stOverlayBackground()
         .stCardShadow(DesignTokens.Elevation.sheet)
         .padding(DesignTokens.Spacing.xl)
     }

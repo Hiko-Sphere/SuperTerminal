@@ -82,6 +82,15 @@ struct TUIIntegrationTests {
             return emulator.title
         }
 
+        var modes: TerminalModes {
+            lock.lock()
+            defer { lock.unlock() }
+            return emulator.modes
+        }
+
+        var mouseTracking: TerminalModes.MouseTracking { modes.mouseTracking }
+        var sgrMouseEncoding: Bool { modes.sgrMouseEncoding }
+
         var scrollbackCount: Int {
             lock.lock()
             defer { lock.unlock() }
@@ -299,6 +308,40 @@ struct TUIIntegrationTests {
             // Scrollback is capped at 2000 for this session; 20 000 lines must not grow
             // memory past that.
             #expect(session.scrollbackCount <= 2000)
+        }
+    }
+
+    @Test("Mouse mode set by a remote program is honoured, and reports reach it intact")
+    func mouseReportingRoundTrips() async throws {
+        try await withSession { session, _ in
+            // A program enables mouse tracking by printing these; this is exactly what
+            // tmux, htop and less do on startup.
+            try await session.shell.send("printf '\\033[?1000h\\033[?1006h'; echo MOUSE_ON\n")
+            _ = try await session.waitForScreen(describedAs: "the mode to be set") {
+                $0.contains("MOUSE_ON")
+            }
+            #expect(session.mouseTracking == .click)
+            #expect(session.sgrMouseEncoding)
+
+            // Now send a report the way the app would, and have the remote show the bytes
+            // it actually received. `cat -v` renders ESC as ^[.
+            let event = TerminalMouseEvent(column: 9, row: 4, button: .left, action: .press)
+            guard let bytes = MouseReportEncoder.encode(event, modes: session.modes) else {
+                Issue.record("a press should be reportable in click tracking")
+                return
+            }
+            try await session.shell.send("cat -v\n")
+            try await Task.sleep(for: .milliseconds(400))
+            try await session.shell.send(bytes)
+            try await session.shell.send("\n")
+
+            let screen = try await session.waitForScreen(describedAs: "the echoed report") {
+                $0.contains("[<0;10;5M")
+            }
+            // The remote saw precisely the bytes a real terminal would have sent.
+            #expect(screen.contains("^[[<0;10;5M"))
+
+            try await session.shell.send("\u{04}")
         }
     }
 

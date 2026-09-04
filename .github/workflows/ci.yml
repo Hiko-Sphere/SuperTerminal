@@ -1,0 +1,128 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Pinned rather than "latest" so a runner image update cannot silently change the
+  # compiler under a green build.
+  XCODE_VERSION: "26.6"
+  SIMULATOR: "platform=iOS Simulator,name=iPhone 17 Pro"
+
+jobs:
+  package:
+    name: Package — build and test
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s "/Applications/Xcode_${XCODE_VERSION}.app/Contents/Developer"
+
+      - name: Cache SwiftPM
+        uses: actions/cache@v4
+        with:
+          path: Packages/SuperTerminalKit/.build
+          key: spm-${{ runner.os }}-${{ hashFiles('Packages/SuperTerminalKit/Package.resolved') }}
+          restore-keys: spm-${{ runner.os }}-
+
+      - name: Build
+        working-directory: Packages/SuperTerminalKit
+        run: swift build
+
+      - name: Fail on any warning from project code
+        working-directory: Packages/SuperTerminalKit
+        run: |
+          # Third-party warnings are out of our hands; ours are not. Counting only
+          # Sources/ keeps the gate honest instead of green-by-exclusion.
+          count=$(swift build 2>&1 | grep -cE "Sources/.*warning:" || true)
+          echo "project warnings: $count"
+          test "$count" -eq 0
+
+      - name: Test
+        working-directory: Packages/SuperTerminalKit
+        run: swift test
+
+  app:
+    name: App — build, unit and UI tests
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s "/Applications/Xcode_${XCODE_VERSION}.app/Contents/Developer"
+
+      - name: Build (Debug, simulator)
+        run: |
+          xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal \
+            -configuration Debug -destination "$SIMULATOR" build
+
+      - name: Build (Release, unsigned device)
+        run: |
+          # Proves the arm64 device build compiles. Signing needs a team, which CI does
+          # not have, so it is disabled rather than pretended.
+          xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal \
+            -configuration Release -destination 'generic/platform=iOS' \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
+
+      - name: App integration tests (real sshd)
+        run: ./scripts/app-integration-e2e.sh "$SIMULATOR"
+
+      - name: UI tests (real sshd, real interface)
+        run: ./scripts/ui-terminal-e2e.sh "$SIMULATOR"
+
+      - name: Upload UI test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-test-results
+          path: .build/ui-terminal.xcresult
+          if-no-files-found: ignore
+
+  hygiene:
+    name: Repository hygiene
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: No placeholder implementations
+        run: |
+          # The project's own rule: nothing ships with a placeholder standing in for real
+          # work. Scoped to our source so a dependency's TODO cannot fail the build.
+          if grep -rnE "\b(TODO|FIXME)\b|fatalError\(\"not implemented" \
+               App/Sources Packages/SuperTerminalKit/Sources \
+               --include="*.swift" \
+               | grep -v "CBcryptPBKDF"; then
+            echo "::error::placeholder implementations found"
+            exit 1
+          fi
+
+      - name: No committed secrets
+        run: |
+          # A private key or a Cloudflare token in the history cannot be taken back, so
+          # this runs on every change rather than at review time.
+          #
+          # Matching a *whole line* that is a PEM header is what separates a real key
+          # file from the parser that has to know the marker string, and from this file,
+          # which has to name the pattern it looks for.
+          if git grep -nE '^-{5}BEGIN [A-Z ]*PRIVATE KEY-{5}$' -- . ; then
+            echo "::error::a private key appears to be committed"
+            exit 1
+          fi
+          # Cloudflare service token IDs end in `.access`; a real one assigned to a
+          # variable is a leak, whereas the variable name alone is not.
+          if git grep -nE '=[[:space:]]*"[0-9a-f]{32}\.access"' -- . ; then
+            echo "::error::a Cloudflare service token appears to be committed"
+            exit 1
+          fi
+          if git grep -nE '^CF_Authorization=' -- . ; then
+            echo "::error::a Cloudflare Access cookie appears to be committed"
+            exit 1
+          fi

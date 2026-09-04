@@ -18,6 +18,10 @@ final class TerminalInputView: UIView, UIKeyInput {
     var onPaste: ((String) -> Void)?
     /// Called when a selection is made or cleared, so the UI can offer Copy.
     var onSelectionChange: ((TerminalRange?) -> Void)?
+    /// Called with a pointer event the remote program asked to be told about.
+    var onMouseEvent: ((TerminalMouseEvent) -> Void)?
+    /// Called when the user taps a cell carrying an OSC 8 hyperlink.
+    var onHyperlinkTapped: ((TerminalPosition) -> Void)?
     /// Supplies the current screen so gestures can resolve positions and extract text.
     var currentScreen: (() -> TerminalScreen?)?
 
@@ -48,6 +52,7 @@ final class TerminalInputView: UIView, UIKeyInput {
         renderView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         isUserInteractionEnabled = true
         installGestures()
+        installPointerTracking()
     }
 
     @available(*, unavailable)
@@ -317,7 +322,7 @@ final class TerminalInputView: UIView, UIKeyInput {
     private func installGestures() {
         // A single tap focuses and raises the keyboard, which is the only way to type on
         // a phone.
-        let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap))
+        let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
         addGestureRecognizer(tap)
 
         let doubleTap = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap))
@@ -339,14 +344,49 @@ final class TerminalInputView: UIView, UIKeyInput {
         addGestureRecognizer(longPress)
     }
 
-    @objc private func handleTap() {
+    @objc private func handleTap(_ recognizer: UITapGestureRecognizer) {
         // A tap with a selection showing dismisses it rather than raising the keyboard —
         // otherwise the only way out of a selection is to make another one.
         if renderView.selection != nil {
             clearSelection()
             return
         }
+
+        let point = recognizer.location(in: renderView)
+        if let position = renderView.position(at: point) {
+            // A program tracking the mouse owns taps: this is how a pane is focused in
+            // tmux or a line is clicked in a TUI file manager.
+            if modes.mouseTracking != .off {
+                if !isFirstResponder { _ = becomeFirstResponder() }
+                reportMouse(at: position, button: .left, action: .press)
+                reportMouse(at: position, button: .left, action: .release)
+                return
+            }
+            onHyperlinkTapped?(position)
+        }
+
         if !isFirstResponder { _ = becomeFirstResponder() }
+    }
+
+    private func reportMouse(
+        at position: TerminalPosition,
+        button: TerminalMouseEvent.Button,
+        action: TerminalMouseEvent.Action
+    ) {
+        guard let screen = currentScreen?() else { return }
+        // Mouse reports are in *screen* coordinates; the buffer's absolute row has to be
+        // converted back, or a program would be told about a click on a row that scrolled
+        // out of view.
+        let screenRow = position.row - screen.scrollback.count + renderView.scrollbackOffset
+        guard screenRow >= 0, screenRow < screen.rows else { return }
+        onMouseEvent?(
+            TerminalMouseEvent(
+                column: position.column,
+                row: screenRow,
+                button: button,
+                action: action
+            )
+        )
     }
 
     /// Double-tap selects the whole logical line, following soft wraps — the line a
@@ -387,10 +427,21 @@ final class TerminalInputView: UIView, UIKeyInput {
             recognizer.setTranslation(.zero, in: self)
             panAccumulator += translation
             let rows = Int(panAccumulator / renderView.metrics.cellHeight)
-            if rows != 0 {
-                panAccumulator -= CGFloat(rows) * renderView.metrics.cellHeight
-                onScroll?(rows)
+            guard rows != 0 else { return }
+            panAccumulator -= CGFloat(rows) * renderView.metrics.cellHeight
+
+            if modes.mouseTracking != .off {
+                // A program tracking the mouse expects wheel events; scrolling our own
+                // history instead would leave `less` and `htop` unable to scroll at all.
+                let position = renderView.position(at: recognizer.location(in: renderView))
+                    ?? TerminalPosition(row: 0, column: 0)
+                let button: TerminalMouseEvent.Button = rows > 0 ? .scrollUp : .scrollDown
+                for _ in 0 ..< min(abs(rows), 10) {
+                    reportMouse(at: position, button: button, action: .press)
+                }
+                return
             }
+            onScroll?(rows)
         default:
             panAccumulator = 0
         }
@@ -414,6 +465,25 @@ final class TerminalInputView: UIView, UIKeyInput {
         default:
             break
         }
+    }
+
+    // MARK: - Pointer
+
+    /// Reports trackpad and mouse movement on iPad when the program asked for it.
+    ///
+    /// Hover only matters in "any event" tracking — the mode a program sets when it wants
+    /// to highlight what is under the pointer — so nothing is sent otherwise, and a
+    /// trackpad user does not flood the connection with motion reports.
+    private func installPointerTracking() {
+        let hover = UIHoverGestureRecognizer(target: self, action: #selector(handleHover(_:)))
+        addGestureRecognizer(hover)
+    }
+
+    @objc private func handleHover(_ recognizer: UIHoverGestureRecognizer) {
+        guard modes.mouseTracking == .anyEvent else { return }
+        guard recognizer.state == .changed || recognizer.state == .began else { return }
+        guard let position = renderView.position(at: recognizer.location(in: renderView)) else { return }
+        reportMouse(at: position, button: .none, action: .motion)
     }
 
     // MARK: - Sending

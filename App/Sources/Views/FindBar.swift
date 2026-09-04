@@ -60,7 +60,7 @@ struct FindBar: View {
         .buttonStyle(.plain)
         .padding(.horizontal, DesignTokens.Spacing.lg)
         .padding(.vertical, DesignTokens.Spacing.sm)
-        .background(.bar)
+        .stBarBackground()
         .overlay(alignment: .bottom) { Divider() }
         .onAppear { isFieldFocused = true }
     }

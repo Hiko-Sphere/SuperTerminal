@@ -35,6 +35,8 @@ This file is the resumable state of the work. It records what is *proven*, what 
 | The host list survives an accessibility text size | Same suite, relaunched at `UICTContentSizeCategoryAccessibilityL` |
 | Reflow on column change | 9 tests: widening rejoins, narrowing re-wraps, hard breaks survive, round-trip is stable, wide characters stay whole, attributes and cursor follow, alternate screen is left alone, scrollback stays bounded |
 | Selection, copy and scrollback search | 11 tests: soft wraps copy without an injected newline, block selection, wide characters copy once, selection reaches into history, search crosses wraps and is bounded |
+| Mouse reporting | 10 unit tests covering both encodings, modifiers, wheel, drag/motion gating and the legacy coordinate ceiling — plus a live round-trip: a remote program enables tracking, and `cat -v` on the far end shows the exact bytes a real terminal would have sent |
+| CI | `.github/workflows/ci.yml` — package build/test with a zero-warning gate, app Debug and unsigned-Release builds, both integration suites, and hygiene checks for placeholders and committed secrets |
 
 ### Written, builds, not yet proven end to end
 
@@ -49,14 +51,17 @@ This file is the resumable state of the work. It records what is *proven*, what 
 
 Selection and search have unit coverage and are wired into the UI, but the *gestures*
 that drive them — long-press to select, drag to extend, double-tap for a logical line —
-have not been exercised by a test or by hand. Mouse reporting is parsed but nothing sends
-it yet. VoiceOver reads the terminal's rendered text, which has been wired but not heard.
+have not been exercised by a test or by hand. The same is true of the pointer path: hover
+reporting is implemented but has not been driven with a trackpad. VoiceOver reads the
+terminal's rendered text, which is wired but has not been heard. The high-contrast theme
+is selected automatically under increased contrast, verified by reading the code rather
+than by running with the setting on.
 
 ### Not started
 
-Multi-scene (`UISceneSession`) support · pointer and drag-and-drop on iPad · Instruments
-profiling of the renderer · CI · snippets · command history · iCloud sync · SFTP · port
-forwarding · App Intents · Spotlight.
+Multi-scene (`UISceneSession`) support · drag-and-drop on iPad · Instruments profiling of
+the renderer · snippets · command history · iCloud sync · SFTP · port forwarding · App
+Intents · Spotlight.
 
 ---
 

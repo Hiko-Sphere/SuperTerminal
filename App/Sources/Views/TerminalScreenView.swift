@@ -63,6 +63,16 @@ struct TerminalScreenView: UIViewRepresentable {
             view.onControlConsumed = {
                 Task { @MainActor in session.controlLatched = false }
             }
+            view.onMouseEvent = { event in
+                Task { @MainActor in await session.reportMouse(event) }
+            }
+            view.onHyperlinkTapped = { position in
+                Task { @MainActor in
+                    if let link = session.hyperlink(at: position) {
+                        session.pendingLink = link
+                    }
+                }
+            }
         }
     }
 }

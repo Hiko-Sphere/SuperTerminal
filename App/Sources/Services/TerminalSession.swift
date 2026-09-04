@@ -42,6 +42,7 @@ final class TerminalSession: Identifiable {
     /// consistent snapshot rather than a grid mutating underneath it.
     private(set) var screen: TerminalScreen
     private(set) var modes = TerminalModes()
+    private(set) var hyperlinks: [Int: TerminalHyperlink] = [:]
     private(set) var title: String = ""
     private(set) var size = TerminalSize.default
     /// How far the user has scrolled back, in rows.
@@ -55,6 +56,12 @@ final class TerminalSession: Identifiable {
     private(set) var focusedMatchIndex: Int?
     /// Text waiting on the user's confirmation before being pasted.
     var pendingPaste: PendingPaste?
+    /// A hyperlink the user tapped, awaiting confirmation before it is opened.
+    ///
+    /// Never opened straight away: the URL comes from the remote host, and a terminal
+    /// that opens whatever a server puts on the screen is a phishing vector. The user
+    /// sees the destination first.
+    var pendingLink: TerminalHyperlink?
 
     /// A paste the user must confirm.
     ///
@@ -250,6 +257,22 @@ final class TerminalSession: Identifiable {
 
     func cancelPendingPaste() { pendingPaste = nil }
 
+    /// Sends a pointer event, if the remote program asked to be told about them.
+    func reportMouse(_ event: TerminalMouseEvent) async {
+        guard let data = MouseReportEncoder.encode(event, modes: modes) else { return }
+        await send(data)
+    }
+
+    /// The hyperlink on a cell, if it carries one.
+    func hyperlink(at position: TerminalPosition) -> TerminalHyperlink? {
+        let lines = screen.allLines
+        guard lines.indices.contains(position.row) else { return nil }
+        let line = lines[position.row]
+        guard position.column < line.width else { return nil }
+        guard let identifier = line[position.column].attributes.hyperlinkID else { return nil }
+        return hyperlinks[identifier]
+    }
+
     // MARK: - Selection and search
 
     /// The selected text, ready for the pasteboard.
@@ -369,6 +392,7 @@ final class TerminalSession: Identifiable {
         }
         _ = emulator.flush()
         screen = emulator.activeScreen
+        hyperlinks = emulator.hyperlinks
 
         // Programs that query the terminal block until it answers.
         for response in responses {

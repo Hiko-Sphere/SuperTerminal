@@ -21,7 +21,7 @@ left out.
 ```bash
 cd Packages/SuperTerminalKit
 swift build          # 0 errors, 0 warnings from project code
-swift test           # 73 tests in 11 suites passed in 7.6s
+swift test           # 104 tests in 14 suites passed in 8.0s
 
 cd ..
 xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal \
@@ -80,6 +80,17 @@ WebSocket upgrade as Cloudflare's edge and bridges binary frames to a real `sshd
 | `Cf-Access-Jump-Destination` is sent | Bastion mode reaches the wire |
 | Each edge failure is classified (4 cases) | Access-login redirect, 403, 502 and 530 each map to their own category with an actionable recovery |
 | A plaintext carrier refuses non-loopback hosts | The test-only transport mode cannot weaken a real connection |
+
+### Mouse reporting — 10 unit tests plus a live round-trip
+
+Both the legacy and SGR encodings, modifier folding, wheel buttons, and the gating that
+stops drag and motion being reported in modes that did not ask for them. The legacy
+encoding's 223-column ceiling returns *nothing* rather than a wrapped coordinate, because
+reporting a click somewhere the user did not touch is worse than reporting none.
+
+The live check is in `TUIIntegrationTests`: a remote program enables tracking with
+`ESC[?1000h ESC[?1006h`, the emulator picks the mode up, and `cat -v` on the far end shows
+`^[[<0;10;5M` — the exact bytes a real terminal would have sent.
 
 ### Terminal emulator — 43 tests
 
@@ -166,7 +177,9 @@ Stated plainly, because a test report that omits these would be misleading:
 | **Accessibility** | VoiceOver, Dynamic Type and high-contrast passes have not been run. |
 | **Selection gestures** | The selection model, copy semantics and search have 11 unit tests, but the gestures that drive them — long-press, drag to extend, double-tap — have not been exercised by a test or by hand. |
 | **Mouse reporting** | Modes are parsed and surfaced; nothing sends mouse events yet. |
-| **VoiceOver, high contrast, Reduce Transparency** | Dynamic Type is verified on the host list. The terminal exposes its rendered text as an accessibility value, but no VoiceOver session has been run. |
+| **VoiceOver** | Dynamic Type is verified on the host list, and the terminal exposes its rendered text as an accessibility value, but no VoiceOver session has been run. |
+| **High contrast and Reduce Transparency** | Both are implemented — increased contrast selects the high-contrast theme, and bar backgrounds go solid — but verified by reading the code, not by running with the settings enabled. |
+| **Pointer and hover on iPad** | Hover reporting is implemented; it has not been driven with a trackpad. |
 | **Keychain behaviour** | `KeychainSecureStore` is written but untested; Keychain semantics differ enough in a macOS unit-test process that a passing test there would prove little. Needs device tests. |
 | **RSA keys** | Unsupported — see `DECISIONS.md` D-002. Not a test gap; a capability gap. |
 | **Instruments profiling** | Not run. Rendering does not exist yet, so there is nothing meaningful to profile. |
