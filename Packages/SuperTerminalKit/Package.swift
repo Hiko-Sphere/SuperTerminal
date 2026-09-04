@@ -18,7 +18,9 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.90.0"),
         .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.34.0"),
-        .package(url: "https://github.com/apple/swift-nio-ssh.git", from: "0.15.0"),
+        // Vendored so RSA can be added; see DECISIONS.md D-007 and
+        // Packages/swift-nio-ssh-rsa/README.md for the maintenance obligation.
+        .package(path: "../swift-nio-ssh-rsa"),
         .package(url: "https://github.com/apple/swift-nio-transport-services.git", from: "1.24.0"),
         .package(url: "https://github.com/apple/swift-crypto.git", from: "3.15.0"),
         .package(url: "https://github.com/jedisct1/swift-sodium.git", from: "0.11.0"),
@@ -65,7 +67,7 @@ let package = Package(
                 "CBcryptPBKDF",
                 .product(name: "NIOCore", package: "swift-nio"),
                 .product(name: "NIOPosix", package: "swift-nio"),
-                .product(name: "NIOSSH", package: "swift-nio-ssh"),
+                .product(name: "NIOSSH", package: "swift-nio-ssh-rsa"),
                 .product(name: "NIOConcurrencyHelpers", package: "swift-nio"),
                 .product(name: "NIOTransportServices", package: "swift-nio-transport-services"),
                 .product(name: "Crypto", package: "swift-crypto"),

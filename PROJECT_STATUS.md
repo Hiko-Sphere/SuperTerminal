@@ -68,13 +68,18 @@ Intents · Spotlight.
 
 ## Blocking issues
 
-### B-1 · RSA keys are not supported *(open, high)*
+### B-1 · RSA keys are not supported *(open, high — fix under way)*
 
-`swift-nio-ssh` 0.15.0 implements no RSA key type, so RSA **user keys** cannot
-authenticate and servers offering only RSA **host keys** cannot be reached. Recorded in
-`DECISIONS.md` D-002. Planned fix: add `rsa-sha2-256` / `rsa-sha2-512` over
-`swift-crypto`'s `_RSA.Signing`. Until then the app reports this precisely rather than
-as a generic failure.
+`swift-nio-ssh` implements no RSA key type at any released version, nor on `main`
+(verified at commit `3ec2814`). RSA **user keys** cannot authenticate and servers offering
+only RSA **host keys** cannot be reached.
+
+**Progress:** the library is now vendored at `Packages/swift-nio-ssh-rsa/`, committed
+unmodified first and verified by running upstream's own 346 tests against it. The RSA
+patch itself is not yet written — the decision, the alternatives weighed, the maintenance
+obligation this creates and the RFC 8332 pitfalls are recorded in `DECISIONS.md` D-007.
+
+Until it lands the app reports this precisely rather than as a generic failure.
 
 ### B-2 · Live Cloudflare verification needs an account *(open, blocking acceptance)*
 

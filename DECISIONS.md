@@ -179,3 +179,75 @@ this is a tool for people who administer servers.
 
 Revisit if telemetry (which the app does not currently collect) or user reports show
 real demand below 17.
+
+---
+
+## D-007 — `swift-nio-ssh` is vendored so RSA can be added
+
+**Date:** 2026-09-05 · **Status:** Accepted, patch in progress
+
+### Context
+
+`swift-nio-ssh` implements no RSA key type at any released version, and none on `main`
+either — verified against upstream at commit `3ec2814` (tag `0.15.0`, which is also
+`main`'s tip). That leaves two real gaps recorded as `PROJECT_STATUS.md` B-1:
+
+* **User keys.** RSA private keys cannot authenticate. This is the gap that matters in
+  practice; RSA keys remain common in the wild and in corporate PKI.
+* **Host keys.** A server configured with only RSA host keys cannot be reached at all.
+  Rarer, because every default OpenSSH install generates an Ed25519 host key, but real.
+
+Adding a key algorithm means adding cases to internal enums and to the negotiated
+algorithm lists. There is no extension point; it cannot be done from outside the module.
+
+### Options considered
+
+| Option | Correctness | Ongoing cost | Verdict |
+| --- | --- | --- | --- |
+| **Vendor upstream and patch it** | Full control; RSA implemented over `swift-crypto`'s audited `_RSA.Signing`, so no cryptography is written here — only SSH wire encoding | 16 871 lines of security-critical source now ours to keep current | **Chosen** |
+| Live without RSA, ship an in-app Ed25519 generator instead | Sidesteps the problem; a user can generate a key and add it to the server in under a minute | None | Rejected as the *only* answer — it does not help someone whose key is managed by their organisation, and it cannot reach an RSA-only host at all. The generator is still worth building. |
+| Switch to libssh2 | Full algorithm coverage | Loses the NIO pipeline that makes SSH-over-WebSocket a five-line composition; adds a C toolchain and a TLS backend | Rejected — see D-002 |
+| Wait for upstream | Free | Unbounded; no RSA work is visible on `main` | Rejected |
+
+### Decision
+
+Vendor `swift-nio-ssh` at tag `0.15.0` into `Packages/swift-nio-ssh-rsa/` and add
+`rsa-sha2-256` and `rsa-sha2-512`.
+
+The vendored copy was committed **unmodified first**, and upstream's own 346 tests were
+run against it, so the vendor is demonstrably faithful before any change of ours lands on
+top of it. Those tests stay vendored and run in CI.
+
+### The maintenance obligation, stated plainly
+
+This is the most expensive decision in the project. A vendored SSH library that falls
+behind upstream is **worse** for security than not supporting RSA — upstream's most recent
+commit is itself a security fix ("Limit client auth attempts"). Three things make the cost
+survivable, and they are obligations, not conveniences:
+
+1. The change lives in `patches/niossh-rsa.patch`, never as edits merged into the tree.
+2. `scripts/update-vendored-niossh.sh` re-fetches upstream and re-applies the patch,
+   failing loudly if it no longer applies rather than inviting a hand-merge.
+3. Upstream's test suite is vendored and runs in CI, so a re-sync that breaks something is
+   caught rather than assumed safe.
+
+**Revisit immediately if upstream adds RSA** — at that point this package should be
+deleted and the dependency pointed back at upstream.
+
+### Implementation notes for the patch
+
+Recorded here because they are the parts that are easy to get wrong:
+
+* **RFC 8332 §3**: the public key *blob* identifier stays `ssh-rsa` even when the
+  signature algorithm is `rsa-sha2-256` or `rsa-sha2-512`. Only the signature carries the
+  new name. Conflating the two is the classic implementation bug, and NIOSSH's
+  `keyPrefix` currently serves as both the blob identifier and the negotiation name — so
+  the two roles have to be separated.
+* The public key blob is `string "ssh-rsa"`, `mpint e`, `mpint n` — note e before n, the
+  reverse of most other encodings.
+* The signature blob is PKCS#1 v1.5, unsigned big-endian, left-padded to the modulus
+  length. `swift-crypto`'s `_RSA.Signing` with `.insecurePKCS1v1_5` provides it; the name
+  refers to PKCS#1 v1.5 versus PSS, and v1.5 is what RFC 8332 specifies.
+* `ssh-rsa` with SHA-1 is **not** implemented and will not be. OpenSSH disabled it by
+  default in 8.8 because SHA-1 collisions are practical; supporting it would mean shipping
+  a downgrade a server could ask for.
