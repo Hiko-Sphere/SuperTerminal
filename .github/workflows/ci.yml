@@ -50,6 +50,12 @@ jobs:
         working-directory: Packages/SuperTerminalKit
         run: swift test
 
+      - name: Vendored swift-nio-ssh — upstream's own tests
+        working-directory: Packages/swift-nio-ssh-rsa
+        # The vendored fork is security-critical code we now maintain. Running upstream's
+        # suite here is what makes a re-sync verifiable rather than assumed safe.
+        run: swift test
+
   app:
     name: App — build, unit and UI tests
     runs-on: macos-15

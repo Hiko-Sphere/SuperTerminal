@@ -202,6 +202,14 @@ simulators and screenshotted. That found a real defect: on iPad the split view o
 with the sidebar collapsed, so a fresh install showed "No session" and no visible way to
 add one. Fixed by starting at `.all` visibility.
 
+### Vendored swift-nio-ssh — 346 upstream tests
+
+`Packages/swift-nio-ssh-rsa` is Apple's library at tag `0.15.0`, vendored so RSA can be
+added. It was committed **unmodified first** and upstream's own suite was run against the
+copy: 346 tests, 0 failures. That establishes the vendor is faithful before any change of
+ours lands on it, and the suite now runs in CI so a future re-sync is verifiable rather
+than assumed safe.
+
 ## Not verified
 
 Stated plainly, because a test report that omits these would be misleading:
@@ -220,7 +228,7 @@ Stated plainly, because a test report that omits these would be misleading:
 | **High contrast and Reduce Transparency** | Both are implemented — increased contrast selects the high-contrast theme, and bar backgrounds go solid — but verified by reading the code, not by running with the settings enabled. |
 | **Pointer and hover on iPad** | Hover reporting is implemented; it has not been driven with a trackpad. |
 | **Keychain behaviour** | `KeychainSecureStore` is written but untested; Keychain semantics differ enough in a macOS unit-test process that a passing test there would prove little. Needs device tests. |
-| **RSA keys** | Unsupported — see `DECISIONS.md` D-002. Not a test gap; a capability gap. |
+| **RSA keys** | Unsupported. The library is vendored and verified faithful, but the RSA patch is not written yet — see `DECISIONS.md` D-007. A capability gap, not a test gap. |
 | **Instruments profiling** | Not run. `XCTest`'s measurement was used instead because it produces a number on every run, in CI as well as on a desk, and fails on a regression. An Instruments trace remains the better tool for finding *why* something is slow, and is worth doing before release. |
 
 ## Observed environment issue
