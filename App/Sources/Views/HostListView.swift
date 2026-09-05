@@ -10,6 +10,8 @@ struct HostListView: View {
 
     /// Called after a session is opened, so a stack-based layout can push to it.
     let onOpen: (TerminalSession) -> Void
+    /// Called after a remote screen is opened (D-022), for the same reason.
+    let onOpenScreen: (VNCSession) -> Void
 
     @State private var searchText = ""
     @State private var editingHost: Host?
@@ -56,6 +58,7 @@ struct HostListView: View {
                 Section("Open sessions") {
                     ForEach(container.sessionManager.sessions) { session in
                         Button {
+                            scene.selectedScreenID = nil
                             scene.selectedSessionID = session.id
                             onOpen(session)
                         } label: {
@@ -84,6 +87,29 @@ struct HostListView: View {
                                     container.sessionManager.close(session)
                                 }
                             }
+                    }
+                }
+            }
+
+            if !container.screens.sessions.isEmpty {
+                Section("Open screens") {
+                    ForEach(container.screens.sessions) { screen in
+                        Button {
+                            scene.selectedSessionID = nil
+                            scene.selectedScreenID = screen.id
+                            onOpenScreen(screen)
+                        } label: {
+                            ScreenRow(screen: screen)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("open-screen")
+                        .swipeActions {
+                            Button("Close", systemImage: "xmark", role: .destructive) {
+                                container.screens.close(screen)
+                            }
+                        }
                     }
                 }
             }
@@ -138,9 +164,15 @@ struct HostListView: View {
     /// One connection row. Kept out of the list body so the type checker has one row's
     /// worth of expression to solve, not the whole list's.
     private func hostRow(_ host: Host) -> some View {
-        HostRow(host: host, onEdit: { editingHost = host }, onDelete: { delete(host) }) {
+        HostRow(
+            host: host,
+            onEdit: { editingHost = host },
+            onDelete: { delete(host) },
+            onOpenScreen: host.vnc == nil ? nil : { openScreen(host) }
+        ) {
             let session = container.sessionManager.open(host)
             container.hostStore.markConnected(host)
+            scene.selectedScreenID = nil
             // Selecting is this list's job in both layouts; `onOpen` only
             // tells a stack-based layout to push. Leaving selection to the
             // caller meant the iPad detail column never followed a newly
@@ -153,6 +185,22 @@ struct HostListView: View {
             Button("Edit", systemImage: "pencil") { editingHost = host }
                 .tint(DesignTokens.Color.info)
         }
+        .swipeActions(edge: .leading) {
+            if host.vnc != nil {
+                Button("Screen", systemImage: "display") { openScreen(host) }
+                    .tint(DesignTokens.Color.accent)
+            }
+        }
+    }
+
+    /// Opens the server's screen (D-022) and shows it, the way `hostRow` shows a terminal.
+    private func openScreen(_ host: Host) {
+        guard let settings = host.vnc else { return }
+        let screen = container.screens.open(host, settings: settings)
+        container.hostStore.markConnected(host)
+        scene.selectedSessionID = nil
+        scene.selectedScreenID = screen.id
+        onOpenScreen(screen)
     }
 
     /// The Keychain items belong to the connection; leaving them behind would keep a
@@ -160,6 +208,7 @@ struct HostListView: View {
     private func delete(_ host: Host) {
         try? container.vault.deletePassword(hostID: host.id)
         try? container.vault.deleteServiceToken(hostID: host.id)
+        try? container.vault.deleteVNCPassword(hostID: host.id)
         container.hostStore.remove(host)
     }
 
@@ -227,6 +276,8 @@ private struct HostRow: View {
     let host: Host
     let onEdit: () -> Void
     let onDelete: () -> Void
+    /// Present when the connection has screen sharing set up (D-022).
+    let onOpenScreen: (() -> Void)?
     /// Last, so the call site can pass it as the trailing closure.
     let open: () -> Void
 
@@ -259,6 +310,9 @@ private struct HostRow: View {
         // On the button itself, as the session rows do: attached outside, the button's own
         // press handling swallowed the long press and the menu never appeared.
         .contextMenu {
+            if let onOpenScreen {
+                Button("Open Screen", systemImage: "display", action: onOpenScreen)
+            }
             Button("Edit Connection", systemImage: "pencil", action: onEdit)
             Button("Delete Connection", systemImage: "trash", role: .destructive, action: onDelete)
         }
@@ -343,6 +397,49 @@ private struct SessionRow: View {
         case let .connecting(step): step
         case .awaitingUser: String(localized: "Waiting for you")
         case .connected: String(localized: "Connected")
+        case .disconnected: String(localized: "Disconnected")
+        case let .failed(error): error.message
+        }
+    }
+}
+
+/// An open remote screen (D-022), styled as the session rows are.
+private struct ScreenRow: View {
+    let screen: VNCSession
+
+    var body: some View {
+        HStack(spacing: DesignTokens.Spacing.md) {
+            Circle()
+                .fill(statusColor)
+                .frame(width: 8, height: 8)
+            Image(systemName: "display")
+                .foregroundStyle(DesignTokens.Color.labelSecondary)
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.xxs) {
+                Text(screen.displayName)
+                    .font(DesignTokens.Typography.body)
+                Text(statusText)
+                    .font(DesignTokens.Typography.caption)
+                    .foregroundStyle(DesignTokens.Color.labelSecondary)
+            }
+        }
+        .accessibilityLabel("\(screen.displayName), \(statusText)")
+    }
+
+    private var statusColor: Color {
+        switch screen.state {
+        case .connected: DesignTokens.Color.success
+        case .connecting, .awaitingUser: DesignTokens.Color.warning
+        case .failed: DesignTokens.Color.danger
+        case .idle, .disconnected: DesignTokens.Color.labelTertiary
+        }
+    }
+
+    private var statusText: String {
+        switch screen.state {
+        case .idle: String(localized: "Idle")
+        case let .connecting(step): step
+        case .awaitingUser: String(localized: "Waiting for you")
+        case .connected: String(localized: "Screen sharing")
         case .disconnected: String(localized: "Disconnected")
         case let .failed(error): error.message
         }

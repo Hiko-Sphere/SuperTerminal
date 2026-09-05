@@ -289,6 +289,34 @@ public actor SSHConnection {
         )
     }
 
+    /// Opens a TCP forward through this connection to `host:port` as seen from the
+    /// server, returning the channel as a raw byte pipe. The caller adds its own
+    /// handlers; the SSH data handler that turns channel data into bytes is installed
+    /// here, because every consumer needs it.
+    public func openDirectTCPIP(host: String, port: Int) async throws -> Channel {
+        let promise = channel.eventLoop.makePromise(of: Channel.self)
+        let handler = handler
+        let target = SSHChannelType.DirectTCPIP(
+            targetHost: host,
+            targetPort: port,
+            originatorAddress: try SocketAddress(ipAddress: "127.0.0.1", port: 0)
+        )
+        channel.eventLoop.execute {
+            handler.withIsolatedValue { sshHandler in
+                sshHandler.createChannel(promise, channelType: .directTCPIP(target)) { child, _ in
+                    child.setOption(ChannelOptions.allowRemoteHalfClosure, value: true).flatMap {
+                        child.pipeline.addHandler(SSHDataToByteBufferCodec())
+                    }
+                }
+            }
+        }
+        do {
+            return try await promise.futureResult.get()
+        } catch {
+            throw Self.classifyChannelFailure(error, lastOffered: credentialChain.mostRecentlyOffered)
+        }
+    }
+
     public func close() async {
         guard !closed else { return }
         closed = true
@@ -486,4 +514,24 @@ func classifyHandshakeFailure(
         message: String(localized: "The SSH session could not be established.", bundle: .module),
         underlyingDescription: String(describing: error)
     )
+}
+
+/// Turns SSH channel data into plain bytes and back, so ordinary NIO handlers — a VNC
+/// client, say — can sit on a `direct-tcpip` channel as if it were a socket.
+final class SSHDataToByteBufferCodec: ChannelDuplexHandler {
+    typealias InboundIn = SSHChannelData
+    typealias InboundOut = ByteBuffer
+    typealias OutboundIn = ByteBuffer
+    typealias OutboundOut = SSHChannelData
+
+    func channelRead(context: ChannelHandlerContext, data: NIOAny) {
+        let channelData = unwrapInboundIn(data)
+        guard case let .byteBuffer(buffer) = channelData.data, channelData.type == .channel else { return }
+        context.fireChannelRead(wrapInboundOut(buffer))
+    }
+
+    func write(context: ChannelHandlerContext, data: NIOAny, promise: EventLoopPromise<Void>?) {
+        let buffer = unwrapOutboundIn(data)
+        context.write(wrapOutboundOut(SSHChannelData(type: .channel, data: .byteBuffer(buffer))), promise: promise)
+    }
 }

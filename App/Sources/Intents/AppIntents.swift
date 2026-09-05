@@ -100,15 +100,16 @@ struct OpenConnectionIntent: AppIntent {
 /// "Disconnect everything": closes every open session. Named for what it does.
 struct DisconnectAllIntent: AppIntent {
     static let title: LocalizedStringResource = "Disconnect All Sessions"
-    static let description = IntentDescription("Closes every open terminal session.")
+    static let description = IntentDescription("Closes every open terminal session and remote screen.")
 
     @MainActor private var container: AppContainer { get throws { try IntentContainer.live() } }
 
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
         let container = try container
-        let count = container.sessionManager.sessions.count
+        let count = container.sessionManager.sessions.count + container.screens.sessions.count
         container.sessionManager.closeAll()
+        container.screens.closeAll()
         return .result(dialog: IntentDialog(Self.dialog(forClosedCount: count)))
     }
 

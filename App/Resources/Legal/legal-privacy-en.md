@@ -77,6 +77,10 @@ Nothing from the app. Apple may show the developer aggregated App Store statisti
 
 The assistant answers questions about commands and terminal output. On a device with Apple Intelligence it runs on the device and nothing leaves it. If you configure a provider in Settings, each request sends that provider only what the assistant screen shows you first: your question, the server's platform, the last command, and the terminal text you chose to include. Your API key is kept in the device Keychain and sent to the provider in the request header. The provider's own privacy policy governs what it does with the request. The app never sends terminal text anywhere on its own.
 
+## Screen sharing
+
+Screen sharing (VNC) shows a remote computer's screen and sends it your touches, keys and pointer. The picture exists only while it is shown; it is not stored or sent anywhere else. The VNC protocol itself is unencrypted and its password check is weak, so unless you turn the option off in the connection's settings the screen travels inside the SSH connection and is protected by its encryption. Text the remote computer copies is offered to you and goes on your clipboard only when you say so. A VNC password is kept in this device's Keychain and does not sync.
+
 ## Your rights over your data
 
 Everything the app holds is on your device or in your own iCloud account, under your control. There is no copy with the developer, so there is nothing for the developer to give you, correct or delete on request. To see your data, open the app. To delete it, see below. If you believe the developer nonetheless holds something about you, write to [developer contact email].

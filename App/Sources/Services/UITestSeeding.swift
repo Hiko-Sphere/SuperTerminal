@@ -41,7 +41,9 @@ enum UITestSeeding {
                 port: port,
                 username: username,
                 transport: .directTCP,
-                credentials: [.privateKey(id: keyID)]
+                credentials: [.privateKey(id: keyID)],
+                // The harness's screen server, reached through the SSH connection (D-022).
+                vnc: environment["ST_UITEST_VNC_PORT"].flatMap { Int($0) }.map { Host.VNCSettings(port: $0, viaSSH: true) }
             ),
             privateKeyPEM: pem,
             keyID: keyID
@@ -67,6 +69,9 @@ enum UITestSeeding {
         }
         container.snippetStore.removeAll()
         container.hostStore.removeAll()
+        // The "reopen last time's sessions" offer would otherwise carry over from the
+        // previous run and sit above the connection list, wearing the same server name.
+        container.restoration.clear()
         try? container.vault.deleteEverything()
         guard let seed = seedFromEnvironment else { return }
         try? container.vault.storePrivateKey(seed.privateKeyPEM, id: seed.keyID, requireBiometrics: false)

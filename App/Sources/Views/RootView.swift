@@ -28,7 +28,7 @@ struct RootView: View {
     /// the selection, but a stack has to be pushed explicitly — opening a session and
     /// showing it are two different things, and conflating them is how tapping a host
     /// ends up starting a connection the user never sees.
-    @State private var path: [TerminalSession.ID] = []
+    @State private var path: [SessionRoute] = []
 
     /// The consent screen gates everything until the current documents are accepted.
     private var consentBinding: Binding<Bool> {
@@ -63,7 +63,7 @@ struct RootView: View {
             guard let pending else { return }
             container.pendingIntentSessionID = nil
             scene.selectedSessionID = pending
-            if horizontalSizeClass == .compact, !path.contains(pending) { path.append(pending) }
+            if horizontalSizeClass == .compact, !path.contains(.terminal(pending)) { path.append(.terminal(pending)) }
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
@@ -82,8 +82,8 @@ struct RootView: View {
                 onOpen: { session in
                     // On a stack-based layout the palette has to push, exactly as the
                     // list does; on a split view the detail column follows the selection.
-                    if horizontalSizeClass == .compact, path.last != session.id {
-                        path.append(session.id)
+                    if horizontalSizeClass == .compact, path.last != .terminal(session.id) {
+                        path.append(.terminal(session.id))
                     }
                 }
             )
@@ -104,6 +104,7 @@ struct RootView: View {
         // released the claim, and the sheet's dismissal did not always bring it back —
         // leaving the window telling the user their session was open somewhere else.
         .onChange(of: scene.selectedSessionID, initial: true) { previous, current in
+            if current != nil { scene.selectedScreenID = nil }
             if let previous {
                 container.sessionManager.releaseDisplay(ofSessionWithID: previous, by: scene.id)
             }
@@ -191,18 +192,32 @@ struct RootView: View {
 
     private var compactLayout: some View {
         NavigationStack(path: $path) {
-            HostListView { session in
-                path.append(session.id)
-            }
-            .navigationDestination(for: TerminalSession.ID.self) { id in
-                if let session = container.sessionManager.sessions.first(where: { $0.id == id }) {
-                    TerminalView(session: session)
-                } else {
-                    EmptyStateView(
-                        title: String(localized: "Session closed"),
-                        message: String(localized: "This session is no longer open."),
-                        systemImage: "terminal"
-                    )
+            HostListView(
+                onOpen: { session in path.append(.terminal(session.id)) },
+                onOpenScreen: { screen in path.append(.screen(screen.id)) }
+            )
+            .navigationDestination(for: SessionRoute.self) { route in
+                switch route {
+                case let .terminal(id):
+                    if let session = container.sessionManager.sessions.first(where: { $0.id == id }) {
+                        TerminalView(session: session)
+                    } else {
+                        EmptyStateView(
+                            title: String(localized: "Session closed"),
+                            message: String(localized: "This session is no longer open."),
+                            systemImage: "terminal"
+                        )
+                    }
+                case let .screen(id):
+                    if let screen = container.screens.session(withID: id) {
+                        VNCView(session: screen)
+                    } else {
+                        EmptyStateView(
+                            title: String(localized: "Screen closed"),
+                            message: String(localized: "This screen is no longer open."),
+                            systemImage: "display"
+                        )
+                    }
                 }
             }
         }
@@ -212,10 +227,14 @@ struct RootView: View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
             // In a split view the detail column follows the selection, so there is
             // nothing to push.
-            HostListView { _ in }
+            HostListView(onOpen: { _ in }, onOpenScreen: { _ in })
                 .navigationSplitViewColumnWidth(min: 260, ideal: 320, max: 420)
         } detail: {
-            if let session = container.sessionManager.session(withID: scene.selectedSessionID) {
+            if let screen = container.screens.session(withID: scene.selectedScreenID) {
+                NavigationStack {
+                    VNCView(session: screen)
+                }
+            } else if let session = container.sessionManager.session(withID: scene.selectedSessionID) {
                 NavigationStack {
                     TerminalView(session: session)
                 }
@@ -276,4 +295,11 @@ struct SuperTerminalCommands: Commands {
                 .keyboardShortcut(",", modifiers: .command)
         }
     }
+}
+
+/// What the compact layout pushes: a terminal or a remote screen (D-022). One path for
+/// both, so Back behaves the same whichever the user opened.
+enum SessionRoute: Hashable {
+    case terminal(TerminalSession.ID)
+    case screen(VNCSession.ID)
 }

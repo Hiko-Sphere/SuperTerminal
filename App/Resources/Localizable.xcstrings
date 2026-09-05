@@ -273,6 +273,23 @@
         }
       }
     },
+    "A direct connection to the VNC port. VNC itself is unencrypted and its password check is weak: use this only on a network you trust.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "直接连接到 VNC 端口。VNC 本身不加密，其密码验证也很弱：请只在您信任的网络上使用。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "直接連線到 VNC 連接埠。VNC 本身不加密，其密碼驗證也很弱：請只在您信任的網路上使用。"
+          }
+        }
+      }
+    },
     "A key protected by Face ID or Touch ID cannot be stored in iCloud Keychain. Turn one of the two off.": {
       "extractionState": "manual",
       "localizations": {
@@ -558,6 +575,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "演算法"
+          }
+        }
+      }
+    },
+    "Alt+Tab": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alt+Tab"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alt+Tab"
           }
         }
       }
@@ -1038,6 +1072,40 @@
         }
       }
     },
+    "Check that the port is a VNC server and try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请确认该端口是 VNC 服务器，然后重试。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請確認該連接埠是 VNC 伺服器，然後再試一次。"
+          }
+        }
+      }
+    },
+    "Check the VNC password in this connection's settings. It is separate from the SSH password.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请检查此连接设置中的 VNC 密码。它与 SSH 密码是分开的。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請檢查此連線設定中的 VNC 密碼。它與 SSH 密碼是分開的。"
+          }
+        }
+      }
+    },
     "Checking Cloudflare Access": {
       "extractionState": "manual",
       "localizations": {
@@ -1259,6 +1327,23 @@
         }
       }
     },
+    "Close Screen": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "关闭屏幕"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "關閉螢幕"
+          }
+        }
+      }
+    },
     "Close Session": {
       "extractionState": "manual",
       "localizations": {
@@ -1323,6 +1408,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "已關閉一個工作階段。"
+          }
+        }
+      }
+    },
+    "Closes every open terminal session and remote screen.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "关闭所有打开的终端会话和远程屏幕。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "關閉所有開啟的終端機工作階段和遠端螢幕。"
           }
         }
       }
@@ -1565,6 +1667,23 @@
         }
       }
     },
+    "Connecting to the screen": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在连接屏幕"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在連線螢幕"
+          }
+        }
+      }
+    },
     "Connection": {
       "extractionState": "manual",
       "localizations": {
@@ -1799,6 +1918,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "憑據儲存在 Keychain 中，絕不會存入連線列表。將密碼留空，則每次都會詢問。"
+          }
+        }
+      }
+    },
+    "Ctrl+Alt+Del": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ctrl+Alt+Del"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ctrl+Alt+Del"
+          }
+        }
+      }
+    },
+    "Ctrl+C": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ctrl+C"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ctrl+C"
           }
         }
       }
@@ -2262,6 +2415,23 @@
         }
       }
     },
+    "Edit the connection and enter the VNC password under Screen Sharing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请编辑此连接，在“屏幕共享”下输入 VNC 密码。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請編輯此連線，在「螢幕共享」下輸入 VNC 密碼。"
+          }
+        }
+      }
+    },
     "Edit the connection and enter the service token's client ID and secret. Service tokens stay on the device they were entered on.": {
       "extractionState": "manual",
       "localizations": {
@@ -2387,13 +2557,13 @@
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "Esc 键"
+            "value": "Escape"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "Esc 鍵"
+            "value": "Escape"
           }
         }
       }
@@ -2564,6 +2734,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "首次見到 %@"
+          }
+        }
+      }
+    },
+    "Fit to Screen": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "适合屏幕"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "符合螢幕"
           }
         }
       }
@@ -2819,6 +3006,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "隱藏按鍵列"
+          }
+        }
+      }
+    },
+    "Hide Keyboard": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "隐藏键盘"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "隱藏鍵盤"
           }
         }
       }
@@ -3261,6 +3465,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "金鑰問題"
+          }
+        }
+      }
+    },
+    "Keyboard": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "键盘"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "鍵盤"
           }
         }
       }
@@ -4115,6 +4336,23 @@
         }
       }
     },
+    "On a Mac, turn on “VNC viewers may control screen with password” in Screen Sharing settings. On other servers, enable VNC password authentication.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在 Mac 上，请在“屏幕共享”设置中开启“VNC 显示程序可以使用密码控制屏幕”。在其他服务器上，请启用 VNC 密码验证。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在 Mac 上，請在「螢幕共享」設定中開啟「VNC 檢視器可以使用密碼控制螢幕」。在其他伺服器上，請啟用 VNC 密碼驗證。"
+          }
+        }
+      }
+    },
     "On the server, run:": {
       "extractionState": "manual",
       "localizations": {
@@ -4145,6 +4383,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "開啟"
+          }
+        }
+      }
+    },
+    "Open Screen": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打开屏幕"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "開啟螢幕"
           }
         }
       }
@@ -4200,6 +4455,23 @@
         }
       }
     },
+    "Open screens": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打开的屏幕"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "開啟的螢幕"
+          }
+        }
+      }
+    },
     "Open sessions": {
       "extractionState": "manual",
       "localizations": {
@@ -4247,6 +4519,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "開放原始碼授權"
+          }
+        }
+      }
+    },
+    "Opening a tunnel to the screen": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在打开通往屏幕的隧道"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在開啟通往螢幕的通道"
           }
         }
       }
@@ -4502,6 +4791,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "貼上 OpenSSH 私密金鑰，以 -----BEGIN OPENSSH PRIVATE KEY----- 開頭。它儲存在 Keychain 中，絕不會離開本裝置。"
+          }
+        }
+      }
+    },
+    "Paste to Remote Clipboard": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "粘贴到远程剪贴板"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "貼到遠端剪貼簿"
           }
         }
       }
@@ -4897,6 +5203,23 @@
         }
       }
     },
+    "Remote screen": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "远程屏幕"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "遠端螢幕"
+          }
+        }
+      }
+    },
     "Remove from iCloud": {
       "extractionState": "manual",
       "localizations": {
@@ -5186,6 +5509,74 @@
         }
       }
     },
+    "Screen": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "屏幕"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "螢幕"
+          }
+        }
+      }
+    },
+    "Screen address as the server sees it (optional)": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器所见的屏幕地址（可选）"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "伺服器所見的螢幕位址（選填）"
+          }
+        }
+      }
+    },
+    "Screen closed": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "屏幕已关闭"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "螢幕已關閉"
+          }
+        }
+      }
+    },
+    "Screen sharing": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "屏幕共享"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "螢幕共享"
+          }
+        }
+      }
+    },
     "Scroll Down": {
       "extractionState": "manual",
       "localizations": {
@@ -5369,6 +5760,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "選取的文字"
+          }
+        }
+      }
+    },
+    "Send Keys": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "发送按键"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "傳送按鍵"
+          }
+        }
+      }
+    },
+    "Send ⌘ to Remote": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "将 ⌘ 发送到远程"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "將 ⌘ 傳送到遠端"
           }
         }
       }
@@ -5594,6 +6019,23 @@
         }
       }
     },
+    "Show and control the server's desktop with touch, keyboard and pointer.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用触控、键盘和指针显示并控制服务器的桌面。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用觸控、鍵盤和指標顯示並控制伺服器的桌面。"
+          }
+        }
+      }
+    },
     "Show it here": {
       "extractionState": "manual",
       "localizations": {
@@ -5607,6 +6049,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "在此顯示"
+          }
+        }
+      }
+    },
+    "Show the server's screen (VNC)": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "显示服务器的屏幕（VNC）"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "顯示伺服器的螢幕（VNC）"
           }
         }
       }
@@ -5726,6 +6185,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "來源"
+          }
+        }
+      }
+    },
+    "Starting screen sharing": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在启动屏幕共享"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在啟動螢幕共享"
           }
         }
       }
@@ -6049,6 +6525,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tab 鍵"
+          }
+        }
+      }
+    },
+    "Tap to click. Touch and hold to drag. Two fingers scroll or, when zoomed, pan.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "轻点即点击。按住后拖动即拖拽。双指滚动；放大后双指平移。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "輕點即點按。按住後拖曳即拖移。兩指捲動；放大後兩指平移。"
           }
         }
       }
@@ -6495,6 +6988,23 @@
         }
       }
     },
+    "The remote copied text": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "远程电脑复制了文本"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "遠端電腦拷貝了文字"
+          }
+        }
+      }
+    },
     "The remote program supports bracketed paste, so the text will be inserted without running it. Check it before pressing Return.": {
       "extractionState": "manual",
       "localizations": {
@@ -6508,6 +7018,142 @@
           "stringUnit": {
             "state": "translated",
             "value": "遠端程式支援 bracketed paste，因此文字只會被插入，不會直接執行。按 Return 鍵前請先核對內容。"
+          }
+        }
+      }
+    },
+    "The screen could not be opened.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法打开屏幕。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法開啟螢幕。"
+          }
+        }
+      }
+    },
+    "The screen sharing connection ended unexpectedly.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "屏幕共享连接意外中断。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "螢幕共享連線意外中斷。"
+          }
+        }
+      }
+    },
+    "The screen sharing port must be between 1 and 65535.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "屏幕共享端口必须在 1 到 65535 之间。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "螢幕共享連接埠必須在 1 到 65535 之間。"
+          }
+        }
+      }
+    },
+    "The screen sharing server refused the password.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "屏幕共享服务器拒绝了密码。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "螢幕共享伺服器拒絕了密碼。"
+          }
+        }
+      }
+    },
+    "The screen sharing session has ended.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "屏幕共享会话已结束。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "螢幕共享工作階段已結束。"
+          }
+        }
+      }
+    },
+    "The screen travels inside the SSH connection, so nothing extra is exposed and the VNC server can stay bound to localhost. Leave the address empty for the server itself.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画面在 SSH 连接内传输，因此无需额外暴露任何端口，VNC 服务器可以只绑定 localhost。地址留空即表示服务器本身。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "畫面在 SSH 連線內傳輸，因此無需額外暴露任何連接埠，VNC 伺服器可以只繫結 localhost。位址留空即表示伺服器本身。"
+          }
+        }
+      }
+    },
+    "The server offers only screen sharing security types this app does not support.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器只提供此应用不支持的屏幕共享安全类型。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "伺服器只提供此 App 不支援的螢幕共享安全類型。"
+          }
+        }
+      }
+    },
+    "The server speaks a screen sharing protocol version this app does not support.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器使用的屏幕共享协议版本不受此应用支持。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "伺服器使用的螢幕共享通訊協定版本不受此 App 支援。"
           }
         }
       }
@@ -6648,6 +7294,40 @@
         }
       }
     },
+    "This screen is no longer open.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此屏幕已不再打开。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此螢幕已不再開啟。"
+          }
+        }
+      }
+    },
+    "This screen needs a VNC password.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此屏幕需要 VNC 密码。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此螢幕需要 VNC 密碼。"
+          }
+        }
+      }
+    },
     "This server has not been seen before. Check that the fingerprint below matches the server.": {
       "extractionState": "manual",
       "localizations": {
@@ -6729,6 +7409,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "透過 Cloudflare Tunnel"
+          }
+        }
+      }
+    },
+    "Through the SSH connection": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "经由 SSH 连接"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "經由 SSH 連線"
           }
         }
       }
@@ -7018,6 +7715,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "使用者名稱"
+          }
+        }
+      }
+    },
+    "VNC password (optional, saved to Keychain)": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VNC 密码（可选，保存到钥匙串）"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VNC 密碼（選填，儲存到鑰匙圈）"
+          }
+        }
+      }
+    },
+    "VNC password (stored — enter to replace)": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VNC 密码（已保存——输入以替换）"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VNC 密碼（已儲存——輸入以取代）"
+          }
+        }
+      }
+    },
+    "VNC port": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VNC 端口"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VNC 連接埠"
           }
         }
       }
@@ -7396,6 +8144,23 @@
         }
       }
     },
+    "latched": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已锁定"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已鎖定"
+          }
+        }
+      }
+    },
     "macOS": {
       "extractionState": "manual",
       "localizations": {
@@ -7426,6 +8191,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "無詳細資訊"
+          }
+        }
+      }
+    },
+    "screen sharing": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "屏幕共享"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "螢幕共享"
           }
         }
       }
@@ -7596,6 +8378,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "不支援的生成引導"
+          }
+        }
+      }
+    },
+    "⌘+Tab (Super+Tab)": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⌘+Tab（Super+Tab）"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⌘+Tab（Super+Tab）"
           }
         }
       }

@@ -15,6 +15,9 @@ final class SceneState {
     /// Identifies this window to ``SessionManager`` when claiming a session to display.
     let id = UUID()
     var selectedSessionID: TerminalSession.ID?
+    /// The remote screen this window shows (D-022) when it shows one instead of a
+    /// terminal. Selecting a session clears it, and the other way round.
+    var selectedScreenID: VNCSession.ID?
 
     /// Whether this window is showing the new-connection sheet.
     ///

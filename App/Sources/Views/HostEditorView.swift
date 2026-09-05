@@ -31,6 +31,12 @@ struct HostEditorView: View {
     @State private var terminalType = "xterm-256color"
     /// nil is "Automatic": use what the server reports.
     @State private var platformOverride: HostPlatform?
+    @State private var vncEnabled = false
+    @State private var vncPort = "5900"
+    @State private var vncViaSSH = true
+    @State private var vncTargetHost = ""
+    @State private var vncPassword = ""
+    @State private var hasStoredVNCPassword = false
 
     init(host: Host?) {
         existing = host
@@ -52,6 +58,12 @@ struct HostEditorView: View {
             _folder = State(initialValue: host.folder ?? "")
             _terminalType = State(initialValue: host.terminalType)
             _platformOverride = State(initialValue: host.platformOverride)
+            if let vnc = host.vnc {
+                _vncEnabled = State(initialValue: true)
+                _vncPort = State(initialValue: String(vnc.port))
+                _vncViaSSH = State(initialValue: vnc.viaSSH)
+                _vncTargetHost = State(initialValue: vnc.targetHost ?? "")
+            }
         }
     }
 
@@ -132,6 +144,37 @@ struct HostEditorView: View {
                     Text("Credentials are stored in the Keychain, never in the connection list. Leave the password empty to be asked each time.")
                 }
 
+                Section {
+                    Toggle("Show the server's screen (VNC)", isOn: $vncEnabled.animation())
+                        .accessibilityIdentifier("vnc-enabled")
+                    if vncEnabled {
+                        TextField("VNC port", text: $vncPort)
+                            .keyboardType(.numberPad)
+                            .accessibilityIdentifier("vnc-port")
+                        Toggle("Through the SSH connection", isOn: $vncViaSSH)
+                            .accessibilityIdentifier("vnc-via-ssh")
+                        if vncViaSSH {
+                            TextField("Screen address as the server sees it (optional)", text: $vncTargetHost)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
+                                .accessibilityIdentifier("vnc-target")
+                        }
+                        SecureField(hasStoredVNCPassword ? "VNC password (stored — enter to replace)" : "VNC password (optional, saved to Keychain)", text: $vncPassword)
+                            .textContentType(.oneTimeCode)
+                            .accessibilityIdentifier("vnc-password")
+                    }
+                } header: {
+                    Text("Screen sharing")
+                } footer: {
+                    if !vncEnabled {
+                        Text("Show and control the server's desktop with touch, keyboard and pointer.")
+                    } else if vncViaSSH {
+                        Text("The screen travels inside the SSH connection, so nothing extra is exposed and the VNC server can stay bound to localhost. Leave the address empty for the server itself.")
+                    } else {
+                        Text("A direct connection to the VNC port. VNC itself is unencrypted and its password check is weak: use this only on a network you trust.")
+                    }
+                }
+
                 Section("Advanced") {
                     TextField("Folder", text: $folder)
                     TextField("TERM", text: $terminalType)
@@ -159,7 +202,10 @@ struct HostEditorView: View {
                 }
             }
             .task {
-                if let existing { hasStoredServiceToken = container.vault.hasServiceToken(hostID: existing.id) }
+                if let existing {
+                    hasStoredServiceToken = container.vault.hasServiceToken(hostID: existing.id)
+                    hasStoredVNCPassword = container.vault.hasVNCPassword(hostID: existing.id)
+                }
             }
             .navigationTitle(existing == nil ? "New Connection" : "Edit Connection")
             .navigationBarTitleDisplayMode(.inline)
@@ -198,7 +244,15 @@ struct HostEditorView: View {
             lastConnected: existing?.lastConnected,
             accessAuthentication: usesCloudflare ? accessAuthentication : nil,
             platformOverride: platformOverride,
-            detectedPlatform: existing?.detectedPlatform
+            detectedPlatform: existing?.detectedPlatform,
+            vnc: vncEnabled
+                ? Host.VNCSettings(
+                    port: Int(vncPort) ?? 0,
+                    viaSSH: vncViaSSH,
+                    targetHost: vncTargetHost.trimmingCharacters(in: .whitespaces).isEmpty ? nil : vncTargetHost.trimmingCharacters(in: .whitespaces),
+                    hasPassword: !vncPassword.isEmpty || hasStoredVNCPassword
+                )
+                : nil
         )
     }
 
@@ -217,6 +271,11 @@ struct HostEditorView: View {
         let host = draft
         if usesPassword, !savedPassword.isEmpty {
             try? container.vault.storePassword(savedPassword, hostID: host.id)
+        }
+        if vncEnabled, !vncPassword.isEmpty {
+            try? container.vault.storeVNCPassword(vncPassword, hostID: host.id)
+        } else if !vncEnabled, hasStoredVNCPassword {
+            try? container.vault.deleteVNCPassword(hostID: host.id)
         }
         if host.usesServiceToken {
             if !serviceTokenID.isEmpty, !serviceTokenSecret.isEmpty {

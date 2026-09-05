@@ -113,6 +113,8 @@ final class TerminalSession: Identifiable {
     private let settings: AppSettings
     private let log: STLogger
     private let promptCoordinator: PromptCoordinator
+    /// Transport, Access, host key and credentials — shared with remote screens (D-022).
+    private let connector: HostConnector
 
     init(
         host: Host,
@@ -131,8 +133,11 @@ final class TerminalSession: Identifiable {
         self.settings = settings
         self.reachability = reachability
         self.haptics = haptics
-        self.log = log.child(subsystem: "session")
-        promptCoordinator = PromptCoordinator()
+        let sessionLog = log.child(subsystem: "session")
+        self.log = sessionLog
+        let prompts = PromptCoordinator()
+        promptCoordinator = prompts
+        connector = HostConnector(host: host, group: group, vault: vault, knownHosts: knownHosts, log: sessionLog, prompts: prompts)
         let initialEmulator = TerminalEmulator(
             columns: TerminalSize.default.columns,
             rows: TerminalSize.default.rows,
@@ -213,31 +218,9 @@ final class TerminalSession: Identifiable {
         state = .connecting(step: String(localized: "Resolving \(host.hostname)"))
 
         do {
-            let transport = try await makeTransport()
-            state = .connecting(step: String(localized: "Exchanging keys"))
-
-            let approval: any HostKeyApprovalDelegate = Self.automaticHostKeyTrust
-                ? TrustOnFirstUseApproval()
-                : promptCoordinator
-            let verifier = HostKeyVerifier(
-                identity: host.knownHostIdentity,
-                store: knownHosts,
-                approval: approval,
-                log: log
-            )
-            let credentials = try await resolveCredentials()
-
-            let connection = try await SSHConnection.connect(
-                transport: transport,
-                configuration: SSHConnectionConfiguration(
-                    username: host.username,
-                    credentials: credentials,
-                    knownHostIdentity: host.knownHostIdentity
-                ),
-                hostKeyVerifier: verifier,
-                eventLoop: group.next(),
-                log: log
-            )
+            let connection = try await connector.connect { [weak self] step in
+                self?.state = .connecting(step: step)
+            }
             self.connection = connection
 
             state = .connecting(step: String(localized: "Starting shell"))
@@ -779,121 +762,6 @@ final class TerminalSession: Identifiable {
         }
     }
 
-    private func makeTransport() async throws -> any ByteStreamTransport {
-        switch host.transport {
-        case .directTCP:
-            return DirectTCPTransport(
-                endpoint: TransportEndpoint(host: host.hostname, port: host.port),
-                log: log
-            )
-        case let .cloudflare(jumpDestination):
-            state = .connecting(step: String(localized: "Checking Cloudflare Access"))
-            let credential = try await resolveAccessCredential()
-            return CloudflareCarrierTransport(
-                configuration: .init(
-                    host: host.hostname,
-                    jumpDestination: jumpDestination,
-                    userAgent: Self.userAgent
-                ),
-                credential: credential,
-                log: log
-            )
-        }
-    }
-
-    private func resolveAccessCredential() async throws -> AccessCredential {
-        let http = URLSessionHTTPTransport(userAgent: Self.userAgent)
-        let jwks = JWKSProvider(http: http)
-        let discovery = AccessDiscovery(http: http, jwks: jwks, log: log)
-        let validator = AccessTokenValidator(jwks: jwks)
-
-        switch try await discovery.probe(host: host.hostname) {
-        case .unprotected:
-            // A tunnel without an Access policy is a legitimate configuration; the
-            // carrier still works, there is just nothing to authenticate.
-            return .none
-
-        case let .protected(appInfo):
-            if host.usesServiceToken {
-                guard let token = try vault.loadServiceToken(hostID: host.id) else {
-                    throw STError(
-                        category: .credential,
-                        message: String(localized: "This connection is set to use a Cloudflare Access service token, but none is stored on this device."),
-                        recoverySuggestion: String(localized: "Edit the connection and enter the service token's client ID and secret. Service tokens stay on the device they were entered on.")
-                    )
-                }
-                return .serviceToken(token)
-            }
-            if let stored = try? vault.loadAccessToken(appIdentifier: appInfo.storageIdentifier),
-               let validated = try? await validator.validate(rawToken: stored, appInfo: appInfo),
-               !validated.isExpired() {
-                return .userToken(validated)
-            }
-            state = .connecting(step: String(localized: "Signing in to Cloudflare Access"))
-            let login = AccessLoginService(
-                http: http,
-                presenter: WebAuthenticationPresenter(),
-                validator: validator,
-                log: log
-            )
-            let result = try await login.login(appInfo: appInfo, originHost: host.hostname)
-            try? vault.storeAccessToken(
-                result.token.token.reveal(),
-                appIdentifier: appInfo.storageIdentifier
-            )
-            return .userToken(result.token)
-        }
-    }
-
-    private func resolveCredentials() async throws -> [SSHCredential] {
-        var credentials: [SSHCredential] = []
-        for reference in host.credentials {
-            switch reference {
-            case let .privateKey(id):
-                let pem = try vault.loadPrivateKey(
-                    id: id,
-                    prompt: String(localized: "Unlock the key for \(host.name)")
-                )
-                let inspection = try OpenSSHPrivateKeyParser.inspect(pem: pem)
-                if inspection.isEncrypted {
-                    let passphrase = try await promptCoordinator.requestPassphrase(keyName: host.name)
-                    credentials.append(.privateKey(
-                        try OpenSSHPrivateKeyParser.parse(pem: pem, passphrase: passphrase)
-                    ))
-                } else {
-                    credentials.append(.privateKey(try OpenSSHPrivateKeyParser.parse(pem: pem)))
-                }
-            case .password:
-                if let stored = try vault.loadPassword(hostID: host.id) {
-                    credentials.append(.password(Redacted(stored, label: "ssh-password")))
-                } else {
-                    let password = try await promptCoordinator.requestPassword(
-                        username: host.username,
-                        host: host.hostname
-                    )
-                    credentials.append(.password(Redacted(password, label: "ssh-password")))
-                }
-            case .none:
-                credentials.append(.none)
-            }
-        }
-        return credentials
-    }
-
-    static let userAgent = "SuperTerminal/\(Bundle.main.shortVersion) (iOS)"
-
-    /// Whether to accept a first-seen host key without asking.
-    ///
-    /// Only ever true in a Debug build driven by an automated UI run, where a modal sheet
-    /// would block the very screen the run exists to exercise. A release build has no code
-    /// path that sets it, so a real user is always asked.
-    private static var automaticHostKeyTrust: Bool {
-        #if DEBUG
-        UITestSeeding.trustsHostKeysAutomatically
-        #else
-        false
-        #endif
-    }
 }
 
 extension Bundle {

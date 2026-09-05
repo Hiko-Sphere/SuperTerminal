@@ -20,6 +20,7 @@ XCODEBUILD_PID=""
 cleanup() {
   if [[ -n "$XCODEBUILD_PID" ]]; then kill "$XCODEBUILD_PID" 2>/dev/null || true; fi
   if [[ -f "$WORK/sshd.pid" ]]; then kill "$(cat "$WORK/sshd.pid")" 2>/dev/null || true; fi
+  if [[ -f "$WORK/vnc.pid" ]]; then kill "$(cat "$WORK/vnc.pid")" 2>/dev/null || true; fi
   rm -rf "$WORK"
 }
 trap cleanup EXIT
@@ -50,6 +51,29 @@ for _ in $(seq 1 60); do nc -z 127.0.0.1 "$PORT" 2>/dev/null && break; sleep 0.2
 nc -z 127.0.0.1 "$PORT" || { echo "sshd did not start:"; cat "$WORK/sshd.log"; exit 1; }
 echo "Test sshd listening on 127.0.0.1:$PORT"
 
+# A real VNC server for the screen tests (D-022): LibVNCServer from Homebrew, driving the
+# same small program the package tests use. It listens on loopback only; the app reaches
+# it through a direct-tcpip channel on the SSH connection above. Without the library the
+# screen tests skip, and say so.
+VNC_PORT=""
+VNC_LOG="$WORK/vnc-events.log"
+VNC_SRC="$ROOT/Packages/SuperTerminalKit/Sources/STTestSupport/Fixtures/vnc-test-server.c"
+for prefix in /opt/homebrew/opt/libvncserver /usr/local/opt/libvncserver; do
+  [[ -f "$prefix/include/rfb/rfb.h" ]] || continue
+  if cc -O2 -o "$WORK/vnc-test-server" "$VNC_SRC" -I"$prefix/include" -L"$prefix/lib" -lvncserver -Wl,-rpath,"$prefix/lib" 2> "$WORK/vnc-cc.log"; then
+    VNC_PORT="$(python3 -c 'import socket; s=socket.socket(); s.bind(("127.0.0.1",0)); print(s.getsockname()[1]); s.close()')"
+    "$WORK/vnc-test-server" "$VNC_PORT" "$VNC_LOG" > "$WORK/vnc.log" 2>&1 &
+    echo $! > "$WORK/vnc.pid"
+    for _ in $(seq 1 50); do grep -q listening "$VNC_LOG" 2>/dev/null && break; sleep 0.1; done
+    grep -q listening "$VNC_LOG" || { echo "VNC test server did not start:"; cat "$WORK/vnc.log"; exit 1; }
+    echo "Test VNC server listening on 127.0.0.1:$VNC_PORT"
+  else
+    echo "VNC test server did not compile; the screen tests will skip:"; cat "$WORK/vnc-cc.log"
+  fi
+  break
+done
+[[ -n "$VNC_PORT" ]] || echo "LibVNCServer is not installed (brew install libvncserver); the screen tests will skip"
+
 cd "$ROOT"
 # xcodebuild refuses to overwrite a result bundle, so a second local run would fail
 # before a single test ran. CI never sees this; a developer's checkout does.
@@ -65,6 +89,8 @@ env \
   TEST_RUNNER_ST_UITEST_KEY="$(cat "$WORK/client")" \
   TEST_RUNNER_ST_UITEST_TRUST_HOST_KEYS=1 \
   TEST_RUNNER_ST_UITEST_NAME="Local Test Server" \
+  TEST_RUNNER_ST_UITEST_VNC_PORT="$VNC_PORT" \
+  TEST_RUNNER_ST_UITEST_VNC_LOG="$VNC_LOG" \
   xcodebuild test \
     -project SuperTerminal.xcodeproj \
     -scheme SuperTerminal \

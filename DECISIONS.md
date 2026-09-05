@@ -754,3 +754,61 @@ query's matching and what an entity exposes, that Connect opens exactly one sess
 records the connection, and Disconnect All's dialog for zero and one sessions. Siri's
 phrase recognition and the Shortcuts listing are checked on a device (`docs/RELEASE.md`);
 the simulator cannot speak.
+
+## D-022 · VNC is a second kind of session over the same connections, and the protocol is written, not wrapped
+
+**Scope.** A VNC session shows a remote desktop and drives it with touch, hardware
+keyboard and pointer. It is a real RFB client (RFB 3.3/3.7/3.8 handshake; security types
+None and VNC Authentication — VeNCrypt/TLS is not implemented, the SSH route is the
+encrypted path; ClientInit/
+ServerInit; FramebufferUpdateRequest with incremental updates; encodings Raw, CopyRect,
+RRE, Hextile and ZRLE with the DesktopSize pseudo-encoding; PointerEvent,
+KeyEvent and ClientCutText), written in Swift on SwiftNIO in the package as `STVNC`, with
+the pixel format negotiated to 32-bit true colour so decoding is a copy.
+
+**Transport.** Direct TCP to the server, or through an existing SSH connection with a
+`direct-tcpip` channel (the way `ssh -L` works) so that a desktop behind the same bastion
+or Cloudflare tunnel as the shell needs no extra exposure. VNC Authentication's DES
+challenge is weak by design and RFB carries the framebuffer in the clear; the app says so
+in the editor. The SSH route is the default and the encrypted one; a direct connection is
+for a network the user trusts.
+
+**Input.** A tap is a click, a drag moves the pointer, a long press then drag drags with
+the button held, two-finger tap is a right click, two-finger pan is a scroll wheel, pinch
+zooms the view. On iPad a mouse or trackpad drives the pointer directly, with the same
+recogniser rules as the terminal (D-018): pointer touches only. Hardware keys go through
+one table to X11 keysyms; the on-screen keyboard types through `UIKeyInput`.
+
+**Verified how.** The protocol is exercised against LibVNCServer — the reference server
+library behind x11vnc and many others — built from Homebrew and run locally with a known
+pattern, so every encoding and both auth types are checked against a real server. macOS
+Screen Sharing and a Linux desktop are hardware checks for the owner.
+
+**Cursor.** The Cursor pseudo-encoding is deliberately not requested. With it the server
+stops painting its pointer into the framebuffer and expects the client to draw one at a
+position the server never reports; a touch user, with no local pointer, would then never
+see where they are. The server keeps drawing its own cursor, and on iPad the local pointer
+is hidden over the screen so there is exactly one.
+
+**What touch means.** Tap: click. Drag: the pointer moves, nothing held — a hover.
+Touch and hold, then drag: the button is held. Two fingers tapped: right click. Two fingers
+moved: the wheel, at fit-to-screen; once pinched in, two fingers pan the view instead,
+because that is what two fingers mean everywhere else on the platform and a gesture
+cannot mean both. A key row below the screen carries what a touch keyboard cannot type —
+Escape, Tab, arrows, Home, End, paging, Delete — and latches Ctrl, Alt, Shift and Super
+for the next key. ⌘ combinations stay with the app unless the user turns on "Send ⌘ to
+Remote", in which case ⌘ is Super.
+
+**What the remote may not do.** Text it puts on its clipboard is *offered* in a banner and
+copied only when the user says so; a remote desktop must not be able to write the local
+clipboard. The screen is never stored.
+
+**Verified how.** In the package, every encoding — ZRLE, Hextile, RRE, Raw, CopyRect —
+decodes LibVNCServer's known pattern pixel for pixel; the toggling square arrives as
+incremental updates; VNC Authentication succeeds with the right password and is refused
+with the wrong one or none; pointer, key and clipboard events arrive in the server's own
+log; the server going away ends the stream. Hand-built rectangles pin the corner cases a
+server happens not to send. In the app, a UI run opens the seeded connection's screen
+through the SSH connection, reads the desktop's name and size decoded from the server,
+taps, and finds the press and release in the server's log, then the key row's Escape and a
+Ctrl-latched Tab in order. macOS Screen Sharing and a Linux desktop are hardware checks.

@@ -29,6 +29,8 @@ final class AppContainer {
     let shortcuts: AppShortcutRouter
     /// The assistant: chooses an engine per request and holds the answer (D-020).
     let assistant: AssistantCoordinator
+    /// Remote screens (D-022), kept apart from the terminal sessions.
+    let screens: VNCSessionManager
     /// A session an App Intent opened before any scene could show it (D-021). The root
     /// view consumes it on appearance and clears it.
     var pendingIntentSessionID: TerminalSession.ID?
@@ -51,7 +53,8 @@ final class AppContainer {
         diagnostics: DiagnosticsCentre,
         sync: SyncCoordinator,
         shortcuts: AppShortcutRouter,
-        assistant: AssistantCoordinator
+        assistant: AssistantCoordinator,
+        screens: VNCSessionManager
     ) {
         self.hostStore = hostStore
         self.snippetStore = snippetStore
@@ -66,6 +69,7 @@ final class AppContainer {
         self.sync = sync
         self.shortcuts = shortcuts
         self.assistant = assistant
+        self.screens = screens
     }
 
     static func live() -> AppContainer {
@@ -109,6 +113,7 @@ final class AppContainer {
         }
         let shortcuts = AppShortcutRouter(sessionManager: sessionManager, settings: settings)
         let assistant = AssistantCoordinator(settings: settings, vault: vault, log: diagnostics.logger)
+        let screens = VNCSessionManager(vault: vault, knownHosts: knownHosts, diagnostics: diagnostics, haptics: haptics)
         let container = AppContainer(
             hostStore: hostStore,
             snippetStore: snippetStore,
@@ -122,7 +127,8 @@ final class AppContainer {
             diagnostics: diagnostics,
             sync: sync,
             shortcuts: shortcuts,
-            assistant: assistant
+            assistant: assistant,
+            screens: screens
         )
         shortcuts.sceneProvider = { [weak container] in container?.activeScene }
         #if DEBUG
@@ -156,10 +162,11 @@ final class AppContainer {
         )
         let shortcuts = AppShortcutRouter(sessionManager: sessionManager, settings: settings)
         let assistant = AssistantCoordinator(settings: settings, vault: vault, log: diagnostics.logger)
+        let screens = VNCSessionManager(vault: vault, knownHosts: knownHosts, diagnostics: diagnostics, haptics: haptics)
         let container = AppContainer(
             hostStore: hostStore, snippetStore: snippetStore, restoration: restoration, sessionManager: sessionManager,
             settings: settings, reachability: reachability, haptics: haptics, vault: vault, knownHosts: knownHosts,
-            diagnostics: diagnostics, sync: sync, shortcuts: shortcuts, assistant: assistant
+            diagnostics: diagnostics, sync: sync, shortcuts: shortcuts, assistant: assistant, screens: screens
         )
         shortcuts.sceneProvider = { [weak container] in container?.activeScene }
         return container

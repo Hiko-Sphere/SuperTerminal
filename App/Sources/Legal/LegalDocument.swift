@@ -19,7 +19,7 @@ enum LegalDocument: String, CaseIterable, Identifiable, Sendable {
     /// Bumped when the texts change in a way the user must see again: 2 removed every
     /// contact channel from all three languages; 3 added the assistant to the privacy
     /// policy, because it can send terminal text to a provider the user configures.
-    static let currentVersion = 3
+    static let currentVersion = 4
 
     var title: String {
         switch self {

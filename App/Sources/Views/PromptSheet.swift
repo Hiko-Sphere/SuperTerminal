@@ -7,11 +7,21 @@ import SwiftUI
 /// skims past is not a security control, and the changed-key case is deliberately styled
 /// so that continuing feels like the unusual choice it is.
 struct PromptSheet: View {
-    let session: TerminalSession
     let prompt: TerminalSession.PendingPrompt
+    /// Delivers the answer to whatever is waiting: a terminal session or a remote screen.
+    let resolve: (PromptCoordinator.Decision) -> Void
 
     @State private var secret = ""
     @Environment(\.dismiss) private var dismiss
+
+    init(prompt: TerminalSession.PendingPrompt, resolve: @escaping (PromptCoordinator.Decision) -> Void) {
+        self.prompt = prompt
+        self.resolve = resolve
+    }
+
+    init(session: TerminalSession, prompt: TerminalSession.PendingPrompt) {
+        self.init(prompt: prompt) { session.resolvePrompt($0) }
+    }
 
     var body: some View {
         NavigationStack {
@@ -25,20 +35,20 @@ struct PromptSheet: View {
                     secretEntry(
                         title: String(localized: "Password"),
                         detail: String(localized: "for \(username)@\(host)"),
-                        submit: { session.resolvePrompt(.password(secret)) }
+                        submit: { resolve(.password(secret)) }
                     )
                 case let .keyPassphrase(keyName):
                     secretEntry(
                         title: String(localized: "Key passphrase"),
                         detail: String(localized: "to unlock \(keyName)"),
-                        submit: { session.resolvePrompt(.passphrase(secret)) }
+                        submit: { resolve(.passphrase(secret)) }
                     )
                 }
             }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(String(localized: "Cancel")) {
-                        session.resolvePrompt(.reject)
+                        resolve(.reject)
                         dismiss()
                     }
                 }
@@ -72,7 +82,7 @@ struct PromptSheet: View {
                 .font(DesignTokens.Typography.callout)
 
                 Button(String(localized: "Trust and Connect")) {
-                    session.resolvePrompt(.approve)
+                    resolve(.approve)
                     dismiss()
                 }
                 .buttonStyle(.borderedProminent)
@@ -113,7 +123,7 @@ struct PromptSheet: View {
                 // toolbar as the default, and accepting a replacement is bordered rather
                 // than filled so it does not read as the obvious tap.
                 Button(String(localized: "Replace the stored key and connect"), role: .destructive) {
-                    session.resolvePrompt(.approve)
+                    resolve(.approve)
                     dismiss()
                 }
                 .buttonStyle(.bordered)

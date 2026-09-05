@@ -17,6 +17,7 @@ let package = Package(
         .library(name: "STCloudflare", targets: ["STCloudflare"]),
         .library(name: "STSSH", targets: ["STSSH"]),
         .library(name: "STTerminal", targets: ["STTerminal"]),
+        .library(name: "STVNC", targets: ["STVNC"]),
         .library(name: "STTestSupport", targets: ["STTestSupport"]),
     ],
     dependencies: [
@@ -113,12 +114,34 @@ let package = Package(
                 .product(name: "Crypto", package: "swift-crypto"),
                 .product(name: "_CryptoExtras", package: "swift-crypto"),
                 .product(name: "Sodium", package: "swift-sodium"),
-            ]
+            ],
+            // A C program the VNC tests compile against LibVNCServer at run time; not a
+            // source of this target.
+            exclude: ["Fixtures"]
         ),
         .target(name: "STTerminal", dependencies: ["STCore"]),
+        // The RFB client (D-022). No dependency on the SSH module: it speaks over any
+        // channel, and the app hands it a `direct-tcpip` one.
+        .target(
+            name: "STVNC",
+            dependencies: [
+                .product(name: "NIOCore", package: "swift-nio"),
+                .product(name: "NIOPosix", package: "swift-nio"),
+                .product(name: "NIOConcurrencyHelpers", package: "swift-nio"),
+            ]
+        ),
         .testTarget(name: "STCoreTests", dependencies: ["STCore"]),
         .testTarget(name: "STTerminalTests", dependencies: ["STTerminal", "STSSH", "STTestSupport"]),
         .testTarget(name: "STSSHTests", dependencies: ["STSSH", "STTestSupport"]),
         .testTarget(name: "STCloudflareTests", dependencies: ["STCloudflare", "STSSH", "STTerminal", "STTestSupport"]),
+        .testTarget(
+            name: "STVNCTests",
+            dependencies: [
+                "STVNC",
+                "STTestSupport",
+                .product(name: "NIOCore", package: "swift-nio"),
+                .product(name: "NIOPosix", package: "swift-nio"),
+            ]
+        ),
     ]
 )

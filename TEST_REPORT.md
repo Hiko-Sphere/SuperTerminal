@@ -296,6 +296,35 @@ sees the row change. Linux and Windows detection are exercised by the parser aga
 their real output; connecting to a machine of each kind is a hardware check in
 `docs/RELEASE.md`.
 
+### Remote screens (VNC) — 13 tests (18 cases) in the package, 5 app unit tests, 1 UI test
+
+`STVNCTests` run against LibVNCServer — the reference server library behind x11vnc and
+many others — compiled from Homebrew's `libvncserver` and started on an ephemeral loopback
+port for each test, serving a known pattern and logging every event it receives. The
+client is connected with one encoding at a time (ZRLE, Hextile, RRE, Raw, CopyRect+Raw,
+then the usual preference) and the framebuffer is checked pixel for pixel at five points;
+the server's toggling square arrives as incremental updates and changes exactly the
+pixels inside it; VNC Authentication succeeds with the right password, is refused with the
+wrong one, and reports `passwordRequired` with none; pointer moves, presses, wheel, key
+downs and ups (Latin-1 as itself) and cut text appear in the server's log as sent; killing
+the server ends the event stream. `RFBDecoderTests` hand-build Raw, CopyRect (overlapping),
+RRE, Hextile (background/foreground/subrectangles, a raw tile, an edge tile, a half-delivered
+tile) and ZRLE (solid, packed palette, plain and palette run-length through a zlib stream)
+rectangles, the DesktopSize pseudo-encoding, an unknown encoding, the wire layout of every
+client message and the handshake parsers, and the bit-reversed DES challenge.
+
+`VNCTests` in the app cover the record (round-trip, records without the field, port
+validation), the hardware-key table (⌘ stays with the app unless asked, shifted and
+control-combined characters, named keys, Latin-1 and Unicode keysyms), the recogniser
+set-up (two-finger tap, pointer-only click recognisers per D-018, the wheel recogniser
+taking scroll events and no touches, touch-and-hold, hover) and the point mapping through
+the letterboxed image with clamping. `VNCUITests` run against LibVNCServer behind the
+harness's OpenSSH server: the seeded connection's context menu offers Open Screen; the
+screen appears with the desktop's own name and size decoded through a `direct-tcpip`
+channel; a tap is found in the server's log as a press and a release; the key row's Escape
+arrives down and up; a latched Ctrl goes down before Tab and up after it. Without
+`libvncserver` installed the harness says so and these tests skip with that reason.
+
 ### Assistant — 5 unit tests and 1 UI test
 
 `AssistantTests` hold the two pure ends of the feature: the prompt builder names the

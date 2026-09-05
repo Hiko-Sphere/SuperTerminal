@@ -34,6 +34,9 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
     /// The platform the server last reported (D-019). Optional in the record so that a
     /// record written before the field existed still decodes.
     public var detectedPlatform: HostPlatform?
+    /// Screen sharing (D-022), when the user set it up. Optional so records written
+    /// before the field existed still decode.
+    public var vnc: VNCSettings?
     /// What the app treats the server as: the hand-set value, else the detected one.
     public var effectivePlatform: HostPlatform? { platformOverride ?? detectedPlatform }
 
@@ -76,6 +79,26 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
         case none
     }
 
+    /// How to reach the server's screen. `port` is the VNC port; through SSH it is the
+    /// port as the server sees it, on `targetHost` — the server itself when nil, so a
+    /// desktop behind the same bastion as the shell needs nothing exposed.
+    public struct VNCSettings: Sendable, Codable, Equatable {
+        public var port: Int
+        /// A `direct-tcpip` channel over the SSH connection (the default), or plain TCP.
+        public var viaSSH: Bool
+        public var targetHost: String?
+        /// Whether a VNC password is in the Keychain for this connection. The password
+        /// itself never enters the record.
+        public var hasPassword: Bool
+
+        public init(port: Int = 5900, viaSSH: Bool = true, targetHost: String? = nil, hasPassword: Bool = false) {
+            self.port = port
+            self.viaSSH = viaSSH
+            self.targetHost = targetHost
+            self.hasPassword = hasPassword
+        }
+    }
+
     public init(
         id: UUID = UUID(),
         name: String,
@@ -92,7 +115,8 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
         lastConnected: Date? = nil,
         accessAuthentication: AccessAuthentication? = nil,
         platformOverride: HostPlatform? = nil,
-        detectedPlatform: HostPlatform? = nil
+        detectedPlatform: HostPlatform? = nil,
+        vnc: VNCSettings? = nil
     ) {
         self.id = id
         self.name = name
@@ -110,6 +134,7 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
         self.accessAuthentication = accessAuthentication
         self.platformOverride = platformOverride
         self.detectedPlatform = detectedPlatform
+        self.vnc = vnc
     }
 
     /// The identity host keys are remembered against.
@@ -145,6 +170,7 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
         if username.trimmingCharacters(in: .whitespaces).isEmpty { problems.append(String(localized: "Enter a username.")) }
         if !(1 ... 65535).contains(port) { problems.append(String(localized: "Port must be between 1 and 65535.")) }
         if credentials.isEmpty { problems.append(String(localized: "Choose at least one way to authenticate.")) }
+        if let vnc, !(1 ... 65535).contains(vnc.port) { problems.append(String(localized: "The screen sharing port must be between 1 and 65535.")) }
         return problems
     }
 }

@@ -114,6 +114,10 @@ These are real and are not worked around silently:
   and the CloudKit record mapping are tested offline; the live path needs a signed build
   with the container entitlement, which an ad-hoc simulator build does not carry. See
   `PROJECT_STATUS.md` B-4. Nothing in the app claims otherwise.
+* **Remote screens are proven against LibVNCServer, not yet against a Mac or a desktop
+  Linux box.** Every encoding, authentication and input path is checked against the
+  reference server library; macOS Screen Sharing (with "VNC viewers may control screen with
+  password" on) and a Linux desktop are on the release checklist.
 * **The assistant has not answered from a real provider here.** Its wire behaviour is
   proven against a local server speaking the same protocol; a live answer needs a key you
   supply, and the on-device model needs a device eligible for Apple Intelligence.

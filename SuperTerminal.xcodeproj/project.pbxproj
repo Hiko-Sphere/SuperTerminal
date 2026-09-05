@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		25596A0A0CF9314A1864083B /* STTerminal in Frameworks */ = {isa = PBXBuildFile; productRef = A2B78DE99686039E19D5F920 /* STTerminal */; };
 		39760EFDF3D41C49B8DAEF3F /* STSecureStore in Frameworks */ = {isa = PBXBuildFile; productRef = 66EC5B52880DDE0D62F467B2 /* STSecureStore */; };
+		3B9F1C7D5E2A48C6B0D7E9A1 /* STVNC in Frameworks */ = {isa = PBXBuildFile; productRef = 7C0E4D2A91B3F6A5C8D1E0F2 /* STVNC */; };
 		4CB926D6FE5D4B5DC1050F82 /* STCloudflare in Frameworks */ = {isa = PBXBuildFile; productRef = 7336BD2111C0BCE3753A0960 /* STCloudflare */; };
 		5AF8E8A64A12E0813644DB47 /* STCore in Frameworks */ = {isa = PBXBuildFile; productRef = 68ABF9CA4E0014042782D04F /* STCore */; };
 		821759160ADD6FD915B89444 /* STSSH in Frameworks */ = {isa = PBXBuildFile; productRef = B40FC04F3815CB5D7BBC0DFE /* STSSH */; };
@@ -72,6 +73,7 @@
 				4CB926D6FE5D4B5DC1050F82 /* STCloudflare in Frameworks */,
 				821759160ADD6FD915B89444 /* STSSH in Frameworks */,
 				25596A0A0CF9314A1864083B /* STTerminal in Frameworks */,
+				3B9F1C7D5E2A48C6B0D7E9A1 /* STVNC in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -130,6 +132,7 @@
 				7336BD2111C0BCE3753A0960 /* STCloudflare */,
 				B40FC04F3815CB5D7BBC0DFE /* STSSH */,
 				A2B78DE99686039E19D5F920 /* STTerminal */,
+				7C0E4D2A91B3F6A5C8D1E0F2 /* STVNC */,
 			);
 			productName = SuperTerminal;
 			productReference = D28A5CC5999CE79BC0FC534B /* SuperTerminal.app */;
@@ -557,6 +560,10 @@
 		7336BD2111C0BCE3753A0960 /* STCloudflare */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = STCloudflare;
+		};
+		7C0E4D2A91B3F6A5C8D1E0F2 /* STVNC */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = STVNC;
 		};
 		A2B78DE99686039E19D5F920 /* STTerminal */ = {
 			isa = XCSwiftPackageProductDependency;

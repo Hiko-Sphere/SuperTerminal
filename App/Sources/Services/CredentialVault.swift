@@ -18,6 +18,7 @@ struct CredentialVault: Sendable {
         static let accessTokens = "dev.superterminal.cloudflare.tokens"
         static let serviceTokens = "dev.superterminal.cloudflare.servicetokens"
         static let assistant = "dev.superterminal.assistant"
+        static let vncPasswords = "dev.superterminal.vnc"
     }
 
     private let store: any SecureStore
@@ -96,6 +97,33 @@ struct CredentialVault: Sendable {
 
     func deletePassword(hostID: UUID) throws {
         try store.remove(SecureStoreKey(service: Service.passwords, account: hostID.uuidString))
+    }
+
+    // MARK: - Screen sharing passwords (D-022)
+
+    /// This device only, like the SSH password, and deleted with the connection.
+    func storeVNCPassword(_ password: String, hostID: UUID) throws {
+        try store.set(
+            Data(password.utf8),
+            for: SecureStoreKey(service: Service.vncPasswords, account: hostID.uuidString),
+            protection: .whenUnlockedThisDeviceOnly,
+            prompt: nil
+        )
+    }
+
+    func loadVNCPassword(hostID: UUID) throws -> String? {
+        guard let data = try store.getIfPresent(
+            SecureStoreKey(service: Service.vncPasswords, account: hostID.uuidString)
+        ) else { return nil }
+        return String(data: data, encoding: .utf8)
+    }
+
+    func hasVNCPassword(hostID: UUID) -> Bool {
+        ((try? store.accounts(inService: Service.vncPasswords)) ?? []).contains(hostID.uuidString)
+    }
+
+    func deleteVNCPassword(hostID: UUID) throws {
+        try store.remove(SecureStoreKey(service: Service.vncPasswords, account: hostID.uuidString))
     }
 
     // MARK: - Cloudflare Access tokens
@@ -180,7 +208,7 @@ struct CredentialVault: Sendable {
     }
 
     func deleteEverything() throws {
-        for service in [Service.privateKeys, Service.passwords, Service.accessTokens, Service.serviceTokens, Service.assistant] {
+        for service in [Service.privateKeys, Service.passwords, Service.accessTokens, Service.serviceTokens, Service.assistant, Service.vncPasswords] {
             try store.removeAll(inService: service)
         }
     }
