@@ -48,6 +48,8 @@ struct SettingsView: View {
                     Toggle("Haptic feedback", isOn: $settings.hapticsEnabled)
                 }
 
+                AppLockSettingsSection()
+
                 Section {
                     Toggle("Confirm multi-line pastes", isOn: $settings.confirmMultilinePaste)
                     Toggle("Hide content in the App Switcher", isOn: $settings.hideContentInAppSwitcher)

@@ -296,6 +296,23 @@ sees the row change. Linux and Windows detection are exercised by the parser aga
 their real output; connecting to a machine of each kind is a hardware check in
 `docs/RELEASE.md`.
 
+### App lock — 8 unit tests and 1 UI test
+
+`AppLockTests` run the lock (D-023) with a fake biometric check and a movable clock, on
+the real Keychain and the real PBKDF2 derivation: a record never holds the passcode,
+matches only its own, gets a fresh salt each time and round-trips; the policy and the
+backoff table; enabling needs a passcode the policy accepts and locks nothing until the
+app goes away; the grace period; four wrong guesses cost nothing and the fifth costs thirty
+seconds during which even the right passcode is refused, then the right one clears
+everything; biometrics unlock when the system says yes, are prompted once per lock
+automatically, and are not prompted when turned off; the setting without a record locks
+nothing; a lock that is showing is released when the record or the setting goes, and
+enabling the lock again never locks the current screen. `AppLockUITests` set a passcode through Settings (a mismatched confirmation is
+refused and said), relaunch the app keeping its state (`ST_UITEST_KEEP_STATE`), find the
+lock screen in front of everything with Settings unreachable, get a wrong passcode
+refused and the right one accepted, then leave with the Home button and return to find the
+app locked again. Face ID is the system's and a device check.
+
 ### Remote screens (VNC) — 13 tests (18 cases) in the package, 5 app unit tests, 1 UI test
 
 `STVNCTests` run against LibVNCServer — the reference server library behind x11vnc and

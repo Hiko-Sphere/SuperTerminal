@@ -29,6 +29,8 @@ struct RootView: View {
     /// showing it are two different things, and conflating them is how tapping a host
     /// ends up starting a connection the user never sees.
     @State private var path: [SessionRoute] = []
+    /// The window scene this root ended up in, which the lock window attaches to (D-023).
+    @State private var lockScene: UIWindowScene?
 
     /// The consent screen gates everything until the current documents are accepted.
     private var consentBinding: Binding<Bool> {
@@ -47,6 +49,11 @@ struct RootView: View {
             }
         }
         .background(appShortcuts)
+        .background(WindowSceneReader { windowScene in
+            lockScene = windowScene
+            syncLockWindow()
+        })
+        .onChange(of: container.appLock.isLocked, initial: true) { _, _ in syncLockWindow() }
         .overlay(alignment: .topLeading) { sceneCountProbe }
         .overlay(alignment: .bottomTrailing) { keyPressProbe }
         // The App Switcher snapshot is taken while the scene is inactive. Covering the
@@ -66,6 +73,7 @@ struct RootView: View {
             if horizontalSizeClass == .compact, !path.contains(.terminal(pending)) { path.append(.terminal(pending)) }
         }
         .onChange(of: scenePhase) { _, phase in
+            container.appLock.handleScenePhase(phase)
             if phase == .active {
                 container.activeScene = scene
                 container.sync.handleForeground()
@@ -145,6 +153,19 @@ struct RootView: View {
     /// button and an ignored, hidden container all still left eighteen zero-size buttons
     /// answering accessibility queries, so "Command Palette…" matched twice — the real
     /// menu item and the shortcut — which a UI test caught and a dump of the tree proved.
+    /// Shows or hides the lock in a window above this scene's own (D-023).
+    private func syncLockWindow() {
+        guard let lockScene else { return }
+        if container.appLock.isLocked {
+            let container = container
+            container.lockWindows.show(in: lockScene) {
+                AnyView(LockScreenView(lock: container.appLock).environment(container))
+            }
+        } else {
+            container.lockWindows.hide(in: lockScene)
+        }
+    }
+
     @ViewBuilder private var appShortcuts: some View {
         ZStack {
             ForEach(AppShortcut.allCases, id: \.rawValue) { shortcut in

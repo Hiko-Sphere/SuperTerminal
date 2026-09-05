@@ -324,6 +324,23 @@
         }
       }
     },
+    "A passcode cannot contain a line break.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密码不能包含换行。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密碼不能包含換行。"
+          }
+        }
+      }
+    },
     "A service token signs in without a browser. Create one in Cloudflare Zero Trust → Access → Service Auth and allow it in the application's policy. It is kept in this device's Keychain, never synced, and deleted with the connection.": {
       "extractionState": "manual",
       "localizations": {
@@ -562,6 +579,57 @@
         }
       }
     },
+    "After 1 minute": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 分钟后"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 分鐘後"
+          }
+        }
+      }
+    },
+    "After 15 minutes": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "15 分钟后"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "15 分鐘後"
+          }
+        }
+      }
+    },
+    "After 5 minutes": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "5 分钟后"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "5 分鐘後"
+          }
+        }
+      }
+    },
     "Algorithm": {
       "extractionState": "manual",
       "localizations": {
@@ -681,6 +749,23 @@
         }
       }
     },
+    "App lock": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "应用锁"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App 鎖定"
+          }
+        }
+      }
+    },
     "Appearance": {
       "extractionState": "manual",
       "localizations": {
@@ -766,6 +851,23 @@
         }
       }
     },
+    "Ask for a passcode — and Face ID or Touch ID, if you allow it — before the app shows your connections, keys and sessions.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在应用显示您的连接、密钥和会话之前，要求输入密码——如果您允许，也可以使用面容 ID 或触控 ID。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在 App 顯示您的連線、金鑰和工作階段之前，要求輸入密碼——如果您允許，也可以使用 Face ID 或 Touch ID。"
+          }
+        }
+      }
+    },
     "Assistant": {
       "extractionState": "manual",
       "localizations": {
@@ -796,6 +898,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "助理…"
+          }
+        }
+      }
+    },
+    "At least %lld characters. Letters, numbers and symbols are all allowed.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "至少 %lld 个字符。字母、数字和符号均可。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "至少 %lld 個字元。字母、數字和符號均可。"
           }
         }
       }
@@ -970,6 +1089,23 @@
         }
       }
     },
+    "Biometrics": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "生物识别"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "生物辨識"
+          }
+        }
+      }
+    },
     "Blink the cursor": {
       "extractionState": "manual",
       "localizations": {
@@ -1051,6 +1187,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "行動網路"
+          }
+        }
+      }
+    },
+    "Change Passcode": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更改密码"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更改密碼"
+          }
+        }
+      }
+    },
+    "Change Passcode…": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更改密码…"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更改密碼…"
           }
         }
       }
@@ -1582,6 +1752,23 @@
         }
       }
     },
+    "Confirm passcode": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "确认密码"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "確認密碼"
+          }
+        }
+      }
+    },
     "Connect": {
       "extractionState": "manual",
       "localizations": {
@@ -1952,6 +2139,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ctrl+C"
+          }
+        }
+      }
+    },
+    "Current passcode": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "当前密码"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目前密碼"
           }
         }
       }
@@ -3197,6 +3401,23 @@
         }
       }
     },
+    "Immediately": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "立即"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "立即"
+          }
+        }
+      }
+    },
     "Import": {
       "extractionState": "manual",
       "localizations": {
@@ -3724,6 +3945,23 @@
         }
       }
     },
+    "Lock after leaving the app": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "离开应用后锁定"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "離開 App 後鎖定"
+          }
+        }
+      }
+    },
     "Match case": {
       "extractionState": "manual",
       "localizations": {
@@ -3907,6 +4145,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "新增指令片段"
+          }
+        }
+      }
+    },
+    "New passcode": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新密码"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新密碼"
           }
         }
       }
@@ -4659,6 +4914,23 @@
         }
       }
     },
+    "Passcode": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密码"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密碼"
+          }
+        }
+      }
+    },
     "Passphrase": {
       "extractionState": "manual",
       "localizations": {
@@ -5356,6 +5628,23 @@
         }
       }
     },
+    "Require a passcode to open": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打开时需要密码"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "開啟時需要密碼"
+          }
+        }
+      }
+    },
     "Resolving %@": {
       "extractionState": "manual",
       "localizations": {
@@ -5934,6 +6223,23 @@
         }
       }
     },
+    "Set a Passcode": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "设置密码"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "設定密碼"
+          }
+        }
+      }
+    },
     "Settings": {
       "extractionState": "manual",
       "localizations": {
@@ -6359,6 +6665,23 @@
         }
       }
     },
+    "SuperTerminal is locked": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SuperTerminal 已锁定"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SuperTerminal 已鎖定"
+          }
+        }
+      }
+    },
     "SuperTerminal is still starting. Try again in a moment.": {
       "extractionState": "manual",
       "localizations": {
@@ -6699,6 +7022,23 @@
         }
       }
     },
+    "That passcode is not right.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密码不正确。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密碼不正確。"
+          }
+        }
+      }
+    },
     "The app cannot tell a real server from an impostor on a first connection. Compare the fingerprint it shows with what the server reports. A changed key is always refused until you decide.": {
       "extractionState": "manual",
       "localizations": {
@@ -6780,6 +7120,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "與主機的連線已中斷。"
+          }
+        }
+      }
+    },
+    "The current passcode is not right.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "当前密码不正确。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目前密碼不正確。"
           }
         }
       }
@@ -6933,6 +7290,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "裝置端模型需要 iOS 26。"
+          }
+        }
+      }
+    },
+    "The passcode is the app's own, separate from the device passcode. It is never stored — only a salted derivation of it, on this device. Wrong guesses are slowed down, never punished by deleting anything.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此密码是应用自己的，与设备密码无关。密码本身不会被保存——只保存加盐的派生值，且仅在本设备上。输错只会被延迟，绝不会删除任何数据。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此密碼是 App 自己的，與裝置密碼無關。密碼本身不會被儲存——只保存加鹽的衍生值，且僅在本裝置上。輸錯只會被延遲，絕不會刪除任何資料。"
           }
         }
       }
@@ -7171,6 +7545,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "shell 已結束。"
+          }
+        }
+      }
+    },
+    "The two entries do not match.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "两次输入不一致。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "兩次輸入不一致。"
           }
         }
       }
@@ -7430,6 +7821,23 @@
         }
       }
     },
+    "Too many attempts. Try again in %lld s.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "尝试次数过多。请在 %lld 秒后重试。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "嘗試次數過多。請在 %lld 秒後再試。"
+          }
+        }
+      }
+    },
     "Top processes": {
       "extractionState": "manual",
       "localizations": {
@@ -7532,6 +7940,40 @@
         }
       }
     },
+    "Turn Off": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "关闭"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "關閉"
+          }
+        }
+      }
+    },
+    "Turn Off App Lock": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "关闭应用锁"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "關閉 App 鎖定"
+          }
+        }
+      }
+    },
     "Turn on Sync with iCloud in Settings to keep this key in iCloud Keychain. The key's name and public key sync either way.": {
       "extractionState": "manual",
       "localizations": {
@@ -7545,6 +7987,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "在設定中開啟「與 iCloud 同步」，即可將此金鑰存放在 iCloud Keychain 中。無論是否開啟，金鑰的名稱與公開金鑰都會同步。"
+          }
+        }
+      }
+    },
+    "Turning the lock off removes the passcode. Your connections and keys stay.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "关闭应用锁会移除密码。您的连接和密钥会保留。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "關閉 App 鎖定會移除密碼。您的連線和金鑰會保留。"
           }
         }
       }
@@ -7600,6 +8059,40 @@
         }
       }
     },
+    "Unlock": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "解锁"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "解鎖"
+          }
+        }
+      }
+    },
+    "Unlock SuperTerminal": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "解锁 SuperTerminal"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "解鎖 SuperTerminal"
+          }
+        }
+      }
+    },
     "Unlock the key for %@": {
       "extractionState": "manual",
       "localizations": {
@@ -7613,6 +8106,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "解鎖 %@ 的金鑰"
+          }
+        }
+      }
+    },
+    "Unlock with %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用%@解锁"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用%@解鎖"
           }
         }
       }
@@ -7664,6 +8174,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "運作時間與負載"
+          }
+        }
+      }
+    },
+    "Use Passcode": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用密码"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用密碼"
+          }
+        }
+      }
+    },
+    "Use at least %lld characters.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "至少使用 %lld 个字符。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "至少使用 %lld 個字元。"
           }
         }
       }
@@ -7936,6 +8480,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "首次 fingerprint 由您核對。"
+          }
+        }
+      }
+    },
+    "Your connections, keys and sessions stay on this device until it is unlocked.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在解锁之前，您的连接、密钥和会话都保留在此设备上。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在解鎖之前，您的連線、金鑰和工作階段都保留在此裝置上。"
           }
         }
       }

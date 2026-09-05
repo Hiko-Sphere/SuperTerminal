@@ -19,6 +19,7 @@ struct CredentialVault: Sendable {
         static let serviceTokens = "dev.superterminal.cloudflare.servicetokens"
         static let assistant = "dev.superterminal.assistant"
         static let vncPasswords = "dev.superterminal.vnc"
+        static let appLock = "dev.superterminal.applock"
     }
 
     private let store: any SecureStore
@@ -126,6 +127,31 @@ struct CredentialVault: Sendable {
         try store.remove(SecureStoreKey(service: Service.vncPasswords, account: hostID.uuidString))
     }
 
+    // MARK: - App lock (D-023)
+
+    /// The passcode's derivation, never the passcode; this device only.
+    func storeAppPasscode(_ record: PasscodeRecord) throws {
+        try store.set(
+            try JSONEncoder().encode(record),
+            for: SecureStoreKey(service: Service.appLock, account: "passcode"),
+            protection: .whenUnlockedThisDeviceOnly,
+            prompt: nil
+        )
+    }
+
+    func loadAppPasscode() throws -> PasscodeRecord? {
+        guard let data = try store.getIfPresent(SecureStoreKey(service: Service.appLock, account: "passcode")) else { return nil }
+        return try JSONDecoder().decode(PasscodeRecord.self, from: data)
+    }
+
+    var hasAppPasscode: Bool {
+        ((try? store.accounts(inService: Service.appLock)) ?? []).contains("passcode")
+    }
+
+    func deleteAppPasscode() throws {
+        try store.remove(SecureStoreKey(service: Service.appLock, account: "passcode"))
+    }
+
     // MARK: - Cloudflare Access tokens
 
     /// Access tokens use `afterFirstUnlock` because a reconnect may run while the device
@@ -208,7 +234,7 @@ struct CredentialVault: Sendable {
     }
 
     func deleteEverything() throws {
-        for service in [Service.privateKeys, Service.passwords, Service.accessTokens, Service.serviceTokens, Service.assistant, Service.vncPasswords] {
+        for service in [Service.privateKeys, Service.passwords, Service.accessTokens, Service.serviceTokens, Service.assistant, Service.vncPasswords, Service.appLock] {
             try store.removeAll(inService: service)
         }
     }

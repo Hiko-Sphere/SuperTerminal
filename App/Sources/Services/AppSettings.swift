@@ -29,6 +29,9 @@ final class AppSettings {
         static let assistantPrefersOnDevice = "settings.assistantPrefersOnDevice"
         static let assistantEndpoint = "settings.assistantEndpoint"
         static let assistantModel = "settings.assistantModel"
+        static let appLockEnabled = "settings.appLockEnabled"
+        static let appLockUsesBiometrics = "settings.appLockUsesBiometrics"
+        static let appLockGraceSeconds = "settings.appLockGraceSeconds"
 
         static let all = [
             themeID, lightThemeID, followSystemAppearance, fontSize, scrollbackLimit, clipboardExpirySeconds,
@@ -36,6 +39,7 @@ final class AppSettings {
             hideContentInAppSwitcher, cursorBlink, bellEnabled, keyRowVisible,
             automaticReconnect, hapticsEnabled, iCloudSyncEnabled, acceptedTermsVersion,
             assistantPrefersOnDevice, assistantEndpoint, assistantModel,
+            appLockEnabled, appLockUsesBiometrics, appLockGraceSeconds,
         ]
     }
 
@@ -67,6 +71,9 @@ final class AppSettings {
         iCloudSyncEnabled = defaults.bool(forKey: Key.iCloudSyncEnabled)
         acceptedTermsVersion = defaults.integer(forKey: Key.acceptedTermsVersion)
         assistantPrefersOnDevice = defaults.bool(forKey: Key.assistantPrefersOnDevice)
+        appLockEnabled = defaults.bool(forKey: Key.appLockEnabled)
+        appLockUsesBiometrics = defaults.bool(forKey: Key.appLockUsesBiometrics)
+        appLockGraceSeconds = defaults.integer(forKey: Key.appLockGraceSeconds)
         assistantEndpoint = defaults.string(forKey: Key.assistantEndpoint) ?? ""
         assistantModel = defaults.string(forKey: Key.assistantModel) ?? ""
     }
@@ -80,6 +87,7 @@ final class AppSettings {
             // The assistant prefers the on-device model, where the device has one; the
             // provider fields name the common default so a pasted key is enough (D-020).
             Key.assistantPrefersOnDevice: true,
+            Key.appLockUsesBiometrics: true,
             Key.assistantEndpoint: "https://api.openai.com/v1",
             Key.assistantModel: "gpt-4o-mini",
             Key.followSystemAppearance: true,
@@ -131,6 +139,9 @@ final class AppSettings {
         iCloudSyncEnabled = defaults.bool(forKey: Key.iCloudSyncEnabled)
         acceptedTermsVersion = defaults.integer(forKey: Key.acceptedTermsVersion)
         assistantPrefersOnDevice = defaults.bool(forKey: Key.assistantPrefersOnDevice)
+        appLockEnabled = defaults.bool(forKey: Key.appLockEnabled)
+        appLockUsesBiometrics = defaults.bool(forKey: Key.appLockUsesBiometrics)
+        appLockGraceSeconds = defaults.integer(forKey: Key.appLockGraceSeconds)
         assistantEndpoint = defaults.string(forKey: Key.assistantEndpoint) ?? ""
         assistantModel = defaults.string(forKey: Key.assistantModel) ?? ""
     }
@@ -169,6 +180,11 @@ final class AppSettings {
     }
     var assistantEndpoint: String { didSet { defaults.set(assistantEndpoint, forKey: Key.assistantEndpoint) } }
     var assistantModel: String { didSet { defaults.set(assistantModel, forKey: Key.assistantModel) } }
+    /// The app lock (D-023). The setting alone locks nothing: a passcode record in the
+    /// Keychain is needed too, so deleting all data cannot lock the user out.
+    var appLockEnabled: Bool { didSet { defaults.set(appLockEnabled, forKey: Key.appLockEnabled) } }
+    var appLockUsesBiometrics: Bool { didSet { defaults.set(appLockUsesBiometrics, forKey: Key.appLockUsesBiometrics) } }
+    var appLockGraceSeconds: Int { didSet { defaults.set(appLockGraceSeconds, forKey: Key.appLockGraceSeconds) } }
 
     var automaticReconnect: Bool {
         didSet { defaults.set(automaticReconnect, forKey: Key.automaticReconnect) }

@@ -33,6 +33,26 @@ real key exchange, real host-key verification, a real PTY.
 The evidence behind that claim, including the exact `cloudflared` source consulted, is
 in [`DECISIONS.md`](DECISIONS.md) (D-001).
 
+## What it does
+
+* **SSH** over direct TCP or through Cloudflare Tunnel and Access (browser sign-in or a
+  service token), with host-key verification that asks and never silently accepts a
+  change, Ed25519/ECDSA/RSA keys, passphrase-protected keys and passwords in the Keychain.
+* **A real terminal**: its own emulator with scrollback, search, selection, mouse
+  reporting, themes, snippets and command history; a hardware keyboard and a mouse or
+  trackpad on iPad work the way they do on a desktop (D-018).
+* **Remote screens over VNC** through the same SSH connection — touch, keyboard and
+  pointer control, proven against LibVNCServer (D-022).
+* **An assistant** for "how do I…", "explain this" and "what went wrong", on the device's
+  own model where it is eligible, else a provider you configure — it shows what it will
+  send before it sends it, and a suggested command is inserted, never run (D-020).
+* **Siri and Shortcuts** — "Connect to <server> in SuperTerminal" (D-021) — and the
+  server's platform (macOS, Linux, Windows…) detected or set by hand (D-019).
+* **iCloud sync** of connections, keys' public halves, known hosts and snippets, opt-in
+  and conflict-checked (D-015); **an app lock** with a passcode of its own behind Face ID
+  or Touch ID (D-023); a privacy policy, terms and notices in English, Simplified and
+  Traditional Chinese, accepted in the app before anything else (D-016).
+
 ## Requirements
 
 | | |
@@ -114,6 +134,9 @@ These are real and are not worked around silently:
   and the CloudKit record mapping are tested offline; the live path needs a signed build
   with the container entitlement, which an ad-hoc simulator build does not carry. See
   `PROJECT_STATUS.md` B-4. Nothing in the app claims otherwise.
+* **Face ID and Touch ID for the app lock are proven with a stand-in.** The lock's rules
+  are tested with a biometric check the test controls and the real Keychain and
+  derivation; the system prompt itself is a device check on the release checklist.
 * **Remote screens are proven against LibVNCServer, not yet against a Mac or a desktop
   Linux box.** Every encoding, authentication and input path is checked against the
   reference server library; macOS Screen Sharing (with "VNC viewers may control screen with

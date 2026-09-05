@@ -293,7 +293,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = SuperTerminal;
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
-				INFOPLIST_KEY_NSFaceIDUsageDescription = "SuperTerminal asks for Face ID before it uses an SSH key you chose to protect with it.";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "SuperTerminal asks for Face ID to unlock the app when App Lock is on, and before it uses an SSH key you chose to protect with it.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -484,7 +484,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = SuperTerminal;
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
-				INFOPLIST_KEY_NSFaceIDUsageDescription = "SuperTerminal asks for Face ID before it uses an SSH key you chose to protect with it.";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "SuperTerminal asks for Face ID to unlock the app when App Lock is on, and before it uses an SSH key you chose to protect with it.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

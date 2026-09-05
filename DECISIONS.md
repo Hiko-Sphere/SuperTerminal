@@ -812,3 +812,47 @@ server happens not to send. In the app, a UI run opens the seeded connection's s
 through the SSH connection, reads the desktop's name and size decoded from the server,
 taps, and finds the press and release in the server's log, then the key row's Escape and a
 Ctrl-latched Tab in order. macOS Screen Sharing and a Linux desktop are hardware checks.
+
+## D-023 · The app lock is the app's own passcode, with biometrics in front of it
+
+**Why a passcode of its own.** The device passcode already protects the device; what a
+terminal app adds is a second door in front of SSH keys, saved passwords and open
+sessions when a phone is handed over unlocked. So the lock is an app passcode, and Face ID
+or Touch ID stands in front of it when the user allows — the way banking apps do it, and
+for the same reason: biometrics are convenient, the passcode is the thing that is proven.
+`LAContext` is used with the biometrics-only policy; the app never sees biometric data and
+learns only whether the check passed. Cancelling the prompt falls back to the passcode
+field, and the prompt is offered once per lock, so a cancelled prompt does not come
+straight back.
+
+**What is stored.** Never the passcode: a 16-byte salt and a 200 000-round PBKDF2-HMAC-SHA256
+derivation of it, in the Keychain, this device only, compared in constant time. The setting
+alone locks nothing — a record in the Keychain is needed too — so "Delete all data" removes
+the lock with everything else and cannot lock anyone out of an empty app.
+
+**When it engages.** At launch when on, and when the app returns after the grace the user
+chose (immediately, 1, 5 or 15 minutes away). Wrong guesses are slowed down — thirty seconds
+after five, a minute after eight, five minutes after ten — and never punished by deleting
+anything: the keys behind the lock are the owner's, and a child at the screen is not an
+attacker. Turning the lock off, or changing the passcode, asks for the current passcode
+first; Settings being open is not proof the owner is holding the device. "Locked" is
+defined as engaged *and still on*: turning the lock off — in Settings, or by deleting all
+data — releases a lock that is showing, rather than leaving a screen nothing can unlock,
+and turning it on clears any engagement held from before, so the screen the user is on
+is never locked by the act of enabling. (Both found by a seeded UI run that inherited the
+previous run's passcode: the lock read "engaged" at launch, the seeding cleared the
+passcode, and enabling it again re-armed the stale engagement.)
+
+**Where it is drawn.** In a `UIWindow` of its own above the scene's window, one per scene
+on iPad, rather than in the view tree — a presented sheet would otherwise stay visible
+above a view-tree overlay, and a `fullScreenCover` cannot be presented while a sheet is up.
+The window is modal to accessibility, so nothing behind it is reachable by any means.
+
+**Verified how.** Unit tests run the lock with a biometric check that answers what the test
+says and a clock the test moves: the record derivation and its constant-time match, the
+policy and backoff tables, the grace period, five wrong guesses costing thirty seconds with
+the right passcode refused during them, biometrics passing and failing and being off, and
+the setting-without-record case. A UI run sets a passcode in Settings, sees a mismatch
+refused, relaunches the app keeping its state and finds the lock in front of everything,
+gets a wrong passcode refused and the right one accepted, then leaves and returns and is
+locked again. Face ID itself is a device check.

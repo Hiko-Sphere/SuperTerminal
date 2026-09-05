@@ -81,6 +81,10 @@ The assistant answers questions about commands and terminal output. On a device 
 
 Screen sharing (VNC) shows a remote computer's screen and sends it your touches, keys and pointer. The picture exists only while it is shown; it is not stored or sent anywhere else. The VNC protocol itself is unencrypted and its password check is weak, so unless you turn the option off in the connection's settings the screen travels inside the SSH connection and is protected by its encryption. Text the remote computer copies is offered to you and goes on your clipboard only when you say so. A VNC password is kept in this device's Keychain and does not sync.
 
+## App lock
+
+With App Lock on, the app asks for its own passcode — or Face ID or Touch ID, if you allow it — when it opens and when it comes back after the time you chose. The passcode is never stored: the device Keychain holds a salted PBKDF2 derivation of it, on this device only. Face ID and Touch ID are handled entirely by iOS; the app learns only whether the check passed. Wrong guesses are slowed down, never punished by deleting anything.
+
 ## Your rights over your data
 
 Everything the app holds is on your device or in your own iCloud account, under your control. There is no copy with the developer, so there is nothing for the developer to give you, correct or delete on request. To see your data, open the app. To delete it, see below. If you believe the developer nonetheless holds something about you, write to [developer contact email].

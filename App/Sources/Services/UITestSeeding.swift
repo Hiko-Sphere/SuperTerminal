@@ -55,7 +55,10 @@ enum UITestSeeding {
     /// hosts and the accepted-terms version all outlive the app, so a run that changes
     /// one would otherwise decide the outcome of the next.
     static var resetsState: Bool {
-        ProcessInfo.processInfo.environment["ST_UITEST_RESET"] == "1" || seedFromEnvironment != nil
+        let environment = ProcessInfo.processInfo.environment
+        // A test that relaunches the app to see what survives a launch says so.
+        guard environment["ST_UITEST_KEEP_STATE"] != "1" else { return false }
+        return environment["ST_UITEST_RESET"] == "1" || seedFromEnvironment != nil
     }
 
     @MainActor
