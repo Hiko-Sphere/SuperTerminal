@@ -198,6 +198,24 @@ struct SuperTerminalCommands: Commands {
                 .disabled(scene == nil)
         }
         CommandMenu("Session") {
+            Button("Next Session") { cycleSession(by: 1) }
+                .keyboardShortcut("]", modifiers: [.command, .shift])
+                .disabled(container.sessionManager.sessions.count < 2)
+            Button("Previous Session") { cycleSession(by: -1) }
+                .keyboardShortcut("[", modifiers: [.command, .shift])
+                .disabled(container.sessionManager.sessions.count < 2)
+
+            Divider()
+
+            // ⌘1…⌘9, the way every browser and terminal numbers its tabs.
+            ForEach(1 ... 9, id: \.self) { number in
+                Button("Session \(number)") { selectSession(number) }
+                    .keyboardShortcut(KeyEquivalent(Character("\(number)")), modifiers: .command)
+                    .disabled(container.sessionManager.session(atOneBasedIndex: number) == nil)
+            }
+
+            Divider()
+
             Button("Close Session") {
                 guard let session = displayedSession else { return }
                 container.sessionManager.close(session)
@@ -213,5 +231,18 @@ struct SuperTerminalCommands: Commands {
     @MainActor
     private var displayedSession: TerminalSession? {
         container.sessionManager.session(withID: scene?.selectedSessionID)
+    }
+
+    @MainActor
+    private func selectSession(_ number: Int) {
+        guard let scene, let session = container.sessionManager.session(atOneBasedIndex: number) else { return }
+        scene.selectedSessionID = session.id
+    }
+
+    @MainActor
+    private func cycleSession(by delta: Int) {
+        guard let scene else { return }
+        guard let session = container.sessionManager.session(after: scene.selectedSessionID, delta: delta) else { return }
+        scene.selectedSessionID = session.id
     }
 }

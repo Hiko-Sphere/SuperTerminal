@@ -313,3 +313,79 @@ struct SessionRestorationTests {
         #expect(SessionRestorationStore(directory: directory).pending.isEmpty)
     }
 }
+
+/// Switching sessions from the keyboard.
+///
+/// The bindings themselves are declarative; what is worth testing is where they land.
+/// A shortcut that quietly selects the wrong terminal is worse than one that does nothing,
+/// because the next thing typed goes to the wrong machine.
+@Suite("Keyboard session switching")
+@MainActor
+struct SessionSwitchingShortcutTests {
+    private func manager(withSessionCount count: Int) -> (SessionManager, [TerminalSession]) {
+        let manager = SessionManager(
+            vault: CredentialVault(),
+            knownHosts: InMemoryKnownHostsStore(),
+            settings: AppSettings(defaults: UserDefaults(suiteName: "shortcuts-\(UUID())")!),
+            diagnostics: DiagnosticsCentre()
+        )
+        let sessions = (0 ..< count).map { index in
+            manager.open(Host(name: "host-\(index)", hostname: "h", username: "u", credentials: [.none]))
+        }
+        return (manager, sessions)
+    }
+
+    @Test("Command-1 is the first session, not the zeroth")
+    func numbersAreOneBased() {
+        let (manager, sessions) = manager(withSessionCount: 3)
+        defer { manager.closeAll() }
+        #expect(manager.session(atOneBasedIndex: 1)?.id == sessions[0].id)
+        #expect(manager.session(atOneBasedIndex: 3)?.id == sessions[2].id)
+    }
+
+    @Test("A number with no session behind it does nothing")
+    func outOfRangeSelectsNothing() {
+        let (manager, _) = manager(withSessionCount: 3)
+        defer { manager.closeAll() }
+        // Clamping to the last session would put the next keystroke on a machine the
+        // user did not choose.
+        #expect(manager.session(atOneBasedIndex: 4) == nil)
+        #expect(manager.session(atOneBasedIndex: 0) == nil)
+        #expect(manager.session(atOneBasedIndex: -1) == nil)
+    }
+
+    @Test("Next and previous wrap around")
+    func cyclingWraps() {
+        let (manager, sessions) = manager(withSessionCount: 3)
+        defer { manager.closeAll() }
+
+        #expect(manager.session(after: sessions[0].id, delta: 1)?.id == sessions[1].id)
+        #expect(manager.session(after: sessions[2].id, delta: 1)?.id == sessions[0].id)
+        #expect(manager.session(after: sessions[0].id, delta: -1)?.id == sessions[2].id)
+    }
+
+    @Test("Cycling with nothing selected picks an end rather than failing")
+    func cyclingFromNothing() {
+        let (manager, sessions) = manager(withSessionCount: 3)
+        defer { manager.closeAll() }
+        #expect(manager.session(after: nil, delta: 1)?.id == sessions[0].id)
+        #expect(manager.session(after: nil, delta: -1)?.id == sessions[2].id)
+    }
+
+    @Test("Cycling with a session that has been closed picks an end")
+    func cyclingFromAClosedSession() {
+        let (manager, sessions) = manager(withSessionCount: 2)
+        defer { manager.closeAll() }
+        let stale = sessions[0].id
+        manager.close(sessions[0])
+        // A window still holding the id of a session someone else closed must not be
+        // left unable to move.
+        #expect(manager.session(after: stale, delta: 1)?.id == sessions[1].id)
+    }
+
+    @Test("Cycling with no sessions at all does nothing")
+    func cyclingWithNoSessions() {
+        let (manager, _) = manager(withSessionCount: 0)
+        #expect(manager.session(after: nil, delta: 1) == nil)
+    }
+}

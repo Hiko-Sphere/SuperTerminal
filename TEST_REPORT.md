@@ -296,6 +296,13 @@ timeout bounds it correctly and the retry then continues, so the cost is a slow 
 retry against a dead load balancer, not a hang. `retriesWhileUnreachableAndStopsOnRequest`
 takes 33s for this reason.
 
+### Keyboard session switching — 6 app tests
+
+The bindings are declarative; where they *land* is what is worth testing, because a
+shortcut that quietly selects the wrong terminal sends the next keystroke to the wrong
+machine. Out-of-range numbers do nothing rather than clamping, cycling wraps at both ends,
+and a window holding the id of a session someone else closed can still move.
+
 ### Fuzzy ranking — 13 package tests
 
 The palette is only as good as its ranking: with forty things matching `wp`, which one is

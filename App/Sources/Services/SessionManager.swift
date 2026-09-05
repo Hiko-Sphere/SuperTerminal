@@ -123,6 +123,26 @@ final class SessionManager {
         rememberOpenSessions()
     }
 
+    /// The session a number key selects. One-based, because ⌘1 is the first.
+    ///
+    /// Out of range returns `nil` rather than clamping: ⌘5 with three sessions open
+    /// should do nothing, not silently select the last one — a shortcut that lands
+    /// somewhere unexpected in a terminal is worse than one that does nothing.
+    func session(atOneBasedIndex index: Int) -> TerminalSession? {
+        guard index >= 1, index <= sessions.count else { return nil }
+        return sessions[index - 1]
+    }
+
+    /// The session `delta` places from the given one, wrapping at both ends.
+    func session(after id: TerminalSession.ID?, delta: Int) -> TerminalSession? {
+        guard !sessions.isEmpty else { return nil }
+        guard let id, let current = sessions.firstIndex(where: { $0.id == id }) else {
+            return delta >= 0 ? sessions.first : sessions.last
+        }
+        let next = (current + delta % sessions.count + sessions.count) % sessions.count
+        return sessions[next]
+    }
+
     /// Sessions for a given host, so the host list can show what is already open.
     func sessions(for host: Host) -> [TerminalSession] {
         sessions.filter { $0.host.id == host.id }
