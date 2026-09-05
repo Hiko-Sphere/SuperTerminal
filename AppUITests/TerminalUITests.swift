@@ -1,5 +1,60 @@
 import XCTest
 
+/// Scrolling and searching that behave the same on a phone and an iPad.
+///
+/// Two iPad differences broke tests written against the phone. Settings is a form sheet
+/// there, not a full-screen push, so `app.swipeUp()` scrolls the connection list *behind*
+/// the sheet and the sheet never moves — and `collectionViews.firstMatch` is that same
+/// sidebar list, not the form. And a sidebar's search field is folded into the navigation
+/// bar until the list is pulled down, so it does not exist to be asserted on until revealed.
+private extension XCUIApplication {
+    /// Swipes the Settings form once, choosing the element at the moment of the swipe.
+    ///
+    /// Three earlier versions failed the same way: they *chose* an element from one
+    /// accessibility snapshot and *acted* on it in the next. XCUITest re-resolves queries
+    /// lazily, so a count taken then indexed, or an `.exists` checked then swiped, raced the
+    /// tree and reported "no matches" for an element that was there a moment before. Here
+    /// the decision and the action are adjacent. The form is identified by the identifier
+    /// `SettingsView` attaches; where a snapshot does not expose it, the only collection
+    /// view on screen is the form itself.
+    private func swipeSettingsForm(up: Bool) {
+        let byIdentity = descendants(matching: .any).matching(identifier: "settings-form").firstMatch
+        let target = byIdentity.exists ? byIdentity : collectionViews.firstMatch
+        if up { target.swipeUp() } else { target.swipeDown() }
+    }
+
+    /// Scrolls the Settings form until `element` can be tapped, or gives up.
+    ///
+    /// Searches in both directions. A helper that only swipes one way finds a row below the
+    /// viewport and never one above it — so after opening a row near the foot of the form
+    /// and coming back, every row above it becomes unreachable. That is an ordering
+    /// artefact of the test, not a property of the screen, and it should not decide results.
+    @discardableResult
+    func scroll(to element: XCUIElement, attempts: Int = 20) -> Bool {
+        if element.exists, element.isHittable { return true }
+        // Down the form first: the row being looked for is usually below, and with Bold
+        // Text every row is taller, so the budget has to cover a long form.
+        for up in [true, false] {
+            for _ in 0 ..< attempts {
+                if element.exists, element.isHittable { return true }
+                swipeSettingsForm(up: up)
+            }
+        }
+        return element.exists && element.isHittable
+    }
+
+    /// Brings the connection list's search field on screen and returns it.
+    func revealSearchField() -> XCUIElement {
+        let field = searchFields.firstMatch
+        if !field.exists {
+            // Pulling the list down is what unfolds a sidebar's search bar on iPad.
+            collectionViews.firstMatch.swipeDown()
+        }
+        _ = field.waitForExistence(timeout: 5)
+        return field
+    }
+}
+
 /// Drives the app to a live terminal and exercises the screen a user actually spends
 /// their time on.
 ///
@@ -319,10 +374,7 @@ final class KeyManagementUITests: XCTestCase {
         let keysLink = app.descendants(matching: .any).matching(
             NSPredicate(format: "label == %@", "Keys")
         ).firstMatch
-        if !keysLink.waitForExistence(timeout: 3) {
-            app.swipeUp()
-        }
-        XCTAssertTrue(keysLink.waitForExistence(timeout: 5), "Settings should offer a Keys screen")
+        XCTAssertTrue(app.scroll(to: keysLink), "Settings should offer a Keys screen")
         keysLink.tap()
         XCTAssertTrue(app.navigationBars["Keys"].waitForExistence(timeout: 5))
 
@@ -424,7 +476,7 @@ final class AccessibilityUITests: XCTestCase {
         // not "on the first screen".
         for label in ["Appearance", "Privacy", "Terminal", "Security", "Data"] {
             XCTAssertTrue(
-                scrollToElement(app.staticTexts[label], in: app),
+                app.scroll(to: app.staticTexts[label]),
                 "the \(label) section should be reachable with Reduce Transparency on"
             )
         }
@@ -434,7 +486,7 @@ final class AccessibilityUITests: XCTestCase {
         let about = app.staticTexts.containing(
             NSPredicate(format: "label BEGINSWITH %@", "Version ")
         ).firstMatch
-        XCTAssertTrue(scrollToElement(about, in: app), "the version should be reachable at the foot of Settings")
+        XCTAssertTrue(app.scroll(to: about), "the version should be reachable at the foot of Settings")
 
         let shot = XCTAttachment(screenshot: app.screenshot())
         shot.name = "settings-reduce-transparency"
@@ -442,25 +494,6 @@ final class AccessibilityUITests: XCTestCase {
         add(shot)
     }
 
-    /// Scrolls until `element` is on screen, or gives up.
-    ///
-    /// Swipes the form itself rather than the application. On iPad, Settings is a form
-    /// sheet that does not fill the screen, so a swipe aimed at the app scrolls the
-    /// connection list *behind* the sheet and the sheet never moves — which reads as
-    /// "the section is unreachable" when it is merely further down.
-    private func scrollToElement(_ element: XCUIElement, in app: XCUIApplication) -> Bool {
-        let scroller: XCUIElement = {
-            let collection = app.collectionViews.firstMatch
-            if collection.exists { return collection }
-            let table = app.tables.firstMatch
-            return table.exists ? table : app
-        }()
-        for _ in 0 ..< 12 {
-            if element.exists, element.isHittable { return true }
-            scroller.swipeUp()
-        }
-        return element.exists && element.isHittable
-    }
 
     func testEveryControlOnTheHostListIsLabelledForVoiceOver() throws {
         let app = launch(with: [])
@@ -585,11 +618,7 @@ final class SnippetUITests: XCTestCase {
     /// verified by watching a neighbouring toggle ignore the same tap.
     private func turnOn(_ toggle: XCUIElement) {
         XCTAssertTrue(toggle.waitForExistence(timeout: 5), "the setting should exist")
-        var scrolls = 0
-        while !toggle.isHittable, scrolls < 6 {
-            app.swipeUp()
-            scrolls += 1
-        }
+        _ = app.scroll(to: toggle)
         // Let the scroll settle: a tap dispatched mid-momentum lands wherever the row has
         // moved to by then, which is not necessarily this row.
         var frame = toggle.frame
@@ -833,5 +862,140 @@ final class MultiWindowUITests: XCTestCase {
         screenshot.name = "Second window showing the session"
         screenshot.lifetime = .keepAlways
         add(screenshot)
+    }
+}
+
+/// The app in Chinese.
+///
+/// Localization fails silently: an untranslated string compiles, ships, and simply shows
+/// English to someone who chose Chinese. Nothing crashes and no unit test notices. These
+/// launch the real app in each locale and read what is on screen.
+final class LocalizationUITests: XCTestCase {
+    private func launch(inLanguage language: String) -> XCUIApplication {
+        let app = XCUIApplication()
+        // The pair of arguments iOS itself uses; setting only AppleLanguages leaves the
+        // formatter locale on the host's, which hides mistakes in dates and numbers.
+        app.launchArguments += ["-AppleLanguages", "(\(language))", "-AppleLocale", language]
+        let environment = ProcessInfo.processInfo.environment
+        for key in [
+            "ST_UITEST_SEED", "ST_UITEST_HOST", "ST_UITEST_PORT", "ST_UITEST_USER",
+            "ST_UITEST_KEY", "ST_UITEST_TRUST_HOST_KEYS", "ST_UITEST_NAME",
+        ] {
+            if let value = environment[key] { app.launchEnvironment[key] = value }
+        }
+        app.launch()
+        return app
+    }
+
+    private func attach(_ app: XCUIApplication, named name: String) {
+        let shot = XCTAttachment(screenshot: app.screenshot())
+        shot.name = name
+        shot.lifetime = .keepAlways
+        add(shot)
+    }
+
+    func testSimplifiedChineseReachesTheInterface() throws {
+        let app = launch(inLanguage: "zh-Hans")
+        XCTAssertTrue(app.navigationBars["SuperTerminal"].waitForExistence(timeout: 15))
+
+        // The section header over the connection list, and the search field's prompt.
+        XCTAssertTrue(app.staticTexts["连接"].waitForExistence(timeout: 5), "the Connections header should be Simplified Chinese")
+        XCTAssertEqual(app.revealSearchField().placeholderValue, "搜索连接", "the search prompt should be Simplified Chinese")
+
+        attach(app, named: "zh-Hans-1-connections")
+
+        app.buttons["设置"].tap()
+        XCTAssertTrue(app.navigationBars["设置"].waitForExistence(timeout: 10), "Settings should be Simplified Chinese")
+        XCTAssertTrue(app.staticTexts["外观"].exists, "the Appearance section should be translated")
+        attach(app, named: "zh-Hans-2-settings")
+
+        // Keys and Snippets, the two screens with the longest copy — where a translation
+        // that runs long shows up as truncation rather than as a failure. Asserted, not
+        // skipped: a tour that quietly omits the screens it exists for proves nothing.
+        tour(app, settingsTitle: "设置", rows: [("密钥", "zh-Hans-3-keys"), ("命令片段", "zh-Hans-4-snippets")])
+    }
+
+    /// Opens each Settings row, screenshots it, and comes back.
+    ///
+    /// `settingsTitle` is the localized navigation-bar title, and the tour waits for it to
+    /// return after each Back before touching the form again. Querying the instant Back is
+    /// tapped races the pop animation: the form is not there to scroll yet, and a row that
+    /// exists reads as "not offered". A screenshot is attached at that moment so a failure
+    /// shows where the app actually was instead of inviting a guess.
+    private func tour(_ app: XCUIApplication, settingsTitle: String, rows: [(label: String, shot: String)]) {
+        for (label, shot) in rows {
+            XCTAssertTrue(app.navigationBars[settingsTitle].waitForExistence(timeout: 10),
+                          "should be back on Settings before looking for \(label)")
+            let row = app.descendants(matching: .any).matching(
+                NSPredicate(format: "label == %@", label)
+            ).firstMatch
+            let reached = app.scroll(to: row)
+            if !reached { attach(app, named: "\(shot)-not-found") }
+            XCTAssertTrue(reached, "Settings should offer \(label)")
+            row.tap()
+            XCTAssertTrue(app.navigationBars[label].waitForExistence(timeout: 5), "\(label) should open")
+            attach(app, named: shot)
+            // Back is the leading button of *this screen's* bar. Inside a sheet there are
+            // two navigation bars in the tree, and the first button of the first one is the
+            // sheet's own "Done" — tapping that dismisses Settings entirely, which is why
+            // every second row of this tour was "not offered": the form was gone.
+            let back = app.navigationBars[label].buttons.element(boundBy: 0)
+            XCTAssertTrue(back.waitForExistence(timeout: 5), "\(label) should have a Back button")
+            back.tap()
+        }
+    }
+
+    func testTraditionalChineseIsTranslatedIndependently() throws {
+        let app = launch(inLanguage: "zh-Hant")
+        XCTAssertTrue(app.navigationBars["SuperTerminal"].waitForExistence(timeout: 15))
+
+        // 連線, not 连接. This is the assertion that catches the usual failure: Traditional
+        // produced by running a character converter over Simplified, which leaves mainland
+        // vocabulary behind and reads as foreign to a Taiwanese user.
+        XCTAssertTrue(app.staticTexts["連線"].waitForExistence(timeout: 5),
+                      "the Connections header should use Taiwan vocabulary, not converted Simplified")
+        XCTAssertFalse(app.staticTexts["连接"].exists, "Simplified text must not appear in the Traditional build")
+        XCTAssertEqual(app.revealSearchField().placeholderValue, "搜尋連線", "the search prompt should use Taiwan vocabulary")
+
+        app.buttons["設定"].tap()
+        XCTAssertTrue(app.navigationBars["設定"].waitForExistence(timeout: 10), "Settings should be Traditional Chinese")
+        attach(app, named: "zh-Hant-2-settings")
+        tour(app, settingsTitle: "設定", rows: [("金鑰", "zh-Hant-3-keys"), ("指令片段", "zh-Hant-4-snippets")])
+    }
+
+    func testTerminalOutputIsNeverTranslated() throws {
+        let environment = ProcessInfo.processInfo.environment
+        try XCTSkipUnless(environment["ST_UITEST_SEED"] == "1", "run scripts/ui-terminal-e2e.sh to provide a server")
+
+        let app = launch(inLanguage: "zh-Hans")
+        let host = app.buttons.containing(
+            NSPredicate(format: "label CONTAINS %@", "Local Test Server")
+        ).firstMatch
+        XCTAssertTrue(host.waitForExistence(timeout: 15))
+        host.tap()
+
+        // The terminal's accessibility label is itself localized — "Terminal for X" becomes
+        // "X 的终端" — so matching the English prefix would fail here, which is the feature
+        // working rather than breaking.
+        let terminal = app.otherElements.matching(
+            NSPredicate(format: "label ENDSWITH %@", "的终端")
+        ).firstMatch
+        XCTAssertTrue(terminal.waitForExistence(timeout: 30), "the terminal should open in any language")
+
+        // What the remote machine sent, byte for byte. A terminal that "helpfully" localized
+        // its output would be worse than useless — the text is a program's output, and the
+        // user is often reading it to compare against documentation or paste elsewhere.
+        if terminal.isHittable { terminal.tap() }
+        XCTAssertTrue(app.keyboards.element.waitForExistence(timeout: 10))
+        app.typeText("printf 'NOT_%s\\n' TRANSLATED\n")
+
+        let deadline = Date().addingTimeInterval(20)
+        var screen = ""
+        while Date() < deadline {
+            screen = terminal.value as? String ?? ""
+            if screen.contains("NOT_TRANSLATED") { break }
+            usleep(200_000)
+        }
+        XCTAssertTrue(screen.contains("NOT_TRANSLATED"), "remote output must reach the screen unchanged: \(screen)")
     }
 }

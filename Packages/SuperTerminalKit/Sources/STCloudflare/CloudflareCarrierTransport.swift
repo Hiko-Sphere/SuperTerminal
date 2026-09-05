@@ -126,7 +126,7 @@ public struct CloudflareCarrierTransport: ByteStreamTransport {
         if case .plaintextLoopbackOnly = configuration.security, !Self.isLoopback(configuration.host) {
             let error = STError(
                 category: .configuration,
-                message: "Refusing to open an unencrypted Cloudflare carrier to a non-loopback host.",
+                message: String(localized: "Refusing to open an unencrypted Cloudflare carrier to a non-loopback host.", bundle: .module),
                 underlyingDescription: "plaintextLoopbackOnly is only valid for 127.0.0.1, ::1 or localhost"
             )
             // The promise must be resolved on every path out of this function; NIO
@@ -168,8 +168,8 @@ public struct CloudflareCarrierTransport: ByteStreamTransport {
             outcome.fail(error)
             throw STError(
                 category: .network,
-                message: "Could not reach \(configuration.host).",
-                recoverySuggestion: "Check your network connection and that the hostname is correct.",
+                message: String(localized: "Could not reach \(configuration.host).", bundle: .module),
+                recoverySuggestion: String(localized: "Check your network connection and that the hostname is correct.", bundle: .module),
                 underlyingDescription: String(describing: error)
             )
         }
@@ -324,8 +324,8 @@ final class CarrierUpgradeOutcomeHandler: ChannelInboundHandler, RemovableChanne
     func channelInactive(context: ChannelHandlerContext) {
         outcome.fail(STError(
             category: .network,
-            message: "The connection to Cloudflare closed before the tunnel was established.",
-            recoverySuggestion: "Try again. If it persists, check that the tunnel is running."
+            message: String(localized: "The connection to Cloudflare closed before the tunnel was established.", bundle: .module),
+            recoverySuggestion: String(localized: "Try again. If it persists, check that the tunnel is running.", bundle: .module)
         ))
         context.fireChannelInactive()
     }
@@ -338,40 +338,40 @@ final class CarrierUpgradeOutcomeHandler: ChannelInboundHandler, RemovableChanne
         }
         switch head.status.code {
         case 101:
-            return STError(category: .internalError, message: "Upgrade succeeded but was reported as a response.")
+            return STError(category: .internalError, message: String(localized: "Upgrade succeeded but was reported as a response.", bundle: .module))
         case 401, 403:
             return STError(
                 category: .access,
-                message: "Cloudflare Access refused this connection.",
-                recoverySuggestion: "Sign in again, or ask your administrator whether your identity is allowed by this application's policy.",
+                message: String(localized: "Cloudflare Access refused this connection.", bundle: .module),
+                recoverySuggestion: String(localized: "Sign in again, or ask your administrator whether your identity is allowed by this application's policy.", bundle: .module),
                 underlyingDescription: "HTTP \(head.status.code)"
             )
         case 404:
             return STError(
                 category: .tunnel,
-                message: "Cloudflare has no route for this hostname.",
-                recoverySuggestion: "Check the hostname, and that a Cloudflare Tunnel public hostname points at your SSH service.",
+                message: String(localized: "Cloudflare has no route for this hostname.", bundle: .module),
+                recoverySuggestion: String(localized: "Check the hostname, and that a Cloudflare Tunnel public hostname points at your SSH service.", bundle: .module),
                 underlyingDescription: "HTTP 404"
             )
         case 502, 503, 504:
             return STError(
                 category: .tunnel,
-                message: "The Cloudflare Tunnel could not reach the SSH service.",
-                recoverySuggestion: "Check that cloudflared is running on the origin and that its ingress rule points at the SSH port.",
+                message: String(localized: "The Cloudflare Tunnel could not reach the SSH service.", bundle: .module),
+                recoverySuggestion: String(localized: "Check that cloudflared is running on the origin and that its ingress rule points at the SSH port.", bundle: .module),
                 underlyingDescription: "HTTP \(head.status.code)"
             )
         case 530:
             return STError(
                 category: .tunnel,
-                message: "Cloudflare could not connect to the origin (error 1033).",
-                recoverySuggestion: "The tunnel is offline. Start cloudflared on the origin host and try again.",
+                message: String(localized: "Cloudflare could not connect to the origin (error 1033).", bundle: .module),
+                recoverySuggestion: String(localized: "The tunnel is offline. Start cloudflared on the origin host and try again.", bundle: .module),
                 underlyingDescription: "HTTP 530"
             )
         default:
             return STError(
                 category: .network,
-                message: "Cloudflare rejected the tunnel request (HTTP \(head.status.code)).",
-                recoverySuggestion: "Check the hostname and tunnel configuration.",
+                message: String(localized: "Cloudflare rejected the tunnel request (HTTP \(head.status.code)).", bundle: .module),
+                recoverySuggestion: String(localized: "Check the hostname and tunnel configuration.", bundle: .module),
                 underlyingDescription: "HTTP \(head.status.code) \(head.status.reasonPhrase)"
             )
         }

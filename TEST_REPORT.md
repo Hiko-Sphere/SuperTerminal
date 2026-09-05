@@ -40,9 +40,10 @@ xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal \
 
 ./scripts/app-integration-e2e.sh   # 81 app tests on iPhone 17 Pro simulator, ** TEST SUCCEEDED **
 ./scripts/profile-emulator.sh      # real Instruments trace of the emulator hot path
-./scripts/ui-terminal-e2e.sh       # 13 passed, 1 skipped on iPhone, ** TEST SUCCEEDED **
+./scripts/localization-audit.sh    # every user-visible string translated (zh-Hans, zh-Hant): green
+./scripts/ui-terminal-e2e.sh       # 19 passed, 1 skipped on iPhone (three in Chinese), ** TEST SUCCEEDED **
 ./scripts/ui-terminal-e2e.sh "platform=iOS Simulator,name=iPad Pro 13-inch (M5)"
-                                   # 14 passed on iPad, ** TEST SUCCEEDED **
+                                   # 20 passed on iPad (three in Chinese), ** TEST SUCCEEDED **
 
 cd Packages/swift-nio-ssh-rsa
 swift test           # Executed 349 tests, with 0 failures (347 upstream + 2 for key extension)
@@ -428,6 +429,95 @@ Run on the iPhone 17 Pro simulator as part of `scripts/app-integration-e2e.sh`.
 | Typed-command reconstruction (12) | Character-at-a-time, whole-line chunks, multi-line paste, backspace, `^C`/`^D`/`^Z`/`^U`, CSI sequences, OSC-with-BEL, DCS-with-ST, empty lines, and destructive `take` |
 | Line editing | `ls`, Up, Return records **nothing**; so do a cursor move followed by typing, and a tab completion |
 | Every input path | Typed, pasted and snippet-inserted commands all reach the same recorder, verified through the session's stream |
+
+### Localization — 385 strings, a CI gate, and three tests that run the app in Chinese
+
+Simplified and Traditional Chinese, across the app target (295 strings) and the two
+package modules whose error messages the user reads verbatim (STSSH 49, STCloudflare 41).
+`scripts/localization-audit.sh` builds with `SWIFT_EMIT_LOC_STRINGS=YES`, reads the keys
+the compiler emitted, and fails CI if any lacks a translation in either language. It is
+green. That gate is the deliverable as much as the translations are: localization is the one
+regression nothing else catches — a new `Text("…")` compiles, passes every test, and shows
+English to someone who chose Chinese.
+
+| Test | What a pass proves |
+| --- | --- |
+| Simplified Chinese reaches the interface | Launched with `-AppleLanguages (zh-Hans)`: the Connections header, the search prompt (revealed first — on iPad a sidebar folds it into the navigation bar), Settings and its Appearance section are Chinese. Then a tour opens Keys and Snippets and screenshots each — asserted, not skipped, because a tour that quietly omits the screens it exists for proves nothing |
+| Traditional Chinese is translated independently | The Traditional build shows 連線 and contains no 连接. This is the assertion that catches the usual failure: Traditional produced by running a character converter over Simplified, which leaves mainland vocabulary behind and reads as foreign in Taiwan. Same tour, with 金鑰 and 指令片段 |
+| Terminal output is never translated | In the Chinese app, against a real `sshd`, `printf` output arrives on screen unchanged. Remote bytes are a program's output; a terminal that "helpfully" localized them would be worse than useless |
+
+**What the compiler said the source could not.** Keys were taken from `.stringsdata`, not
+from reading Swift: `Text("Delete \(name)?")` is looked up under `Delete %@?`, so a catalog
+keyed on source text matches nothing and fails silently. 36 translations arrived carrying raw
+`\(identity.displayName)` and would have printed it on screen. Each was mapped to the
+specifier its expression became, matched by expression text so that a reordered argument —
+Chinese puts the port before the host in "could not connect to X on port Y" — produces
+`%2$@ … %1$@` rather than a silently swapped pair. Placeholder multisets are asserted equal
+before anything is written; the first version of that check normalised `%2$@` and `%@`
+differently and rejected the one correctly reordered string, which is recorded because it
+is exactly the failure a placeholder check exists to catch.
+
+**229 literals were made localizable in source**, by twelve agents on disjoint files with
+twelve adversarial reviewers reading the diffs. The reviewers caught real defects: an `Int`
+port interpolated into `String(localized:)` becomes a locale-formatted number — port 8022
+would render as "8,022" — and was changed to `\(String(port))`; two already-localized
+sentences nested inside another localized string; and an environment-request failure left
+as a plain literal. They also correctly refused to touch `UIKeyCommand(input: "k")`, which
+would have silently unbound ⌘K, and every enum raw value that is both stored and displayed.
+The gate then found **five strings the agents had created by restructuring** — one joined
+from two source lines, one parameterised — that existed in no inventory.
+
+**A missing `NSFaceIDUsageDescription`, found along the way.** The app protects keys with
+`.biometryCurrentSet` and builds an `LAContext`, but shipped no usage description. iOS
+terminates an app that invokes Face ID without one. The simulator never invoked Face ID, so
+no test had reached it. Added, and localized through an `InfoPlist.xcstrings`.
+
+**Test-harness defects the Chinese runs exposed, none a product fault.** The two Chinese
+tours are the first tests to open *several* Settings screens in sequence, and doing so on
+both devices found four separate defects in how the UI tests drove the app:
+
+* **Swiping the app instead of the form.** On iPad, Settings is a form sheet and the
+  connection list stays visible behind it, so `app.swipeUp()` scrolls the list and the sheet
+  never moves. One helper had been fixed for this earlier; the Keys test and the history
+  toggle each still had their own inline swipe. The Language section added this session is
+  what pushed Keys off-screen and surfaced them.
+* **Choosing an element in one snapshot and acting on it in the next.** Three successive
+  versions of the form-scrolling helper failed the same way: a count taken then indexed
+  (`element(boundBy: count - 1)`), and an `.exists` checked then swiped, both re-resolve
+  against the live accessibility tree independently, race a transition, and report "no
+  matches" for an element that was there a moment before. The one that works decides and
+  acts in the same expression, and the form carries an accessibility identifier so it can
+  be found by identity rather than by position in a tree whose order differs by device.
+* **A scroll helper that only went one way.** After opening a row near the foot of the form
+  and coming back, every row above it was "unreachable" — an ordering artefact of the test,
+  not a property of the screen. It now searches both directions, downward first.
+* **The wrong Back button.** `navigationBars.buttons.element(boundBy: 0)` is the first
+  button of the first bar in the app. Inside a sheet there are two bars, and that button is
+  the sheet's own *Done* — so "Back" from Keys dismissed Settings entirely, and the tour's
+  next row was genuinely not on screen. This was the real cause of every second-row failure
+  on both devices in both languages. It was found because the tour was changed to attach a
+  screenshot at the moment it could not find a row, instead of leaving the failure to be
+  reasoned about: the screenshot showed the connection list. Back is now taken from the
+  pushed screen's own bar.
+
+**A crash I introduced, and removed.** To make the form findable by identity I attached
+`.accessibilityElement(children: .contain)` to the Settings `Form` alongside its
+identifier. On iPad — the one device whose hardware-keyboard focus engine is live — popping
+the Keys screen back to Settings then aborted the process inside UIKit's focus system
+(`_UIFocusContainerGuideFallbackItemsContainer`, every frame UIKitCore, none ours): a focus
+container derived from an accessibility container nested inside the collection view that
+already was one. The Chinese tour found it because it is the first test to push and pop a
+screen inside the Settings sheet on iPad; the crash report is the evidence. Removing that
+one modifier, and nothing else, took the iPad suite from the abort to 20 of 20, with no new
+crash report. The identifier stays; where it does not surface, the scrolling helper falls
+back to the only collection view on screen, which is the path iPhone always used.
+
+Two other things from the same investigation are worth recording. A UI-snapshot attachment
+cannot answer whether an identifier is exposed: it contains only on-screen elements, so
+even the form's first section header was absent from one, and a search of it proves
+nothing. And the attachment manifest does not order screenshots by time — a conclusion
+drawn from "the last screenshot" was drawn from the first one. Both are the kind of
+mistake that reads as evidence, which is why the tour now generates its own.
 
 ### Ciphers — 10 tests, three of them against a real server offering one cipher only
 

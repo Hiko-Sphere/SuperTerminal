@@ -45,8 +45,8 @@ public struct Snippet: Identifiable, Sendable, Codable, Equatable {
 
     public var validationProblems: [String] {
         var problems: [String] = []
-        if name.trimmingCharacters(in: .whitespaces).isEmpty { problems.append("Give this snippet a name.") }
-        if command.trimmingCharacters(in: .whitespaces).isEmpty { problems.append("Enter a command.") }
+        if name.trimmingCharacters(in: .whitespaces).isEmpty { problems.append(String(localized: "Give this snippet a name.")) }
+        if command.trimmingCharacters(in: .whitespaces).isEmpty { problems.append(String(localized: "Enter a command.")) }
         return problems
     }
 
@@ -58,15 +58,19 @@ public struct Snippet: Identifiable, Sendable, Codable, Equatable {
     /// Chosen to be useful on a phone and harmless if run by accident: everything here
     /// reads state rather than changing it. A starter set that included `rm` or a service
     /// restart would be teaching the wrong habit on the first run.
+    ///
+    /// Names and folders are labels the person can rename afterwards, so seeding them in
+    /// the current language is safe: installation dedupes on `command`, which stays a
+    /// literal, and nothing anywhere matches a snippet by its name or folder.
     public static let starterSet: [Snippet] = [
-        Snippet(name: "Disk usage", command: "df -h", folder: "System"),
-        Snippet(name: "Memory", command: "free -h 2>/dev/null || vm_stat", folder: "System"),
-        Snippet(name: "Top processes", command: "ps aux --sort=-%cpu 2>/dev/null | head -20 || ps aux | head -20", folder: "System"),
-        Snippet(name: "Listening ports", command: "ss -tlnp 2>/dev/null || netstat -an | grep LISTEN", folder: "System"),
-        Snippet(name: "Uptime and load", command: "uptime", folder: "System"),
-        Snippet(name: "Recent auth failures", command: "journalctl -u ssh -n 50 --no-pager 2>/dev/null || tail -50 /var/log/auth.log", folder: "Diagnostics"),
-        Snippet(name: "Follow a log", command: "tail -f /var/log/syslog", folder: "Diagnostics"),
-        Snippet(name: "Largest directories", command: "du -sh * 2>/dev/null | sort -rh | head -20", folder: "Diagnostics"),
+        Snippet(name: String(localized: "Disk usage"), command: "df -h", folder: String(localized: "System")),
+        Snippet(name: String(localized: "Memory"), command: "free -h 2>/dev/null || vm_stat", folder: String(localized: "System")),
+        Snippet(name: String(localized: "Top processes"), command: "ps aux --sort=-%cpu 2>/dev/null | head -20 || ps aux | head -20", folder: String(localized: "System")),
+        Snippet(name: String(localized: "Listening ports"), command: "ss -tlnp 2>/dev/null || netstat -an | grep LISTEN", folder: String(localized: "System")),
+        Snippet(name: String(localized: "Uptime and load"), command: "uptime", folder: String(localized: "System")),
+        Snippet(name: String(localized: "Recent auth failures"), command: "journalctl -u ssh -n 50 --no-pager 2>/dev/null || tail -50 /var/log/auth.log", folder: String(localized: "Diagnostics")),
+        Snippet(name: String(localized: "Follow a log"), command: "tail -f /var/log/syslog", folder: String(localized: "Diagnostics")),
+        Snippet(name: String(localized: "Largest directories"), command: "du -sh * 2>/dev/null | sort -rh | head -20", folder: String(localized: "Diagnostics")),
     ]
 }
 

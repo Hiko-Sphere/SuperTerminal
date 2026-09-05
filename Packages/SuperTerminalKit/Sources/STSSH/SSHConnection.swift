@@ -130,7 +130,7 @@ public actor SSHConnection {
             try? await channel.close().get()
             throw STError(
                 category: .sshTransport,
-                message: "Could not start the SSH session.",
+                message: String(localized: "Could not start the SSH session.", bundle: .module),
                 underlyingDescription: String(describing: error)
             )
         }
@@ -145,8 +145,8 @@ public actor SSHConnection {
             // would mean the app never retried a slow or unreachable host.
             readyPromise.fail(STError(
                 category: .network,
-                message: "The SSH handshake did not complete in time.",
-                recoverySuggestion: "Check that the server is reachable and really is an SSH server, then try again."
+                message: String(localized: "The SSH handshake did not complete in time.", bundle: .module),
+                recoverySuggestion: String(localized: "Check that the server is reachable and really is an SSH server, then try again.", bundle: .module)
             ))
         }
         readyPromise.futureResult.whenComplete { _ in timeout.cancel() }
@@ -219,7 +219,7 @@ public actor SSHConnection {
                     terminalModes: SSHTerminalModes([:])
                 ),
                 failureCategory: .sshChannel,
-                failureMessage: "The server refused to allocate a terminal."
+                failureMessage: String(localized: "The server refused to allocate a terminal.", bundle: .module)
             )
             for (name, value) in environment.sorted(by: { $0.key < $1.key }) {
                 // Servers commonly refuse env requests they have not allowlisted;
@@ -228,14 +228,14 @@ public actor SSHConnection {
                     on: child,
                     event: SSHChannelRequestEvent.EnvironmentRequest(wantReply: true, name: name, value: value),
                     failureCategory: .sshChannel,
-                    failureMessage: "The server refused an environment variable."
+                    failureMessage: String(localized: "The server refused an environment variable.", bundle: .module)
                 )
             }
             try await Self.request(
                 on: child,
                 event: SSHChannelRequestEvent.ShellRequest(wantReply: true),
                 failureCategory: .sshChannel,
-                failureMessage: "The server refused to start a shell."
+                failureMessage: String(localized: "The server refused to start a shell.", bundle: .module)
             )
         } catch {
             try? await child.close().get()
@@ -257,7 +257,7 @@ public actor SSHConnection {
             on: child,
             event: SSHChannelRequestEvent.ExecRequest(command: command, wantReply: true),
             failureCategory: .sshChannel,
-            failureMessage: "The server refused to run the command."
+            failureMessage: String(localized: "The server refused to run the command.", bundle: .module)
         )
 
         let collector = Task { () -> (Data, Data, Int?) in
@@ -340,7 +340,7 @@ public actor SSHConnection {
             throw STError(
                 category: failureCategory,
                 message: failureMessage,
-                recoverySuggestion: "Check the server's sshd configuration, then try again.",
+                recoverySuggestion: String(localized: "Check the server's sshd configuration, then try again.", bundle: .module),
                 underlyingDescription: String(describing: error)
             )
         }
@@ -350,25 +350,35 @@ public actor SSHConnection {
         if let sshError = error as? NIOSSHError {
             let description = String(describing: sshError)
             if description.contains("authenticationFailed") || description.contains("allAuthenticationOptionsFailed") {
-                let attempted = lastOffered.map { " The last credential tried was a \($0.displayKind)." } ?? ""
+                // Each sentence is its own catalog entry, joined here. Interpolating an
+                // already-translated sentence into another one would give the translator a
+                // bare `%@` they cannot place, and force a key whose leading space any
+                // trimming tool would silently eat.
+                var message = String(localized: "The server rejected every credential offered.", bundle: .module)
+                if let lastOffered {
+                    message += " " + String(
+                        localized: "The last credential tried was a \(lastOffered.displayName).",
+                        bundle: .module
+                    )
+                }
                 return STError(
                     category: .sshAuthentication,
-                    message: "The server rejected every credential offered.\(attempted)",
-                    recoverySuggestion: "Check the username, and that the key is in the server's authorized_keys or that the password is correct.",
+                    message: message,
+                    recoverySuggestion: String(localized: "Check the username, and that the key is in the server's authorized_keys or that the password is correct.", bundle: .module),
                     underlyingDescription: description
                 )
             }
             return STError(
                 category: .sshTransport,
-                message: "The SSH handshake failed.",
-                recoverySuggestion: "The server may require an algorithm this app does not support. See the compatibility notes in the documentation.",
+                message: String(localized: "The SSH handshake failed.", bundle: .module),
+                recoverySuggestion: String(localized: "The server may require an algorithm this app does not support. See the compatibility notes in the documentation.", bundle: .module),
                 underlyingDescription: description
             )
         }
         if let stError = error as? STError { return stError }
         return STError(
             category: .sshTransport,
-            message: "The SSH session could not be established.",
+            message: String(localized: "The SSH session could not be established.", bundle: .module),
             underlyingDescription: String(describing: error)
         )
     }
@@ -427,12 +437,13 @@ func classifyHandshakeFailure(
 
     if let authError = error as? SSHAuthenticationError {
         let attempted = authError.attempted.isEmpty
-            ? "No credential was accepted for an attempt."
-            : "Tried: \(authError.attempted.joined(separator: ", "))."
+            ? String(localized: "No credential was accepted for an attempt.", bundle: .module)
+            : String(localized: "Tried: \(authError.attempted.joined(separator: ", ")).", bundle: .module)
         return STError(
             category: .sshAuthentication,
-            message: "The server rejected every credential offered. \(attempted)",
-            recoverySuggestion: "Check the username, and that the key is in the server's authorized_keys or that the password is correct.",
+            message: String(localized: "The server rejected every credential offered.", bundle: .module)
+                + " " + attempted,
+            recoverySuggestion: String(localized: "Check the username, and that the key is in the server's authorized_keys or that the password is correct.", bundle: .module),
             underlyingDescription: "user authentication exhausted for \(identity.storageKey)"
         )
     }
@@ -447,8 +458,8 @@ func classifyHandshakeFailure(
         // Grouping it with cryptographic failures would mean never retrying any of them.
         return STError(
             category: .network,
-            message: "The server closed the connection before the SSH session was established.",
-            recoverySuggestion: "Check that the port really is an SSH server, and that the server's log does not show a rejected connection."
+            message: String(localized: "The server closed the connection before the SSH session was established.", bundle: .module),
+            recoverySuggestion: String(localized: "Check that the port really is an SSH server, and that the server's log does not show a rejected connection.", bundle: .module)
         )
     }
 
@@ -457,22 +468,22 @@ func classifyHandshakeFailure(
         if description.contains("keyExchangeNegotiationFailure") {
             return STError(
                 category: .sshTransport,
-                message: "This server and SuperTerminal share no supported key exchange or host key algorithm.",
-                recoverySuggestion: "The server may only offer RSA host keys. See the algorithm compatibility notes in the documentation.",
+                message: String(localized: "This server and SuperTerminal share no supported key exchange or host key algorithm.", bundle: .module),
+                recoverySuggestion: String(localized: "The server may only offer RSA host keys. See the algorithm compatibility notes in the documentation.", bundle: .module),
                 underlyingDescription: description
             )
         }
         return STError(
             category: .sshTransport,
-            message: "The SSH handshake failed.",
-            recoverySuggestion: "The server may require an algorithm this app does not support. See the compatibility notes in the documentation.",
+            message: String(localized: "The SSH handshake failed.", bundle: .module),
+            recoverySuggestion: String(localized: "The server may require an algorithm this app does not support. See the compatibility notes in the documentation.", bundle: .module),
             underlyingDescription: description
         )
     }
 
     return STError(
         category: .sshTransport,
-        message: "The SSH session could not be established.",
+        message: String(localized: "The SSH session could not be established.", bundle: .module),
         underlyingDescription: String(describing: error)
     )
 }

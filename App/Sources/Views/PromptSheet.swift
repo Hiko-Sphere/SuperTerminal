@@ -23,21 +23,21 @@ struct PromptSheet: View {
                     changedHostKey(identity: identity, expected: expected, presented: presented)
                 case let .password(username, host):
                     secretEntry(
-                        title: "Password",
-                        detail: "for \(username)@\(host)",
+                        title: String(localized: "Password"),
+                        detail: String(localized: "for \(username)@\(host)"),
                         submit: { session.resolvePrompt(.password(secret)) }
                     )
                 case let .keyPassphrase(keyName):
                     secretEntry(
-                        title: "Key passphrase",
-                        detail: "to unlock \(keyName)",
+                        title: String(localized: "Key passphrase"),
+                        detail: String(localized: "to unlock \(keyName)"),
                         submit: { session.resolvePrompt(.passphrase(secret)) }
                     )
                 }
             }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
+                    Button(String(localized: "Cancel")) {
                         session.resolvePrompt(.reject)
                         dismiss()
                     }
@@ -52,16 +52,16 @@ struct PromptSheet: View {
     private func unknownHostKey(identity: KnownHostIdentity, key: SSHHostKey) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: DesignTokens.Spacing.lg) {
-                Label("First connection to \(identity.displayName)", systemImage: "questionmark.circle")
+                Label(String(localized: "First connection to \(identity.displayName)"), systemImage: "questionmark.circle")
                     .font(DesignTokens.Typography.headline)
 
-                Text("This server has not been seen before. Check that the fingerprint below matches the server.")
+                Text(String(localized: "This server has not been seen before. Check that the fingerprint below matches the server."))
                     .foregroundStyle(DesignTokens.Color.labelSecondary)
 
-                FingerprintCard(title: "Server fingerprint", key: key, emphasis: .neutral)
+                FingerprintCard(title: String(localized: "Server fingerprint"), key: key, emphasis: .neutral)
 
-                DisclosureGroup("How do I check this?") {
-                    Text("On the server, run:")
+                DisclosureGroup(String(localized: "How do I check this?")) {
+                    Text(String(localized: "On the server, run:"))
                         .font(DesignTokens.Typography.caption)
                     Text("ssh-keygen -lf /etc/ssh/ssh_host_\(key.algorithm.replacingOccurrences(of: "ssh-", with: ""))_key.pub")
                         .font(DesignTokens.Typography.monoCaption)
@@ -71,7 +71,7 @@ struct PromptSheet: View {
                 }
                 .font(DesignTokens.Typography.callout)
 
-                Button("Trust and Connect") {
+                Button(String(localized: "Trust and Connect")) {
                     session.resolvePrompt(.approve)
                     dismiss()
                 }
@@ -80,7 +80,7 @@ struct PromptSheet: View {
             }
             .padding(DesignTokens.Spacing.lg)
         }
-        .navigationTitle("Unknown host")
+        .navigationTitle(String(localized: "Unknown host"))
         .navigationBarTitleDisplayMode(.inline)
     }
 
@@ -91,28 +91,28 @@ struct PromptSheet: View {
     ) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: DesignTokens.Spacing.lg) {
-                Label("The host key has changed", systemImage: "exclamationmark.shield.fill")
+                Label(String(localized: "The host key has changed"), systemImage: "exclamationmark.shield.fill")
                     .font(DesignTokens.Typography.headline)
                     .foregroundStyle(DesignTokens.Color.danger)
 
-                Text("""
+                Text(String(localized: """
                 \(identity.displayName) is presenting a different key from the one recorded. \
                 This happens when a server is rebuilt or rekeyed — and it is also what an \
                 interception attack looks like.
-                """)
+                """))
                 .foregroundStyle(DesignTokens.Color.labelSecondary)
 
-                FingerprintCard(title: "Previously trusted", key: expected, emphasis: .neutral)
-                FingerprintCard(title: "Presented now", key: presented, emphasis: .danger)
+                FingerprintCard(title: String(localized: "Previously trusted"), key: expected, emphasis: .neutral)
+                FingerprintCard(title: String(localized: "Presented now"), key: presented, emphasis: .danger)
 
-                Text("Do not continue unless you know why the key changed.")
+                Text(String(localized: "Do not continue unless you know why the key changed."))
                     .font(DesignTokens.Typography.callout)
                     .foregroundStyle(DesignTokens.Color.danger)
 
                 // Deliberately the less prominent of the two actions: Cancel is in the
                 // toolbar as the default, and accepting a replacement is bordered rather
                 // than filled so it does not read as the obvious tap.
-                Button("Replace the stored key and connect", role: .destructive) {
+                Button(String(localized: "Replace the stored key and connect"), role: .destructive) {
                     session.resolvePrompt(.approve)
                     dismiss()
                 }
@@ -121,7 +121,7 @@ struct PromptSheet: View {
             }
             .padding(DesignTokens.Spacing.lg)
         }
-        .navigationTitle("Host key changed")
+        .navigationTitle(String(localized: "Host key changed"))
         .navigationBarTitleDisplayMode(.inline)
     }
 
@@ -141,10 +141,10 @@ struct PromptSheet: View {
             } header: {
                 Text(detail)
             } footer: {
-                Text("Entered secrets are held only for this connection unless you save them to the Keychain.")
+                Text(String(localized: "Entered secrets are held only for this connection unless you save them to the Keychain."))
             }
 
-            Button("Continue") {
+            Button(String(localized: "Continue")) {
                 submit()
                 dismiss()
             }

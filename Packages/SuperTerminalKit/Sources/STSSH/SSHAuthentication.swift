@@ -19,12 +19,23 @@ public enum SSHCredential: Sendable {
         }
     }
 
-    /// Non-secret label used in diagnostics and in the UI's "trying …" state.
+    /// Non-secret label used in diagnostics and log context. Stays in English so that
+    /// log lines and bug reports read the same whatever language the device is set to.
     public var displayKind: String {
         switch self {
         case .password: "password"
         case let .privateKey(material): "key (\(material.algorithm))"
         case .none: "none"
+        }
+    }
+
+    /// The same distinction as `displayKind`, for the UI's "trying …" state and for
+    /// error messages. Kept separate because `displayKind` also travels into logs.
+    public var displayName: String {
+        switch self {
+        case .password: String(localized: "password", bundle: .module)
+        case let .privateKey(material): String(localized: "key (\(material.algorithm))", bundle: .module)
+        case .none: String(localized: "none", bundle: .module)
         }
     }
 }

@@ -111,11 +111,10 @@ final class DiagnosticsCentre {
     func exportReport() -> String {
         let formatter = ISO8601DateFormatter()
         var lines = [
-            "SuperTerminal diagnostics",
-            "Generated: \(formatter.string(from: Date()))",
+            String(localized: "SuperTerminal diagnostics"),
+            String(localized: "Generated: \(formatter.string(from: Date()))"),
             "",
-            "Records are redacted at the point they are written: no commands, terminal",
-            "output, hostnames, passwords, keys or tokens are captured.",
+            String(localized: "Records are redacted at the point they are written: no commands, terminal output, hostnames, passwords, keys or tokens are captured."),
             "",
         ]
         for record in buffer.snapshot() {

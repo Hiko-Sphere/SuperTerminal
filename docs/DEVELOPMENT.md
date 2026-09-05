@@ -124,3 +124,43 @@ from the Unicode Character Database and records which version it came from:
 ```bash
 ./scripts/generate-width-tables.sh
 ```
+
+
+## Localization
+
+The app ships in English, Simplified Chinese and Traditional Chinese. Two rules, both
+learned the hard way:
+
+**Keys come from the compiler, not from the source.** SwiftUI turns
+`Text("Delete \(name)?")` into the catalog key `Delete %@?` — the interpolation becomes a
+format specifier before any lookup — so a translation keyed on the source text matches
+nothing, and the failure is silent: the app compiles and shows English. Build with
+`SWIFT_EMIT_LOC_STRINGS=YES` and take keys from the `.stringsdata` the compiler writes.
+
+**Nothing catches an untranslated string except a gate.** A new `Text("…")` passes every
+test. `./scripts/localization-audit.sh` builds with that flag, compares each String Catalog
+against the compiler's keys, and fails on any string missing a translation in any language.
+CI runs it. Run it before opening a pull request that adds user-visible text.
+
+Tools:
+
+* `scripts/localization-audit.sh` — the gate above.
+* `scripts/apply-translations.py <translations.json> <DerivedData>` — bulk-imports
+  `{key, zhHans, zhHant}` rows, converting Swift interpolation in each translation to the
+  specifier the compiler emitted for that expression (matched by expression text, so a
+  translation that reorders arguments produces `%2$@ … %1$@`). Once a string is in a
+  catalog the catalog is the source of truth — Xcode edits it directly — so this is for
+  importing a batch, not for regenerating what is already there.
+
+What is deliberately **not** translated: technical identifiers a user copies or compares
+(`user@host:port`, fingerprints, algorithm names, `ssh-keygen` command lines), key-cap
+labels (`esc`, `tab`, the arrows), `TERM` values, wire-format keys, log subsystem names,
+`underlyingDescription` diagnostics, and anything serialised or compared. Two traps in
+particular: `UIKeyCommand(input: "k")` — translating it unbinds ⌘K — and any enum raw value
+that is both stored and displayed, which needs a separate `displayName` rather than a
+translated raw value. Terminal output is never translated; it is a remote program's bytes.
+
+Package modules that produce user-facing error messages (`STSSH`, `STCloudflare`) carry
+their own catalogs and use `String(localized:bundle: .module)`; `Package.swift` declares
+`defaultLocalization` and each catalog as a processed resource, which is what makes
+`Bundle.module` exist for the target. D-014 has the reasoning.

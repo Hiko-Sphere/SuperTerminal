@@ -117,8 +117,8 @@ struct RootView: View {
                     TerminalView(session: session)
                 } else {
                     EmptyStateView(
-                        title: "Session closed",
-                        message: "This session is no longer open.",
+                        title: String(localized: "Session closed"),
+                        message: String(localized: "This session is no longer open."),
                         systemImage: "terminal"
                     )
                 }
@@ -139,8 +139,8 @@ struct RootView: View {
                 }
             } else {
                 EmptyStateView(
-                    title: "No session",
-                    message: "Choose a connection to open a terminal.",
+                    title: String(localized: "No session"),
+                    message: String(localized: "Choose a connection to open a terminal."),
                     systemImage: "terminal"
                 )
             }

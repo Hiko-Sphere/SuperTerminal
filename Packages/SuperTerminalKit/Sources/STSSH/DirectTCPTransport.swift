@@ -48,8 +48,8 @@ public struct DirectTCPTransport: ByteStreamTransport {
         } catch {
             throw STError(
                 category: .network,
-                message: "Could not connect to \(endpoint.host) on port \(endpoint.port).",
-                recoverySuggestion: "Check the hostname, the port, and that the server is reachable from this network.",
+                message: String(localized: "Could not connect to \(endpoint.host) on port \(String(endpoint.port)).", bundle: .module),
+                recoverySuggestion: String(localized: "Check the hostname, the port, and that the server is reachable from this network.", bundle: .module),
                 underlyingDescription: String(describing: error)
             )
         }

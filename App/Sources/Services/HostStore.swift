@@ -113,8 +113,8 @@ final class HostStore {
             // file is left alone and the problem is surfaced instead.
             loadError = STError(
                 category: .internalError,
-                message: "Your saved connections could not be read.",
-                recoverySuggestion: "Your data has been left untouched. Reinstalling will clear it if you want to start over.",
+                message: String(localized: "Your saved connections could not be read."),
+                recoverySuggestion: String(localized: "Your data has been left untouched. Reinstalling will clear it if you want to start over."),
                 underlyingDescription: String(describing: error)
             )
         }
@@ -133,7 +133,7 @@ final class HostStore {
         } catch {
             loadError = STError(
                 category: .internalError,
-                message: "Changes could not be saved.",
+                message: String(localized: "Changes could not be saved."),
                 underlyingDescription: String(describing: error)
             )
         }

@@ -8,6 +8,17 @@ struct PaletteItem: Identifiable {
         case connection = "Connections"
         case snippet = "Snippets"
         case action = "Actions"
+
+        /// What the badge shows. Separate from the raw value because a raw value has to be
+        /// a compile-time literal, so it can never carry a translation.
+        var displayName: String {
+            switch self {
+            case .session: return String(localized: "Open sessions")
+            case .connection: return String(localized: "Connections")
+            case .snippet: return String(localized: "Snippets")
+            case .action: return String(localized: "Actions")
+            }
+        }
     }
 
     let id: String
@@ -148,7 +159,7 @@ struct CommandPaletteView: View {
                     }
                 }
                 Spacer(minLength: 0)
-                Text(item.shortcut ?? item.kind.rawValue)
+                Text(item.shortcut ?? item.kind.displayName)
                     .font(DesignTokens.Typography.caption.monospaced())
                     .foregroundStyle(DesignTokens.Color.labelTertiary)
                     .padding(.horizontal, DesignTokens.Spacing.xs)
@@ -268,8 +279,8 @@ struct CommandPaletteView: View {
             PaletteItem(
                 id: "action-new",
                 kind: .action,
-                title: "New Connection",
-                subtitle: "Add a server",
+                title: String(localized: "New Connection"),
+                subtitle: String(localized: "Add a server"),
                 systemImage: "plus",
                 shortcut: "⌘N",
                 perform: { scene.isCreatingConnection = true }
@@ -280,7 +291,7 @@ struct CommandPaletteView: View {
             result.append(PaletteItem(
                 id: "action-close",
                 kind: .action,
-                title: "Close Session",
+                title: String(localized: "Close Session"),
                 subtitle: session.host.name,
                 systemImage: "xmark",
                 shortcut: "⌘W",
@@ -289,8 +300,8 @@ struct CommandPaletteView: View {
             result.append(PaletteItem(
                 id: "action-reconnect",
                 kind: .action,
-                title: "Reconnect",
-                subtitle: "Starts a new shell on \(session.host.name)",
+                title: String(localized: "Reconnect"),
+                subtitle: String(localized: "Starts a new shell on \(session.host.name)"),
                 systemImage: "arrow.clockwise",
                 shortcut: nil,
                 perform: { Task { await session.reconnect() } }
@@ -298,8 +309,8 @@ struct CommandPaletteView: View {
             result.append(PaletteItem(
                 id: "action-clear",
                 kind: .action,
-                title: "Clear Screen",
-                subtitle: "Keeps the scrollback",
+                title: String(localized: "Clear Screen"),
+                subtitle: String(localized: "Keeps the scrollback"),
                 systemImage: "eraser",
                 shortcut: nil,
                 perform: { Task { await session.send("\u{0C}") } }
@@ -309,8 +320,10 @@ struct CommandPaletteView: View {
         result.append(PaletteItem(
             id: "action-keyrow",
             kind: .action,
-            title: container.settings.keyRowVisible ? "Hide Key Row" : "Show Key Row",
-            subtitle: "Control, Esc, Tab and the arrows",
+            title: container.settings.keyRowVisible
+                ? String(localized: "Hide Key Row")
+                : String(localized: "Show Key Row"),
+            subtitle: String(localized: "Control, Esc, Tab and the arrows"),
             systemImage: "keyboard",
             shortcut: nil,
             perform: { container.settings.keyRowVisible.toggle() }

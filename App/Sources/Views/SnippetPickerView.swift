@@ -20,6 +20,16 @@ struct SnippetPickerView: View {
         case snippets = "Snippets"
         case history = "History"
         var id: String { rawValue }
+
+        /// What the segmented control shows. Separate from the raw value, which is this
+        /// scope's identity — a translated identity would change what the picker matches
+        /// rows against.
+        var displayName: String {
+            switch self {
+            case .snippets: String(localized: "Snippets")
+            case .history: String(localized: "History")
+            }
+        }
     }
 
     var body: some View {
@@ -36,7 +46,7 @@ struct SnippetPickerView: View {
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     Picker("Source", selection: $scope) {
-                        ForEach(Scope.allCases) { Text($0.rawValue).tag($0) }
+                        ForEach(Scope.allCases) { Text($0.displayName).tag($0) }
                     }
                     .pickerStyle(.segmented)
                 }

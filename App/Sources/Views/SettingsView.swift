@@ -143,6 +143,10 @@ struct SettingsView: View {
                 }
                 .listRowBackground(Color.clear)
             }
+            // For UI tests to scroll the *form* — on iPad a form sheet leaves the
+            // connection list visible behind it, and neither position in the tree nor
+            // a localized label identifies which collection view is which.
+            .accessibilityIdentifier("settings-form")
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

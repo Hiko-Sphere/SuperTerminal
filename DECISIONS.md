@@ -446,3 +446,51 @@ remains green (349, two of them new) and the patch gate in CI still reproduces t
 
 **Reversible.** Yes. Deleting the scheme and the two vendored changes returns to the
 previous behaviour; the key-extension change is dormant for every other cipher.
+
+
+## D-014 · Localization keys come from the compiler, never from the source text
+
+**Decision.** The Chinese String Catalogs are keyed on what the Swift compiler emits, read
+from `.stringsdata` after a build with `SWIFT_EMIT_LOC_STRINGS=YES`. `scripts/localization-audit.sh`
+compares that list against the catalogs on every CI run and fails the build if anything a
+user can read is untranslated.
+
+**Why not read the source.** SwiftUI turns `Text("Delete \(name)?")` into the key
+`Delete %@?` — the interpolation becomes a format specifier before it ever reaches a lookup.
+A catalog keyed on the source text matches nothing, and the failure is silent: the app
+compiles, ships, and shows English. Thirty-six of the translations produced for this project
+arrived carrying raw `\(identity.displayName)`, which would have been printed on screen
+verbatim. Each was mapped back to the specifier its expression became, matched by expression
+text rather than by position so that a reordered argument produces `%1$@`/`%2$@` instead of
+a silently swapped one, and the placeholder multisets are asserted equal on both sides.
+
+**Why a CI gate rather than a checklist.** Localization is the rare kind of regression that
+nothing catches: a new `Text("Add server")` compiles, passes every test, and quietly shows
+English to someone who chose Chinese. There is no crash and no red test — so the gate has to
+be built deliberately or it does not exist.
+
+**What is deliberately not translated.** Technical identifiers a user copies or compares
+(`user@host:port`, fingerprints, algorithm names, `ssh-keygen` command lines), key-cap
+labels (`esc`, `tab`, the arrows — English on a Chinese keyboard too), `TERM` values, wire
+format keys, log subsystem names, `underlyingDescription` diagnostics, and anything
+serialised or compared. Two traps in particular:
+
+* **`UIKeyCommand(input:)`.** Translating `input: "k"` would silently unbind ⌘K.
+* **Enum raw values that are both stored and displayed.** Translating one changes what is
+  written to disk, so a device that changes language cannot read back its own data. Where
+  one was found, the raw value was left alone and a separate `displayName` added.
+
+**Terminal output is never translated.** It is a remote program's bytes, often read to
+compare against documentation or to paste elsewhere. A UI test asserts this by running the
+app in Chinese and checking that remote output arrives unchanged.
+
+**Traditional Chinese is translated, not converted.** A character converter over Simplified
+leaves mainland vocabulary behind and reads as foreign in Taiwan. The two were produced
+independently against a 117-term glossary fixed before any string was translated, and a UI
+test asserts the Traditional build shows 連線 and contains no 连接 — the assertion that
+catches a converted catalog.
+
+**Security copy was reviewed as its own batch**, on the rule that a Chinese reader must not
+come away calmer than an English one. Host key changes, trust prompts and paste warnings are
+in that set. Recorded here because a mistranslation there is a security defect, not a
+cosmetic one.

@@ -75,10 +75,17 @@ public final class HostKeyVerifier: NIOSSHClientServerAuthenticationDelegate, Se
 
         case let .unknown(identity, key):
             guard await approval.approveUnknownHost(identity: identity, key: key) else {
+                // Interpolated rather than left inside the sentence: the command has to
+                // reach the user exactly as typed, and a translator editing the string
+                // would otherwise be free to reword the flag or the path.
+                let command = "ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub"
                 throw STError(
                     category: .hostKey,
-                    message: "Connection cancelled because the host key was not accepted.",
-                    recoverySuggestion: "Verify the fingerprint on the server with `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub`, then connect again."
+                    message: String(localized: "Connection cancelled because the host key was not accepted.", bundle: .module),
+                    recoverySuggestion: String(
+                        localized: "Verify the fingerprint on the server with `\(command)`, then connect again.",
+                        bundle: .module
+                    )
                 )
             }
             let entry = KnownHostEntry(identity: identity, key: key, firstSeen: now(), lastSeen: now())
@@ -94,8 +101,8 @@ public final class HostKeyVerifier: NIOSSHClientServerAuthenticationDelegate, Se
             ) else {
                 throw STError(
                     category: .hostKey,
-                    message: "The host key for \(identity.displayName) has changed.",
-                    recoverySuggestion: "Do not continue unless you know the server was rebuilt or rekeyed. If you did not expect this, someone may be intercepting the connection.",
+                    message: String(localized: "The host key for \(identity.displayName) has changed.", bundle: .module),
+                    recoverySuggestion: String(localized: "Do not continue unless you know the server was rebuilt or rekeyed. If you did not expect this, someone may be intercepting the connection.", bundle: .module),
                     underlyingDescription: "expected \(expected.key.fingerprintSHA256), got \(presented.fingerprintSHA256)"
                 )
             }

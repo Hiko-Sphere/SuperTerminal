@@ -123,84 +123,84 @@ public enum AccessError: Error, Sendable, Equatable {
         case let .malformedToken(detail):
             STError(
                 category: .access,
-                message: "Cloudflare Access returned a token this app could not read.",
-                recoverySuggestion: "Sign in to Cloudflare Access again. If it keeps happening, the Access application may be misconfigured.",
+                message: String(localized: "Cloudflare Access returned a token this app could not read.", bundle: .module),
+                recoverySuggestion: String(localized: "Sign in to Cloudflare Access again. If it keeps happening, the Access application may be misconfigured.", bundle: .module),
                 underlyingDescription: detail
             )
         case let .metadataUnavailable(detail):
             STError(
                 category: .access,
-                message: "No Cloudflare Access application was found for this hostname.",
-                recoverySuggestion: "Check the hostname, or turn off Cloudflare Access for this host if it is a plain SSH server.",
+                message: String(localized: "No Cloudflare Access application was found for this hostname.", bundle: .module),
+                recoverySuggestion: String(localized: "Check the hostname, or turn off Cloudflare Access for this host if it is a plain SSH server.", bundle: .module),
                 underlyingDescription: detail
             )
         case let .signatureVerificationFailed(detail):
             STError(
                 category: .access,
-                message: "Could not verify that this hostname is genuinely protected by your Cloudflare team.",
-                recoverySuggestion: "Do not enter credentials. Verify the hostname, then try again on a trusted network.",
+                message: String(localized: "Could not verify that this hostname is genuinely protected by your Cloudflare team.", bundle: .module),
+                recoverySuggestion: String(localized: "Do not enter credentials. Verify the hostname, then try again on a trusted network.", bundle: .module),
                 underlyingDescription: detail
             )
         case let .audienceMismatch(expected, found):
             STError(
                 category: .access,
-                message: "The Cloudflare Access token is for a different application.",
-                recoverySuggestion: "Sign out of Cloudflare Access for this host and sign in again.",
+                message: String(localized: "The Cloudflare Access token is for a different application.", bundle: .module),
+                recoverySuggestion: String(localized: "Sign out of Cloudflare Access for this host and sign in again.", bundle: .module),
                 underlyingDescription: "expected aud \(expected), token carried \(found.count) audience(s)"
             )
         case let .issuerMismatch(expected, _):
             STError(
                 category: .access,
-                message: "The Cloudflare Access token was issued by an unexpected team.",
-                recoverySuggestion: "Sign out and sign in again with the account that owns this host.",
+                message: String(localized: "The Cloudflare Access token was issued by an unexpected team.", bundle: .module),
+                recoverySuggestion: String(localized: "Sign out and sign in again with the account that owns this host.", bundle: .module),
                 underlyingDescription: "expected issuer \(expected)"
             )
         case .tokenExpired:
             STError(
                 category: .access,
-                message: "Your Cloudflare Access session has expired.",
-                recoverySuggestion: "Sign in again to reconnect."
+                message: String(localized: "Your Cloudflare Access session has expired.", bundle: .module),
+                recoverySuggestion: String(localized: "Sign in again to reconnect.", bundle: .module)
             )
         case .tokenNotYetValid:
             STError(
                 category: .access,
-                message: "The Cloudflare Access token is not valid yet.",
-                recoverySuggestion: "Check that this device's clock is correct, then try again."
+                message: String(localized: "The Cloudflare Access token is not valid yet.", bundle: .module),
+                recoverySuggestion: String(localized: "Check that this device's clock is correct, then try again.", bundle: .module)
             )
         case .loginCancelled:
-            STError(category: .cancelled, message: "Cloudflare Access sign-in was cancelled.")
+            STError(category: .cancelled, message: String(localized: "Cloudflare Access sign-in was cancelled.", bundle: .module))
         case let .loginFailed(detail):
             STError(
                 category: .access,
-                message: "Cloudflare Access sign-in did not complete.",
-                recoverySuggestion: "Try signing in again.",
+                message: String(localized: "Cloudflare Access sign-in did not complete.", bundle: .module),
+                recoverySuggestion: String(localized: "Try signing in again.", bundle: .module),
                 underlyingDescription: detail
             )
         case .transferTimedOut:
             STError(
                 category: .access,
-                message: "Timed out waiting for Cloudflare Access sign-in to finish.",
-                recoverySuggestion: "Try again and complete the sign-in prompt, including any two-factor step."
+                message: String(localized: "Timed out waiting for Cloudflare Access sign-in to finish.", bundle: .module),
+                recoverySuggestion: String(localized: "Try again and complete the sign-in prompt, including any two-factor step.", bundle: .module)
             )
         case let .decryptionFailed(detail):
             STError(
                 category: .access,
-                message: "The Cloudflare Access credential could not be decrypted.",
-                recoverySuggestion: "Sign in again. If this repeats, report it — it may indicate a tampered network path.",
+                message: String(localized: "The Cloudflare Access credential could not be decrypted.", bundle: .module),
+                recoverySuggestion: String(localized: "Sign in again. If this repeats, report it — it may indicate a tampered network path.", bundle: .module),
                 underlyingDescription: detail
             )
         case let .accessDenied(detail):
             STError(
                 category: .access,
-                message: "Cloudflare Access denied this connection.",
-                recoverySuggestion: "Ask your administrator whether your identity is allowed by this application's policy.",
+                message: String(localized: "Cloudflare Access denied this connection.", bundle: .module),
+                recoverySuggestion: String(localized: "Ask your administrator whether your identity is allowed by this application's policy.", bundle: .module),
                 underlyingDescription: detail
             )
         case let .network(detail):
             STError(
                 category: .network,
-                message: "Could not reach Cloudflare.",
-                recoverySuggestion: "Check your network connection and try again.",
+                message: String(localized: "Could not reach Cloudflare.", bundle: .module),
+                recoverySuggestion: String(localized: "Check your network connection and try again.", bundle: .module),
                 underlyingDescription: detail
             )
         }

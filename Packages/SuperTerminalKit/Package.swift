@@ -34,7 +34,12 @@ let package = Package(
             name: "STCore",
             dependencies: [
                 .product(name: "NIOCore", package: "swift-nio"),
-            ]
+            ],
+            // The user sees these modules' error messages verbatim, so their strings are
+            // translated here. Declaring the catalog explicitly is what makes SwiftPM
+            // generate `Bundle.module` for the target — without it the symbol resolves to
+            // some other module's and fails to compile.
+            resources: [.process("Localizable.xcstrings")]
         ),
         .target(
             name: "STSecureStore",
@@ -55,7 +60,12 @@ let package = Package(
                 .product(name: "Crypto", package: "swift-crypto"),
                 .product(name: "_CryptoExtras", package: "swift-crypto"),
                 .product(name: "Sodium", package: "swift-sodium"),
-            ]
+            ],
+            // The user sees these modules' error messages verbatim, so their strings are
+            // translated here. Declaring the catalog explicitly is what makes SwiftPM
+            // generate `Bundle.module` for the target — without it the symbol resolves to
+            // some other module's and fails to compile.
+            resources: [.process("Localizable.xcstrings")]
         ),
         .target(
             name: "CBcryptPBKDF",
@@ -81,7 +91,12 @@ let package = Package(
                 // OpenSSH's own, not the RFC 8439 AEAD, so it needs the stream cipher and
                 // the one-time authenticator separately rather than the sealed-box API.
                 .product(name: "Clibsodium", package: "swift-sodium"),
-            ]
+            ],
+            // The user sees these modules' error messages verbatim, so their strings are
+            // translated here. Declaring the catalog explicitly is what makes SwiftPM
+            // generate `Bundle.module` for the target — without it the symbol resolves to
+            // some other module's and fails to compile.
+            resources: [.process("Localizable.xcstrings")]
         ),
         .target(
             name: "STTestSupport",

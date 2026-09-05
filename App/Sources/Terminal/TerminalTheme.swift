@@ -118,7 +118,7 @@ public extension TerminalTheme {
     /// small sizes.
     static let midnight = TerminalTheme(
         id: "midnight",
-        name: "Midnight",
+        name: String(localized: "Midnight"),
         background: RGBColor(hex: 0x11131A),
         foreground: RGBColor(hex: 0xD7DAE3),
         cursor: RGBColor(hex: 0x6FA8FF),
@@ -138,7 +138,7 @@ public extension TerminalTheme {
     /// phone actually gets used.
     static let daylight = TerminalTheme(
         id: "daylight",
-        name: "Daylight",
+        name: String(localized: "Daylight"),
         background: RGBColor(hex: 0xFBFBFD),
         foreground: RGBColor(hex: 0x21242C),
         cursor: RGBColor(hex: 0x1E62C8),
@@ -157,7 +157,7 @@ public extension TerminalTheme {
     /// A high-contrast theme for the accessibility setting of the same name.
     static let highContrast = TerminalTheme(
         id: "high-contrast",
-        name: "High Contrast",
+        name: String(localized: "High Contrast"),
         background: RGBColor(hex: 0x000000),
         foreground: RGBColor(hex: 0xFFFFFF),
         cursor: RGBColor(hex: 0xFFFF00),

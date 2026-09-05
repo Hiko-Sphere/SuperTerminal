@@ -159,11 +159,11 @@ final class TerminalSession: Identifiable {
 
     func connect() async {
         guard !isConnected else { return }
-        state = .connecting(step: "Resolving \(host.hostname)")
+        state = .connecting(step: String(localized: "Resolving \(host.hostname)"))
 
         do {
             let transport = try await makeTransport()
-            state = .connecting(step: "Exchanging keys")
+            state = .connecting(step: String(localized: "Exchanging keys"))
 
             let approval: any HostKeyApprovalDelegate = Self.automaticHostKeyTrust
                 ? TrustOnFirstUseApproval()
@@ -189,7 +189,7 @@ final class TerminalSession: Identifiable {
             )
             self.connection = connection
 
-            state = .connecting(step: "Starting shell")
+            state = .connecting(step: String(localized: "Starting shell"))
             let shell = try await connection.openShell(
                 terminalType: host.terminalType,
                 size: size,
@@ -206,7 +206,7 @@ final class TerminalSession: Identifiable {
         } catch {
             state = .failed(STError(
                 category: .internalError,
-                message: "The connection could not be established.",
+                message: String(localized: "The connection could not be established."),
                 underlyingDescription: String(describing: error)
             ))
         }
@@ -237,11 +237,11 @@ final class TerminalSession: Identifiable {
     func reconnect() async {
         await disconnect()
         shellExited = false
-        annotate("Reconnecting…")
+        annotate(String(localized: "Reconnecting…"))
         scrollbackOffset = 0
         await connect()
         if case .connected = state {
-            annotate("Reconnected. This is a new shell.")
+            annotate(String(localized: "Reconnected. This is a new shell."))
         }
     }
 
@@ -535,7 +535,7 @@ final class TerminalSession: Identifiable {
     func resolvePrompt(_ decision: PromptCoordinator.Decision) {
         let coordinator = promptCoordinator
         Task { await coordinator.resolve(decision) }
-        if case .awaitingUser = state { state = .connecting(step: "Continuing") }
+        if case .awaitingUser = state { state = .connecting(step: String(localized: "Continuing")) }
     }
 
     // MARK: - Internals
@@ -596,16 +596,16 @@ final class TerminalSession: Identifiable {
         connection = nil
         if case .failed = state { return }
         if shellExited {
-            state = .disconnected(reason: "The shell exited.")
+            state = .disconnected(reason: String(localized: "The shell exited."))
             haptics?.play(.disconnected)
             return
         }
-        state = .disconnected(reason: "The connection to the host was lost.")
+        state = .disconnected(reason: String(localized: "The connection to the host was lost."))
         haptics?.play(.disconnected)
         beginAutomaticReconnection(after: STError(
             category: .network,
-            message: "The connection to the host was lost.",
-            recoverySuggestion: "Reconnecting."
+            message: String(localized: "The connection to the host was lost."),
+            recoverySuggestion: String(localized: "Reconnecting.")
         ))
     }
 
@@ -733,7 +733,7 @@ final class TerminalSession: Identifiable {
                 log: log
             )
         case let .cloudflare(jumpDestination):
-            state = .connecting(step: "Checking Cloudflare Access")
+            state = .connecting(step: String(localized: "Checking Cloudflare Access"))
             let credential = try await resolveAccessCredential()
             return CloudflareCarrierTransport(
                 configuration: .init(
@@ -765,7 +765,7 @@ final class TerminalSession: Identifiable {
                !validated.isExpired() {
                 return .userToken(validated)
             }
-            state = .connecting(step: "Signing in to Cloudflare Access")
+            state = .connecting(step: String(localized: "Signing in to Cloudflare Access"))
             let login = AccessLoginService(
                 http: http,
                 presenter: WebAuthenticationPresenter(),
@@ -788,7 +788,7 @@ final class TerminalSession: Identifiable {
             case let .privateKey(id):
                 let pem = try vault.loadPrivateKey(
                     id: id,
-                    prompt: "Unlock the key for \(host.name)"
+                    prompt: String(localized: "Unlock the key for \(host.name)")
                 )
                 let inspection = try OpenSSHPrivateKeyParser.inspect(pem: pem)
                 if inspection.isEncrypted {

@@ -63,11 +63,11 @@ struct TerminalView: View {
             connectedTerminal
         } else {
             EmptyStateView(
-                title: "Open in another window",
-                message: "\(session.host.name) is showing in a different window. The connection is still running.",
+                title: String(localized: "Open in another window"),
+                message: String(localized: "\(session.host.name) is showing in a different window. The connection is still running."),
                 systemImage: "macwindow.on.rectangle",
                 action: (
-                    title: "Show it here",
+                    title: String(localized: "Show it here"),
                     perform: {
                         container.sessionManager.claimDisplay(ofSessionWithID: session.id, by: scene.id)
                     }
@@ -126,7 +126,7 @@ struct TerminalView: View {
                     }
                 )
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel("Terminal for \(session.host.name)")
+                .accessibilityLabel(String(localized: "Terminal for \(session.host.name)"))
                 // VoiceOver reads the screen contents, which is the only way the terminal
                 // is usable without sight — the grid itself is a drawing, not a view
                 // hierarchy, so there is nothing else to announce.
@@ -176,21 +176,21 @@ struct TerminalView: View {
             }
         }
         .confirmationDialog(
-            "Open this link?",
+            String(localized: "Open this link?"),
             isPresented: linkBinding,
             titleVisibility: .visible
         ) {
             if let link = session.pendingLink, let url = URL(string: link.url) {
-                Button("Open") {
+                Button(String(localized: "Open")) {
                     session.pendingLink = nil
                     UIApplication.shared.open(url)
                 }
             }
-            Button("Copy Link") {
+            Button(String(localized: "Copy Link")) {
                 UIPasteboard.general.string = session.pendingLink?.url
                 session.pendingLink = nil
             }
-            Button("Cancel", role: .cancel) { session.pendingLink = nil }
+            Button(String(localized: "Cancel"), role: .cancel) { session.pendingLink = nil }
         } message: {
             // The full URL is shown because the point of the confirmation is that the
             // user can read where they are about to be sent.
@@ -201,12 +201,12 @@ struct TerminalView: View {
             isPresented: pasteBinding,
             titleVisibility: .visible
         ) {
-            Button("Paste") {
+            Button(String(localized: "Paste")) {
                 if let pending = session.pendingPaste {
                     Task { await session.paste(pending.text) }
                 }
             }
-            Button("Cancel", role: .cancel) { session.cancelPendingPaste() }
+            Button(String(localized: "Cancel"), role: .cancel) { session.cancelPendingPaste() }
         } message: {
             Text(pasteDialogMessage)
         }
@@ -227,15 +227,15 @@ struct TerminalView: View {
     }
 
     private var pasteDialogTitle: String {
-        guard let pending = session.pendingPaste else { return "Paste" }
-        return "Paste \(pending.lineCount) lines?"
+        guard let pending = session.pendingPaste else { return String(localized: "Paste") }
+        return String(localized: "Paste \(pending.lineCount) lines?")
     }
 
     private var pasteDialogMessage: String {
         guard let pending = session.pendingPaste else { return "" }
         return pending.isBracketed
-            ? "The remote program supports bracketed paste, so the text will be inserted without running it. Check it before pressing Return."
-            : "This text contains newlines and the remote program does not support bracketed paste, so each line will run as soon as it arrives."
+            ? String(localized: "The remote program supports bracketed paste, so the text will be inserted without running it. Check it before pressing Return.")
+            : String(localized: "This text contains newlines and the remote program does not support bracketed paste, so each line will run as soon as it arrives.")
     }
 
     /// Shown while text is selected. A bar rather than a floating menu because on a phone
@@ -249,16 +249,16 @@ struct TerminalView: View {
                     container.haptics.play(.textInserted)
                 }
             } label: {
-                Label("Copy", systemImage: "doc.on.doc")
+                Label(String(localized: "Copy"), systemImage: "doc.on.doc")
             }
             Button {
                 session.selection = nil
             } label: {
-                Label("Clear", systemImage: "xmark")
+                Label(String(localized: "Clear"), systemImage: "xmark")
             }
             Spacer()
             if let text = session.selectedText {
-                Text("\(text.count) characters")
+                Text(String(localized: "\(text.count) characters"))
                     .font(DesignTokens.Typography.caption)
                     .foregroundStyle(DesignTokens.Color.labelSecondary)
             }
@@ -296,8 +296,8 @@ struct TerminalView: View {
             ConnectionErrorView(
                 error: STError(
                     category: .network,
-                    message: reason ?? "Disconnected.",
-                    recoverySuggestion: "Reconnect to continue where you left off."
+                    message: reason ?? String(localized: "Disconnected."),
+                    recoverySuggestion: String(localized: "Reconnect to continue where you left off.")
                 )
             ) {
                 Task { await session.reconnect() }
@@ -312,7 +312,7 @@ struct TerminalView: View {
         Button {
             session.scrollToBottom()
         } label: {
-            Label("Scrolled back \(session.scrollbackOffset) lines · Jump to bottom", systemImage: "arrow.down.to.line")
+            Label(String(localized: "Scrolled back \(session.scrollbackOffset) lines · Jump to bottom"), systemImage: "arrow.down.to.line")
                 .font(DesignTokens.Typography.caption)
                 .padding(.vertical, DesignTokens.Spacing.sm)
                 .frame(maxWidth: .infinity)
@@ -335,26 +335,26 @@ struct TerminalView: View {
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
-                Button("Reconnect", systemImage: "arrow.clockwise") {
+                Button(String(localized: "Reconnect"), systemImage: "arrow.clockwise") {
                     Task { await session.reconnect() }
                 }
-                Button("Disconnect", systemImage: "bolt.slash") {
+                Button(String(localized: "Disconnect"), systemImage: "bolt.slash") {
                     Task { await session.disconnect() }
                 }
-                Button("Command Palette…", systemImage: "command") {
+                Button(String(localized: "Command Palette…"), systemImage: "command") {
                     scene.isShowingPalette = true
                 }
                 .keyboardShortcut("k", modifiers: .command)
-                Button("Snippets…", systemImage: "text.badge.plus") {
+                Button(String(localized: "Snippets…"), systemImage: "text.badge.plus") {
                     showsSnippets = true
                 }
-                Button("Find…", systemImage: "magnifyingglass") {
+                Button(String(localized: "Find…"), systemImage: "magnifyingglass") {
                     isSearching = true
                 }
                 Divider()
-                Toggle("Show Key Row", isOn: keyRowBinding)
+                Toggle(String(localized: "Show Key Row"), isOn: keyRowBinding)
             } label: {
-                Label("Session", systemImage: "ellipsis.circle")
+                Label(String(localized: "Session"), systemImage: "ellipsis.circle")
             }
         }
     }
@@ -393,7 +393,7 @@ struct ConnectionErrorView: View {
                     .multilineTextAlignment(.center)
             }
 
-            Button("Try Again", action: retry)
+            Button(String(localized: "Try Again"), action: retry)
                 .buttonStyle(.borderedProminent)
         }
         .padding(DesignTokens.Spacing.xl)

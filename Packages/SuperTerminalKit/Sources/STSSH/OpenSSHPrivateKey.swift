@@ -36,44 +36,44 @@ public enum SSHKeyParseError: Error, Sendable, Equatable {
         case .notAnOpenSSHPrivateKey:
             STError(
                 category: .credential,
-                message: "That file is not an OpenSSH private key.",
-                recoverySuggestion: "Export the key with `ssh-keygen -p -f <key>` or generate a new one in SuperTerminal."
+                message: String(localized: "That file is not an OpenSSH private key.", bundle: .module),
+                recoverySuggestion: String(localized: "Export the key with `ssh-keygen -p -f <key>` or generate a new one in SuperTerminal.", bundle: .module)
             )
         case let .malformed(detail):
             STError(
                 category: .credential,
-                message: "The private key file is damaged or incomplete.",
+                message: String(localized: "The private key file is damaged or incomplete.", bundle: .module),
                 underlyingDescription: detail
             )
         case .passphraseRequired:
             STError(
                 category: .credential,
-                message: "This private key is protected by a passphrase.",
-                recoverySuggestion: "Enter the key's passphrase to import it."
+                message: String(localized: "This private key is protected by a passphrase.", bundle: .module),
+                recoverySuggestion: String(localized: "Enter the key's passphrase to import it.", bundle: .module)
             )
         case .incorrectPassphrase:
             STError(
                 category: .credential,
-                message: "That passphrase does not unlock this key.",
-                recoverySuggestion: "Check the passphrase and try again."
+                message: String(localized: "That passphrase does not unlock this key.", bundle: .module),
+                recoverySuggestion: String(localized: "Check the passphrase and try again.", bundle: .module)
             )
         case let .unsupportedCipher(name):
             STError(
                 category: .credential,
-                message: "This key uses an encryption method SuperTerminal cannot read (\(name)).",
-                recoverySuggestion: "Re-encrypt the key with `ssh-keygen -p -Z aes256-ctr -f <key>`, or import it without a passphrase."
+                message: String(localized: "This key uses an encryption method SuperTerminal cannot read (\(name)).", bundle: .module),
+                recoverySuggestion: String(localized: "Re-encrypt the key with `ssh-keygen -p -Z aes256-ctr -f <key>`, or import it without a passphrase.", bundle: .module)
             )
         case let .unsupportedKDF(name):
             STError(
                 category: .credential,
-                message: "This key uses an unsupported key-derivation function (\(name)).",
-                recoverySuggestion: "Re-encrypt the key with a current version of `ssh-keygen`."
+                message: String(localized: "This key uses an unsupported key-derivation function (\(name)).", bundle: .module),
+                recoverySuggestion: String(localized: "Re-encrypt the key with a current version of `ssh-keygen`.", bundle: .module)
             )
         case let .unsupportedKeyType(type):
             STError(
                 category: .credential,
-                message: "SuperTerminal does not support \(type) keys yet.",
-                recoverySuggestion: "Use an Ed25519 or ECDSA P-256 key. See the compatibility matrix in the app's documentation."
+                message: String(localized: "SuperTerminal does not support \(type) keys yet.", bundle: .module),
+                recoverySuggestion: String(localized: "Use an Ed25519 or ECDSA P-256 key. See the compatibility matrix in the app's documentation.", bundle: .module)
             )
         }
     }

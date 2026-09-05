@@ -108,11 +108,11 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
 
     public var validationProblems: [String] {
         var problems: [String] = []
-        if name.trimmingCharacters(in: .whitespaces).isEmpty { problems.append("Give this connection a name.") }
-        if hostname.trimmingCharacters(in: .whitespaces).isEmpty { problems.append("Enter a hostname.") }
-        if username.trimmingCharacters(in: .whitespaces).isEmpty { problems.append("Enter a username.") }
-        if !(1 ... 65535).contains(port) { problems.append("Port must be between 1 and 65535.") }
-        if credentials.isEmpty { problems.append("Choose at least one way to authenticate.") }
+        if name.trimmingCharacters(in: .whitespaces).isEmpty { problems.append(String(localized: "Give this connection a name.")) }
+        if hostname.trimmingCharacters(in: .whitespaces).isEmpty { problems.append(String(localized: "Enter a hostname.")) }
+        if username.trimmingCharacters(in: .whitespaces).isEmpty { problems.append(String(localized: "Enter a username.")) }
+        if !(1 ... 65535).contains(port) { problems.append(String(localized: "Port must be between 1 and 65535.")) }
+        if credentials.isEmpty { problems.append(String(localized: "Choose at least one way to authenticate.")) }
         return problems
     }
 }

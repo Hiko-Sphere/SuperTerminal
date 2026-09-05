@@ -18,6 +18,23 @@
         }
       }
     },
+    "%@ is showing in a different window. The connection is still running.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 正在另一个窗口中显示。连接仍处于活动状态。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 正在另一個視窗中顯示。連線仍在使用中。"
+          }
+        }
+      }
+    },
     "%@ · %@": {
       "extractionState": "manual",
       "localizations": {
@@ -69,6 +86,23 @@
         }
       }
     },
+    "%@. Will retry as soon as there is one.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@。有网络后将立即重试。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@。有網路後將立即重試。"
+          }
+        }
+      }
+    },
     "%lld": {
       "extractionState": "manual",
       "localizations": {
@@ -99,6 +133,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "%lld 個字元"
+          }
+        }
+      }
+    },
+    "%lld of %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "第 %lld 项，共 %lld 项"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "第 %lld 項，共 %lld 項"
           }
         }
       }
@@ -154,6 +205,23 @@
         }
       }
     },
+    "Actions": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "操作"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "操作"
+          }
+        }
+      }
+    },
     "Add Connection": {
       "extractionState": "manual",
       "localizations": {
@@ -167,6 +235,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "新增連線"
+          }
+        }
+      }
+    },
+    "Add a server": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加服务器"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新增伺服器"
           }
         }
       }
@@ -290,6 +375,57 @@
         }
       }
     },
+    "Attempt %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "第 %lld 次尝试"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "第 %lld 次嘗試"
+          }
+        }
+      }
+    },
+    "Attempt %lld failed · retrying in %llds": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "第 %lld 次尝试失败 · %lld 秒后重试"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "第 %lld 次嘗試失敗 · %lld 秒後重試"
+          }
+        }
+      }
+    },
+    "Attempt %lld starting": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在开始第 %lld 次尝试"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在開始第 %lld 次嘗試"
+          }
+        }
+      }
+    },
     "Authentication": {
       "extractionState": "manual",
       "localizations": {
@@ -392,6 +528,74 @@
         }
       }
     },
+    "Cellular": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "蜂窝数据"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "行動網路"
+          }
+        }
+      }
+    },
+    "Changes could not be saved.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法保存更改。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法儲存變更。"
+          }
+        }
+      }
+    },
+    "Checking Cloudflare Access": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在检查 Cloudflare Access"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在檢查 Cloudflare Access"
+          }
+        }
+      }
+    },
+    "Choose a connection to open a terminal.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "选择一个连接以打开终端。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "選擇一個連線以開啟終端機。"
+          }
+        }
+      }
+    },
     "Choose a file…": {
       "extractionState": "manual",
       "localizations": {
@@ -409,6 +613,23 @@
         }
       }
     },
+    "Choose at least one way to authenticate.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请至少选择一种身份验证方式。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請至少選擇一種身分驗證方式。"
+          }
+        }
+      }
+    },
     "Clear": {
       "extractionState": "manual",
       "localizations": {
@@ -422,6 +643,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "清除"
+          }
+        }
+      }
+    },
+    "Clear Screen": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清屏"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清除畫面"
           }
         }
       }
@@ -507,6 +745,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "指令"
+          }
+        }
+      }
+    },
+    "Command Palette": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "命令面板"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "指令面板"
           }
         }
       }
@@ -613,6 +868,23 @@
         }
       }
     },
+    "Connected": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已连接"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已連線"
+          }
+        }
+      }
+    },
     "Connection": {
       "extractionState": "manual",
       "localizations": {
@@ -626,6 +898,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "連線"
+          }
+        }
+      }
+    },
+    "Connection lost": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "连接已断开"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "連線已中斷"
           }
         }
       }
@@ -664,6 +953,23 @@
         }
       }
     },
+    "Continuing": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在继续"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在繼續"
+          }
+        }
+      }
+    },
     "Control": {
       "extractionState": "manual",
       "localizations": {
@@ -677,6 +983,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Control"
+          }
+        }
+      }
+    },
+    "Control, Esc, Tab and the arrows": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Control、Esc、Tab 和方向键"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Control、Esc、Tab 與方向鍵"
           }
         }
       }
@@ -728,6 +1051,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "拷貝公開金鑰"
+          }
+        }
+      }
+    },
+    "Could not reconnect": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法重新连接"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法重新連線"
           }
         }
       }
@@ -796,6 +1136,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "資料"
+          }
+        }
+      }
+    },
+    "Daylight": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "日光"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "日光"
           }
         }
       }
@@ -953,6 +1310,57 @@
         }
       }
     },
+    "Disconnected": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已断开"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已中斷"
+          }
+        }
+      }
+    },
+    "Disconnected.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已断开连接。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已中斷連線。"
+          }
+        }
+      }
+    },
+    "Disk usage": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "磁盘占用"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "磁碟用量"
+          }
+        }
+      }
+    },
     "Dismiss": {
       "extractionState": "manual",
       "localizations": {
@@ -1000,6 +1408,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "完成"
+          }
+        }
+      }
+    },
+    "Down arrow": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下方向键"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下方向鍵"
           }
         }
       }
@@ -1055,6 +1480,74 @@
         }
       }
     },
+    "End": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End 键"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End 鍵"
+          }
+        }
+      }
+    },
+    "Enter a command.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请输入命令。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請輸入指令。"
+          }
+        }
+      }
+    },
+    "Enter a hostname.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请输入主机名。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請輸入主機名稱。"
+          }
+        }
+      }
+    },
+    "Enter a username.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请输入用户名。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請輸入使用者名稱。"
+          }
+        }
+      }
+    },
     "Entered secrets are held only for this connection unless you save them to the Keychain.": {
       "extractionState": "manual",
       "localizations": {
@@ -1068,6 +1561,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "輸入的機密資訊僅在本次連線期間保留，除非你將其儲存到 Keychain。"
+          }
+        }
+      }
+    },
+    "Escape": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esc 键"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esc 鍵"
+          }
+        }
+      }
+    },
+    "Exchanging keys": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在交换密钥"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在交換金鑰"
           }
         }
       }
@@ -1191,6 +1718,23 @@
         }
       }
     },
+    "Follow a log": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "跟踪日志"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "追蹤日誌"
+          }
+        }
+      }
+    },
     "Font size %lld pt": {
       "extractionState": "manual",
       "localizations": {
@@ -1293,6 +1837,23 @@
         }
       }
     },
+    "Generated: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "生成时间：%@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "產生時間：%@"
+          }
+        }
+      }
+    },
     "Generate…": {
       "extractionState": "manual",
       "localizations": {
@@ -1306,6 +1867,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "產生…"
+          }
+        }
+      }
+    },
+    "Give this connection a name.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请为此连接命名。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請為此連線命名。"
+          }
+        }
+      }
+    },
+    "Give this snippet a name.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请为此命令片段填写名称。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請為此指令片段填寫名稱。"
           }
         }
       }
@@ -1327,6 +1922,23 @@
         }
       }
     },
+    "Hide Key Row": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "隐藏按键行"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "隱藏按鍵列"
+          }
+        }
+      }
+    },
     "Hide content in the App Switcher": {
       "extractionState": "manual",
       "localizations": {
@@ -1344,6 +1956,40 @@
         }
       }
     },
+    "High Contrast": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "高对比度"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "高對比度"
+          }
+        }
+      }
+    },
+    "History": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "历史记录"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "歷史紀錄"
+          }
+        }
+      }
+    },
     "History is off": {
       "extractionState": "manual",
       "localizations": {
@@ -1357,6 +2003,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "歷史紀錄已關閉"
+          }
+        }
+      }
+    },
+    "Home": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Home 键"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Home 鍵"
           }
         }
       }
@@ -1408,6 +2071,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "如何核對？"
+          }
+        }
+      }
+    },
+    "Idle": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "空闲"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "閒置"
           }
         }
       }
@@ -1480,6 +2160,23 @@
         }
       }
     },
+    "Keeps the scrollback": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保留回滚记录"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保留回捲紀錄"
+          }
+        }
+      }
+    },
     "Key": {
       "extractionState": "manual",
       "localizations": {
@@ -1527,6 +2224,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "已建立金鑰"
+          }
+        }
+      }
+    },
+    "Key passphrase": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密钥密码短语"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "金鑰密碼短語"
           }
         }
       }
@@ -1599,6 +2313,23 @@
         }
       }
     },
+    "Largest directories": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "占用最大的目录"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "佔用最大的目錄"
+          }
+        }
+      }
+    },
     "Latches Control for the next key you press": {
       "extractionState": "manual",
       "localizations": {
@@ -1616,6 +2347,23 @@
         }
       }
     },
+    "Left arrow": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "左方向键"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "左方向鍵"
+          }
+        }
+      }
+    },
     "Light theme": {
       "extractionState": "manual",
       "localizations": {
@@ -1629,6 +2377,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "淺色主題"
+          }
+        }
+      }
+    },
+    "Listening ports": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "监听端口"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "監聽連接埠"
           }
         }
       }
@@ -1663,6 +2428,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "跟隨系統深色/淺色"
+          }
+        }
+      }
+    },
+    "Memory": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "内存"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "記憶體"
+          }
+        }
+      }
+    },
+    "Midnight": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "午夜"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "午夜"
           }
         }
       }
@@ -1871,6 +2670,23 @@
         }
       }
     },
+    "No session": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无会话"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "沒有工作階段"
+          }
+        }
+      }
+    },
     "No snippets yet": {
       "extractionState": "manual",
       "localizations": {
@@ -1990,6 +2806,23 @@
         }
       }
     },
+    "Offline": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "离线"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "離線"
+          }
+        }
+      }
+    },
     "On": {
       "extractionState": "manual",
       "localizations": {
@@ -2054,6 +2887,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "在新視窗中開啟"
+          }
+        }
+      }
+    },
+    "Open in another window": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已在其他窗口中打开"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已在其他視窗中開啟"
           }
         }
       }
@@ -2126,6 +2976,57 @@
         }
       }
     },
+    "Other": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "其他"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "其他"
+          }
+        }
+      }
+    },
+    "Page down": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "向下翻页键"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "向下翻頁鍵"
+          }
+        }
+      }
+    },
+    "Page up": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Page Up 键"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Page Up 鍵"
+          }
+        }
+      }
+    },
     "Passphrase": {
       "extractionState": "manual",
       "localizations": {
@@ -2139,6 +3040,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "密碼短語"
+          }
+        }
+      }
+    },
+    "Passphrase entry was cancelled.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密码短语输入已取消。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密碼短語輸入已取消。"
+          }
+        }
+      }
+    },
+    "Password": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密码"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密碼"
           }
         }
       }
@@ -2160,6 +3095,23 @@
         }
       }
     },
+    "Password entry was cancelled.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密码输入已取消。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密碼輸入已取消。"
+          }
+        }
+      }
+    },
     "Paste": {
       "extractionState": "manual",
       "localizations": {
@@ -2173,6 +3125,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "貼上"
+          }
+        }
+      }
+    },
+    "Paste %lld lines?": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "粘贴 %lld 行？"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "貼上 %lld 行？"
           }
         }
       }
@@ -2207,6 +3176,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "連接埠"
+          }
+        }
+      }
+    },
+    "Port must be between 1 and 65535.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "端口必须在 1 到 65535 之间。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "連接埠必須在 1 到 65535 之間。"
+          }
+        }
+      }
+    },
+    "Presented now": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本次出示"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本次出示"
           }
         }
       }
@@ -2262,6 +3265,23 @@
         }
       }
     },
+    "Previously trusted": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此前已信任"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "先前已信任"
+          }
+        }
+      }
+    },
     "Privacy": {
       "extractionState": "manual",
       "localizations": {
@@ -2292,6 +3312,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "私密金鑰"
+          }
+        }
+      }
+    },
+    "Recent auth failures": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最近的身份验证失败"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最近的身分驗證失敗"
           }
         }
       }
@@ -2330,6 +3367,74 @@
         }
       }
     },
+    "Reconnect to continue where you left off.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新连接即可从中断处继续。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新連線即可從中斷處繼續。"
+          }
+        }
+      }
+    },
+    "Reconnected. This is a new shell.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已重新连接。这是一个新的 shell。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已重新連線。這是一個新的 shell。"
+          }
+        }
+      }
+    },
+    "Reconnecting.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在重新连接。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在重新連線。"
+          }
+        }
+      }
+    },
+    "Reconnecting…": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在重新连接…"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在重新連線…"
+          }
+        }
+      }
+    },
     "Record command history": {
       "extractionState": "manual",
       "localizations": {
@@ -2343,6 +3448,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "記錄指令歷史"
+          }
+        }
+      }
+    },
+    "Records are redacted at the point they are written: no commands, terminal output, hostnames, passwords, keys or tokens are captured.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "记录在写入时即已脱敏：不会记录任何命令、终端输出、主机名、密码、密钥或 token。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "紀錄在寫入時即已去識別化：不會記錄任何指令、終端機輸出、主機名稱、密碼、金鑰或 token。"
           }
         }
       }
@@ -2415,6 +3537,23 @@
         }
       }
     },
+    "Resolving %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在解析 %@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在解析 %@"
+          }
+        }
+      }
+    },
     "Retry now": {
       "extractionState": "manual",
       "localizations": {
@@ -2428,6 +3567,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "立即重試"
+          }
+        }
+      }
+    },
+    "Right arrow": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "右方向键"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "右方向鍵"
           }
         }
       }
@@ -2496,6 +3652,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "儲存您常用的指令。它們可在任何工作階段的「指令片段」選單中使用。"
+          }
+        }
+      }
+    },
+    "Scroll Down": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "向下滚动"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "向下捲動"
+          }
+        }
+      }
+    },
+    "Scroll Up": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "向上滚动"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "向上捲動"
           }
         }
       }
@@ -2619,6 +3809,23 @@
         }
       }
     },
+    "Server fingerprint": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器 fingerprint"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "伺服器 fingerprint"
+          }
+        }
+      }
+    },
     "Servers you have connected to appear here with their fingerprints.": {
       "extractionState": "manual",
       "localizations": {
@@ -2666,6 +3873,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "工作階段 %lld"
+          }
+        }
+      }
+    },
+    "Session closed": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "会话已关闭"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "工作階段已關閉"
           }
         }
       }
@@ -2738,6 +3962,23 @@
         }
       }
     },
+    "Show it here": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在此显示"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在此顯示"
+          }
+        }
+      }
+    },
     "Sign out of all Cloudflare Access apps": {
       "extractionState": "manual",
       "localizations": {
@@ -2751,6 +3992,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "登出所有 Cloudflare Access App"
+          }
+        }
+      }
+    },
+    "Signing in to Cloudflare Access": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在登录 Cloudflare Access"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在登入 Cloudflare Access"
           }
         }
       }
@@ -2823,6 +4081,40 @@
         }
       }
     },
+    "Starting shell": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在启动 shell"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在啟動 shell"
+          }
+        }
+      }
+    },
+    "Starts a new shell on %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在 %@ 上启动新的 shell"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在 %@ 上啟動新的 shell"
+          }
+        }
+      }
+    },
     "Stop": {
       "extractionState": "manual",
       "localizations": {
@@ -2853,6 +4145,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "SuperTerminal"
+          }
+        }
+      }
+    },
+    "SuperTerminal diagnostics": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SuperTerminal 诊断信息"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SuperTerminal 診斷資訊"
           }
         }
       }
@@ -2908,6 +4217,23 @@
         }
       }
     },
+    "System": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "系统"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "系統"
+          }
+        }
+      }
+    },
     "TERM": {
       "extractionState": "manual",
       "localizations": {
@@ -2921,6 +4247,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "TERM"
+          }
+        }
+      }
+    },
+    "Tab": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tab 键"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tab 鍵"
           }
         }
       }
@@ -2976,6 +4319,23 @@
         }
       }
     },
+    "That file could not be read as text.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法以文本形式读取该文件。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法以文字形式讀取該檔案。"
+          }
+        }
+      }
+    },
     "The command is typed into the terminal and waits for you to press Return.": {
       "extractionState": "manual",
       "localizations": {
@@ -2989,6 +4349,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "指令會輸入到終端機中，等待你按下 Return 鍵。"
+          }
+        }
+      }
+    },
+    "The connection could not be established.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法建立连接。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法建立連線。"
+          }
+        }
+      }
+    },
+    "The connection to the host was lost.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "与主机的连接已断开。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "與主機的連線已中斷。"
           }
         }
       }
@@ -3044,6 +4438,40 @@
         }
       }
     },
+    "The remote program supports bracketed paste, so the text will be inserted without running it. Check it before pressing Return.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "远端程序支持 bracketed paste，因此文本只会被插入，不会直接运行。按 Return 键前请先核对内容。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "遠端程式支援 bracketed paste，因此文字只會被插入，不會直接執行。按 Return 鍵前請先核對內容。"
+          }
+        }
+      }
+    },
+    "The shell exited.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "shell 已退出。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "shell 已結束。"
+          }
+        }
+      }
+    },
     "This key is encrypted. The passphrase is used once to unlock it and is not stored.": {
       "extractionState": "manual",
       "localizations": {
@@ -3095,6 +4523,40 @@
         }
       }
     },
+    "This session is no longer open.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此会话已经结束。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此工作階段已經結束。"
+          }
+        }
+      }
+    },
+    "This text contains newlines and the remote program does not support bracketed paste, so each line will run as soon as it arrives.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此文本包含换行符，且远端程序不支持 bracketed paste，因此每一行到达后会立即执行。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此文字包含換行字元，且遠端程式不支援 bracketed paste，因此每一行送達後會立即執行。"
+          }
+        }
+      }
+    },
     "Through Cloudflare Tunnel": {
       "extractionState": "manual",
       "localizations": {
@@ -3108,6 +4570,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "透過 Cloudflare Tunnel"
+          }
+        }
+      }
+    },
+    "Top processes": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "占用最高的进程"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "佔用最高的程序"
           }
         }
       }
@@ -3197,6 +4676,23 @@
         }
       }
     },
+    "Unknown": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未知"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未知"
+          }
+        }
+      }
+    },
     "Unknown host": {
       "extractionState": "manual",
       "localizations": {
@@ -3210,6 +4706,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "未知主機"
+          }
+        }
+      }
+    },
+    "Unlock the key for %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "解锁 %@ 的密钥"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "解鎖 %@ 的金鑰"
           }
         }
       }
@@ -3231,6 +4744,40 @@
         }
       }
     },
+    "Up arrow": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上方向键"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上方向鍵"
+          }
+        }
+      }
+    },
+    "Uptime and load": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "运行时间与负载"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "運作時間與負載"
+          }
+        }
+      }
+    },
     "Username": {
       "extractionState": "manual",
       "localizations": {
@@ -3244,6 +4791,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "使用者名稱"
+          }
+        }
+      }
+    },
+    "Waiting for a network": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在等待网络"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在等待網路"
+          }
+        }
+      }
+    },
+    "Waiting for you": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "等待你操作"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "等待你操作"
           }
         }
       }
@@ -3265,6 +4846,108 @@
         }
       }
     },
+    "Wi-Fi": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wi-Fi"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wi-Fi"
+          }
+        }
+      }
+    },
+    "Wired": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "有线"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "有線"
+          }
+        }
+      }
+    },
+    "Your data has been left untouched.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你的数据未被改动。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你的資料未被更動。"
+          }
+        }
+      }
+    },
+    "Your data has been left untouched. Reinstalling will clear it if you want to start over.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你的数据未被改动。如果想从头开始，重新安装会将其清除。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你的資料未被更動。如果想從頭開始，重新安裝會將其清除。"
+          }
+        }
+      }
+    },
+    "Your saved connections could not be read.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法读取已保存的连接。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法讀取已儲存的連線。"
+          }
+        }
+      }
+    },
+    "Your snippets could not be read.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法读取你的命令片段。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法讀取你的指令片段。"
+          }
+        }
+      }
+    },
     "ctrl": {
       "extractionState": "manual",
       "localizations": {
@@ -3282,6 +4965,23 @@
         }
       }
     },
+    "for %@@%@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用于 %@@%@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用於 %@@%@"
+          }
+        }
+      }
+    },
     "ssh-keygen -lf /etc/ssh/ssh_host_%@_key.pub": {
       "extractionState": "manual",
       "localizations": {
@@ -3295,6 +4995,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "ssh-keygen -lf /etc/ssh/ssh_host_%@_key.pub"
+          }
+        }
+      }
+    },
+    "to unlock %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用于解锁 %@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用於解鎖 %@"
           }
         }
       }

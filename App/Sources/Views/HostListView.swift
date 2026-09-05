@@ -299,11 +299,11 @@ private struct SessionRow: View {
 
     private var statusText: String {
         switch session.state {
-        case .idle: "Idle"
+        case .idle: String(localized: "Idle")
         case let .connecting(step): step
-        case .awaitingUser: "Waiting for you"
-        case .connected: "Connected"
-        case .disconnected: "Disconnected"
+        case .awaitingUser: String(localized: "Waiting for you")
+        case .connected: String(localized: "Connected")
+        case .disconnected: String(localized: "Disconnected")
         case let .failed(error): error.message
         }
     }

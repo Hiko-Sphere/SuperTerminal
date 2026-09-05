@@ -27,7 +27,7 @@ public struct SSHHostKey: Sendable, Equatable, Hashable, Codable {
         guard parts.count >= 2, let blob = Data(base64Encoded: String(parts[1])) else {
             throw STError(
                 category: .hostKey,
-                message: "The server sent a host key this app could not decode.",
+                message: String(localized: "The server sent a host key this app could not decode.", bundle: .module),
                 underlyingDescription: "unexpected OpenSSH public key encoding"
             )
         }
@@ -53,7 +53,7 @@ public struct SSHHostKey: Sendable, Equatable, Hashable, Codable {
         guard parts.count >= 2, let blob = Data(base64Encoded: String(parts[1])) else {
             throw STError(
                 category: .hostKey,
-                message: "That is not a valid OpenSSH public key line.",
+                message: String(localized: "That is not a valid OpenSSH public key line.", bundle: .module),
                 underlyingDescription: "expected \"<algorithm> <base64>\""
             )
         }

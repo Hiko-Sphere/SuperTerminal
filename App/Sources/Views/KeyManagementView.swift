@@ -318,7 +318,7 @@ struct ImportKeySheet: View {
                     pem = text
                     if name.isEmpty { name = url.deletingPathExtension().lastPathComponent }
                 } else {
-                    errorMessage = "That file could not be read as text."
+                    errorMessage = String(localized: "That file could not be read as text.")
                 }
             }
         }

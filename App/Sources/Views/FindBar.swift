@@ -66,8 +66,8 @@ struct FindBar: View {
     }
 
     private var matchLabel: String {
-        guard matchCount > 0 else { return "No matches" }
+        guard matchCount > 0 else { return String(localized: "No matches") }
         guard let focusedIndex else { return "\(matchCount)" }
-        return "\(focusedIndex + 1) of \(matchCount)"
+        return String(localized: "\(focusedIndex + 1) of \(matchCount)")
     }
 }

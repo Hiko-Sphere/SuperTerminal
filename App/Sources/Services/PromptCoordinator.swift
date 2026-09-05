@@ -75,7 +75,7 @@ actor PromptCoordinator: HostKeyApprovalDelegate {
     func requestPassword(username: String, host: String) async throws -> String {
         let decision = await awaitDecision(raising: .password(username: username, host: host))
         guard case let .password(value) = decision else {
-            throw STError(category: .cancelled, message: "Password entry was cancelled.")
+            throw STError(category: .cancelled, message: String(localized: "Password entry was cancelled."))
         }
         return value
     }
@@ -83,7 +83,7 @@ actor PromptCoordinator: HostKeyApprovalDelegate {
     func requestPassphrase(keyName: String) async throws -> String {
         let decision = await awaitDecision(raising: .keyPassphrase(keyName: keyName))
         guard case let .passphrase(value) = decision else {
-            throw STError(category: .cancelled, message: "Passphrase entry was cancelled.")
+            throw STError(category: .cancelled, message: String(localized: "Passphrase entry was cancelled."))
         }
         return value
     }

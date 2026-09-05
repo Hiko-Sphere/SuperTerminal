@@ -70,23 +70,23 @@ struct ReconnectionBanner: View {
 
     private var headline: String {
         if reconnection.isWaitingForNetwork {
-            return "Waiting for a network"
+            return String(localized: "Waiting for a network")
         }
         if reconnection.isAttempting {
-            return "Reconnecting…"
+            return String(localized: "Reconnecting…")
         }
         if reconnection.nextAttempt == nil {
-            return "Could not reconnect"
+            return String(localized: "Could not reconnect")
         }
-        return "Connection lost"
+        return String(localized: "Connection lost")
     }
 
     private var detail: String {
         if reconnection.isWaitingForNetwork {
-            return "\(interface.rawValue). Will retry as soon as there is one."
+            return String(localized: "\(interface.displayName). Will retry as soon as there is one.")
         }
         if reconnection.isAttempting {
-            return "Attempt \(reconnection.attempt)"
+            return String(localized: "Attempt \(reconnection.attempt)")
         }
         guard let next = reconnection.nextAttempt else {
             return reconnection.lastError.message
@@ -103,8 +103,8 @@ struct ReconnectionBanner: View {
 private enum CountdownText {
     static func phrase(until date: Date, attempt: Int) -> String {
         let remaining = max(0, Int(date.timeIntervalSinceNow.rounded(.up)))
-        if remaining <= 0 { return "Attempt \(attempt + 1) starting" }
-        return "Attempt \(attempt) failed · retrying in \(remaining)s"
+        if remaining <= 0 { return String(localized: "Attempt \(attempt + 1) starting") }
+        return String(localized: "Attempt \(attempt) failed · retrying in \(remaining)s")
     }
 }
 

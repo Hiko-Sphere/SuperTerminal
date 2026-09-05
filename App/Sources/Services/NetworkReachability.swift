@@ -29,6 +29,20 @@ final class NetworkReachability {
         case other = "Other"
         case unknown = "Unknown"
         case none = "Offline"
+
+        /// Kept apart from the raw value: a raw value has to be a compile-time literal, so
+        /// the name shown in the reconnection banner is the only part that can follow the
+        /// device's language.
+        var displayName: String {
+            switch self {
+            case .wifi: String(localized: "Wi-Fi")
+            case .cellular: String(localized: "Cellular")
+            case .wired: String(localized: "Wired")
+            case .other: String(localized: "Other")
+            case .unknown: String(localized: "Unknown")
+            case .none: String(localized: "Offline")
+            }
+        }
     }
 
     private let monitor = NWPathMonitor()

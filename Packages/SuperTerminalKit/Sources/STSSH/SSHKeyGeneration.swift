@@ -29,8 +29,8 @@ public enum SSHKeyAlgorithm: String, Sendable, CaseIterable, Identifiable {
 
     public var detail: String {
         switch self {
-        case .ed25519: "Recommended. Short, fast, and supported by every current server."
-        case .ecdsaP256: "For environments whose policy requires a NIST curve."
+        case .ed25519: String(localized: "Recommended. Short, fast, and supported by every current server.", bundle: .module)
+        case .ecdsaP256: String(localized: "For environments whose policy requires a NIST curve.", bundle: .module)
         }
     }
 
@@ -193,7 +193,7 @@ public enum SSHKeyGenerator {
         guard reparsed.publicKey == hostKey else {
             throw STError(
                 category: .internalError,
-                message: "The generated key did not round-trip; it has not been saved.",
+                message: String(localized: "The generated key did not round-trip; it has not been saved.", bundle: .module),
                 underlyingDescription: "public key mismatch after re-parsing"
             )
         }

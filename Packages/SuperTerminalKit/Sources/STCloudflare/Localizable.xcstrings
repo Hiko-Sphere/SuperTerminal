@@ -1,0 +1,703 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "Ask your administrator whether your identity is allowed by this application's policy.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请咨询管理员，确认此应用的策略是否允许你的身份。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請詢問管理員，確認此 App 的政策是否允許你的身分。"
+          }
+        }
+      }
+    },
+    "Check that cloudflared is running on the origin and that its ingress rule points at the SSH port.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请检查源站上的 cloudflared 是否正在运行，以及其 ingress 规则是否指向 SSH 端口。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請檢查來源伺服器上的 cloudflared 是否正在執行，以及其 ingress 規則是否指向 SSH 連接埠。"
+          }
+        }
+      }
+    },
+    "Check that this device's clock is correct, then try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请核对本设备的时钟是否正确，然后重试。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請核對本裝置的時鐘是否正確，然後重試。"
+          }
+        }
+      }
+    },
+    "Check the hostname and tunnel configuration.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请检查主机名和 Tunnel 配置。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請檢查主機名稱與 Tunnel 設定。"
+          }
+        }
+      }
+    },
+    "Check the hostname, and that a Cloudflare Tunnel public hostname points at your SSH service.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请检查主机名，并确认有 Cloudflare Tunnel 的公开主机名指向你的 SSH 服务。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請檢查主機名稱，並確認有 Cloudflare Tunnel 的公開主機名稱指向你的 SSH 服務。"
+          }
+        }
+      }
+    },
+    "Check the hostname, or turn off Cloudflare Access for this host if it is a plain SSH server.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请核对主机名；如果这是一台普通的 SSH 服务器，也可以为此主机关闭 Cloudflare Access。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請核對主機名稱；如果這是一台普通的 SSH 伺服器，也可以為此主機關閉 Cloudflare Access。"
+          }
+        }
+      }
+    },
+    "Check your network connection and that the hostname is correct.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请检查网络连接，并确认主机名正确。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請檢查網路連線，並確認主機名稱正確。"
+          }
+        }
+      }
+    },
+    "Check your network connection and try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请检查网络连接后重试。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請檢查網路連線後重試。"
+          }
+        }
+      }
+    },
+    "Cloudflare Access denied this connection.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cloudflare Access 拒绝了此连接。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cloudflare Access 拒絕了此連線。"
+          }
+        }
+      }
+    },
+    "Cloudflare Access refused this connection.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cloudflare Access 拒绝了此连接。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cloudflare Access 拒絕了此連線。"
+          }
+        }
+      }
+    },
+    "Cloudflare Access returned a token this app could not read.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cloudflare Access 返回了此应用无法读取的 token。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cloudflare Access 傳回了此 App 無法讀取的 token。"
+          }
+        }
+      }
+    },
+    "Cloudflare Access sign-in did not complete.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cloudflare Access 登录未完成。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cloudflare Access 登入未完成。"
+          }
+        }
+      }
+    },
+    "Cloudflare Access sign-in was cancelled.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cloudflare Access 登录已取消。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cloudflare Access 登入已取消。"
+          }
+        }
+      }
+    },
+    "Cloudflare could not connect to the origin (error 1033).": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cloudflare 无法连接到源站（错误 1033）。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cloudflare 無法連線到來源伺服器（錯誤 1033）。"
+          }
+        }
+      }
+    },
+    "Cloudflare has no route for this hostname.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cloudflare 没有此主机名对应的路由。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cloudflare 沒有此主機名稱對應的路由。"
+          }
+        }
+      }
+    },
+    "Cloudflare rejected the tunnel request (HTTP %llu).": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cloudflare 拒绝了此 Tunnel 请求（HTTP %llu）。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cloudflare 拒絕了此 Tunnel 請求（HTTP %llu）。"
+          }
+        }
+      }
+    },
+    "Could not reach %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法连接到 %@。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法連線到 %@。"
+          }
+        }
+      }
+    },
+    "Could not reach Cloudflare.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法连接到 Cloudflare。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法連線到 Cloudflare。"
+          }
+        }
+      }
+    },
+    "Could not verify that this hostname is genuinely protected by your Cloudflare team.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法验证此主机名确实受你的 Cloudflare 团队保护。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法驗證此主機名稱確實受你的 Cloudflare 團隊保護。"
+          }
+        }
+      }
+    },
+    "Do not enter credentials. Verify the hostname, then try again on a trusted network.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请勿输入凭据。请核对主机名，然后在受信任的网络上重试。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請勿輸入憑據。請核對主機名稱，然後在受信任的網路上重試。"
+          }
+        }
+      }
+    },
+    "No Cloudflare Access application was found for this hostname.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未找到与此主机名对应的 Cloudflare Access 应用。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "找不到與此主機名稱對應的 Cloudflare Access App。"
+          }
+        }
+      }
+    },
+    "Refusing to open an unencrypted Cloudflare carrier to a non-loopback host.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "拒绝向非回环主机打开未加密的 Cloudflare 承载连接。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "拒絕向非回送主機開啟未加密的 Cloudflare 承載連線。"
+          }
+        }
+      }
+    },
+    "Sign in again to reconnect.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新登录以重新连接。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新登入以重新連線。"
+          }
+        }
+      }
+    },
+    "Sign in again, or ask your administrator whether your identity is allowed by this application's policy.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请重新登录，或咨询管理员，确认此应用的策略是否允许你的身份。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請重新登入，或詢問管理員，確認此 App 的政策是否允許你的身分。"
+          }
+        }
+      }
+    },
+    "Sign in again. If this repeats, report it — it may indicate a tampered network path.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请重新登录。如果反复出现，请报告此问题——这可能意味着网络路径已被篡改。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請重新登入。如果反覆出現，請回報此問題——這可能表示網路路徑已遭竄改。"
+          }
+        }
+      }
+    },
+    "Sign in to Cloudflare Access again. If it keeps happening, the Access application may be misconfigured.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请重新登录 Cloudflare Access。如果问题持续出现，可能是该 Access 应用配置有误。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請重新登入 Cloudflare Access。如果問題持續出現，可能是該 Access App 設定有誤。"
+          }
+        }
+      }
+    },
+    "Sign out and sign in again with the account that owns this host.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请退出登录，然后使用拥有此主机的账号重新登录。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請登出，然後使用擁有此主機的帳號重新登入。"
+          }
+        }
+      }
+    },
+    "Sign out of Cloudflare Access for this host and sign in again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请退出此主机的 Cloudflare Access 登录，然后重新登录。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請登出此主機的 Cloudflare Access，然後重新登入。"
+          }
+        }
+      }
+    },
+    "The Cloudflare Access credential could not be decrypted.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法解密此 Cloudflare Access 凭据。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法解密此 Cloudflare Access 憑據。"
+          }
+        }
+      }
+    },
+    "The Cloudflare Access token is for a different application.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此 Cloudflare Access token 用于另一个应用。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此 Cloudflare Access token 用於另一個 App。"
+          }
+        }
+      }
+    },
+    "The Cloudflare Access token is not valid yet.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cloudflare Access token 尚未生效。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cloudflare Access token 尚未生效。"
+          }
+        }
+      }
+    },
+    "The Cloudflare Access token was issued by an unexpected team.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此 Cloudflare Access token 由非预期的团队签发。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此 Cloudflare Access token 由非預期的團隊簽發。"
+          }
+        }
+      }
+    },
+    "The Cloudflare Tunnel could not reach the SSH service.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cloudflare Tunnel 无法连接到 SSH 服务。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cloudflare Tunnel 無法連線到 SSH 服務。"
+          }
+        }
+      }
+    },
+    "The connection to Cloudflare closed before the tunnel was established.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "与 Cloudflare 的连接在 Tunnel 建立之前已关闭。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "與 Cloudflare 的連線在 Tunnel 建立之前已關閉。"
+          }
+        }
+      }
+    },
+    "The tunnel is offline. Start cloudflared on the origin host and try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tunnel 已离线。请在源站主机上启动 cloudflared 后重试。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tunnel 已離線。請在來源主機上啟動 cloudflared 後重試。"
+          }
+        }
+      }
+    },
+    "Timed out waiting for Cloudflare Access sign-in to finish.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "等待 Cloudflare Access 登录完成超时。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "等待 Cloudflare Access 登入完成逾時。"
+          }
+        }
+      }
+    },
+    "Try again and complete the sign-in prompt, including any two-factor step.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请重试，并完成登录提示中的所有步骤，包括双重验证。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請重試，並完成登入提示中的所有步驟，包括雙重驗證。"
+          }
+        }
+      }
+    },
+    "Try again. If it persists, check that the tunnel is running.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请重试。如果问题持续存在，请检查 Tunnel 是否正在运行。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請重試。若問題持續發生，請檢查 Tunnel 是否正在執行。"
+          }
+        }
+      }
+    },
+    "Try signing in again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请重新登录。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請重新登入。"
+          }
+        }
+      }
+    },
+    "Upgrade succeeded but was reported as a response.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "协议升级成功，但被报告为响应。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "協定升級成功，但被回報為回應。"
+          }
+        }
+      }
+    },
+    "Your Cloudflare Access session has expired.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你的 Cloudflare Access 会话已过期。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你的 Cloudflare Access 工作階段已過期。"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

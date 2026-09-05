@@ -90,6 +90,12 @@ jobs:
       - name: App integration tests (real sshd)
         run: ./scripts/app-integration-e2e.sh "$SIMULATOR"
 
+      - name: Every user-visible string is translated
+        # Localization rots silently: a new Text("…") compiles, ships, and shows English to
+        # someone who chose Chinese, with nothing failing anywhere. This is what turns that
+        # into a red build.
+        run: ./scripts/localization-audit.sh "$SIMULATOR"
+
       - name: UI tests (real sshd, real interface)
         run: ./scripts/ui-terminal-e2e.sh "$SIMULATOR"
 

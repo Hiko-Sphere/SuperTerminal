@@ -145,8 +145,8 @@ final class SnippetStore {
         } catch {
             loadError = STError(
                 category: .internalError,
-                message: "Your snippets could not be read.",
-                recoverySuggestion: "Your data has been left untouched.",
+                message: String(localized: "Your snippets could not be read."),
+                recoverySuggestion: String(localized: "Your data has been left untouched."),
                 underlyingDescription: String(describing: error)
             )
         }
@@ -173,7 +173,7 @@ final class SnippetStore {
         } catch {
             loadError = STError(
                 category: .internalError,
-                message: "Changes could not be saved.",
+                message: String(localized: "Changes could not be saved."),
                 underlyingDescription: String(describing: error)
             )
         }

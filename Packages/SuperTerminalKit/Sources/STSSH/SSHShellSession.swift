@@ -79,8 +79,8 @@ public actor SSHShellSession {
         guard !isClosed, channel.isActive else {
             throw STError(
                 category: .sshChannel,
-                message: "The session is no longer connected.",
-                recoverySuggestion: "Reconnect to continue."
+                message: String(localized: "The session is no longer connected.", bundle: .module),
+                recoverySuggestion: String(localized: "Reconnect to continue.", bundle: .module)
             )
         }
         var buffer = channel.allocator.buffer(capacity: data.count)

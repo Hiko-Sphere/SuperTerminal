@@ -294,31 +294,31 @@ final class TerminalInputView: UIView, UIKeyInput {
     override var keyCommands: [UIKeyCommand]? {
         [
             UIKeyCommand(
-                title: "Command Palette",
+                title: String(localized: "Command Palette"),
                 action: #selector(showCommandPalette),
                 input: "k",
                 modifierFlags: .command
             ),
             UIKeyCommand(
-                title: "Copy",
+                title: String(localized: "Copy"),
                 action: #selector(copySelection),
                 input: "c",
                 modifierFlags: .command
             ),
             UIKeyCommand(
-                title: "Paste",
+                title: String(localized: "Paste"),
                 action: #selector(pasteFromPasteboard),
                 input: "v",
                 modifierFlags: .command
             ),
             UIKeyCommand(
-                title: "Scroll Up",
+                title: String(localized: "Scroll Up"),
                 action: #selector(scrollPageUp),
                 input: UIKeyCommand.inputUpArrow,
                 modifierFlags: .command
             ),
             UIKeyCommand(
-                title: "Scroll Down",
+                title: String(localized: "Scroll Down"),
                 action: #selector(scrollPageDown),
                 input: UIKeyCommand.inputDownArrow,
                 modifierFlags: .command
@@ -600,6 +600,8 @@ enum AccessoryKey: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
+    /// What is printed on the key cap. Not translated: a keyboard reads the same in every
+    /// language, and a row of translated caps would no longer match anyone's hardware.
     var label: String {
         switch self {
         case .escape: "esc"
@@ -617,16 +619,16 @@ enum AccessoryKey: String, CaseIterable, Identifiable {
 
     var accessibilityLabel: String {
         switch self {
-        case .escape: "Escape"
-        case .tab: "Tab"
-        case .up: "Up arrow"
-        case .down: "Down arrow"
-        case .left: "Left arrow"
-        case .right: "Right arrow"
-        case .home: "Home"
-        case .end: "End"
-        case .pageUp: "Page up"
-        case .pageDown: "Page down"
+        case .escape: String(localized: "Escape")
+        case .tab: String(localized: "Tab")
+        case .up: String(localized: "Up arrow")
+        case .down: String(localized: "Down arrow")
+        case .left: String(localized: "Left arrow")
+        case .right: String(localized: "Right arrow")
+        case .home: String(localized: "Home")
+        case .end: String(localized: "End")
+        case .pageUp: String(localized: "Page up")
+        case .pageDown: String(localized: "Page down")
         }
     }
 }
