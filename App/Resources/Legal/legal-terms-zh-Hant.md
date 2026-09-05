@@ -105,9 +105,3 @@ iCloud、Face ID 與 Touch ID 是 Apple Inc. 的服務與功能，受您與 Appl
 ## 16. 準據法
 
 本條款受 [governing law and venue] 法律規範，爭議由該地法院審理。若您是消費者，您仍保有所在國家強制性法律的保護，並可能得以在該地提起訴訟或主張權利。
-
-## 17. 聯絡方式
-
-關於本條款的問題：[developer contact email]
-安全問題：[security contact email]，請以私下方式聯繫，而非透過公開的問題追蹤系統。
-郵寄地址：[developer postal address]

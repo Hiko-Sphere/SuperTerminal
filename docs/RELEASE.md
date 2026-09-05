@@ -52,7 +52,7 @@ cd ../.. && ./scripts/app-integration-e2e.sh
 
 ## Legal texts and iCloud
 
-- [ ] Every placeholder in `App/Resources/Legal/legal-*.md` is filled in all three languages: effective date, developer legal name, contact email, security contact email, governing law and venue, postal address (B-5)
+- [ ] Every placeholder in `App/Resources/Legal/legal-*.md` is filled in all three languages: effective date, developer legal name, governing law and venue (the texts carry no contact details, by decision)
 - [ ] Counsel has reviewed the Terms, Privacy Policy and User Notice; the "not legal advice" sentence is removed only when that is true
 - [ ] `LegalDocument.currentVersion` is bumped if any of the three texts changed in substance, so existing users see the consent screen again
 - [ ] The App Store privacy answers still read "Data not collected"; storage in the user's own CloudKit private database is not collection

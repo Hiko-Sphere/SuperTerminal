@@ -119,7 +119,7 @@ new test added so the truncated-key case it covered is not lost).
 
 The Terms of Use, Privacy Policy and User Notice ship in three languages with six values
 in square brackets that only the project owner can supply: effective date, developer legal
-name, contact email, security contact email, governing law and venue, and postal address.
+name, and governing law and venue. There is no contact channel in the texts by the owner's decision.
 The texts were drafted for review by counsel and say so in their first paragraph; they are
 not legal advice until a lawyer has read them.
 
@@ -176,8 +176,8 @@ Needed later, not now:
    already visible to the build machine and two Apple Development signing identities
    exist. *Unblocks:* archiving (B-4), and every live iCloud check in `docs/RELEASE.md` —
    CloudKit sync between two devices, iCloud Keychain for opted-in keys, purge on delete.
-6. **The legal placeholders** (B-5): effective date, developer legal name, contact email,
-   security contact email, governing law and venue, postal address — in all three
+6. **The legal placeholders** (B-5): effective date, developer legal name, governing law
+   and venue — in all three
    languages of `App/Resources/Legal/` — and a counsel review of the three texts.
 
 ---

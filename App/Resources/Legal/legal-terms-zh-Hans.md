@@ -105,9 +105,3 @@ iCloud、Face ID 和 Touch ID 是 Apple Inc. 的服务和功能，受您与 Appl
 ## 16. 管辖法律
 
 本条款受 [governing law and venue] 的法律管辖，争议由该地法院审理。如果您是消费者，您仍享有您居住国强制性法律的保护，并可能有权在该国提出索赔。
-
-## 17. 联系方式
-
-关于本条款的问题：[developer contact email]
-安全问题：[security contact email]，请私下联系，而不要通过公开的问题跟踪系统。
-邮政地址：[developer postal address]

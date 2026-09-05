@@ -114,8 +114,8 @@ These are real and are not worked around silently:
   and the CloudKit record mapping are tested offline; the live path needs a signed build
   with the container entitlement, which an ad-hoc simulator build does not carry. See
   `PROJECT_STATUS.md` B-4. Nothing in the app claims otherwise.
-* **The legal texts carry placeholders.** Effective date, legal name, contact addresses
-  and governing law are the project owner's to fill, and the texts have not been reviewed
+* **The legal texts carry placeholders.** Effective date, legal name and governing law
+  are the project owner's to fill (the texts carry no contact details, by decision), and the texts have not been reviewed
   by a lawyer — they say so. See `PROJECT_STATUS.md` B-5.
 
 ## Licence and trademarks

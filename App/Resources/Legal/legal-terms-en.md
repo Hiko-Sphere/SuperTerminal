@@ -105,9 +105,3 @@ A new version of these terms ships with a new version of the app, dated at the t
 ## 16. Governing law
 
 These terms are governed by the law of [governing law and venue], and disputes are heard in the courts there. If you are a consumer, you keep the protection of the mandatory laws of the country where you live, and you may be able to bring a claim there.
-
-## 17. Contact
-
-Questions about these terms: [developer contact email]
-Security issues: [security contact email], privately, rather than a public issue tracker.
-Postal address: [developer postal address]

@@ -86,7 +86,3 @@
 ## 开源
 
 本应用包含以 Apache-2.0（swift-nio 系列、swift-crypto）、ISC（swift-sodium、bcrypt_pbkdf）和 BSD-3-Clause（Blowfish）授权的代码。其声明包含在本应用的“设置 → 法律 → 开源许可”中。Cloudflare、Cloudflare Tunnel 和 Cloudflare Access 是 Cloudflare, Inc. 的商标；SuperTerminal 与 Cloudflare 无关联关系。
-
-## 联系方式
-
-问题：[developer contact email]。安全问题：[security contact email]，请私下联系。

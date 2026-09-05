@@ -71,7 +71,7 @@ Settings can export a diagnostics report to help with a support question. It con
 
 ## What the developer receives
 
-Nothing from the app. If you email the developer, your email address and what you wrote are kept for as long as needed to reply. Apple may show the developer aggregated App Store statistics, and, if you have chosen "Share with App Developers" in your device's Analytics settings, crash logs that iOS collects. That is Apple's mechanism, described in Apple's privacy policy; the app adds nothing to it and contains no crash reporter of its own.
+Nothing from the app. Apple may show the developer aggregated App Store statistics, and, if you have chosen "Share with App Developers" in your device's Analytics settings, crash logs that iOS collects. That is Apple's mechanism, described in Apple's privacy policy; the app adds nothing to it and contains no crash reporter of its own.
 
 ## Your rights over your data
 
@@ -96,8 +96,3 @@ The app is a tool for administering servers and is rated accordingly on the App 
 ## Changes
 
 A new version of this policy ships with a new version of the app, dated at the top. If the app ever starts sending data somewhere new, that will be stated here in plain words before it happens, not after.
-
-## Contact
-
-[developer contact email]
-[developer postal address]

@@ -551,6 +551,14 @@ as invented values.
 notices to reach the user, so `THIRD_PARTY_NOTICES.md` is copied into the bundle and CI
 fails if the copy drifts from the repository file.
 
+**No contact channel in the texts (2026-09-06).** The owner asked that the app leave no
+contact details. The notice, privacy policy and terms no longer have a contact section,
+the privacy policy no longer describes what happens to an email sent to the developer,
+and the remaining placeholders are the effective date, the developer's legal name, and
+the governing law and venue. The texts say what the app does, not whom to write to; the
+consent version went to 2 so that existing users see the changed texts. App Store
+Connect's own support URL is metadata outside the app and is not affected by this.
+
 ## D-017 · Service tokens are a per-connection, per-device credential
 
 **They exist because the carrier already honoured them.** The Access carrier sent the

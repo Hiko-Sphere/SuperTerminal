@@ -86,7 +86,3 @@ The switch is off until you turn it on. On: connection list, snippets, known hos
 ## Open source
 
 The app includes code under Apache-2.0 (swift-nio family, swift-crypto), ISC (swift-sodium, bcrypt_pbkdf) and BSD-3-Clause (Blowfish). Their notices are in the app under Settings → Legal → Open-source licences. Cloudflare, Cloudflare Tunnel and Cloudflare Access are trademarks of Cloudflare, Inc.; SuperTerminal is not affiliated with Cloudflare.
-
-## Contact
-
-Questions: [developer contact email]. Security issues: [security contact email], privately.
