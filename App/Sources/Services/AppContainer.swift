@@ -27,6 +27,11 @@ final class AppContainer {
     let sync: SyncCoordinator
     /// App-level keyboard shortcuts; every responder that exposes them routes here.
     let shortcuts: AppShortcutRouter
+    /// The assistant: chooses an engine per request and holds the answer (D-020).
+    let assistant: AssistantCoordinator
+    /// A session an App Intent opened before any scene could show it (D-021). The root
+    /// view consumes it on appearance and clears it.
+    var pendingIntentSessionID: TerminalSession.ID?
     /// The scene most recently active. Menu commands target the *focused* scene when
     /// SwiftUI reports one, and this otherwise: on iOS the focused-scene value is only
     /// published while some view has focus, which a freshly launched host list does not —
@@ -45,7 +50,8 @@ final class AppContainer {
         knownHosts: any KnownHostsStore,
         diagnostics: DiagnosticsCentre,
         sync: SyncCoordinator,
-        shortcuts: AppShortcutRouter
+        shortcuts: AppShortcutRouter,
+        assistant: AssistantCoordinator
     ) {
         self.hostStore = hostStore
         self.snippetStore = snippetStore
@@ -59,6 +65,7 @@ final class AppContainer {
         self.diagnostics = diagnostics
         self.sync = sync
         self.shortcuts = shortcuts
+        self.assistant = assistant
     }
 
     static func live() -> AppContainer {
@@ -101,6 +108,7 @@ final class AppContainer {
             hostStore?.recordDetectedPlatform(platform, forHostID: id)
         }
         let shortcuts = AppShortcutRouter(sessionManager: sessionManager, settings: settings)
+        let assistant = AssistantCoordinator(settings: settings, vault: vault, log: diagnostics.logger)
         let container = AppContainer(
             hostStore: hostStore,
             snippetStore: snippetStore,
@@ -113,7 +121,8 @@ final class AppContainer {
             knownHosts: knownHosts,
             diagnostics: diagnostics,
             sync: sync,
-            shortcuts: shortcuts
+            shortcuts: shortcuts,
+            assistant: assistant
         )
         shortcuts.sceneProvider = { [weak container] in container?.activeScene }
         #if DEBUG
@@ -121,6 +130,41 @@ final class AppContainer {
         #endif
         return container
     }
+
+    #if DEBUG
+    /// The same graph as `live()`, on stores in `directory`, for tests that need a whole
+    /// container — App Intents reach one through the dependency registry (D-021).
+    static func testInstance(directory: URL) -> AppContainer {
+        let diagnostics = DiagnosticsCentre()
+        let vault = CredentialVault()
+        let knownHosts = FileKnownHostsStore(url: directory.appendingPathComponent("known_hosts.json"), log: diagnostics.logger)
+        let settings = AppSettings(defaults: UserDefaults(suiteName: "test-\(UUID().uuidString)") ?? .standard)
+        let reachability = NetworkReachability()
+        let haptics = Haptics(settings: settings)
+        let restoration = SessionRestorationStore(directory: directory)
+        let sessionManager = SessionManager(
+            vault: vault, knownHosts: knownHosts, settings: settings, diagnostics: diagnostics,
+            reachability: reachability, restoration: restoration, haptics: haptics
+        )
+        let hostStore = HostStore(directory: directory)
+        let snippetStore = SnippetStore(directory: directory, settings: settings)
+        let tombstones = SyncTombstones(directory: directory)
+        let sync = SyncCoordinator(
+            settings: settings, directory: directory,
+            local: AppSyncStore(hosts: hostStore, snippets: snippetStore, knownHosts: knownHosts, tombstones: tombstones),
+            tombstones: tombstones, log: diagnostics.logger
+        )
+        let shortcuts = AppShortcutRouter(sessionManager: sessionManager, settings: settings)
+        let assistant = AssistantCoordinator(settings: settings, vault: vault, log: diagnostics.logger)
+        let container = AppContainer(
+            hostStore: hostStore, snippetStore: snippetStore, restoration: restoration, sessionManager: sessionManager,
+            settings: settings, reachability: reachability, haptics: haptics, vault: vault, knownHosts: knownHosts,
+            diagnostics: diagnostics, sync: sync, shortcuts: shortcuts, assistant: assistant
+        )
+        shortcuts.sceneProvider = { [weak container] in container?.activeScene }
+        return container
+    }
+    #endif
 }
 
 /// Collects redacted log records and vends the logger the rest of the app uses.

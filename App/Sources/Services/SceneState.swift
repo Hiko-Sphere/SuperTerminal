@@ -26,6 +26,8 @@ final class SceneState {
     var isShowingPalette = false
     /// ⌘, from anywhere in the scene; the host list owns the sheet.
     var isShowingSettings = false
+    /// The assistant sheet over the displayed terminal (D-020).
+    var isShowingAssistant = false
 
     init(selectedSessionID: TerminalSession.ID? = nil) {
         self.selectedSessionID = selectedSessionID

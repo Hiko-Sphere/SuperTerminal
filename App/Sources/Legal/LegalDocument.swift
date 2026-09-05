@@ -17,8 +17,9 @@ enum LegalDocument: String, CaseIterable, Identifiable, Sendable {
     /// Bumped whenever the Terms, Privacy Policy or User Notice change in substance.
     /// The consent screen shows again for anyone who accepted an older version.
     /// Bumped when the texts change in a way the user must see again: 2 removed every
-    /// contact channel from all three languages.
-    static let currentVersion = 2
+    /// contact channel from all three languages; 3 added the assistant to the privacy
+    /// policy, because it can send terminal text to a provider the user configures.
+    static let currentVersion = 3
 
     var title: String {
         switch self {

@@ -30,6 +30,14 @@ struct TerminalView: View {
     /// The key row is a preference rather than per-session state: someone who turns it
     /// off because they have a hardware keyboard means it for every session, and having
     /// it come back on the next connection would be a bug they have to fix repeatedly.
+    /// The assistant sheet is scene state so ⌘⇧A and the menu open the same sheet (D-020).
+    private var assistantBinding: Binding<Bool> {
+        Binding(
+            get: { scene.isShowingAssistant },
+            set: { scene.isShowingAssistant = $0 }
+        )
+    }
+
     private var keyRowBinding: Binding<Bool> {
         Binding(
             get: { container.settings.keyRowVisible },
@@ -161,6 +169,10 @@ struct TerminalView: View {
         .toolbar { toolbarContent }
         .sheet(item: promptBinding) { prompt in
             PromptSheet(session: session, prompt: prompt)
+        }
+        .sheet(isPresented: assistantBinding) {
+            AssistantView(session: session)
+                .environment(container)
         }
         .sheet(isPresented: $showsSnippets) {
             SnippetPickerView(session: session)
@@ -353,6 +365,9 @@ struct TerminalView: View {
                 }
                 Button(String(localized: "Snippets…"), systemImage: "text.badge.plus") {
                     showsSnippets = true
+                }
+                Button(String(localized: "Assistant…"), systemImage: "sparkles") {
+                    scene.isShowingAssistant = true
                 }
                 Button(String(localized: "Find…"), systemImage: "magnifyingglass") {
                     isSearching = true

@@ -1,6 +1,40 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "%@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
+        }
+      }
+    },
+    "%@ at %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%2$@ 上的 %1$@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%2$@ 上的 %1$@"
+          }
+        }
+      }
+    },
     "%@ is presenting a different key from the one recorded. This happens when a server is rebuilt or rekeyed — and it is also what an interception attack looks like.": {
       "extractionState": "manual",
       "localizations": {
@@ -290,6 +324,40 @@
         }
       }
     },
+    "API key": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API 密钥"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API 金鑰"
+          }
+        }
+      }
+    },
+    "API key (stored — enter to replace)": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API 密钥（已存储 — 输入以替换）"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API 金鑰（已儲存 — 輸入以取代）"
+          }
+        }
+      }
+    },
     "Accept and continue": {
       "extractionState": "manual",
       "localizations": {
@@ -511,6 +579,74 @@
         }
       }
     },
+    "Answer": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "回答"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "回答"
+          }
+        }
+      }
+    },
+    "Answered on this device by Apple Intelligence. Nothing leaves the device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "由本设备上的 Apple 智能回答。任何内容都不会离开设备。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "由此裝置上的 Apple Intelligence 回答。任何內容都不會離開裝置。"
+          }
+        }
+      }
+    },
+    "Answers come from %@. The key stays in the Keychain on this device; only the text shown in the assistant is sent.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "回答来自 %@。密钥保存在本设备的钥匙串中；仅发送助手中显示的文本。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "回答來自 %@。金鑰保存在此裝置的鑰匙圈中；僅傳送助理中顯示的文字。"
+          }
+        }
+      }
+    },
+    "Answers come from Apple Intelligence on this device. A provider is used only if the on-device model is turned off or unavailable.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "回答来自本设备上的 Apple 智能。仅当设备端模型关闭或不可用时才使用服务提供方。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "回答來自此裝置上的 Apple Intelligence。僅當裝置端模型關閉或無法使用時才使用服務提供者。"
+          }
+        }
+      }
+    },
     "Appearance": {
       "extractionState": "manual",
       "localizations": {
@@ -524,6 +660,108 @@
           "stringUnit": {
             "state": "translated",
             "value": "外觀"
+          }
+        }
+      }
+    },
+    "Apple Intelligence is turned off in Settings.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple 智能已在「设置」中关闭。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Intelligence 已在「設定」中關閉。"
+          }
+        }
+      }
+    },
+    "Apple Intelligence on this device": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本设备上的 Apple 智能"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此裝置上的 Apple Intelligence"
+          }
+        }
+      }
+    },
+    "Ask": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "提问"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "提問"
+          }
+        }
+      }
+    },
+    "Ask about the output shown below, or leave this empty.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "针对下方输出提问，或留空。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "針對下方輸出提問，或留空。"
+          }
+        }
+      }
+    },
+    "Assistant": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "助手"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "助理"
+          }
+        }
+      }
+    },
+    "Assistant…": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "助手…"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "助理…"
           }
         }
       }
@@ -1055,6 +1293,57 @@
         }
       }
     },
+    "Closed %lld sessions.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已关闭 %lld 个会话。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已關閉 %lld 個工作階段。"
+          }
+        }
+      }
+    },
+    "Closed one session.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已关闭一个会话。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已關閉一個工作階段。"
+          }
+        }
+      }
+    },
+    "Closes every open terminal session.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "关闭所有打开的终端会话。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "關閉所有開啟的終端機工作階段。"
+          }
+        }
+      }
+    },
     "Command": {
       "extractionState": "manual",
       "localizations": {
@@ -1187,6 +1476,74 @@
           "stringUnit": {
             "state": "translated",
             "value": "貼上多行內容前確認"
+          }
+        }
+      }
+    },
+    "Connect": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "连接"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "連線"
+          }
+        }
+      }
+    },
+    "Connect to ${connection}": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "连接到${connection}"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "連線到${connection}"
+          }
+        }
+      }
+    },
+    "Connect to ${connection} in ${applicationName}": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用${applicationName}连接到${connection}"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用${applicationName}連線到${connection}"
+          }
+        }
+      }
+    },
+    "Connect to Server": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "连接到服务器"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "連線至伺服器"
           }
         }
       }
@@ -1333,7 +1690,7 @@
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "复制"
+            "value": "拷贝"
           }
         },
         "zh-Hant": {
@@ -1680,6 +2037,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "中斷連線"
+          }
+        }
+      }
+    },
+    "Disconnect All": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "全部断开"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "全部中斷"
+          }
+        }
+      }
+    },
+    "Disconnect All Sessions": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "断开所有会话"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "中斷所有工作階段"
+          }
+        }
+      }
+    },
+    "Disconnect all sessions in ${applicationName}": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "断开${applicationName}的所有会话"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "中斷${applicationName}的所有工作階段"
           }
         }
       }
@@ -2037,6 +2445,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "正在交換金鑰"
+          }
+        }
+      }
+    },
+    "Explain this": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "解释这段输出"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "解釋這段輸出"
           }
         }
       }
@@ -2534,6 +2959,23 @@
         }
       }
     },
+    "How do I…": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "如何做…"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "如何做…"
+          }
+        }
+      }
+    },
     "Idle": {
       "extractionState": "manual",
       "localizations": {
@@ -2619,6 +3061,23 @@
         }
       }
     },
+    "Include": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "包含"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "包含"
+          }
+        }
+      }
+    },
     "Increase Text Size": {
       "extractionState": "manual",
       "localizations": {
@@ -2632,6 +3091,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "放大文字"
+          }
+        }
+      }
+    },
+    "Insert": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "插入"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "插入"
+          }
+        }
+      }
+    },
+    "Insert puts the command on the prompt without running it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "「插入」只会把命令放到提示符上，不会运行。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "「插入」只會把指令放到提示字元上，不會執行。"
           }
         }
       }
@@ -2789,6 +3282,23 @@
         }
       }
     },
+    "Kind": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "类型"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "類型"
+          }
+        }
+      }
+    },
     "Known hosts": {
       "extractionState": "manual",
       "localizations": {
@@ -2836,6 +3346,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "佔用最大的目錄"
+          }
+        }
+      }
+    },
+    "Last screen": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最后一屏"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最後一屏"
           }
         }
       }
@@ -3044,6 +3571,23 @@
         }
       }
     },
+    "Model": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "模型"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "模型"
+          }
+        }
+      }
+    },
     "Name": {
       "extractionState": "manual",
       "localizations": {
@@ -3197,6 +3741,23 @@
         }
       }
     },
+    "No API key is stored for the provider.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "尚未为服务提供方存储 API 密钥。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "尚未為服務提供者儲存 API 金鑰。"
+          }
+        }
+      }
+    },
     "No connections yet": {
       "extractionState": "manual",
       "localizations": {
@@ -3265,6 +3826,23 @@
         }
       }
     },
+    "No provider is configured in Settings.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "尚未在「设置」中配置服务提供方。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "尚未在「設定」中設定服務提供者。"
+          }
+        }
+      }
+    },
     "No session": {
       "extractionState": "manual",
       "localizations": {
@@ -3282,6 +3860,23 @@
         }
       }
     },
+    "No sessions were open.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "没有打开的会话。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "沒有開啟的工作階段。"
+          }
+        }
+      }
+    },
     "No snippets yet": {
       "extractionState": "manual",
       "localizations": {
@@ -3295,6 +3890,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "尚無指令片段"
+          }
+        }
+      }
+    },
+    "No terminal text": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不包含终端文本"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不包含終端機文字"
           }
         }
       }
@@ -3346,6 +3958,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "尚未同步。"
+          }
+        }
+      }
+    },
+    "Nothing can answer yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目前无法回答"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目前無法回答"
           }
         }
       }
@@ -3520,6 +4149,23 @@
         }
       }
     },
+    "Open Settings": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打开设置"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打開設定"
+          }
+        }
+      }
+    },
     "Open in New Window": {
       "extractionState": "manual",
       "localizations": {
@@ -3618,6 +4264,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "開啟終端機工作階段"
+          }
+        }
+      }
+    },
+    "Opens a terminal session to one of your saved connections.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打开一个到已保存连接的终端会话。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "開啟一個至已儲存連線的終端機工作階段。"
           }
         }
       }
@@ -3877,6 +4540,23 @@
         }
       }
     },
+    "Prefer the on-device model": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "优先使用设备端模型"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "優先使用裝置端模型"
+          }
+        }
+      }
+    },
     "Presented now": {
       "extractionState": "manual",
       "localizations": {
@@ -4047,6 +4727,23 @@
         }
       }
     },
+    "Provider base URL": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务提供方基础 URL"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服務提供者基礎 URL"
+          }
+        }
+      }
+    },
     "Recent auth failures": {
       "extractionState": "manual",
       "localizations": {
@@ -4213,6 +4910,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "從 iCloud 移除"
+          }
+        }
+      }
+    },
+    "Remove key": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "移除密钥"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "移除金鑰"
           }
         }
       }
@@ -4404,6 +5118,23 @@
         }
       }
     },
+    "Save key": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存密钥"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "儲存金鑰"
+          }
+        }
+      }
+    },
     "Save the commands you run often so you do not have to type them on a phone keyboard.": {
       "extractionState": "manual",
       "localizations": {
@@ -4434,6 +5165,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "儲存您常用的指令。它們可在任何工作階段的「指令片段」選單中使用。"
+          }
+        }
+      }
+    },
+    "Say what you expected, or leave this empty.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "说明您预期的结果，或留空。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "說明您預期的結果，或留空。"
           }
         }
       }
@@ -4604,6 +5352,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "全選"
+          }
+        }
+      }
+    },
+    "Selected text": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "选中的文本"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "選取的文字"
+          }
+        }
+      }
+    },
+    "Sent to %@. Only the text shown here is sent: the question, the server's platform, the last command, and the terminal text you chose.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "发送至 %@。仅发送此处显示的文本：问题、服务器平台、最后一条命令，以及您选择的终端文本。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "傳送至 %@。僅傳送此處顯示的文字：問題、伺服器平台、最後一個指令，以及您選擇的終端機文字。"
           }
         }
       }
@@ -5033,6 +5815,23 @@
         }
       }
     },
+    "Suggested commands": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "建议的命令"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "建議的指令"
+          }
+        }
+      }
+    },
     "SuperTerminal": {
       "extractionState": "manual",
       "localizations": {
@@ -5080,6 +5879,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "SuperTerminal 提供英文、簡體中文和繁體中文。終端機輸出永遠不會被翻譯——它原樣來自遠端主機。"
+          }
+        }
+      }
+    },
+    "SuperTerminal is still starting. Try again in a moment.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SuperTerminal 仍在启动，请稍后再试。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SuperTerminal 仍在啟動，請稍後再試。"
           }
         }
       }
@@ -5288,6 +6104,40 @@
         }
       }
     },
+    "Terminal text can contain secrets. Look before you send.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "终端文本可能包含机密。发送前请先查看。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "終端機文字可能包含機密。傳送前請先查看。"
+          }
+        }
+      }
+    },
+    "Terminal text to send": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "要发送的终端文本"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "要傳送的終端機文字"
+          }
+        }
+      }
+    },
     "Terms of Use": {
       "extractionState": "manual",
       "localizations": {
@@ -5318,6 +6168,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "從終端機複製的文字會在這段時間後由 iOS 從剪貼簿移除。從金鑰清單複製的公開金鑰會一直保留，直到被取代。"
+          }
+        }
+      }
+    },
+    "That connection no longer exists.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "该连接已不存在。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "該連線已不存在。"
           }
         }
       }
@@ -5369,6 +6236,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "指令會輸入到終端機中，等待你按下 Return 鍵。"
+          }
+        }
+      }
+    },
+    "The configured provider has no API key stored.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已配置的服务提供方没有存储 API 密钥。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已設定的服務提供者沒有儲存 API 金鑰。"
           }
         }
       }
@@ -5458,6 +6342,108 @@
         }
       }
     },
+    "The on-device model could not answer: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "设备端模型无法作答：%@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "裝置端模型無法作答：%@"
+          }
+        }
+      }
+    },
+    "The on-device model failed: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "设备端模型出错：%@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "裝置端模型出錯：%@"
+          }
+        }
+      }
+    },
+    "The on-device model is not available.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "设备端模型不可用。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "裝置端模型無法使用。"
+          }
+        }
+      }
+    },
+    "The on-device model is still downloading.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "设备端模型仍在下载。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "裝置端模型仍在下載。"
+          }
+        }
+      }
+    },
+    "The on-device model is turned off in Settings.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "设备端模型已在「设置」中关闭。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "裝置端模型已在「設定」中關閉。"
+          }
+        }
+      }
+    },
+    "The on-device model needs iOS 26.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "设备端模型需要 iOS 26。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "裝置端模型需要 iOS 26。"
+          }
+        }
+      }
+    },
     "The private key is removed from this device and any connection using it will stop working. This cannot be undone.": {
       "extractionState": "manual",
       "localizations": {
@@ -5471,6 +6457,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "私密金鑰將從本裝置移除，所有使用它的連線都將無法繼續運作。此操作無法復原。"
+          }
+        }
+      }
+    },
+    "The provider answered %lld: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务提供方返回 %lld：%@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服務提供者回應 %lld：%@"
+          }
+        }
+      }
+    },
+    "The provider's answer could not be read: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法读取服务提供方的回复：%@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法讀取服務提供者的回覆：%@"
           }
         }
       }
@@ -5539,6 +6559,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "此連線設定為使用 Cloudflare Access 服務權杖，但本裝置上未儲存任何權杖。"
+          }
+        }
+      }
+    },
+    "This device cannot run Apple Intelligence.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此设备无法运行 Apple 智能。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此裝置無法執行 Apple Intelligence。"
           }
         }
       }
@@ -6036,6 +7073,40 @@
         }
       }
     },
+    "What do you want to do on this server?": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "您想在这台服务器上做什么？"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "您想在這台伺服器上做什麼？"
+          }
+        }
+      }
+    },
+    "What went wrong": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "哪里出了问题"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "哪裡出了問題"
+          }
+        }
+      }
+    },
     "When a connection drops, SuperTerminal retries on its own and as soon as the network comes back. Your scrollback is kept, and the new shell is marked in the terminal — it starts fresh, in the home directory, with nothing running.": {
       "extractionState": "manual",
       "localizations": {
@@ -6206,6 +7277,40 @@
         }
       }
     },
+    "an error the system did not explain": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "系统未说明的错误"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "系統未說明的錯誤"
+          }
+        }
+      }
+    },
+    "another request is still running": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "另一个请求仍在进行"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "另一個要求仍在進行"
+          }
+        }
+      }
+    },
     "ctrl": {
       "extractionState": "manual",
       "localizations": {
@@ -6308,6 +7413,23 @@
         }
       }
     },
+    "no details": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无详细信息"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無詳細資訊"
+          }
+        }
+      }
+    },
     "ssh-keygen -lf /etc/ssh/ssh_host_%@_key.pub": {
       "extractionState": "manual",
       "localizations": {
@@ -6325,6 +7447,125 @@
         }
       }
     },
+    "the model declined to answer": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "模型拒绝作答"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "模型拒絕作答"
+          }
+        }
+      }
+    },
+    "the model does not support this language": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "模型不支持这种语言"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "模型不支援這種語言"
+          }
+        }
+      }
+    },
+    "the model is busy; try again in a moment": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "模型正忙，请稍后再试"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "模型正忙，請稍後再試"
+          }
+        }
+      }
+    },
+    "the model's answer could not be read": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法读取模型的回答"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法讀取模型的回答"
+          }
+        }
+      }
+    },
+    "the model's files are not available on this device": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此设备上没有模型文件"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此裝置上沒有模型檔案"
+          }
+        }
+      }
+    },
+    "the request is too long for the model": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请求对模型来说太长"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "要求對模型來說太長"
+          }
+        }
+      }
+    },
+    "the request was declined by the model's safety rules": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请求被模型的安全规则拒绝"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "要求被模型的安全規則拒絕"
+          }
+        }
+      }
+    },
     "to unlock %@": {
       "extractionState": "manual",
       "localizations": {
@@ -6338,6 +7579,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "用於解鎖 %@"
+          }
+        }
+      }
+    },
+    "unsupported generation guide": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不支持的生成引导"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不支援的生成引導"
           }
         }
       }

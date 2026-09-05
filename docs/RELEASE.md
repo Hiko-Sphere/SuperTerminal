@@ -32,6 +32,8 @@ cd ../.. && ./scripts/app-integration-e2e.sh
 - [ ] `vim` and `tmux` render and respond correctly
 - [ ] External keyboard shortcuts work, including Control and Option; Control-arrow moves by word in a shell, Shift-arrow selects in an editor, F-keys reach `htop`
 - [ ] Hardware keyboard, in the command palette: Escape closes it, ↑/↓ move the highlight, Return runs it
+- [ ] Assistant: on a device eligible for Apple Intelligence the sheet says it answers on the device and does; with a provider key pasted in Settings it answers from the provider and a suggested command inserts on the prompt without running
+- [ ] Siri: "Connect to <name> in SuperTerminal" opens the session; "Disconnect all sessions in SuperTerminal" closes them and says how many; both appear in the Shortcuts app
 - [ ] Server platform: connect to a Linux machine and a Windows OpenSSH machine; each row comes to say Linux / Windows without anything typed into the session (macOS is proven by the UI tests against this Mac)
 - [ ] With a mouse or trackpad: the wheel scrolls the scrollback and reaches `less` when it is running; a secondary click shows Copy / Paste / Select All, and reaches `tmux` when it is tracking; a middle click pastes; click-drag selects; the pointer is a beam over the terminal
 - [ ] Rotation, Split View and Stage Manager resize the terminal correctly

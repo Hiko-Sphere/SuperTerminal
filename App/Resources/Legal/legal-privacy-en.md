@@ -73,6 +73,10 @@ Settings can export a diagnostics report to help with a support question. It con
 
 Nothing from the app. Apple may show the developer aggregated App Store statistics, and, if you have chosen "Share with App Developers" in your device's Analytics settings, crash logs that iOS collects. That is Apple's mechanism, described in Apple's privacy policy; the app adds nothing to it and contains no crash reporter of its own.
 
+## The assistant
+
+The assistant answers questions about commands and terminal output. On a device with Apple Intelligence it runs on the device and nothing leaves it. If you configure a provider in Settings, each request sends that provider only what the assistant screen shows you first: your question, the server's platform, the last command, and the terminal text you chose to include. Your API key is kept in the device Keychain and sent to the provider in the request header. The provider's own privacy policy governs what it does with the request. The app never sends terminal text anywhere on its own.
+
 ## Your rights over your data
 
 Everything the app holds is on your device or in your own iCloud account, under your control. There is no copy with the developer, so there is nothing for the developer to give you, correct or delete on request. To see your data, open the app. To delete it, see below. If you believe the developer nonetheless holds something about you, write to [developer contact email].

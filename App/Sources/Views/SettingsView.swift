@@ -118,6 +118,8 @@ struct SettingsView: View {
                     NavigationLink("Snippets") { SnippetLibraryView() }
                 }
 
+                AssistantSettingsSection()
+
                 Section {
                     NavigationLink("Keys") { KeyManagementView() }
                     NavigationLink("Known hosts") { KnownHostsView() }

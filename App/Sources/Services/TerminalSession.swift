@@ -153,6 +153,23 @@ final class TerminalSession: Identifiable {
 
     var displayName: String { title.isEmpty ? host.name : title }
 
+    /// The last command the user ran, kept after the history recorder has drained the
+    /// list, so the assistant can say what it is explaining (D-020).
+    private(set) var lastSubmittedCommand: String?
+
+    /// The visible screen as text, for the assistant's "last screen" choice. The user
+    /// sees exactly this before it is sent.
+    var screenText: String { screen.lines.map(\.text).joined(separator: "\n") }
+
+    /// Puts a suggested command on the prompt without running it — a single line, so
+    /// nothing is submitted; the user reads it, then presses Return or not.
+    func insert(commandText: String) async {
+        guard shell != nil else { return }
+        let singleLine = commandText.split(whereSeparator: \.isNewline).first.map(String.init) ?? ""
+        guard !singleLine.isEmpty else { return }
+        await insertText(singleLine)
+    }
+
     /// Asks the server what it is, on a channel of its own, after the shell is already
     /// serving the user. `uname -s` answers on every POSIX system; when it cannot run —
     /// Windows OpenSSH has no `uname` — `cmd /c ver` is asked instead. Nothing is typed
@@ -367,6 +384,7 @@ final class TerminalSession: Identifiable {
                 // dropping all but the last would silently lose them.
                 if trustworthy, !command.isEmpty {
                     submittedCommands.append(command)
+                    lastSubmittedCommand = command
                     for observe in submittedCommandObservers.values { observe(command) }
                 }
             case "\u{7F}", "\u{08}":

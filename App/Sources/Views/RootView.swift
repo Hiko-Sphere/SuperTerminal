@@ -58,6 +58,13 @@ struct RootView: View {
         }
         .animation(DesignTokens.Motion.standard, value: scenePhase)
         .onAppear { container.activeScene = scene }
+        // A session opened by Siri or Shortcuts before this window existed (D-021).
+        .onChange(of: container.pendingIntentSessionID, initial: true) { _, pending in
+            guard let pending else { return }
+            container.pendingIntentSessionID = nil
+            scene.selectedSessionID = pending
+            if horizontalSizeClass == .compact, !path.contains(pending) { path.append(pending) }
+        }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
                 container.activeScene = scene

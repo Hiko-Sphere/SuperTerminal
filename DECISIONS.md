@@ -687,3 +687,70 @@ follows reads the same field. The live proof is the test server itself: this Mac
 reports Darwin, and the UI test watches the row come to say macOS; Linux and Windows
 detection are proven by the parser against their real output and are listed as hardware
 checks until a machine of each kind has been connected to.
+## D-020 · The assistant is a separate screen, sends only what it shows you, and is honest about where it runs
+
+**Two engines, one contract.** On a device that has Apple Intelligence, the assistant uses
+the on-device Foundation Models framework: nothing leaves the device and no account is
+needed. Everywhere else — this development Mac reports `deviceNotEligible` — it uses a
+provider the user configures in Settings: an OpenAI-compatible chat-completions endpoint
+(URL, model name) with a key the user pastes, stored in the Keychain and never in any
+record, log or sync payload. Neither engine is faked: with no eligible device and no
+provider configured, the assistant says exactly that and offers Settings.
+
+**It never acts on its own.** The assistant answers three kinds of question — "how do I
+… on this server", "explain this output", "what went wrong here" — and its answers are
+text and suggested commands. A suggested command can be inserted into the terminal, where
+it sits on the prompt for the user to read and run or delete; the assistant never sends a
+newline. That is the same rule snippets follow (D-011).
+
+**What it is told is shown first.** The request carries the server's platform (D-019),
+the shell's last command, and the terminal text the user chose — the selection, or the
+last screen — and the sheet shows that context before anything is sent. Terminal text
+can contain secrets; the choice is the user's each time, and the privacy policy says so.
+
+**Verified how.** The prompt builder and the response parser are pure and unit-tested;
+the provider client is tested against a local HTTP server that speaks the same protocol,
+including streamed answers and error bodies; a live run against a real provider needs a
+key the owner supplies (B-6) and is a hardware check until then. The on-device engine can
+only be verified on an eligible device (B-4/B-6).
+
+**Where it lives.** The Session menu, ⌘⇧A from the shell or the terminal, and the same
+sheet for both. A suggested command is one line by construction — the reply parser takes
+lines inside fences, not fences — so "Insert" can never submit anything. Provider settings
+are a base URL, a model name and a key; the key field shows only that a key is stored, and
+"Remove key" is the only way it leaves. On this development Mac the system reports
+`deviceNotEligible` for the on-device model and no key is stored, so the UI test proves the
+honest state: the sheet says why it cannot answer and offers Settings.
+
+**A model that says it is there and then is not.** The simulator on a Mac whose host runs
+Apple Intelligence reports the on-device model *available* — `modelmanagerd` finds the
+3B instruct assets and allows inference — and the request then fails with a
+`GenerationError` the framework does not explain (code −1). The coordinator remembers an
+on-device failure for the rest of the run, names it in the unavailable reason, and — when
+the user configured a provider — asks the provider the same question instead of failing
+the same way on every question. Every `GenerationError` case is named in the message with
+the framework's own explanation; nothing is reduced to "an error occurred".
+
+
+## D-021 · Siri and Shortcuts go through the same door as a tap
+
+**App Intents, not a URL scheme.** "Connect to <server> in SuperTerminal" is an App Intent
+with a connection entity whose query reads the host store, so Siri offers the user's own
+connection names and nothing else about them (the entity carries the name and the row's
+subtitle, never a credential). Performing it opens the app and a session through
+`SessionManager.open`, the same path as tapping the row: host-key checks, credentials,
+prompts — Siri is a way in, not a way around. A session already open to that server is
+shown rather than doubled. "Disconnect all sessions" closes every session and says how
+many. The intents reach the live container through a handle the app installs at launch.
+App Intents' own dependency registry was the first design and was measured out: it takes
+one registration per type per process, offers no lookup, its property wrapper is not
+visible from a test bundle, and it asserted inside the framework when an intent ran under
+test — taking ninety unrelated tests down with it. A handle the app owns is one line, and
+every intent can be run in a test. A session opened before any window exists is parked on
+the container and consumed by the first root view to appear.
+
+**Verified how.** Unit tests run the intents against a container on temporary stores: the
+query's matching and what an entity exposes, that Connect opens exactly one session and
+records the connection, and Disconnect All's dialog for zero and one sessions. Siri's
+phrase recognition and the Shortcuts listing are checked on a device (`docs/RELEASE.md`);
+the simulator cannot speak.

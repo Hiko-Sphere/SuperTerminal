@@ -296,6 +296,37 @@ sees the row change. Linux and Windows detection are exercised by the parser aga
 their real output; connecting to a machine of each kind is a hardware check in
 `docs/RELEASE.md`.
 
+### Assistant — 5 unit tests and 1 UI test
+
+`AssistantTests` hold the two pure ends of the feature: the prompt builder names the
+server's platform, the last command and the chosen terminal text (fenced, cut from the top
+on a line boundary past the limit), and the reply parser takes commands only from lines
+inside fences, stripping a copied `$ ` prompt and ignoring prose. The provider client is
+exercised against a real local HTTP server (`ChatCompletionsTestServer`, NIO, a real
+socket) speaking the chat-completions protocol: streamed deltas arrive in order and
+concatenate, the key travels in the Authorization header and nowhere in the body, the
+request asks to stream and names the model, a 401 with an error body surfaces as a provider
+error with its message, a missing key never sends a request, and an answer that is not
+JSON is reported as unreadable rather than as a Cocoa error. `AssistantUITests` opens the
+assistant from the Session menu and reads which engine the sheet reports. With none — no
+eligible model, no key — it checks the reason, the "Open Settings" button and the provider
+fields in Settings. With the on-device model reported available it asks a question and
+accepts one of two honest outcomes: an answer, or the sheet turning to the unavailable
+state that names the model's failure and offers Settings. On this Mac's simulator the
+second happens: the host runs Apple Intelligence, `modelmanagerd` finds the model, and the
+request fails with a `GenerationError` the framework does not explain (code −1); the
+sheet reports exactly that. An answer from a real provider, and the on-device model on an
+eligible device, remain hardware checks (B-6).
+
+### App Intents — 3 unit tests
+
+`AppIntentTests` run the intents against a container built on temporary stores through
+App Intents' own dependency registry: the connection query matches by name and hostname
+and exposes only the name and subtitle; "Connect to Server" opens exactly one session,
+records the connection, parks the session for the next window, and does not double an
+open one; "Disconnect All Sessions" says "No sessions were open" or how many it closed.
+Siri's phrases and the Shortcuts listing are checked on a device (`docs/RELEASE.md`).
+
 ### Clipboard expiry — 3 tests
 
 `ClipboardTests` prove the option mapping (0 → no expiry; n → `expirationDate` = now + n)

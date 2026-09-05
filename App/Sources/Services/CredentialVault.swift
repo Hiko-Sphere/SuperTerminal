@@ -17,6 +17,7 @@ struct CredentialVault: Sendable {
         static let passwords = "dev.superterminal.passwords"
         static let accessTokens = "dev.superterminal.cloudflare.tokens"
         static let serviceTokens = "dev.superterminal.cloudflare.servicetokens"
+        static let assistant = "dev.superterminal.assistant"
     }
 
     private let store: any SecureStore
@@ -127,6 +128,28 @@ struct CredentialVault: Sendable {
         try store.removeAll(inService: Service.accessTokens)
     }
 
+    // MARK: - Assistant provider key
+
+    /// The user's key for the assistant's provider (D-020): this device only, never
+    /// synced, read at request time and put in one header.
+    func storeAssistantKey(_ key: String) throws {
+        try store.set(
+            Data(key.utf8),
+            for: SecureStoreKey(service: Service.assistant, account: "provider"),
+            protection: .whenUnlockedThisDeviceOnly,
+            prompt: nil
+        )
+    }
+
+    func loadAssistantKey() throws -> String? {
+        guard let data = try store.getIfPresent(SecureStoreKey(service: Service.assistant, account: "provider")) else { return nil }
+        return String(data: data, encoding: .utf8)
+    }
+
+    func deleteAssistantKey() throws {
+        try store.remove(SecureStoreKey(service: Service.assistant, account: "provider"))
+    }
+
     // MARK: - Wholesale deletion
 
     /// Removes every secret this app holds. Used by "delete all data", where leaving a
@@ -157,7 +180,7 @@ struct CredentialVault: Sendable {
     }
 
     func deleteEverything() throws {
-        for service in [Service.privateKeys, Service.passwords, Service.accessTokens, Service.serviceTokens] {
+        for service in [Service.privateKeys, Service.passwords, Service.accessTokens, Service.serviceTokens, Service.assistant] {
             try store.removeAll(inService: service)
         }
     }

@@ -76,7 +76,7 @@ Legend: ✅ done and proven · 🟡 written, awaiting verification · ⬜ not st
 
 Key generation, import and export ✅ · Snippets ✅ · searchable local history (off by default) ✅ · iPad multi-window ✅ · automatic reconnection ✅ · drag and drop ✅ · pinch to resize ✅ · reopen last session ✅ · command palette ✅ · haptic vocabulary ✅ · Instruments trace ✅ · chacha20-poly1305 ✅ · app icon ✅ · zh-Hans + zh-Hant with CI gate ✅ · host tags and folders · iCloud · iCloud sync of hosts, key metadata, snippets and host keys, opt-in and per-key for secrets (CloudKit not live-verified, B-4) ✅ · Terms / Privacy / User Notice in three languages, consent gate, Settings → Legal with licences ✅ · App Switcher privacy shield ✅
 sync for non-sensitive config · theme and font customisation · Face ID / Touch ID gating
-· redacted diagnostics export · hardware keyboard and pointer ✅ · server platform detection with a hand-set override ✅ · an assistant for commands and output (D-020, on-device model where eligible, else a user-supplied provider) · Siri and Shortcuts through App Intents · VNC with touch, keyboard and pointer control · Spotlight. Port forwarding and SFTP only if
+· redacted diagnostics export · hardware keyboard and pointer ✅ · server platform detection with a hand-set override ✅ · an assistant for commands and output (D-020, on-device model where eligible, else a user-supplied provider) ✅ · Siri and Shortcuts through App Intents ✅ · VNC with touch, keyboard and pointer control (D-022) · Spotlight. Port forwarding and SFTP only if
 they can be shipped with full security tests.
 
 ## Phase 6 — Hardening and release ⬜

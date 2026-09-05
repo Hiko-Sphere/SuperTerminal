@@ -26,12 +26,16 @@ final class AppSettings {
         static let hapticsEnabled = "settings.hapticsEnabled"
         static let iCloudSyncEnabled = "settings.iCloudSyncEnabled"
         static let acceptedTermsVersion = "settings.acceptedTermsVersion"
+        static let assistantPrefersOnDevice = "settings.assistantPrefersOnDevice"
+        static let assistantEndpoint = "settings.assistantEndpoint"
+        static let assistantModel = "settings.assistantModel"
 
         static let all = [
             themeID, lightThemeID, followSystemAppearance, fontSize, scrollbackLimit, clipboardExpirySeconds,
             keepAwakeWhileConnected, commandHistoryEnabled, confirmMultilinePaste,
             hideContentInAppSwitcher, cursorBlink, bellEnabled, keyRowVisible,
             automaticReconnect, hapticsEnabled, iCloudSyncEnabled, acceptedTermsVersion,
+            assistantPrefersOnDevice, assistantEndpoint, assistantModel,
         ]
     }
 
@@ -62,6 +66,9 @@ final class AppSettings {
         hapticsEnabled = defaults.bool(forKey: Key.hapticsEnabled)
         iCloudSyncEnabled = defaults.bool(forKey: Key.iCloudSyncEnabled)
         acceptedTermsVersion = defaults.integer(forKey: Key.acceptedTermsVersion)
+        assistantPrefersOnDevice = defaults.bool(forKey: Key.assistantPrefersOnDevice)
+        assistantEndpoint = defaults.string(forKey: Key.assistantEndpoint) ?? ""
+        assistantModel = defaults.string(forKey: Key.assistantModel) ?? ""
     }
     #endif
 
@@ -70,6 +77,11 @@ final class AppSettings {
         defaults.register(defaults: [
             Key.themeID: TerminalTheme.midnight.id,
             Key.lightThemeID: TerminalTheme.daylight.id,
+            // The assistant prefers the on-device model, where the device has one; the
+            // provider fields name the common default so a pasted key is enough (D-020).
+            Key.assistantPrefersOnDevice: true,
+            Key.assistantEndpoint: "https://api.openai.com/v1",
+            Key.assistantModel: "gpt-4o-mini",
             Key.followSystemAppearance: true,
             Key.fontSize: Self.defaultFontSize,
             Key.scrollbackLimit: 10000,
@@ -118,6 +130,9 @@ final class AppSettings {
         hapticsEnabled = defaults.bool(forKey: Key.hapticsEnabled)
         iCloudSyncEnabled = defaults.bool(forKey: Key.iCloudSyncEnabled)
         acceptedTermsVersion = defaults.integer(forKey: Key.acceptedTermsVersion)
+        assistantPrefersOnDevice = defaults.bool(forKey: Key.assistantPrefersOnDevice)
+        assistantEndpoint = defaults.string(forKey: Key.assistantEndpoint) ?? ""
+        assistantModel = defaults.string(forKey: Key.assistantModel) ?? ""
     }
 
     var themeID: String { didSet { defaults.set(themeID, forKey: Key.themeID) } }
@@ -149,6 +164,11 @@ final class AppSettings {
     var acceptedTermsVersion: Int {
         didSet { defaults.set(acceptedTermsVersion, forKey: Key.acceptedTermsVersion) }
     }
+    var assistantPrefersOnDevice: Bool {
+        didSet { defaults.set(assistantPrefersOnDevice, forKey: Key.assistantPrefersOnDevice) }
+    }
+    var assistantEndpoint: String { didSet { defaults.set(assistantEndpoint, forKey: Key.assistantEndpoint) } }
+    var assistantModel: String { didSet { defaults.set(assistantModel, forKey: Key.assistantModel) } }
 
     var automaticReconnect: Bool {
         didSet { defaults.set(automaticReconnect, forKey: Key.automaticReconnect) }

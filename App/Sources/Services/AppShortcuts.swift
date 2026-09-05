@@ -19,6 +19,7 @@ enum AppShortcut: String, CaseIterable, Sendable {
     case session1, session2, session3, session4, session5, session6, session7, session8, session9
     case closeSession
     case increaseTextSize, decreaseTextSize, actualTextSize
+    case assistant
 
     var title: String {
         switch self {
@@ -31,6 +32,7 @@ enum AppShortcut: String, CaseIterable, Sendable {
         case .increaseTextSize: String(localized: "Increase Text Size")
         case .decreaseTextSize: String(localized: "Decrease Text Size")
         case .actualTextSize: String(localized: "Actual Size")
+        case .assistant: String(localized: "Assistant…")
         default: String(localized: "Session \(sessionNumber ?? 0)")
         }
     }
@@ -52,13 +54,14 @@ enum AppShortcut: String, CaseIterable, Sendable {
         case .increaseTextSize: "="
         case .decreaseTextSize: "-"
         case .actualTextSize: "0"
+        case .assistant: "a"
         default: "\(sessionNumber ?? 0)"
         }
     }
 
     var modifiers: UIKeyModifierFlags {
         switch self {
-        case .nextSession, .previousSession: [.command, .shift]
+        case .nextSession, .previousSession, .assistant: [.command, .shift]
         default: .command
         }
     }
@@ -119,7 +122,7 @@ final class AppShortcutRouter {
     func isAvailable(_ shortcut: AppShortcut) -> Bool {
         switch shortcut {
         case .nextSession, .previousSession: sessionManager.sessions.count >= 2
-        case .closeSession: displayedSession != nil
+        case .closeSession, .assistant: displayedSession != nil
         case .newConnection, .commandPalette, .showSettings, .actualTextSize: scene != nil
         case .increaseTextSize: settings.fontSize < AppSettings.fontSizeRange.upperBound
         case .decreaseTextSize: settings.fontSize > AppSettings.fontSizeRange.lowerBound
@@ -143,6 +146,7 @@ final class AppShortcutRouter {
         case .increaseTextSize: adjustFontSize(by: 1)
         case .decreaseTextSize: adjustFontSize(by: -1)
         case .actualTextSize: settings.fontSize = AppSettings.defaultFontSize
+        case .assistant: scene?.isShowingAssistant = true
         default:
             if let number = shortcut.sessionNumber, let scene, let session = sessionManager.session(atOneBasedIndex: number) {
                 scene.selectedSessionID = session.id

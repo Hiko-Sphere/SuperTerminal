@@ -3,9 +3,10 @@
 **Updated:** 2026-09-06 · **Phase:** 5 of 7 in progress — the app is driven end to end
 through its own interface on iPhone and iPad; iCloud sync (opt-in, offline-verified), the
 legal texts with a consent gate, clipboard expiry, Access service tokens, hardware
-keyboard and pointer support (xterm modifiers, app shortcuts, wheel, clicks, drag), and
-server platform detection with a hand-set override are delivered. What remains needs the
-owner: a live Cloudflare environment (B-2), a
+keyboard and pointer support (xterm modifiers, app shortcuts, wheel, clicks, drag),
+server platform detection with a hand-set override, an assistant for commands and output
+(on-device model where eligible, else a user-supplied provider), and Siri and Shortcuts
+intents are delivered. What remains needs the owner: a live Cloudflare environment (B-2), a
 development team for iCloud and archiving (B-4), and the legal placeholders with counsel
 review (B-5).
 
@@ -63,6 +64,8 @@ This file is the resumable state of the work. It records what is *proven*, what 
 | **One haptic vocabulary** | Seven ad-hoc feedback generators scattered through the views, none warmed up and none respecting a preference, replaced by a named vocabulary with a setting. Generators are prepared before the gesture that will fire them, because a haptic played cold arrives a beat late and reads as a bug |
 | **Keyboard shortcuts that land where you expect** | ⌘N, ⌘K, ⌘⇧[ / ⌘⇧], ⌘1–9, ⌘W, ⌘= / ⌘- / ⌘0 as one `AppShortcut` table exposed as SwiftUI shortcut buttons in the shell and as key commands on the terminal view, routed to one handler, reachable from a hardware keyboard whatever has focus, on iPhone and iPad; `HardwareKeyboardUITests` type ⌘K, ⌘N, ⌘,, ⌘K over a focused search field and Escape as real keys. SwiftUI `Commands` never received them, nor did `keyCommands` on the SwiftUI-wrapped application delegate — found by those tests. A hidden first-responder view was the first mechanism and was measured out: it exposed an iPadOS 26 focus-engine abort with a hardware keyboard (5 of 18 runs; 0 of 17 without it), see D-018 |
 | **The server says what it is, and can be overruled** | `HostPlatformTests` (5): `uname -s` and `cmd /c ver` output from macOS, Linux, the BSDs and Windows read into a platform, both Windows shells' complaints rejected, old records decode, the hand-set value wins, no store churn on repeats. `testConnectingDetectsTheServerPlatform` watches the row say macOS after connecting to this Mac's OpenSSH; `testServerPlatformCanBeSetByHand` sets Windows in the editor and sees the row change. Linux and Windows live detection are hardware checks (D-019) |
+| **An assistant for commands and output, honest about where it runs** | `AssistantTests` (5): prompt builder (platform, last command, fenced context, top-cut), reply parser (fenced lines only), and the provider client against a real local HTTP server — streamed deltas, key in the header only, model and stream flag in the body, 401 error message, no request without a key. `AssistantUITests` (1): with no eligible on-device model and no key, the sheet says why and offers Settings. A real provider answer and the on-device model are hardware checks (B-6, D-020) |
+| **Siri and Shortcuts** | `AppIntentTests` (3): connection query by name/hostname exposing only name and subtitle; Connect opens one session, records it, parks it for the next window, never doubles; Disconnect All's dialog. Phrases are a device check (D-021) |
 | **Simplified and Traditional Chinese, gated** | 385 strings across the app and the two error-producing packages. Keys come from the compiler's `.stringsdata`, not the source, because interpolation becomes `%@` before lookup. `scripts/localization-audit.sh` fails CI on any untranslated string. Three UI tests run the app in each locale against a real server — including the assertion that Traditional shows 連線 and no 连接, which is what catches a converted rather than translated catalog. Terminal output is never translated |
 | **`NSFaceIDUsageDescription`, which was missing** | The app gates keys behind Face ID and had no usage description — iOS terminates an app that invokes Face ID without one. No test had reached it because the simulator never invokes Face ID. Added and localized |
 | **A command palette that actually ranks** | ⌘K over connections, open sessions, snippets and actions, with real fuzzy scoring — 13 tests pin the ranking against realistic names, so `wp` finds `web-prod-01` rather than `wrapper` and `dps` finds `docker ps`. The matched characters are bolded, which is what makes a fuzzy result legible instead of arbitrary. A UI test types `dfh` and lands on a snippet called "Disk Free Here" — a substring filter would find nothing at all |
@@ -96,7 +99,7 @@ live connection to screenshot at that setting.
 ### Not started
 
 Instruments profiling of the *renderer* — the emulator is profiled, the Core Text drawing
-path is not · SFTP · port forwarding · App Intents · Spotlight.
+path is not · VNC (D-022, in progress) · SFTP · port forwarding · Spotlight.
 
 ---
 
@@ -124,6 +127,15 @@ in square brackets that only the project owner can supply: effective date, devel
 name, and governing law and venue. There is no contact channel in the texts by the owner's decision.
 The texts were drafted for review by counsel and say so in their first paragraph; they are
 not legal advice until a lawyer has read them.
+
+### B-6 · The assistant's live checks need what only the owner has *(open, owner-only)*
+
+The provider path is proven against a local server speaking the same protocol; an answer
+from a real provider needs an API key the owner supplies in Settings. The on-device path
+needs a device eligible for Apple Intelligence: this Mac's simulator reports the model
+available and then fails every request with an unexplained `GenerationError` (code −1),
+which the app reports honestly and works around by falling back to the provider. Both are
+listed as hardware checks in `docs/RELEASE.md`.
 
 ### B-4 · Archiving is blocked on a development team *(open)*
 

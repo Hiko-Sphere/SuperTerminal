@@ -114,6 +114,9 @@ These are real and are not worked around silently:
   and the CloudKit record mapping are tested offline; the live path needs a signed build
   with the container entitlement, which an ad-hoc simulator build does not carry. See
   `PROJECT_STATUS.md` B-4. Nothing in the app claims otherwise.
+* **The assistant has not answered from a real provider here.** Its wire behaviour is
+  proven against a local server speaking the same protocol; a live answer needs a key you
+  supply, and the on-device model needs a device eligible for Apple Intelligence.
 * **The legal texts carry placeholders.** Effective date, legal name and governing law
   are the project owner's to fill (the texts carry no contact details, by decision), and the texts have not been reviewed
   by a lawyer — they say so. See `PROJECT_STATUS.md` B-5.
