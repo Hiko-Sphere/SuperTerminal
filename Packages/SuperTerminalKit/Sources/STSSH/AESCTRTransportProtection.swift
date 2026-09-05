@@ -105,7 +105,7 @@ public final class AES256CTRSHA256ETMTransportProtection: NIOSSHTransportProtect
     }
 
     /// Nothing to do: the length is already plaintext under ETM.
-    public func decryptFirstBlock(_: inout ByteBuffer) throws {}
+    public func decryptFirstBlock(_: inout ByteBuffer, sequenceNumber _: UInt32) throws {}
 
     public func decryptAndVerifyRemainingPacket(
         _ source: inout ByteBuffer,

@@ -21,7 +21,7 @@ left out.
 ```bash
 cd Packages/SuperTerminalKit
 swift build          # 0 errors, 0 warnings from project code
-swift test           # 141 tests in 21 suites passed in 10.0s
+swift test           # 157 tests in 22 suites passed in 12.0s
 swift test -c release --filter TerminalThroughputTests   # the numbers below
 
 cd ..
@@ -38,14 +38,14 @@ xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal \
   CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
 # ** BUILD SUCCEEDED ** — arm64 device build compiles
 
-./scripts/app-integration-e2e.sh   # 76 app tests on iPhone 17 Pro simulator, ** TEST SUCCEEDED **
+./scripts/app-integration-e2e.sh   # 81 app tests on iPhone 17 Pro simulator, ** TEST SUCCEEDED **
 ./scripts/profile-emulator.sh      # real Instruments trace of the emulator hot path
 ./scripts/ui-terminal-e2e.sh       # 13 passed, 1 skipped on iPhone, ** TEST SUCCEEDED **
 ./scripts/ui-terminal-e2e.sh "platform=iOS Simulator,name=iPad Pro 13-inch (M5)"
                                    # 14 passed on iPad, ** TEST SUCCEEDED **
 
 cd Packages/swift-nio-ssh-rsa
-swift test           # Executed 347 tests, with 0 failures
+swift test           # Executed 349 tests, with 0 failures (347 upstream + 2 for key extension)
 ```
 
 Warning counts were measured, not assumed:
@@ -429,7 +429,50 @@ Run on the iPhone 17 Pro simulator as part of `scripts/app-integration-e2e.sh`.
 | Line editing | `ls`, Up, Return records **nothing**; so do a cursor move followed by typing, and a tab completion |
 | Every input path | Typed, pasted and snippet-inserted commands all reach the same recorder, verified through the session's stream |
 
-### Ciphers — 8 tests
+### Ciphers — 10 tests, three of them against a real server offering one cipher only
+
+`chacha20-poly1305@openssh.com` joined AES-GCM and AES-CTR this session. It is proved the
+same way AES-CTR was: by removing the alternative. An OpenSSH server configured with
+`Ciphers chacha20-poly1305@openssh.com` and nothing else accepts the connection and runs a
+command, and a 400 KB burst over it stays in sync in both directions — hundreds of packets
+whose nonce is the sequence number, so a single mis-numbered packet would fail the tag and
+end the session.
+
+That one handshake validates, all at once: the RFC 4253 § 7.2 key extension (this is the
+only cipher that asks for more key material than a SHA-256 digest provides), the order of
+the two 256-bit keys, the sequence-number nonce, counter 0 for the length and the one-time
+Poly1305 key against counter 1 for the payload, the tag's coverage of the encrypted length
+and payload, and the padding treatment. A mistake in any of them fails outright; there is
+no way to pass this test by accident. The construction is OpenSSH's own, not RFC 8439, and
+is built from libsodium's ChaCha20 and Poly1305 with a constant-time tag comparison.
+
+It required two changes to the vendored `swift-nio-ssh`, both now in the patch and both
+covered by upstream's suite plus two new tests (349 total): key extension in the key
+exchange, and a `sequenceNumber` parameter on `decryptFirstBlock` — the call that reveals
+the length was never told the sequence number the length is encrypted under. D-013 has the
+full reasoning. AES-GCM remains preferred and still wins when both are offered; AES-CTR
+still passes through the changed protocol.
+
+#### Two harness defects found by running the regression in parallel
+
+To save time this session's regression was run as three concurrent streams. Three
+`xcodebuild test` sessions competing for two simulators produced aborted runs whose result
+bundles recorded **no failed test** — "TEST FAILED" with nothing behind it — which is the
+signature of a simulator-level abort, not a test outcome. Every one of those passed when
+re-run alone. That was a harness choice and it is not repeated: simulator jobs run serially.
+
+But the load exposed two real defects in the tests themselves, both fixed:
+
+* **The Debug throughput floor was miscalibrated.** It divided the Release floor by 3; the
+  measured Debug/Release ratio is 4.6–5.1×. The Debug floor sat 20% under the measured rate,
+  passing alone and failing under any load. It now divides by 5 — the measured ratio with
+  the same near-half margin the Release floors use — and the numbers are in the comment.
+* **A test cancelled its consumer before it could consume.** `streamObservesEverySource`
+  yielded into a buffering `AsyncStream` and cancelled the collector 50 ms later; on a
+  loaded machine the collector had not yet been scheduled, so the buffered elements were
+  never read. It now waits for the condition and then cancels.
+
+##### Ciphers — the earlier 8 tests
 
 `CipherInteropTests` and `AESCTRCounterTests`. `swift-nio-ssh` ships only AES-GCM;
 hardening guides routinely narrow a server's `Ciphers` to the CTR family, which would

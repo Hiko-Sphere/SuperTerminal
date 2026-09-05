@@ -15,9 +15,16 @@ import Testing
 @Suite("Emulator throughput", .serialized)
 struct TerminalThroughputTests {
     /// Scales a Release-calibrated floor down for Debug.
+    ///
+    /// The divisor is measured, not guessed. On the same machine, alone: plain text
+    /// 14.7 MB/s in Release against 2.9 in Debug (5.1×), CJK 12.8 against 2.8 (4.6×). A
+    /// divisor of 3 — the previous value — left the Debug floor 20% under the measured
+    /// rate, which passed alone and failed whenever anything else was using the machine.
+    /// Five puts Debug on the same footing as Release: a floor near half of what is
+    /// measured, so a real regression fails and a busy CI runner does not.
     private func floor(release: Double) -> Double {
         #if DEBUG
-        release / 3
+        release / 5
         #else
         release
         #endif

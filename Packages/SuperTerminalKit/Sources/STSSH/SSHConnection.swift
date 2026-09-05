@@ -180,7 +180,14 @@ public actor SSHConnection {
     /// `Ciphers` list to the CTR family, and such a server would otherwise be unreachable
     /// however modern it is. See ``AES256CTRSHA256ETMTransportProtection``.
     static var transportProtectionSchemes: [NIOSSHTransportProtection.Type] {
-        Constants.bundledTransportProtectionSchemesErased + [AES256CTRSHA256ETMTransportProtection.self]
+        // Order is preference. AES-GCM stays first: every iPhone has AES in hardware, so it
+        // is both the fastest and the one upstream maintains. chacha20-poly1305 follows,
+        // for servers narrowed to it; AES-CTR last, for the hardening guides that keep only
+        // the CTR family.
+        Constants.bundledTransportProtectionSchemesErased + [
+            ChaCha20Poly1305TransportProtection.self,
+            AES256CTRSHA256ETMTransportProtection.self,
+        ]
     }
 
     /// The transport channel's closed future, so callers can observe disconnection.

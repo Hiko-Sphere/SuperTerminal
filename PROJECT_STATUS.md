@@ -25,7 +25,7 @@ This file is the resumable state of the work. It records what is *proven*, what 
 | The terminal runs real full-screen programs | `TUIIntegrationTests` — `vim` and `less` over a real SSH PTY, with alternate-screen restore, mid-session resize honoured by vim, and CJK/emoji rendering |
 | Unicode cell widths | `CharacterWidthTests` against generated UCD 17.0.0 tables — CJK, halfwidth kana, combining marks, ZWJ sequences, flags, variation selectors |
 | Package builds clean under Swift 6 strict concurrency | `swift build` — zero errors, zero warnings from project code |
-| Whole suite | 131 tests in 19 suites, 10.0s; the live Cloudflare suite skips cleanly without credentials |
+| Whole suite | 157 tests in 22 suites, 12.0s; the live Cloudflare suite skips cleanly without credentials |
 | **The app itself connects** | `scripts/app-integration-e2e.sh` — on an iPhone 17 Pro simulator, the app stores a key in the real Keychain, opens a session, allocates a PTY, and the emulator renders `APP_STACK_OK` and `28 90` from the remote host |
 | The host-key prompt gates the connection | Same suite: refusing the prompt fails the session with `.hostKey`, and the fingerprint offered matches the server's real one |
 | App launches on iPhone and iPad | Installed and launched on both simulators; UI tests pass |
@@ -40,6 +40,7 @@ This file is the resumable state of the work. It records what is *proven*, what 
 | **Throughput, measured on the real path** | Release: 14.7 MB/s plain text, 33.5 MB/s coloured, 14.9 MB/s CJK, reflow of a full 5 000-line scrollback in 17 ms — all fed as `Data`, which is what the app feeds. The earlier figures in this table were measured on an `Array`, a path the app never takes and which was far slower, so they understated the product. Both paths are now benchmarked, and their parity is asserted as a ratio rather than a fixed number |
 | **Render cost, measured** | A full redraw of both an 80×24 and a 200×55 grid fits inside a 60 Hz frame on the simulator; run coalescing is asserted directly on the run count |
 | Selection and find gestures | UI tests: long-press-and-drag selects and offers Copy, and the find bar reports a match count |
+| **chacha20-poly1305, proved by removing the alternative** | A real OpenSSH server offering *only* `chacha20-poly1305@openssh.com` is reachable, and a 400 KB burst over it stays in sync. This is the only cipher needing more key than one digest provides, so the same handshake proves the RFC 4253 § 7.2 key extension added to the vendored key exchange. Built from libsodium's primitives, not RFC 8439's AEAD, which cannot express OpenSSH's construction |
 | **AES-CTR ciphers** | Proved by removing the alternative: a server offering *only* `aes256-ctr` with encrypt-then-MAC is reachable, and a 400 KB burst over it stays in sync — which is what catches a counter advanced wrongly |
 | **Accessibility, run for real** | UI tests launch the app with accessibility text sizes, Reduce Transparency and Bold Text actually enabled, and assert every control carries a label. Screenshots are attached to the result bundle. |
 | **Key generation, import and export** | Generated keys are read by `ssh-keygen`, which agrees on the fingerprint, and both algorithms authenticate against a real `sshd` that trusts only the generated key. A UI test generates one through the interface. |

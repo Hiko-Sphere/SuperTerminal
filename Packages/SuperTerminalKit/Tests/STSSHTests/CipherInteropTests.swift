@@ -103,6 +103,65 @@ struct CipherInteropTests {
         }
     }
 
+    @Test("A server offering only chacha20-poly1305 can be reached")
+    func chacha20Poly1305Only() async throws {
+        // No AES at all, so success can only have come through the chacha20 scheme — and
+        // through the RFC 4253 § 7.2 key extension it depends on, since this is the only
+        // cipher that asks for more key than one SHA-256 digest provides. `MACs` is set
+        // because the harness writes both lines; sshd ignores it for an AEAD cipher.
+        let server = try OpenSSHTestServer(
+            ciphers: (ciphers: "chacha20-poly1305@openssh.com", macs: "hmac-sha2-256-etm@openssh.com")
+        )
+        defer { server.shutDown() }
+        let output = try await connectAndRun(server, marker: "CHACHA20_POLY1305_OK")
+        #expect(output == "CHACHA20_POLY1305_OK\n")
+    }
+
+    @Test("A long session over chacha20-poly1305 stays in sync")
+    func chacha20NonceStaysInSyncAcrossManyPackets() async throws {
+        // The nonce is the packet sequence number. If either side numbered a packet
+        // wrongly the tag fails and the session dies. One command would not notice;
+        // hundreds of packets in both directions do.
+        let server = try OpenSSHTestServer(
+            ciphers: (ciphers: "chacha20-poly1305@openssh.com", macs: "hmac-sha2-256-etm@openssh.com")
+        )
+        defer { server.shutDown() }
+
+        let group = NIOTSEventLoopGroup(loopCount: 1)
+        do {
+            let key = try OpenSSHPrivateKeyParser.parse(pem: server.fixtures.clientPrivateKeyPEM)
+            let identity = KnownHostIdentity(host: "127.0.0.1", port: server.fixtures.port)
+            let connection = try await SSHConnection.connect(
+                transport: DirectTCPTransport(
+                    endpoint: TransportEndpoint(host: "127.0.0.1", port: server.fixtures.port)
+                ),
+                configuration: SSHConnectionConfiguration(
+                    username: server.fixtures.username,
+                    credentials: [.privateKey(key)],
+                    knownHostIdentity: identity
+                ),
+                hostKeyVerifier: HostKeyVerifier(
+                    identity: identity,
+                    store: InMemoryKnownHostsStore(),
+                    approval: TrustOnFirstUseApproval()
+                ),
+                eventLoop: group.next()
+            )
+            // A burst large enough to span many packets in both directions.
+            let result = try await connection.execute(
+                command: "head -c 400000 /dev/zero | tr '\\0' 'c'; printf '\\nCHACHA_BURST_%s\\n' DONE"
+            )
+            await connection.close()
+            try? await group.shutdownGracefully()
+
+            #expect(result.standardOutputText.contains("CHACHA_BURST_DONE"))
+            #expect(result.standardOutput.count > 400_000)
+        } catch {
+            try? await group.shutdownGracefully()
+            throw error
+        }
+    }
+
     @Test("AES-GCM is still preferred when both are on offer")
     func gcmRemainsAvailable() async throws {
         let server = try OpenSSHTestServer(

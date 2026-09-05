@@ -406,3 +406,43 @@ One tap is cheap; a connection nobody asked for is not.
 **Reversible.** Yes. Reconnecting automatically is a setting away, and keeping the
 scrollback would be a store much like the history one — with the same argument to have
 first.
+
+
+## D-013 · chacha20-poly1305@openssh.com needed two more vendored changes
+
+**Decision.** Add `chacha20-poly1305@openssh.com` as a transport protection scheme, built
+from libsodium's ChaCha20 and Poly1305 primitives, and make two small changes to the
+vendored `swift-nio-ssh` to allow it: RFC 4253 § 7.2 key extension in the key exchange, and
+a `sequenceNumber` parameter on `decryptFirstBlock`.
+
+**Why the cipher.** OpenSSH has listed it first in its defaults since 6.9, hardening guides
+narrow `Ciphers` to it alone, and a server so configured was unreachable no matter how
+modern. AES-GCM stays preferred: every iPhone has AES in hardware.
+
+**Why it could not be a plugin like AES-CTR.** Two things upstream never needed:
+
+* The cipher wants 64 bytes of key. Every key generator in the vendored key exchange took a
+  prefix of a *single* digest and asserted the request fitted — fine for AES-256 under
+  SHA-256, impossible for 64. RFC 4253 § 7.2 says what to do (`K2 = HASH(K ‖ H ‖ K1)`, and
+  so on) and the generators now do it. Nothing else changes: a request that fits one digest
+  produces the byte-identical key it did before.
+* The length field is encrypted under a nonce derived from the packet sequence number.
+  `decryptFirstBlock` — the call that has to reveal the length — was not told the sequence
+  number; only the second half of the read was. OpenSSH's own `cipher_get_length` takes
+  `seqnr` for exactly this reason. The parameter is threaded through; the parser already
+  passes the same value to both halves, so the scheme needs no stored state between them.
+
+**Rejected: swift-crypto's `ChaChaPoly`.** It is RFC 8439's AEAD. OpenSSH's construction is
+not: two keys, a separately encrypted length, and a one-time Poly1305 key taken from the
+first block of keystream. The sealed-box API cannot express it. libsodium exposes the stream
+cipher and the authenticator separately, is already shipped for the Cloudflare login flow,
+and its constant-time `crypto_verify_16` is used for the tag.
+
+**Verification.** Not a unit test with vectors I typed in: a real OpenSSH server configured
+with `Ciphers chacha20-poly1305@openssh.com` and nothing else accepts the connection, and a
+400 KB burst stays in sync in both directions. A mistake in the key order, the nonce, either
+counter, the tag's coverage or the padding fails that handshake outright. The vendored suite
+remains green (349, two of them new) and the patch gate in CI still reproduces the tree.
+
+**Reversible.** Yes. Deleting the scheme and the two vendored changes returns to the
+previous behaviour; the key-extension change is dormant for every other cipher.

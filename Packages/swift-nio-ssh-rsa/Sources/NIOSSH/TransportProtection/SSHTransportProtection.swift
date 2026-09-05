@@ -81,7 +81,12 @@ public protocol NIOSSHTransportProtection: AnyObject {
     /// It is guaranteed that `decryptRemainingPacket` will be called with exactly the same buffer
     /// passed to `source`. Thus some implementations will be able to avoid storing state for
     /// partial packet decryption.
-    func decryptFirstBlock(_ source: inout ByteBuffer) throws
+    ///
+    /// `sequenceNumber` is the same value that will be passed to `decryptAndVerifyRemainingPacket`
+    /// for this packet. Schemes whose length field is encrypted under a per-packet nonce —
+    /// chacha20-poly1305@openssh.com derives it from the sequence number — cannot decrypt the
+    /// length without it; OpenSSH's own `cipher_get_length` takes `seqnr` for the same reason.
+    func decryptFirstBlock(_ source: inout ByteBuffer, sequenceNumber: UInt32) throws
 
     /// Decrypt the remainder of the packet.
     ///

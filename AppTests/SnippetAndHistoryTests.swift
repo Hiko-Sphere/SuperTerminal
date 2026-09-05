@@ -309,16 +309,25 @@ struct InputPathRecordingTests {
     func streamObservesEverySource() async {
         let session = makeSession()
         var received: [String] = []
+        // `AsyncStream`'s build closure runs at creation, so the observer is registered
+        // here, synchronously — before anything is submitted. No wait is needed for that.
         let stream = session.submittedCommandStream
         let collector = Task { for await command in stream { received.append(command) } }
-        // Let the stream's continuation register before anything is submitted.
-        try? await Task.sleep(for: .milliseconds(50))
 
         session.noteTypedInput(Data("typed\r".utf8))
         session.noteTypedInput(Data("pasted-one\npasted-two\n".utf8))
-        try? await Task.sleep(for: .milliseconds(50))
+
+        // Wait for the consumer to drain, rather than cancelling it after a fixed delay.
+        // The stream buffers, so the elements are already there; what a fixed 50 ms
+        // assumed was that the collector had been *scheduled* — true on an idle machine
+        // and false on a loaded one, which is how this failed during a parallel run.
+        let deadline = ContinuousClock.now + .seconds(5)
+        while received.count < 3, ContinuousClock.now < deadline {
+            await Task.yield()
+            try? await Task.sleep(for: .milliseconds(10))
+        }
         collector.cancel()
 
-        #expect(received == ["typed", "pasted-one", "pasted-two"])
+        #expect(received == ["typed", "pasted-one", "pasted-two"], "received \(received)")
     }
 }

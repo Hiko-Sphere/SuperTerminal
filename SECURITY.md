@@ -194,6 +194,12 @@ that would not be sent on a normal connection, and the retry count is bounded.
 
 ## Cryptography policy
 
+Transport ciphers, in preference order: `aes256-gcm@openssh.com`, `aes128-gcm@openssh.com`,
+`chacha20-poly1305@openssh.com`, `aes256-ctr` with `hmac-sha2-256-etm@openssh.com`. Every one
+authenticates before it decrypts. No non-ETM MAC, no CBC, no RC4, no `none`. The chacha20
+scheme uses libsodium's primitives and a constant-time tag comparison; its construction and
+the two vendored changes it required are in D-013.
+
 * No algorithm is implemented in this project. Primitives come from CryptoKit,
   `swift-crypto`, libsodium, and OpenBSD's `bcrypt_pbkdf`.
 * Verification is never skipped to make a test pass. The test suite contains no

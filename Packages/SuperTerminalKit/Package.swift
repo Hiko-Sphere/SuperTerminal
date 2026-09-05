@@ -73,6 +73,10 @@ let package = Package(
                 .product(name: "NIOTransportServices", package: "swift-nio-transport-services"),
                 .product(name: "Crypto", package: "swift-crypto"),
                 .product(name: "_CryptoExtras", package: "swift-crypto"),
+                // Raw libsodium, for chacha20-poly1305@openssh.com: the construction is
+                // OpenSSH's own, not the RFC 8439 AEAD, so it needs the stream cipher and
+                // the one-time authenticator separately rather than the sealed-box API.
+                .product(name: "Clibsodium", package: "swift-sodium"),
             ]
         ),
         .target(
