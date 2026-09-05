@@ -22,12 +22,13 @@ final class AppSettings {
         static let bellEnabled = "settings.bellEnabled"
         static let keyRowVisible = "settings.keyRowVisible"
         static let automaticReconnect = "settings.automaticReconnect"
+        static let hapticsEnabled = "settings.hapticsEnabled"
 
         static let all = [
             themeID, lightThemeID, followSystemAppearance, fontSize, scrollbackLimit,
             keepAwakeWhileConnected, commandHistoryEnabled, confirmMultilinePaste,
             hideContentInAppSwitcher, cursorBlink, bellEnabled, keyRowVisible,
-            automaticReconnect,
+            automaticReconnect, hapticsEnabled,
         ]
     }
 
@@ -54,6 +55,7 @@ final class AppSettings {
         bellEnabled = defaults.bool(forKey: Key.bellEnabled)
         keyRowVisible = defaults.bool(forKey: Key.keyRowVisible)
         automaticReconnect = defaults.bool(forKey: Key.automaticReconnect)
+        hapticsEnabled = defaults.bool(forKey: Key.hapticsEnabled)
     }
     #endif
 
@@ -83,6 +85,7 @@ final class AppSettings {
             // needs a tap after every lift and every hand-off between Wi-Fi and cellular
             // is one nobody keeps open.
             Key.automaticReconnect: true,
+            Key.hapticsEnabled: true,
         ])
         themeID = defaults.string(forKey: Key.themeID) ?? TerminalTheme.midnight.id
         lightThemeID = defaults.string(forKey: Key.lightThemeID) ?? TerminalTheme.daylight.id
@@ -97,6 +100,7 @@ final class AppSettings {
         bellEnabled = defaults.bool(forKey: Key.bellEnabled)
         keyRowVisible = defaults.bool(forKey: Key.keyRowVisible)
         automaticReconnect = defaults.bool(forKey: Key.automaticReconnect)
+        hapticsEnabled = defaults.bool(forKey: Key.hapticsEnabled)
     }
 
     var themeID: String { didSet { defaults.set(themeID, forKey: Key.themeID) } }
@@ -112,6 +116,10 @@ final class AppSettings {
     var scrollbackLimit: Int { didSet { defaults.set(scrollbackLimit, forKey: Key.scrollbackLimit) } }
     var keepAwakeWhileConnected: Bool {
         didSet { defaults.set(keepAwakeWhileConnected, forKey: Key.keepAwakeWhileConnected) }
+    }
+
+    var hapticsEnabled: Bool {
+        didSet { defaults.set(hapticsEnabled, forKey: Key.hapticsEnabled) }
     }
 
     var automaticReconnect: Bool {

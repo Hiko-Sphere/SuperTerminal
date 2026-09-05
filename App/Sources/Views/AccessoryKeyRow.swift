@@ -6,6 +6,7 @@ import SwiftUI
 /// terminal is unusable for anything beyond `ls`. This row is therefore core
 /// functionality, not a convenience.
 struct AccessoryKeyRow: View {
+    @Environment(AppContainer.self) private var container
     let session: TerminalSession
     let theme: TerminalTheme
 
@@ -32,7 +33,7 @@ struct AccessoryKeyRow: View {
     private var latchButton: some View {
         Button {
             session.controlLatched.toggle()
-            UISelectionFeedbackGenerator().selectionChanged()
+            container.haptics.play(.modifierArmed)
         } label: {
             Text("ctrl")
                 .font(DesignTokens.Typography.monoCaption)

@@ -10,6 +10,8 @@ struct TerminalScreenView: UIViewRepresentable {
     let confirmMultilinePaste: Bool
     /// Called when ⌘K is pressed while the terminal has the keyboard.
     let onCommandPalette: () -> Void
+    /// Plays a haptic, if the user wants them.
+    let onHaptic: (Haptics.Event) -> Void
     /// Called when a pinch asks for a different font size, so it can be persisted.
     let onFontSizeChange: (CGFloat) -> Void
 
@@ -22,7 +24,8 @@ struct TerminalScreenView: UIViewRepresentable {
             session: session,
             confirmMultilinePaste: confirmMultilinePaste,
             onFontSizeChange: onFontSizeChange,
-            onCommandPalette: onCommandPalette
+            onCommandPalette: onCommandPalette,
+            onHaptic: onHaptic
         )
         return view
     }
@@ -58,7 +61,8 @@ struct TerminalScreenView: UIViewRepresentable {
             session: TerminalSession,
             confirmMultilinePaste: Bool,
             onFontSizeChange: @escaping (CGFloat) -> Void,
-            onCommandPalette: @escaping () -> Void
+            onCommandPalette: @escaping () -> Void,
+            onHaptic: @escaping (Haptics.Event) -> Void
         ) {
             view.onInput = { data in
                 Task { @MainActor in
@@ -75,6 +79,9 @@ struct TerminalScreenView: UIViewRepresentable {
                 Task { @MainActor in session.scrollBack(by: rows) }
             }
             view.onCommandPalette = { onCommandPalette() }
+            view.onHaptic = { event in
+                Task { @MainActor in onHaptic(event) }
+            }
             view.onFontSizeChange = { size in
                 Task { @MainActor in onFontSizeChange(size) }
             }

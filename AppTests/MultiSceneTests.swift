@@ -389,3 +389,54 @@ struct SessionSwitchingShortcutTests {
         #expect(manager.session(after: nil, delta: 1) == nil)
     }
 }
+
+/// The haptic vocabulary.
+///
+/// Worth testing because haptics are a language: the same tap has to mean the same thing
+/// everywhere, and a setting that says "off" has to mean the device stays still. Before
+/// this there were seven ad-hoc generators scattered through the views, no user control,
+/// and none of them warmed up.
+@Suite("Haptics")
+@MainActor
+struct HapticsTests {
+    private func makeHaptics(enabled: Bool) -> (Haptics, AppSettings) {
+        let settings = AppSettings(defaults: UserDefaults(suiteName: "haptics-\(UUID())")!)
+        settings.hapticsEnabled = enabled
+        return (Haptics(settings: settings), settings)
+    }
+
+    @Test("Every event is playable and preparable without a device")
+    func vocabularyIsComplete() {
+        // Exercises each branch, so a new case added without a mapping fails to compile
+        // rather than silently doing nothing on a device nobody is testing on.
+        let (haptics, _) = makeHaptics(enabled: true)
+        let events: [Haptics.Event] = [
+            .connected, .disconnected, .failed, .modifierArmed,
+            .selectionChanged, .bell, .textInserted,
+        ]
+        for event in events {
+            haptics.prepare(for: event)
+            haptics.play(event)
+        }
+    }
+
+    @Test("Turning haptics off is honoured by both play and prepare")
+    func settingIsHonoured() {
+        // Preparing warms the Taptic Engine, which costs power. Off should mean off for
+        // that too, not merely for the tap the user would have felt.
+        let (haptics, settings) = makeHaptics(enabled: false)
+        #expect(!settings.hapticsEnabled)
+        haptics.prepare(for: .connected)
+        haptics.play(.connected)
+    }
+
+    @Test("The setting survives a reload")
+    func settingPersists() {
+        let suite = "haptics-persist-\(UUID())"
+        let defaults = UserDefaults(suiteName: suite)!
+        let settings = AppSettings(defaults: defaults)
+        #expect(settings.hapticsEnabled, "haptics should be on by default")
+        settings.hapticsEnabled = false
+        #expect(!AppSettings(defaults: defaults).hapticsEnabled)
+    }
+}

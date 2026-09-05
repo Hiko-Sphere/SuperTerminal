@@ -45,6 +45,8 @@ This file is the resumable state of the work. It records what is *proven*, what 
 | **Key generation, import and export** | Generated keys are read by `ssh-keygen`, which agrees on the fingerprint, and both algorithms authenticate against a real `sshd` that trusts only the generated key. A UI test generates one through the interface. |
 | **Snippets insert without running** | A UI test creates a snippet through the editor, taps it, and asserts against a real shell that the text is on the line *and its output is not* — then presses Return and sees the output appear. The default that a snippet waits for Return is the safety property, so it is tested by observing the absence. |
 | **Command history is off until asked for** | A UI test runs a command, finds history empty and off, turns it on through Settings, runs another command, and sees exactly the second one — recorded as typed, with no prompt and no output, and with nothing resurrected from before the opt-in. Turning it off deletes the file, not just the list. |
+| **Profiled with Instruments, for real** | `scripts/profile-emulator.sh` records a Time Profiler trace and attributes it to our own frames: 3.16 s of CPU, 99.6% symbolicated, 53.6% in the parse loop and 12.4% in `CharacterWidth.of`. The leaf frames say why — over a fifth in malloc/free and `_StringGuts`, because the parser deals in `Character`. Recorded rather than acted on: the throughput floors are met with room to spare, and rewriting the code every byte passes through is not an end-of-session change |
+| **One haptic vocabulary** | Seven ad-hoc feedback generators scattered through the views, none warmed up and none respecting a preference, replaced by a named vocabulary with a setting. Generators are prepared before the gesture that will fire them, because a haptic played cold arrives a beat late and reads as a bug |
 | **Keyboard shortcuts that land where you expect** | ⌘1–9 for sessions, ⌘⇧[ and ⌘⇧] to cycle, ⌘K, ⌘N, ⌘W — declared so the ⌘-hold overlay on iPad lists them. Six tests pin where they land, including that ⌘5 with three sessions open does *nothing* rather than clamping to the last: a shortcut that quietly selects the wrong terminal puts the next keystroke on the wrong machine |
 | **A command palette that actually ranks** | ⌘K over connections, open sessions, snippets and actions, with real fuzzy scoring — 13 tests pin the ranking against realistic names, so `wp` finds `web-prod-01` rather than `wrapper` and `dps` finds `docker ps`. The matched characters are bolded, which is what makes a fuzzy result legible instead of arbitrary. A UI test types `dfh` and lands on a snippet called "Disk Free Here" — a substring filter would find nothing at all |
 | **The connections from last time are offered back** | A UI test opens a session, *terminates* the app rather than backgrounding it, relaunches, and finds the offer — then taps it and reaches a terminal, with the offer gone afterwards. What is remembered is which machines were open, not the scrollback: the buffer is the same asset as command history but far larger, and writing it to disk would make the app's refusal to keep history meaningless |
@@ -76,8 +78,8 @@ live connection to screenshot at that setting.
 
 ### Not started
 
-Instruments profiling of the renderer · iCloud sync · SFTP · port forwarding · App
-Intents · Spotlight.
+Instruments profiling of the *renderer* — the emulator is profiled, the Core Text drawing
+path is not · iCloud sync · SFTP · port forwarding · App Intents · Spotlight.
 
 ---
 

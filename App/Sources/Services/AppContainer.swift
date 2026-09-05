@@ -20,6 +20,7 @@ final class AppContainer {
     let sessionManager: SessionManager
     let settings: AppSettings
     let reachability: NetworkReachability
+    let haptics: Haptics
     let vault: CredentialVault
     let knownHosts: any KnownHostsStore
     let diagnostics: DiagnosticsCentre
@@ -31,6 +32,7 @@ final class AppContainer {
         sessionManager: SessionManager,
         settings: AppSettings,
         reachability: NetworkReachability,
+        haptics: Haptics,
         vault: CredentialVault,
         knownHosts: any KnownHostsStore,
         diagnostics: DiagnosticsCentre
@@ -41,6 +43,7 @@ final class AppContainer {
         self.sessionManager = sessionManager
         self.settings = settings
         self.reachability = reachability
+        self.haptics = haptics
         self.vault = vault
         self.knownHosts = knownHosts
         self.diagnostics = diagnostics
@@ -56,6 +59,7 @@ final class AppContainer {
         )
         let settings = AppSettings()
         let reachability = NetworkReachability()
+        let haptics = Haptics(settings: settings)
         let restoration = SessionRestorationStore(directory: directory)
         let sessionManager = SessionManager(
             vault: vault,
@@ -63,7 +67,8 @@ final class AppContainer {
             settings: settings,
             diagnostics: diagnostics,
             reachability: reachability,
-            restoration: restoration
+            restoration: restoration,
+            haptics: haptics
         )
         let container = AppContainer(
             hostStore: HostStore(directory: directory),
@@ -72,6 +77,7 @@ final class AppContainer {
             sessionManager: sessionManager,
             settings: settings,
             reachability: reachability,
+            haptics: haptics,
             vault: vault,
             knownHosts: knownHosts,
             diagnostics: diagnostics

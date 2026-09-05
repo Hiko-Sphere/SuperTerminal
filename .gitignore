@@ -24,3 +24,4 @@ E2E.local.json
 
 # macOS
 .DS_Store
+.build/emulator.trace

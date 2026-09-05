@@ -33,6 +33,7 @@ struct SettingsView: View {
                         step: 1
                     )
                     Toggle("Blink the cursor", isOn: $settings.cursorBlink)
+                    Toggle("Haptic feedback", isOn: $settings.hapticsEnabled)
                 }
 
                 Section {

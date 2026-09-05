@@ -38,7 +38,8 @@ xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal \
   CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
 # ** BUILD SUCCEEDED ** — arm64 device build compiles
 
-./scripts/app-integration-e2e.sh   # 61 app tests on iPhone 17 Pro simulator, ** TEST SUCCEEDED **
+./scripts/app-integration-e2e.sh   # 76 app tests on iPhone 17 Pro simulator, ** TEST SUCCEEDED **
+./scripts/profile-emulator.sh      # real Instruments trace of the emulator hot path
 ./scripts/ui-terminal-e2e.sh       # 13 passed, 1 skipped on iPhone, ** TEST SUCCEEDED **
 ./scripts/ui-terminal-e2e.sh "platform=iOS Simulator,name=iPad Pro 13-inch (M5)"
                                    # 14 passed on iPad, ** TEST SUCCEEDED **
@@ -296,6 +297,47 @@ timeout bounds it correctly and the retry then continues, so the cost is a slow 
 retry against a dead load balancer, not a hang. `retriesWhileUnreachableAndStopsOnRequest`
 takes 33s for this reason.
 
+### Instruments — a real trace, and what it found
+
+`./scripts/profile-emulator.sh` records a Time Profiler trace of the emulator's hot path
+and prints where the time goes. Release, because a Debug profile mostly measures
+retain/release traffic the optimiser would have removed, and native on macOS, because the
+emulator is the same code on iOS and this makes profiling one command rather than a
+session with a device and a UI to drive.
+
+Run on 2026-09-05: **3.16 s of CPU across 3 163 samples, 99.6% symbolicated.**
+
+Attributed to the deepest frame of ours on each stack:
+
+| Share | Frame |
+| --- | --- |
+| 53.6% | `TerminalParser.parse(_:sink:)` |
+| 12.4% | `CharacterWidth.of(_:)` |
+| 10.0% | `TerminalParser.ground(_:sink:)` |
+| 6.2% | `TerminalScreen.lineFeed()` |
+| 3.4% | `TerminalScreen.write(_:)` |
+
+Leaf frames, showing what that time is actually spent doing:
+
+| Share | Frame | Reading |
+| --- | --- | --- |
+| 15.2% | `mach_absolute_time` | The throughput test's own clock, not the emulator. Worth naming so it is not mistaken for a finding |
+| 9.6% + 9.2% + 2.5% | `_xzm_xzone_malloc_tiny`, `_xzm_free`, `_xzm_xzone_malloc` | Allocation churn is over a fifth of the remaining time |
+| 4.6% | `_StringGuts.validateScalarIndex` | `Character` handling, which is what the parser works in |
+
+**What this says.** `CharacterWidth.of` is a lookup with an ASCII fast path already, and it
+is still an eighth of the profile — because the cost is not the table search, it is that
+the parser deals in `Character`, which is a grapheme cluster backed by String storage. The
+allocation and `_StringGuts` figures point the same way. Working in `Unicode.Scalar` or
+UTF-8 bytes through the parse loop is the change the trace argues for, and it is a real
+refactor of the hottest code in the app rather than a tweak.
+
+**Not done, deliberately.** The throughput floors are met with room to spare — 9.0 MB/s
+plain, 12.7 MB/s coloured — so this is an optimisation with evidence behind it rather than
+an urgent fix, and rewriting the hot path at the end of a session is how correctness bugs
+get introduced into the one component every character passes through. It is recorded here
+with the measurement that justifies it.
+
 ### Keyboard session switching — 6 app tests
 
 The bindings are declarative; where they *land* is what is worth testing, because a
@@ -437,7 +479,8 @@ Stated plainly, because a test report that omits these would be misleading:
 | **Increase Contrast selecting the high-contrast theme** | Still verified by reading the code. Screenshotting it needs a live terminal at that setting, which the current harness does not drive. |
 | **Pointer and hover on iPad** | Hover reporting is implemented; it has not been driven with a trackpad. |
 | **Keychain behaviour** | `KeychainSecureStore` is written but untested; Keychain semantics differ enough in a macOS unit-test process that a passing test there would prove little. Needs device tests. |
-| **Instruments profiling** | Not run. `XCTest`'s measurement was used instead because it produces a number on every run, in CI as well as on a desk, and fails on a regression. An Instruments trace remains the better tool for finding *why* something is slow, and is worth doing before release. |
+| **Instruments profiling of the emulator** | Done — see the trace section above. `scripts/profile-emulator.sh` makes it repeatable. The asserted throughput floors stay as the regression gate, because they produce a number on every run and in CI; the trace answers the different question of *where* the time goes. |
+| **Instruments profiling of the renderer** | Still not run. The trace above covers the emulator — parsing and screen updates — which is a different component from the Core Text drawing path. Drawing is covered by asserted frame-budget tests rather than a trace, so nothing claims to know where its time goes. |
 
 ## Observed environment issue
 

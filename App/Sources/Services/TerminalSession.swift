@@ -60,6 +60,7 @@ final class TerminalSession: Identifiable {
     }
 
     private let reachability: NetworkReachability?
+    private let haptics: Haptics?
     private var reconnectionTask: Task<Void, Never>?
     /// Whether the shell reported an exit status before the channel closed. A shell that
     /// exited is a session the user ended; a channel that closed without one is a drop.
@@ -120,7 +121,8 @@ final class TerminalSession: Identifiable {
         knownHosts: any KnownHostsStore,
         settings: AppSettings,
         log: STLogger,
-        reachability: NetworkReachability? = nil
+        reachability: NetworkReachability? = nil,
+        haptics: Haptics? = nil
     ) {
         self.host = host
         self.group = group
@@ -128,6 +130,7 @@ final class TerminalSession: Identifiable {
         self.knownHosts = knownHosts
         self.settings = settings
         self.reachability = reachability
+        self.haptics = haptics
         self.log = log.child(subsystem: "session")
         promptCoordinator = PromptCoordinator()
         let initialEmulator = TerminalEmulator(
@@ -195,6 +198,7 @@ final class TerminalSession: Identifiable {
             self.shell = shell
             startPump(shell: shell, connection: connection)
             state = .connected
+            haptics?.play(.connected)
             log.info("session connected", ["host": Redactor.hostname(host.hostname)])
         } catch let error as STError {
             state = .failed(error)
@@ -565,9 +569,7 @@ final class TerminalSession: Identifiable {
             case let .title(newTitle):
                 title = newTitle
             case .bell:
-                if settings.bellEnabled {
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                }
+                if settings.bellEnabled { haptics?.play(.bell) }
             case let .modesChanged(newModes):
                 modes = newModes
             case let .alternateScreenChanged(isAlternate):
@@ -595,9 +597,11 @@ final class TerminalSession: Identifiable {
         if case .failed = state { return }
         if shellExited {
             state = .disconnected(reason: "The shell exited.")
+            haptics?.play(.disconnected)
             return
         }
         state = .disconnected(reason: "The connection to the host was lost.")
+        haptics?.play(.disconnected)
         beginAutomaticReconnection(after: STError(
             category: .network,
             message: "The connection to the host was lost.",

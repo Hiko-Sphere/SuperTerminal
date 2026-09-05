@@ -83,6 +83,7 @@ struct KeyManagementView: View {
 }
 
 private struct KeyRow: View {
+    @Environment(AppContainer.self) private var container
     let key: StoredKey
 
     var body: some View {
@@ -104,7 +105,7 @@ private struct KeyRow: View {
             HStack(spacing: DesignTokens.Spacing.lg) {
                 Button {
                     UIPasteboard.general.string = key.publicKeyOpenSSH
-                    UINotificationFeedbackGenerator().notificationOccurred(.success)
+                    container.haptics.play(.textInserted)
                 } label: {
                     Label("Copy public key", systemImage: "doc.on.doc")
                 }

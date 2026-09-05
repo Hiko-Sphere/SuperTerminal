@@ -31,6 +31,7 @@ final class SessionManager {
     /// Optional so a test can run without a live path monitor, or drive one by hand.
     private let reachability: NetworkReachability?
     private let restoration: SessionRestorationStore?
+    private let haptics: Haptics?
 
     init(
         vault: CredentialVault,
@@ -38,7 +39,8 @@ final class SessionManager {
         settings: AppSettings,
         diagnostics: DiagnosticsCentre,
         reachability: NetworkReachability? = nil,
-        restoration: SessionRestorationStore? = nil
+        restoration: SessionRestorationStore? = nil,
+        haptics: Haptics? = nil
     ) {
         // One loop per core, shared by every session: each connection is mostly idle
         // waiting for a person to type, so a loop per session would be threads doing
@@ -50,6 +52,7 @@ final class SessionManager {
         self.diagnostics = diagnostics
         self.reachability = reachability
         self.restoration = restoration
+        self.haptics = haptics
     }
 
     /// Writes down what is open, so a relaunch can offer to reopen it.
@@ -99,7 +102,8 @@ final class SessionManager {
             knownHosts: knownHosts,
             settings: settings,
             log: diagnostics.logger,
-            reachability: reachability
+            reachability: reachability,
+            haptics: haptics
         )
         sessions.append(session)
         rememberOpenSessions()

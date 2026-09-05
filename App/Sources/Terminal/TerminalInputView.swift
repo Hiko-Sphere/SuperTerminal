@@ -26,6 +26,9 @@ final class TerminalInputView: UIView, UIKeyInput {
     var onFontSizeChange: ((CGFloat) -> Void)?
     /// Called when the user asks for the command palette.
     var onCommandPalette: (() -> Void)?
+    /// Plays a haptic. Supplied rather than reached for, so this view does not decide
+    /// whether the user wants haptics at all.
+    var onHaptic: ((Haptics.Event) -> Void)?
     /// Supplies the current screen so gestures can resolve positions and extract text.
     var currentScreen: (() -> TerminalScreen?)?
 
@@ -334,7 +337,7 @@ final class TerminalInputView: UIView, UIKeyInput {
         guard let text = selectedText() else { return }
         UIPasteboard.general.string = text
         clearSelection()
-        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        onHaptic?(.textInserted)
     }
 
     @objc private func pasteFromPasteboard() {
@@ -447,7 +450,7 @@ final class TerminalInputView: UIView, UIKeyInput {
               let range = screen.logicalLineRange(containing: position.row)
         else { return }
         setSelection(range)
-        UISelectionFeedbackGenerator().selectionChanged()
+        onHaptic?(.selectionChanged)
     }
 
     func setSelection(_ range: TerminalRange?) {
@@ -529,7 +532,7 @@ final class TerminalInputView: UIView, UIKeyInput {
         case .began:
             selectionAnchor = position
             setSelection(TerminalRange(start: position, end: position))
-            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            onHaptic?(.modifierArmed)
         case .changed:
             guard let anchor = selectionAnchor else { return }
             setSelection(TerminalRange(start: anchor, end: position))

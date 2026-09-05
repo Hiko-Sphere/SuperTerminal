@@ -117,6 +117,7 @@ struct TerminalView: View {
                     blinkCursor: container.settings.cursorBlink,
                     confirmMultilinePaste: container.settings.confirmMultilinePaste,
                     onCommandPalette: { scene.isShowingPalette = true },
+                    onHaptic: { container.haptics.play($0) },
                     onFontSizeChange: { size in
                         // Persisted, because a size chosen by pinching is a preference —
                         // having it snap back on the next session would make the gesture
@@ -245,7 +246,7 @@ struct TerminalView: View {
                 if let text = session.selectedText {
                     UIPasteboard.general.string = text
                     session.selection = nil
-                    UINotificationFeedbackGenerator().notificationOccurred(.success)
+                    container.haptics.play(.textInserted)
                 }
             } label: {
                 Label("Copy", systemImage: "doc.on.doc")
