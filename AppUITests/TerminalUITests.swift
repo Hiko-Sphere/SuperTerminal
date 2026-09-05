@@ -428,6 +428,14 @@ final class AccessibilityUITests: XCTestCase {
                 "the \(label) section should be reachable with Reduce Transparency on"
             )
         }
+        // The mark and version at the foot of Settings. It is the last thing in the form,
+        // so reaching it also proves the whole form still scrolls with Bold Text on — the
+        // setting that makes every row taller and pushes content off the end.
+        let about = app.staticTexts.containing(
+            NSPredicate(format: "label BEGINSWITH %@", "Version ")
+        ).firstMatch
+        XCTAssertTrue(scrollToElement(about, in: app), "the version should be reachable at the foot of Settings")
+
         let shot = XCTAttachment(screenshot: app.screenshot())
         shot.name = "settings-reduce-transparency"
         shot.lifetime = .keepAlways

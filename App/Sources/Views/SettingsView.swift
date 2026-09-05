@@ -96,6 +96,11 @@ struct SettingsView: View {
                 } footer: {
                     Text("Diagnostics contain no commands, output, hostnames or credentials.")
                 }
+
+                Section {
+                    AboutRow()
+                }
+                .listRowBackground(Color.clear)
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
@@ -194,5 +199,43 @@ struct KnownHostsView: View {
 
     private func load() async {
         entries = (try? await container.knownHosts.all()) ?? []
+    }
+}
+
+
+/// The app's mark and version, at the foot of Settings.
+///
+/// A template image, so it takes the label colour and follows light and dark rather than
+/// being a black rectangle in one of them. The version is read from the bundle rather than
+/// written down, because a version string that has to be edited by hand is a version string
+/// that ends up wrong.
+private struct AboutRow: View {
+    var body: some View {
+        VStack(spacing: DesignTokens.Spacing.sm) {
+            Image("Logo")
+                .renderingMode(.template)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 56, height: 56)
+                .foregroundStyle(DesignTokens.Color.labelSecondary)
+            Text("SuperTerminal")
+                .font(DesignTokens.Typography.headline)
+                .foregroundStyle(DesignTokens.Color.label)
+            Text(versionSummary)
+                .font(DesignTokens.Typography.caption)
+                .foregroundStyle(DesignTokens.Color.labelTertiary)
+                .monospacedDigit()
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, DesignTokens.Spacing.lg)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("SuperTerminal, \(versionSummary)")
+    }
+
+    private var versionSummary: String {
+        let info = Bundle.main.infoDictionary
+        let version = info?["CFBundleShortVersionString"] as? String ?? "—"
+        let build = info?["CFBundleVersion"] as? String ?? "—"
+        return "Version \(version) (\(build))"
     }
 }
