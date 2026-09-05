@@ -435,13 +435,23 @@ final class AccessibilityUITests: XCTestCase {
     }
 
     /// Scrolls until `element` is on screen, or gives up.
+    ///
+    /// Swipes the form itself rather than the application. On iPad, Settings is a form
+    /// sheet that does not fill the screen, so a swipe aimed at the app scrolls the
+    /// connection list *behind* the sheet and the sheet never moves — which reads as
+    /// "the section is unreachable" when it is merely further down.
     private func scrollToElement(_ element: XCUIElement, in app: XCUIApplication) -> Bool {
-        if element.exists, element.isHittable { return true }
-        for _ in 0 ..< 8 {
+        let scroller: XCUIElement = {
+            let collection = app.collectionViews.firstMatch
+            if collection.exists { return collection }
+            let table = app.tables.firstMatch
+            return table.exists ? table : app
+        }()
+        for _ in 0 ..< 12 {
             if element.exists, element.isHittable { return true }
-            app.swipeUp()
+            scroller.swipeUp()
         }
-        return element.exists
+        return element.exists && element.isHittable
     }
 
     func testEveryControlOnTheHostListIsLabelledForVoiceOver() throws {

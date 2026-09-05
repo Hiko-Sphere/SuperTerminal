@@ -34,7 +34,7 @@ struct TerminalThroughputTests {
     @Test("Plain text is consumed at a usable rate")
     func plainTextThroughput() {
         var terminal = TerminalEmulator(columns: 120, rows: 40, scrollbackLimit: 5000)
-        let line = Array((String(repeating: "x", count: 119) + "\r\n").utf8)
+        let line = Data((String(repeating: "x", count: 119) + "\r\n").utf8)
         let iterations = 20_000
         let total = line.count * iterations
 
@@ -44,10 +44,42 @@ struct TerminalThroughputTests {
             }
         }
         print("plain text: \(String(format: "%.1f", rate)) MB/s")
-        // Measured at ~9 MB/s in Release on an Apple silicon Mac, which is about 72 Mbit
-        // of continuous output — comfortably more than an interactive SSH session
-        // delivers, and far more than a person can read.
-        #expect(rate > floor(release: 4.5), "plain text throughput was \(rate) MB/s")
+        // Measured at ~14.7 MB/s in Release on an Apple silicon Mac — about 118 Mbit of
+        // continuous output, far more than an interactive SSH session delivers and far
+        // more than a person can read. The floor is set near half of that, because a CI
+        // runner is slower than a desk and a flaky performance gate gets ignored.
+        #expect(rate > floor(release: 7), "plain text throughput was \(rate) MB/s")
+    }
+
+    @Test("An array of bytes is consumed as fast as Data")
+    func arrayThroughputMatchesData() {
+        // `feed` is public and takes any sequence of bytes. Arrays used to be far slower
+        // than `Data` through it — every byte went through a generic iterator call — and
+        // because these benchmarks fed arrays, the published figures understated what the
+        // app actually got by more than half.
+        //
+        // Asserted as a *ratio* measured in the same run rather than against an absolute
+        // floor: the two paths should cost the same, and that stays true on a slow CI
+        // runner where any fixed number would either be flaky or too loose to catch the
+        // regression it exists for.
+        let line = String(repeating: "w", count: 119) + "\r\n"
+        let iterations = 20_000
+
+        var dataTerminal = TerminalEmulator(columns: 120, rows: 40, scrollbackLimit: 5000)
+        let asData = Data(line.utf8)
+        let dataRate = measureThroughput(bytes: asData.count * iterations) {
+            for _ in 0 ..< iterations { _ = dataTerminal.feed(asData) }
+        }
+
+        var arrayTerminal = TerminalEmulator(columns: 120, rows: 40, scrollbackLimit: 5000)
+        let asArray = Array(line.utf8)
+        let arrayRate = measureThroughput(bytes: asArray.count * iterations) {
+            for _ in 0 ..< iterations { _ = arrayTerminal.feed(asArray) }
+        }
+
+        let ratio = arrayRate / dataRate
+        print("array vs Data: \(String(format: "%.2f", ratio))×")
+        #expect(ratio > 0.7, "arrays ran at \(arrayRate) MB/s against \(dataRate) MB/s for Data")
     }
 
     @Test("Heavily coloured output stays fast")
@@ -60,7 +92,7 @@ struct TerminalThroughputTests {
             line += "\u{1B}[38;5;\(index % 256)m#"
         }
         line += "\u{1B}[0m\r\n"
-        let bytes = Array(line.utf8)
+        let bytes = Data(line.utf8)
         let iterations = 5000
 
         let rate = measureThroughput(bytes: bytes.count * iterations) {
@@ -72,13 +104,13 @@ struct TerminalThroughputTests {
         // Measured at ~12.7 MB/s in Release. Coloured output is faster per byte than
         // plain text because the escape sequences are cheaper to parse than characters
         // are to place on the grid.
-        #expect(rate > floor(release: 6), "coloured throughput was \(rate) MB/s")
+        #expect(rate > floor(release: 15), "coloured throughput was \(rate) MB/s")
     }
 
     @Test("CJK output stays fast")
     func wideCharacterThroughput() {
         var terminal = TerminalEmulator(columns: 120, rows: 40, scrollbackLimit: 5000)
-        let bytes = Array((String(repeating: "中文测试", count: 15) + "\r\n").utf8)
+        let bytes = Data((String(repeating: "中文测试", count: 15) + "\r\n").utf8)
         let iterations = 10_000
 
         let rate = measureThroughput(bytes: bytes.count * iterations) {
@@ -89,13 +121,13 @@ struct TerminalThroughputTests {
         print("CJK: \(String(format: "%.1f", rate)) MB/s")
         // Measured at ~8 MB/s in Release. Wide characters cost more per character but
         // fewer characters fill a line.
-        #expect(rate > floor(release: 4), "CJK throughput was \(rate) MB/s")
+        #expect(rate > floor(release: 7), "CJK throughput was \(rate) MB/s")
     }
 
     @Test("Memory stays bounded under sustained output")
     func memoryIsBounded() {
         var terminal = TerminalEmulator(columns: 200, rows: 50, scrollbackLimit: 5000)
-        let line = Array((String(repeating: "y", count: 199) + "\r\n").utf8)
+        let line = Data((String(repeating: "y", count: 199) + "\r\n").utf8)
         for _ in 0 ..< 100_000 {
             _ = terminal.feed(line)
         }
@@ -108,7 +140,7 @@ struct TerminalThroughputTests {
     @Test("Reflow of a full scrollback completes promptly")
     func reflowIsFastEnoughForRotation() {
         var terminal = TerminalEmulator(columns: 120, rows: 40, scrollbackLimit: 5000)
-        let line = Array((String(repeating: "z", count: 119) + "\r\n").utf8)
+        let line = Data((String(repeating: "z", count: 119) + "\r\n").utf8)
         for _ in 0 ..< 6000 {
             _ = terminal.feed(line)
         }

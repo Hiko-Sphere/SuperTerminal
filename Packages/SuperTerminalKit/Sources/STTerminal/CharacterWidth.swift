@@ -50,26 +50,43 @@ public enum CharacterWidth {
             return ascii >= 0x20 && ascii < 0x7F ? 1 : 0
         }
 
-        let scalars = Array(character.unicodeScalars)
-        guard let base = scalars.first else { return 1 }
+        // One pass over the scalars, gathering everything the rules below need.
+        //
+        // This used to build an `Array` and then walk it four more times. For CJK — where
+        // every character takes this path — that was an allocation and five traversals
+        // per glyph, and allocation was the single largest leaf cost in the profile. The
+        // rules and their order are unchanged; only the number of passes is.
+        var base: Unicode.Scalar?
+        var hasJoiner = false
+        var hasEmojiSelector = false
+        var hasTextSelector = false
+        var widest = 0
+        for scalar in character.unicodeScalars {
+            if base == nil { base = scalar }
+            switch scalar.value {
+            case 0x200D: hasJoiner = true
+            case 0xFE0F: hasEmojiSelector = true
+            case 0xFE0E: hasTextSelector = true
+            default: break
+            }
+            let scalarWidth = ofScalar(scalar)
+            if scalarWidth > widest { widest = scalarWidth }
+        }
+        guard let base else { return 1 }
 
         // A flag is a pair of regional indicators rendered as one wide glyph.
         if (0x1F1E6 ... 0x1F1FF).contains(base.value) { return 2 }
         // A joined sequence renders as a single emoji regardless of how many components
         // it has.
-        if scalars.contains(where: { $0.value == 0x200D }) { return 2 }
+        if hasJoiner { return 2 }
         // U+FE0F asks for emoji presentation, which is wide even when the base scalar is
         // a narrow text-presentation symbol — `❤️` and `⌚️` being the everyday cases.
-        if scalars.contains(where: { $0.value == 0xFE0F }) { return 2 }
+        if hasEmojiSelector { return 2 }
         // U+FE0E asks for text presentation, which stays narrow.
-        if scalars.contains(where: { $0.value == 0xFE0E }) { return 1 }
+        if hasTextSelector { return 1 }
         if base.properties.isEmojiPresentation { return 2 }
 
-        var width = 0
-        for scalar in scalars {
-            width = max(width, ofScalar(scalar))
-        }
-        return max(width, 1)
+        return max(widest, 1)
     }
 
     /// Binary search over the sorted, merged range tables.

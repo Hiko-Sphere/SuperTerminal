@@ -297,6 +297,42 @@ timeout bounds it correctly and the retry then continues, so the cost is a slow 
 retry against a dead load balancer, not a hang. `retriesWhileUnreachableAndStopsOnRequest`
 takes 33s for this reason.
 
+### Throughput, re-measured on the path the app actually uses
+
+The published figures were wrong, and finding out why was worth more than the optimisation
+that came out of it.
+
+`TerminalEmulator.feed` takes any sequence of bytes. The benchmarks fed `Array`; the app
+feeds `Data`, straight off the socket. Those took different paths through the parser, and
+`Array` was far slower — so **every throughput figure this report has carried understated
+what the app was really getting**, by 40% for plain text and more than twice for CJK.
+
+Measured in Release on an Apple silicon Mac, all on `Data`:
+
+| Case | Before | After | Note |
+| --- | --- | --- | --- |
+| Plain text | 14.5 MB/s | 14.7 MB/s | Unchanged. The app was already this fast; the old figure of 9.0 was the array path |
+| Heavily coloured | 29.6 MB/s | 33.5 MB/s | +13% |
+| CJK | 12.0 MB/s | 14.9 MB/s | +24%, from the width change below |
+| The same text as an `Array` | 9.3 MB/s | 15.4 MB/s | +66%, now at parity with `Data` |
+
+Two changes, both argued for by the trace:
+
+* **`TerminalParser.parse` walks contiguous storage** where the sequence offers it. Every
+  byte previously went through a generic iterator call, which over a megabyte of output is
+  paid a million times. Anything without contiguous storage still takes the ordinary loop.
+* **`CharacterWidth.of` makes one pass** instead of building an `Array` of scalars and
+  walking it four more times. For CJK — where every character takes that path — it was an
+  allocation and five traversals per glyph, and allocation was the largest leaf cost in
+  the profile. The rules and their order are unchanged.
+
+The array/`Data` parity is now asserted as a **ratio measured in the same run**, not
+against a fixed number: the two paths should cost the same, and that stays true on a slow
+CI runner where any absolute floor would be either flaky or too loose to catch the
+regression it exists for. It reads 0.98× now and 0.62× on the old parser, so it fails on
+the code it was written to catch. The absolute floors were raised to roughly half of what
+is measured, keeping the margin the previous ones had.
+
 ### Instruments — a real trace, and what it found
 
 `./scripts/profile-emulator.sh` records a Time Profiler trace of the emulator's hot path
@@ -305,7 +341,8 @@ retain/release traffic the optimiser would have removed, and native on macOS, be
 emulator is the same code on iOS and this makes profiling one command rather than a
 session with a device and a UI to drive.
 
-Run on 2026-09-05: **3.16 s of CPU across 3 163 samples, 99.6% symbolicated.**
+Run on 2026-09-05, before the optimisations below: **3.16 s of CPU across 3 163 samples,
+99.6% symbolicated.**
 
 Attributed to the deepest frame of ours on each stack:
 

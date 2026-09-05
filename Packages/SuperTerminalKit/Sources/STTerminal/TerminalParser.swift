@@ -121,6 +121,19 @@ public struct TerminalParser: Sendable {
 
     /// Feeds bytes to the parser, calling `sink` for each action in order.
     public mutating func parse(_ bytes: some Sequence<UInt8>, sink: (TerminalAction) -> Void) {
+        // Walk contiguous storage directly where the sequence has it.
+        //
+        // The caller passes `Data`, whose element-by-element iteration goes through a
+        // generic path on every byte. Over a megabyte of output that per-byte cost is
+        // paid a million times, and it was the largest single item in the profile.
+        // Everything that does not offer contiguous storage falls back to the ordinary
+        // loop, so behaviour is identical either way.
+        let walked: Void? = bytes.withContiguousStorageIfAvailable { buffer in
+            for byte in buffer {
+                step(byte, sink: sink)
+            }
+        }
+        guard walked == nil else { return }
         for byte in bytes {
             step(byte, sink: sink)
         }
