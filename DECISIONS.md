@@ -336,3 +336,46 @@ to ask, and hiding the row automatically when a Magic Keyboard is attached would
 It was implemented and then removed: the simulator reports a keyboard whether or not one is
 connected, so the behaviour could not be verified here, and shipping automatic behaviour
 that cannot be tested is worse than a predictable setting a user changes once.
+
+
+## D-010 · Only network failures are retried automatically
+
+**Decision.** Automatic reconnection retries exactly two categories: `network` and
+`tunnel`. Everything else stops and waits for a person.
+
+**Why.** The hard part of reconnection is not the backoff, it is knowing what may be
+retried. Repeating a rejected password is how an account gets locked out and how an Access
+policy starts rate-limiting. Quietly retrying past a changed host key or a failed
+certificate check is worse still: those checks are the only thing the connection's security
+rests on, and a user who watches one fail and then succeed learns to read it as flakiness.
+A key-exchange or MAC failure is ambiguous enough — it may be a coincidence, it may be
+someone interfering — that it is not something to paper over either.
+
+The list is exhaustive rather than a default, and a test asserts that every category has a
+considered answer, so adding one forces the question rather than inheriting "retry".
+
+**Two categories were corrected as part of this.** "The server closed the connection
+before the SSH session was established" and "the handshake did not complete in time" were
+both `sshTransport`, grouped with cryptographic failures. Neither is one: nothing SSH
+promises was broken, the connection simply went away or never answered. They are the two
+most common ways a mobile connection dies — a hand-off between Wi-Fi and cellular, a tunnel
+whose origin is restarting, a lift — so with the old categories the feature would have
+retried almost nothing. They are `network` now.
+
+**Reversible.** Yes, and it is one line per category. The reasoning is what matters, so it
+is written next to the code rather than only here.
+
+## D-011 · Reconnecting keeps the scrollback, and says the shell is new
+
+**Decision.** A reconnection does not clear the terminal. The buffer is kept and a dim rule
+is drawn where the break was, labelled with the app's own name.
+
+**Why.** The scrollback is why the user is looking: it holds the command that was running
+when the link went and whatever it had printed. Clearing it to make the reconnection look
+tidy destroys the only record of what happened.
+
+The label is not decoration. The shell on the other side is a **new** one — a different
+working directory, nothing running, none of the environment that was set — and a terminal
+that reconnects silently has handed the user a different machine state with no sign that
+anything changed. That is how someone runs a command in the place they did not mean to. The
+app's name is in the rule so the line can never be read as something the server said.

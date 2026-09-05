@@ -1,5 +1,11 @@
 import Foundation
 
+// Spawns a real `sshd`, so it exists only where a process can be spawned. An iOS
+// test target links this module for the parts that can run there — the relay used to
+// break a connection on purpose — and must not fail to build over this one.
+#if os(macOS)
+
+
 /// Runs a real OpenSSH `sshd` on an ephemeral port for integration tests.
 ///
 /// This is a genuine SSH server — the same binary the user's servers run — not a
@@ -273,3 +279,5 @@ public final class OpenSSHTestServer: @unchecked Sendable {
         }
     }
 }
+
+#endif

@@ -170,6 +170,28 @@ recorded, exactly as the shell's own history would record it. The defences are t
 feature is off unless asked for, that it can be cleared in one action from Settings, and
 that it never leaves the device.
 
+### T-12 · Automatic reconnection as a way past a security check
+
+Retrying a failed connection is convenient, and convenience is how a security control gets
+worn away. If a client retries a host-key mismatch, the user sees a warning that clears
+itself; if it retries authentication, a rejected credential is sent again and again.
+
+*Mitigation:* only `network` and `tunnel` failures are retried. Host-key mismatches, TLS
+validation failures, SSH transport failures, Access refusals, authentication failures and
+credential errors all stop the retry loop and leave the error on screen. The classification
+is exhaustive — a test asserts that every error category has a considered answer, so a new
+one cannot silently inherit "retry". Recorded as D-010.
+
+*Also:* a reconnection is a full handshake, so the host key is verified again through the
+same path as the first connection. A server that changes its key between the drop and the
+retry produces the same prompt it would have produced on a first connection, and the retry
+loop stops there rather than answering it.
+
+*Not mitigated:* an attacker who can drop connections at will can cause repeated
+reconnections, and each one is a fresh handshake to a host the user has already trusted.
+This is a denial-of-service and a battery cost, not a path to a credential: nothing is sent
+that would not be sent on a normal connection, and the retry count is bounded.
+
 ## Cryptography policy
 
 * No algorithm is implemented in this project. Primitives come from CryptoKit,

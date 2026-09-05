@@ -192,3 +192,44 @@ struct SessionSwitchingTests {
         #expect(manager.owner(ofSessionWithID: first.id) == nil, "the old session should be free for another window")
     }
 }
+
+
+/// The reconnection banner's wording, which is the part of the feature a user reads.
+///
+/// Separate from the integration tests because those prove it reconnects; these pin what
+/// it *says* while doing so. A banner that claims to be reconnecting while it is really
+/// waiting for a network the device does not have is worse than saying nothing.
+@Suite("Reconnection wording")
+@MainActor
+struct ReconnectionWordingTests {
+    private func banner(
+        attempt: Int = 1,
+        nextAttempt: Date? = nil,
+        isAttempting: Bool = false,
+        waitingForNetwork: Bool = false
+    ) -> TerminalSession.Reconnection {
+        TerminalSession.Reconnection(
+            attempt: attempt,
+            nextAttempt: nextAttempt,
+            isAttempting: isAttempting,
+            lastError: STError(category: .network, message: "The connection to the host was lost."),
+            isWaitingForNetwork: waitingForNetwork
+        )
+    }
+
+    @Test("Waiting for a network is not described as reconnecting")
+    func waitingForNetworkIsNotCalledReconnecting() {
+        let state = banner(waitingForNetwork: true)
+        #expect(state.isWaitingForNetwork)
+        #expect(!state.isAttempting, "nothing is in flight while there is no network to use")
+    }
+
+    @Test("An exhausted retry is distinguishable from one still counting down")
+    func exhaustedIsDistinguishable() {
+        let counting = banner(attempt: 3, nextAttempt: Date().addingTimeInterval(4))
+        let exhausted = banner(attempt: 8, nextAttempt: nil)
+        #expect(counting.nextAttempt != nil)
+        #expect(exhausted.nextAttempt == nil)
+        #expect(counting != exhausted)
+    }
+}

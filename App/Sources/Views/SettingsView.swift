@@ -64,6 +64,14 @@ struct SettingsView: View {
                     Text("Terminal")
                 }
 
+                Section {
+                    Toggle("Reconnect automatically", isOn: $settings.automaticReconnect)
+                } header: {
+                    Text("Connection")
+                } footer: {
+                    Text("When a connection drops, SuperTerminal retries on its own and as soon as the network comes back. Your scrollback is kept, and the new shell is marked in the terminal — it starts fresh, in the home directory, with nothing running.")
+                }
+
                 Section("Commands") {
                     NavigationLink("Snippets") { SnippetLibraryView() }
                 }

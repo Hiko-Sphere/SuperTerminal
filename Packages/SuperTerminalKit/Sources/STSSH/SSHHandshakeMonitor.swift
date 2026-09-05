@@ -62,11 +62,20 @@ final class SSHHandshakeMonitor: ChannelInboundHandler, @unchecked Sendable {
     }
 
     func channelInactive(context: ChannelHandlerContext) {
-        if !completed {
-            completed = true
-            readyPromise.fail(recordedError ?? SSHHandshakeIncomplete())
-        }
+        channelClosedBeforeReady()
         context.fireChannelInactive()
+    }
+
+    /// Settles the handshake as failed if the channel has gone before it finished.
+    ///
+    /// Called both from `channelInactive` and from the channel's own close future,
+    /// because a peer that closes the moment it accepts can beat this handler into the
+    /// pipeline — in which case `channelInactive` is never delivered here at all.
+    /// Both paths run on the channel's event loop, which is what makes the flag safe.
+    func channelClosedBeforeReady() {
+        guard !completed else { return }
+        completed = true
+        readyPromise.fail(recordedError ?? SSHHandshakeIncomplete())
     }
 }
 

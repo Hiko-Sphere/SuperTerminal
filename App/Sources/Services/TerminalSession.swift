@@ -38,6 +38,32 @@ final class TerminalSession: Identifiable {
     let host: Host
 
     private(set) var state: State = .idle
+
+    /// What automatic reconnection is doing, if anything. `nil` means it is not running.
+    private(set) var reconnection: Reconnection?
+
+    /// A connection that is being retried without the user asking.
+    ///
+    /// Shown rather than hidden: a terminal that silently reconnects has handed the user a
+    /// *new* shell with none of the state the old one had — a different working directory,
+    /// no running program, no environment they set — and letting that pass unremarked is
+    /// how someone runs a command in the wrong place.
+    struct Reconnection: Equatable, Sendable {
+        var attempt: Int
+        var nextAttempt: Date?
+        var isAttempting: Bool
+        var lastError: STError
+        /// Set when the network is gone: waiting for it to return rather than counting
+        /// attempts down, because attempts spent offline teach nothing and giving up
+        /// while still in a tunnel is exactly the wrong moment to stop.
+        var isWaitingForNetwork: Bool
+    }
+
+    private let reachability: NetworkReachability?
+    private var reconnectionTask: Task<Void, Never>?
+    /// Whether the shell reported an exit status before the channel closed. A shell that
+    /// exited is a session the user ended; a channel that closed without one is a drop.
+    private var shellExited = false
     /// The rendered screen. Replaced wholesale on each update so the view has a single,
     /// consistent snapshot rather than a grid mutating underneath it.
     private(set) var screen: TerminalScreen
@@ -93,13 +119,15 @@ final class TerminalSession: Identifiable {
         vault: CredentialVault,
         knownHosts: any KnownHostsStore,
         settings: AppSettings,
-        log: STLogger
+        log: STLogger,
+        reachability: NetworkReachability? = nil
     ) {
         self.host = host
         self.group = group
         self.vault = vault
         self.knownHosts = knownHosts
         self.settings = settings
+        self.reachability = reachability
         self.log = log.child(subsystem: "session")
         promptCoordinator = PromptCoordinator()
         let initialEmulator = TerminalEmulator(
@@ -192,17 +220,37 @@ final class TerminalSession: Identifiable {
         }
     }
 
-    /// Reconnects after a drop, reusing the same host and a fresh screen.
+    /// Reconnects after a drop, keeping everything already on screen.
+    ///
+    /// The scrollback is the reason the user is looking: it holds the command that was
+    /// running when the connection went, and what it had printed. Clearing it to make the
+    /// reconnection look tidy throws away the only record of what happened.
+    ///
+    /// A rule is drawn where the break was, labelled with the app's own name so it cannot
+    /// be mistaken for something the server said. The shell on the other side is a new
+    /// one — a different working directory, nothing running, none of the environment the
+    /// user had set — and that is worth marking plainly.
     func reconnect() async {
         await disconnect()
-        emulator = TerminalEmulator(
-            columns: size.columns,
-            rows: size.rows,
-            scrollbackLimit: settings.scrollbackLimit
-        )
-        screen = emulator.activeScreen
+        shellExited = false
+        annotate("Reconnecting…")
         scrollbackOffset = 0
         await connect()
+        if case .connected = state {
+            annotate("Reconnected. This is a new shell.")
+        }
+    }
+
+    /// Writes a line of the app's own into the buffer, styled so it reads as an aside.
+    private func annotate(_ message: String) {
+        let time = Date().formatted(date: .omitted, time: .standard)
+        // Dim, and prefixed with the app's name, so it is never read as server output.
+        let line = "\r\n\u{1B}[2m── SuperTerminal: \(message) \(time) ──\u{1B}[0m\r\n"
+        for event in emulator.feed(Data(line.utf8)) {
+            if case let .title(newTitle) = event { title = newTitle }
+        }
+        _ = emulator.flush()
+        screen = emulator.activeScreen
     }
 
     // MARK: - Input and output
@@ -497,6 +545,8 @@ final class TerminalSession: Identifiable {
                 case let .output(data), let .errorOutput(data):
                     await self.consume(data)
                 case .exit:
+                    // The shell ended on its own; the close that follows is expected.
+                    await self.noteShellExited()
                     continue
                 case .closed:
                     await self.handleClosed()
@@ -536,12 +586,139 @@ final class TerminalSession: Identifiable {
         }
     }
 
+    private func noteShellExited() { shellExited = true }
+
     private func handleClosed() async {
         pumpTask = nil
         shell = nil
         connection = nil
         if case .failed = state { return }
-        state = .disconnected(reason: "The remote host closed the connection.")
+        if shellExited {
+            state = .disconnected(reason: "The shell exited.")
+            return
+        }
+        state = .disconnected(reason: "The connection to the host was lost.")
+        beginAutomaticReconnection(after: STError(
+            category: .network,
+            message: "The connection to the host was lost.",
+            recoverySuggestion: "Reconnecting."
+        ))
+    }
+
+    // MARK: - Automatic reconnection
+
+    /// Starts retrying, if this failure is one a retry can fix and the user wants it.
+    func beginAutomaticReconnection(after error: STError) {
+        guard settings.automaticReconnect else { return }
+        guard ReconnectionPolicy.isWorthRetrying(error.category) else { return }
+        guard reconnectionTask == nil else { return }
+
+        let policy = ReconnectionPolicy()
+        reconnection = Reconnection(
+            attempt: 0,
+            nextAttempt: nil,
+            isAttempting: false,
+            lastError: error,
+            isWaitingForNetwork: reachability.map { !$0.isOnline } ?? false
+        )
+        reconnectionTask = Task { [weak self] in
+            await self?.runReconnection(policy: policy)
+        }
+    }
+
+    /// Stops retrying. The user asked, or they are doing something else with the session.
+    func cancelAutomaticReconnection() {
+        reconnectionTask?.cancel()
+        reconnectionTask = nil
+        reconnection = nil
+    }
+
+    /// Skips the remaining wait.
+    func retryNow() {
+        guard reconnection != nil else { return }
+        reconnectionTask?.cancel()
+        reconnectionTask = nil
+        let policy = ReconnectionPolicy()
+        reconnection?.nextAttempt = Date()
+        reconnectionTask = Task { [weak self] in
+            await self?.runReconnection(policy: policy, startingAt: 1, waitFirst: false)
+        }
+    }
+
+    private func runReconnection(
+        policy: ReconnectionPolicy,
+        startingAt firstAttempt: Int = 1,
+        waitFirst: Bool = true
+    ) async {
+        var attempt = firstAttempt
+        var shouldWait = waitFirst
+
+        while !Task.isCancelled, policy.allowsAttempt(attempt) {
+            if let reachability, !reachability.isOnline {
+                // Hold rather than spend attempts. Coming out of a tunnel with the
+                // retries already exhausted is the one moment this must not happen.
+                reconnection?.isWaitingForNetwork = true
+                reconnection?.nextAttempt = nil
+                await waitForNetwork(reachability)
+                guard !Task.isCancelled else { return }
+                // A different network is new information, so the count starts again.
+                attempt = 1
+                shouldWait = false
+                reconnection?.isWaitingForNetwork = false
+            }
+
+            if shouldWait {
+                let delay = policy.delay(forAttempt: attempt)
+                reconnection?.nextAttempt = Date().addingTimeInterval(
+                    Double(delay.components.seconds) + Double(delay.components.attoseconds) * 1e-18
+                )
+                reconnection?.attempt = attempt
+                do {
+                    try await Task.sleep(for: delay)
+                } catch {
+                    return
+                }
+            }
+            shouldWait = true
+            guard !Task.isCancelled else { return }
+
+            reconnection?.attempt = attempt
+            reconnection?.isAttempting = true
+            reconnection?.nextAttempt = nil
+            await reconnect()
+            reconnection?.isAttempting = false
+
+            if case .connected = state {
+                reconnection = nil
+                reconnectionTask = nil
+                return
+            }
+            if case let .failed(error) = state, !ReconnectionPolicy.isWorthRetrying(error.category) {
+                // Something a retry cannot fix — a changed host key, a rejected password.
+                // Stop and leave the error on screen where the user will see it.
+                reconnection = nil
+                reconnectionTask = nil
+                return
+            }
+            if case .awaitingUser = state {
+                // A prompt is on screen; the user is now driving.
+                reconnection = nil
+                reconnectionTask = nil
+                return
+            }
+            attempt += 1
+        }
+
+        // Out of attempts. The manual button remains, and says so.
+        reconnection?.nextAttempt = nil
+        reconnection?.isAttempting = false
+        reconnectionTask = nil
+    }
+
+    private func waitForNetwork(_ reachability: NetworkReachability) async {
+        for await _ in reachability.usablePathChanges {
+            return
+        }
     }
 
     private func makeTransport() async throws -> any ByteStreamTransport {

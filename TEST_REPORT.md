@@ -21,7 +21,7 @@ left out.
 ```bash
 cd Packages/SuperTerminalKit
 swift build          # 0 errors, 0 warnings from project code
-swift test           # 131 tests in 19 suites passed in 10.0s
+swift test           # 141 tests in 21 suites passed in 10.0s
 swift test -c release --filter TerminalThroughputTests   # the numbers below
 
 cd ..
@@ -38,7 +38,7 @@ xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal \
   CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
 # ** BUILD SUCCEEDED ** — arm64 device build compiles
 
-./scripts/app-integration-e2e.sh   # 53 app tests on iPhone 17 Pro simulator, ** TEST SUCCEEDED **
+./scripts/app-integration-e2e.sh   # 61 app tests on iPhone 17 Pro simulator, ** TEST SUCCEEDED **
 ./scripts/ui-terminal-e2e.sh       # 13 passed, 1 skipped on iPhone, ** TEST SUCCEEDED **
 ./scripts/ui-terminal-e2e.sh "platform=iOS Simulator,name=iPad Pro 13-inch (M5)"
                                    # 14 passed on iPad, ** TEST SUCCEEDED **
@@ -254,6 +254,44 @@ The app was installed and launched on the iPhone 17 Pro and iPad Pro 13-inch (M5
 simulators and screenshotted. That found a real defect: on iPad the split view opened
 with the sidebar collapsed, so a fresh install showed "No session" and no visible way to
 add one. Fixed by starting at `.all` visibility.
+
+### Automatic reconnection — 6 integration tests against a real server
+
+Run on the iPhone 17 Pro simulator as part of `scripts/app-integration-e2e.sh`. The
+session's traffic runs through a relay whose sockets can be closed underneath it, so the
+drop is a real one: a real `sshd` on the far side, a real handshake through the relay, and
+sockets that go away with no SSH disconnect message — what a network vanishing looks like.
+
+Faking the drop would have proved the state machine and nothing else: not whether a socket
+dying mid-session is noticed, not whether the SSH layer surfaces it, and not whether what
+comes back is a shell that works.
+
+| Test | What a pass proves |
+| --- | --- |
+| A dropped connection comes back on its own | The drop is noticed, the retry runs, the session reconnects, the banner clears — and `printf` in the recovered shell produces output, so it is a working shell rather than a connected socket |
+| The scrollback survives | Output printed before the drop is still readable afterwards. This is the assertion that stops a future "tidy up on reconnect" change |
+| It keeps trying while the server is down, and stops when told | New connections are refused as well as severed; at least two attempts happen; cancelling stops it and nothing carries on afterwards |
+| Retry now skips the wait | Without it the session would sit out the remaining backoff after the user can see the server is back |
+| The setting is honoured | With automatic reconnection off, a drop leaves the session waiting for the user |
+| `exit` is not a drop | Typing `exit` disconnects cleanly and starts nothing. The shell's exit status arriving before the channel closes is what distinguishes the two; without it, ending a session deliberately would reopen it |
+| Coming back onto a network retries at once | The session waits rather than spending attempts while offline — running out of retries just as the user leaves a tunnel is the worst possible moment to give up — and reconnects immediately when the path returns |
+
+Two error categories were corrected because of this work, and both were real bugs rather
+than tidying. "The server closed the connection before the SSH session was established" and
+"the handshake did not complete in time" were classified as `sshTransport`, alongside key
+exchange and MAC failures. Neither is a transport failure in that sense — nothing SSH
+promises was broken, the connection went away or never answered — and they are the two most
+common ways a mobile connection dies. With the old classification, automatic reconnection
+would have retried almost nothing. A test now pins the category rather than the message.
+
+**Known limitation, measured:** a server that accepts a connection and immediately closes
+it takes the full 30-second handshake timeout to fail, because the close can arrive before
+the handshake monitor is in the pipeline. Failing faster was implemented and then reverted:
+every variant either failed the promise before its callbacks were attached or scheduled
+work on an event loop that was already shutting down, and crashed the package suite. The
+timeout bounds it correctly and the retry then continues, so the cost is a slow first
+retry against a dead load balancer, not a hang. `retriesWhileUnreachableAndStopsOnRequest`
+takes 33s for this reason.
 
 ### Windows — 11 app tests
 

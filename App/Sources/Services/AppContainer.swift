@@ -18,6 +18,7 @@ final class AppContainer {
     let snippetStore: SnippetStore
     let sessionManager: SessionManager
     let settings: AppSettings
+    let reachability: NetworkReachability
     let vault: CredentialVault
     let knownHosts: any KnownHostsStore
     let diagnostics: DiagnosticsCentre
@@ -27,6 +28,7 @@ final class AppContainer {
         snippetStore: SnippetStore,
         sessionManager: SessionManager,
         settings: AppSettings,
+        reachability: NetworkReachability,
         vault: CredentialVault,
         knownHosts: any KnownHostsStore,
         diagnostics: DiagnosticsCentre
@@ -35,6 +37,7 @@ final class AppContainer {
         self.snippetStore = snippetStore
         self.sessionManager = sessionManager
         self.settings = settings
+        self.reachability = reachability
         self.vault = vault
         self.knownHosts = knownHosts
         self.diagnostics = diagnostics
@@ -49,17 +52,20 @@ final class AppContainer {
             log: diagnostics.logger
         )
         let settings = AppSettings()
+        let reachability = NetworkReachability()
         let sessionManager = SessionManager(
             vault: vault,
             knownHosts: knownHosts,
             settings: settings,
-            diagnostics: diagnostics
+            diagnostics: diagnostics,
+            reachability: reachability
         )
         let container = AppContainer(
             hostStore: HostStore(directory: directory),
             snippetStore: SnippetStore(directory: directory, settings: settings),
             sessionManager: sessionManager,
             settings: settings,
+            reachability: reachability,
             vault: vault,
             knownHosts: knownHosts,
             diagnostics: diagnostics

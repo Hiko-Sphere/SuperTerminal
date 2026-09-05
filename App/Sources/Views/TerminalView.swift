@@ -9,6 +9,7 @@ struct TerminalView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
     @Environment(\.colorSchemeContrast) private var colorSchemeContrast
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let session: TerminalSession
 
@@ -47,6 +48,13 @@ struct TerminalView: View {
 
     var body: some View {
         terminal
+            .animation(
+                DesignTokens.Motion.respectingReduceMotion(
+                    DesignTokens.Motion.emphasised,
+                    reduceMotion: reduceMotion
+                ),
+                value: session.reconnection
+            )
     }
 
     @ViewBuilder
@@ -73,6 +81,18 @@ struct TerminalView: View {
             theme.background.swiftUIColor.ignoresSafeArea()
 
             VStack(spacing: 0) {
+                if let reconnection = session.reconnection {
+                    TimelineView(.periodic(from: .now, by: 0.5)) { _ in
+                        ReconnectionBanner(
+                            reconnection: reconnection,
+                            interface: container.reachability.interface,
+                            onRetryNow: { session.retryNow() },
+                            onStop: { session.cancelAutomaticReconnection() }
+                        )
+                    }
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                }
+
                 if isSearching {
                     FindBar(
                         query: $searchQuery,

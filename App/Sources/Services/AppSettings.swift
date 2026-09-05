@@ -21,11 +21,13 @@ final class AppSettings {
         static let cursorBlink = "settings.cursorBlink"
         static let bellEnabled = "settings.bellEnabled"
         static let keyRowVisible = "settings.keyRowVisible"
+        static let automaticReconnect = "settings.automaticReconnect"
 
         static let all = [
             themeID, lightThemeID, followSystemAppearance, fontSize, scrollbackLimit,
             keepAwakeWhileConnected, commandHistoryEnabled, confirmMultilinePaste,
             hideContentInAppSwitcher, cursorBlink, bellEnabled, keyRowVisible,
+            automaticReconnect,
         ]
     }
 
@@ -51,6 +53,7 @@ final class AppSettings {
         cursorBlink = defaults.bool(forKey: Key.cursorBlink)
         bellEnabled = defaults.bool(forKey: Key.bellEnabled)
         keyRowVisible = defaults.bool(forKey: Key.keyRowVisible)
+        automaticReconnect = defaults.bool(forKey: Key.automaticReconnect)
     }
     #endif
 
@@ -76,6 +79,10 @@ final class AppSettings {
             // command — and an iPad is as likely to be used without a keyboard as an
             // iPhone. Someone with a Magic Keyboard turns it off once.
             Key.keyRowVisible: true,
+            // On by default: a phone's connection drops constantly, and a terminal that
+            // needs a tap after every lift and every hand-off between Wi-Fi and cellular
+            // is one nobody keeps open.
+            Key.automaticReconnect: true,
         ])
         themeID = defaults.string(forKey: Key.themeID) ?? TerminalTheme.midnight.id
         lightThemeID = defaults.string(forKey: Key.lightThemeID) ?? TerminalTheme.daylight.id
@@ -89,6 +96,7 @@ final class AppSettings {
         cursorBlink = defaults.bool(forKey: Key.cursorBlink)
         bellEnabled = defaults.bool(forKey: Key.bellEnabled)
         keyRowVisible = defaults.bool(forKey: Key.keyRowVisible)
+        automaticReconnect = defaults.bool(forKey: Key.automaticReconnect)
     }
 
     var themeID: String { didSet { defaults.set(themeID, forKey: Key.themeID) } }
@@ -104,6 +112,10 @@ final class AppSettings {
     var scrollbackLimit: Int { didSet { defaults.set(scrollbackLimit, forKey: Key.scrollbackLimit) } }
     var keepAwakeWhileConnected: Bool {
         didSet { defaults.set(keepAwakeWhileConnected, forKey: Key.keepAwakeWhileConnected) }
+    }
+
+    var automaticReconnect: Bool {
+        didSet { defaults.set(automaticReconnect, forKey: Key.automaticReconnect) }
     }
 
     var keyRowVisible: Bool {

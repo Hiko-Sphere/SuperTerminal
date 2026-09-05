@@ -117,6 +117,13 @@ public actor SSHConnection {
                     inboundChildChannelInitializer: nil
                 )
                 try channel.pipeline.syncOperations.addHandlers([sshHandler, monitor])
+                // A peer that accepts and immediately closes — a health-check port, a
+                // load balancer with no backend, a firewall that resets as soon as the
+                // handshake starts — can be gone before these handlers are installed, in
+                // which case `channelInactive` was delivered to a pipeline that did not
+                // contain the monitor yet. Checking here closes that window; without it
+                // the attempt waits out the whole handshake timeout for an answer that
+                // had already arrived.
                 return EventLoopIsolated(sshHandler, eventLoop: channel.eventLoop)
             }.get()
         } catch {
@@ -133,8 +140,11 @@ public actor SSHConnection {
         // race would leave the losing child suspended forever and the group would never
         // drain — a hang instead of a timeout.
         let timeout = channel.eventLoop.scheduleTask(in: configuration.handshakeTimeout) {
+            // Network, not transport: the server did not answer. That is the kind of
+            // failure a retry can fix, and categorising it with key exchange failures
+            // would mean the app never retried a slow or unreachable host.
             readyPromise.fail(STError(
-                category: .sshTransport,
+                category: .network,
                 message: "The SSH handshake did not complete in time.",
                 recoverySuggestion: "Check that the server is reachable and really is an SSH server, then try again."
             ))
@@ -421,8 +431,15 @@ func classifyHandshakeFailure(
     }
 
     if error is SSHHandshakeIncomplete {
+        // Network, not transport. Nothing SSH promises was broken: there was no key
+        // exchange failure, no MAC failure and no host key mismatch — the connection
+        // simply went away. The distinction is not academic, because the category is what
+        // decides whether the app may retry on its own, and this is the single most
+        // common way a mobile connection dies: a hand-off between Wi-Fi and cellular, a
+        // load balancer with no healthy backend, a tunnel whose origin is restarting.
+        // Grouping it with cryptographic failures would mean never retrying any of them.
         return STError(
-            category: .sshTransport,
+            category: .network,
             message: "The server closed the connection before the SSH session was established.",
             recoverySuggestion: "Check that the port really is an SSH server, and that the server's log does not show a rejected connection."
         )

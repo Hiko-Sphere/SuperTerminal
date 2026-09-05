@@ -28,12 +28,15 @@ final class SessionManager {
     private let knownHosts: any KnownHostsStore
     private let settings: AppSettings
     private let diagnostics: DiagnosticsCentre
+    /// Optional so a test can run without a live path monitor, or drive one by hand.
+    private let reachability: NetworkReachability?
 
     init(
         vault: CredentialVault,
         knownHosts: any KnownHostsStore,
         settings: AppSettings,
-        diagnostics: DiagnosticsCentre
+        diagnostics: DiagnosticsCentre,
+        reachability: NetworkReachability? = nil
     ) {
         // One loop per core, shared by every session: each connection is mostly idle
         // waiting for a person to type, so a loop per session would be threads doing
@@ -43,6 +46,7 @@ final class SessionManager {
         self.knownHosts = knownHosts
         self.settings = settings
         self.diagnostics = diagnostics
+        self.reachability = reachability
     }
 
     func session(withID id: TerminalSession.ID?) -> TerminalSession? {
@@ -86,7 +90,8 @@ final class SessionManager {
             vault: vault,
             knownHosts: knownHosts,
             settings: settings,
-            log: diagnostics.logger
+            log: diagnostics.logger,
+            reachability: reachability
         )
         sessions.append(session)
         Task { await session.connect() }
