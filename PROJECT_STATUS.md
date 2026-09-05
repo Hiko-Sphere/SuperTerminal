@@ -1,10 +1,12 @@
 # Project status
 
-**Updated:** 2026-09-05 · **Phase:** 5 of 7 in progress — the app is driven end to end
+**Updated:** 2026-09-06 · **Phase:** 5 of 7 in progress — the app is driven end to end
 through its own interface on iPhone and iPad; iCloud sync (opt-in, offline-verified), the
-legal texts with a consent gate, clipboard expiry and Access service tokens are delivered.
-What remains needs the owner: a live Cloudflare environment (B-2), a development team for
-iCloud and archiving (B-4), and the legal placeholders with counsel review (B-5).
+legal texts with a consent gate, clipboard expiry, Access service tokens, and hardware
+keyboard and pointer support (xterm modifiers, app shortcuts, wheel, clicks, drag) are
+delivered. What remains needs the owner: a live Cloudflare environment (B-2), a
+development team for iCloud and archiving (B-4), and the legal placeholders with counsel
+review (B-5).
 
 This file is the resumable state of the work. It records what is *proven*, what is
 *written but unproven*, and what is *not started* — kept separate on purpose, because
@@ -92,7 +94,7 @@ live connection to screenshot at that setting.
 ### Not started
 
 Instruments profiling of the *renderer* — the emulator is profiled, the Core Text drawing
-path is not · iCloud sync · SFTP · port forwarding · App Intents · Spotlight.
+path is not · SFTP · port forwarding · App Intents · Spotlight.
 
 ---
 
