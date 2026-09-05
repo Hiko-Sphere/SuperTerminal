@@ -128,6 +128,14 @@ Three things that mobile SSH clients routinely get wrong are handled deliberatel
 
 ---
 
+**Addendum (2026-09-06) — file protection is asked for only on iOS.** The known-hosts
+file is written with `.completeFileProtection` on iOS. On macOS, where the package's own
+tests run, that option makes the atomic write fail with `EPERM` ("Creating a temporary
+file via mktemp failed") — reproduced with a five-line script on this volume — so
+`KnownHostsRemoveAllTests.fileStoreForgetsOnDisk` had been failing on the host. The option
+is now requested under `#if os(iOS)` only; the app's behaviour is unchanged, and the
+package suite is green again on the host (172 tests in 25 suites).
+
 ## D-004 — libsodium supplies `crypto_box`; OpenBSD supplies `bcrypt_pbkdf`
 
 **Date:** 2026-09-04 · **Status:** Accepted

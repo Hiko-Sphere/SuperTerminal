@@ -12,6 +12,12 @@ delivered. What remains needs the owner: a live Cloudflare environment (B-2), a
 development team for iCloud and archiving (B-4), and the legal placeholders with counsel
 review (B-5).
 
+**Last full regression (2026-09-06, after the assistant, VNC and app-lock deliveries):**
+package 172 tests in 25 suites on the host (the VNC suites against LibVNCServer);
+`SuperTerminalTests` 165 passed, 8 skipped, 0 failed; `SuperTerminalUITests` 33 passed and
+1 skipped (multi-window, iPhone) on iPhone 17 Pro, 34 passed and 0 skipped on iPad Pro
+13-inch (M5); Release build with 0 project warnings; unsigned arm64 device build clean.
+
 This file is the resumable state of the work. It records what is *proven*, what is
 *written but unproven*, and what is *not started* — kept separate on purpose, because
 "the code is written" is not the same as "it works".

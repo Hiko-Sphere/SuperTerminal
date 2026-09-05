@@ -61,6 +61,7 @@ in [`DECISIONS.md`](DECISIONS.md) (D-001).
 | Xcode | 26.6 or later (Swift 6.3) |
 | Deployment target | iOS / iPadOS 17.0 |
 | Integration tests | OpenSSH (`/usr/sbin/sshd`, `/usr/bin/ssh-keygen`) — present on macOS by default |
+| Screen (VNC) tests | LibVNCServer from Homebrew (`brew install libvncserver`); the package and UI screen tests compile a small server against it, and without it they skip and say so |
 
 ## Building and testing
 

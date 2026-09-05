@@ -82,7 +82,15 @@ public actor FileKnownHostsStore: KnownHostsStore {
             at: url.deletingLastPathComponent(),
             withIntermediateDirectories: true
         )
-        try data.write(to: url, options: [.atomic, .completeFileProtection])
+        // Complete file protection is iOS data protection. On macOS — where the package's
+        // own tests run — the option makes the atomic write fail with EPERM, so it is asked
+        // for only where it means something.
+        #if os(iOS)
+        let options: Data.WritingOptions = [.atomic, .completeFileProtection]
+        #else
+        let options: Data.WritingOptions = [.atomic]
+        #endif
+        try data.write(to: url, options: options)
         var resourceURL = url
         var values = URLResourceValues()
         values.isExcludedFromBackup = true

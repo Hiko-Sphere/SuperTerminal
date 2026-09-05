@@ -21,7 +21,7 @@ left out.
 ```bash
 cd Packages/SuperTerminalKit
 swift build          # 0 errors, 0 warnings from project code
-swift test           # 159 tests in 23 suites passed in 11.5s
+swift test           # 172 tests in 25 suites passed (the VNC suites run against LibVNCServer from Homebrew)
 swift test -c release --filter TerminalThroughputTests   # the numbers below
 
 cd ..
@@ -41,14 +41,14 @@ xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal \
 xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal \
   -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
   -only-testing:SuperTerminalTests test
-# 112 passed, 8 skipped (the sshd-backed cases, run by the script below), 0 failed
+# 165 passed, 8 skipped (the sshd-backed cases, run by the script below), 0 failed
 
 ./scripts/app-integration-e2e.sh   # 120 app tests on iPhone 17 Pro simulator, 0 skipped, ** TEST SUCCEEDED **
 ./scripts/profile-emulator.sh      # real Instruments trace of the emulator hot path
 ./scripts/localization-audit.sh    # every user-visible string translated (zh-Hans, zh-Hant): green
-./scripts/ui-terminal-e2e.sh       # 21 passed, 1 skipped on iPhone (three in Chinese, two for the consent gate), ** TEST SUCCEEDED **
+./scripts/ui-terminal-e2e.sh       # 33 passed, 1 skipped on iPhone (three in Chinese, two for the consent gate; the screen test needs libvncserver), ** TEST SUCCEEDED **
 ./scripts/ui-terminal-e2e.sh "platform=iOS Simulator,name=iPad Pro 13-inch (M5)"
-                                   # 22 passed on iPad (three in Chinese, two for the consent gate), ** TEST SUCCEEDED **
+                                   # 34 passed on iPad, ** TEST SUCCEEDED **
 
 cd Packages/swift-nio-ssh-rsa
 swift test           # Executed 349 tests, with 0 failures (347 upstream + 2 for key extension)

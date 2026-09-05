@@ -20,7 +20,10 @@ final class AssistantUITests: XCTestCase {
     }
 
     func testAssistantSaysWhyItCannotAnswerAndOffersSettings() throws {
-        let host = app.buttons.containing(NSPredicate(format: "label CONTAINS %@", "Local Test Server")).firstMatch
+        // The row itself: the "Reopen Local Test Server" offer from a previous run carries
+        // the same name and sits above the list.
+        let host = app.buttons.matching(identifier: "host-row")
+            .matching(NSPredicate(format: "label CONTAINS %@", "Local Test Server")).firstMatch
         XCTAssertTrue(host.waitForExistence(timeout: 10))
         host.tap()
         let terminal = app.otherElements.matching(NSPredicate(format: "label BEGINSWITH %@", "Terminal for")).firstMatch

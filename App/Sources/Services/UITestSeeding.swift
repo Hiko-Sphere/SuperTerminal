@@ -72,9 +72,12 @@ enum UITestSeeding {
         }
         container.snippetStore.removeAll()
         container.hostStore.removeAll()
-        // The "reopen last time's sessions" offer would otherwise carry over from the
-        // previous run and sit above the connection list, wearing the same server name.
-        container.restoration.clear()
+        // Sessions left open by the previous run would otherwise be offered for reopening
+        // at the top of the list. A run that tests that offer across its own relaunch
+        // asks to keep it.
+        if ProcessInfo.processInfo.environment["ST_UITEST_KEEP_RESTORATION"] != "1" {
+            container.restoration.clear()
+        }
         try? container.vault.deleteEverything()
         guard let seed = seedFromEnvironment else { return }
         try? container.vault.storePrivateKey(seed.privateKeyPEM, id: seed.keyID, requireBiometrics: false)

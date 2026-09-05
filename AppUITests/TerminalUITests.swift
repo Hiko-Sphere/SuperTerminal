@@ -690,6 +690,11 @@ final class SnippetUITests: XCTestCase {
     /// centre of the row's accessibility element, which on this OS activates nothing —
     /// verified by watching a neighbouring toggle ignore the same tap.
     private func turnOn(_ toggle: XCUIElement) {
+        // A form row below the fold does not exist yet — on the iPad's form sheet the
+        // history toggle sits under the App lock and privacy rows — so scroll until it does.
+        let form = app.collectionViews.firstMatch
+        var attempts = 0
+        while !toggle.exists, attempts < 8 { form.swipeUp(); attempts += 1 }
         XCTAssertTrue(toggle.waitForExistence(timeout: 5), "the setting should exist")
         _ = app.scroll(to: toggle)
         // Let the scroll settle: a tap dispatched mid-momentum lands wherever the row has
@@ -866,6 +871,9 @@ final class MultiWindowUITests: XCTestCase {
         // Killed rather than backgrounded: this is what the system does to an app it
         // decides to reclaim, and the case the feature exists for.
         app.terminate()
+        // The seeding clears last time's sessions on every launch, so a test of that offer
+        // across its own relaunch asks to keep them.
+        app.launchEnvironment["ST_UITEST_KEEP_RESTORATION"] = "1"
         app.launch()
 
         let reopen = app.buttons.containing(
