@@ -1,7 +1,10 @@
 # Project status
 
-**Updated:** 2026-09-05 · **Phase:** 4 of 7 — the app is driven end to end through its
-own interface; Cloudflare carrier implemented and awaiting live credentials
+**Updated:** 2026-09-05 · **Phase:** 5 of 7 in progress — the app is driven end to end
+through its own interface on iPhone and iPad; iCloud sync (opt-in, offline-verified), the
+legal texts with a consent gate, clipboard expiry and Access service tokens are delivered.
+What remains needs the owner: a live Cloudflare environment (B-2), a development team for
+iCloud and archiving (B-4), and the legal placeholders with counsel review (B-5).
 
 This file is the resumable state of the work. It records what is *proven*, what is
 *written but unproven*, and what is *not started* — kept separate on purpose, because
