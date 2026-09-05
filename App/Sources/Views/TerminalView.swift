@@ -116,6 +116,7 @@ struct TerminalView: View {
                     fontSize: container.settings.fontSize,
                     blinkCursor: container.settings.cursorBlink,
                     confirmMultilinePaste: container.settings.confirmMultilinePaste,
+                    onCommandPalette: { scene.isShowingPalette = true },
                     onFontSizeChange: { size in
                         // Persisted, because a size chosen by pinching is a preference —
                         // having it snap back on the next session would make the gesture
@@ -339,6 +340,10 @@ struct TerminalView: View {
                 Button("Disconnect", systemImage: "bolt.slash") {
                     Task { await session.disconnect() }
                 }
+                Button("Command Palette…", systemImage: "command") {
+                    scene.isShowingPalette = true
+                }
+                .keyboardShortcut("k", modifiers: .command)
                 Button("Snippets…", systemImage: "text.badge.plus") {
                     showsSnippets = true
                 }

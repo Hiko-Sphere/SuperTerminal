@@ -39,6 +39,19 @@ struct RootView: View {
         }
         .overlay(alignment: .topLeading) { sceneCountProbe }
         .environment(scene)
+        .sheet(isPresented: paletteBinding) {
+            CommandPaletteView(
+                session: container.sessionManager.session(withID: scene.selectedSessionID),
+                onOpen: { session in
+                    // On a stack-based layout the palette has to push, exactly as the
+                    // list does; on a split view the detail column follows the selection.
+                    if horizontalSizeClass == .compact, path.last != session.id {
+                        path.append(session.id)
+                    }
+                }
+            )
+            .environment(scene)
+        }
         // Tells the menu commands which window they are acting on.
         .focusedSceneValue(\.sceneState, scene)
         .onAppear {
@@ -85,6 +98,13 @@ struct RootView: View {
                 .accessibilityValue("\(UIApplication.shared.connectedScenes.count)")
         }
         #endif
+    }
+
+    private var paletteBinding: Binding<Bool> {
+        Binding(
+            get: { scene.isShowingPalette },
+            set: { scene.isShowingPalette = $0 }
+        )
     }
 
     private var compactLayout: some View {
@@ -172,6 +192,9 @@ struct SuperTerminalCommands: Commands {
         CommandGroup(after: .newItem) {
             Button("New Connection…") { scene?.isCreatingConnection = true }
                 .keyboardShortcut("n", modifiers: .command)
+                .disabled(scene == nil)
+            Button("Command Palette…") { scene?.isShowingPalette = true }
+                .keyboardShortcut("k", modifiers: .command)
                 .disabled(scene == nil)
         }
         CommandMenu("Session") {

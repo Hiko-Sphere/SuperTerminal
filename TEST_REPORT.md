@@ -215,6 +215,7 @@ environment hook, and drives the app the way a person would.
 | Every control on the host list is labelled | An unlabelled button reads out as "button" and is unusable without sight |
 | A snippet is typed into the terminal but not run | Created through the editor, tapped, and asserted against a real shell: the command text is on the line and its output is **not**, for three seconds. Pressing Return then produces the output. The absence is the assertion — a snippet that ran on tap would pass a test that only looked for the text |
 | History is empty until turned on, then records what was typed | A command run before opting in leaves history off and empty; the setting is turned on through Settings; a second command is then recorded as exactly the typed string — no prompt, no output — and the earlier command does not reappear |
+| The command palette finds a snippet by its initials and inserts it | A snippet is created through the interface, then found by typing `dfh` — three initials that appear nowhere in "Disk Free Here" as consecutive characters, so a substring filter would return nothing. It is inserted rather than run, because the palette uses the same snippet path as everything else |
 | The connections from last time are offered back | The app is *terminated* rather than backgrounded — what the system does to an app it reclaims, and the case the feature exists for — then relaunched. The offer appears, states plainly that these are new sessions, opens a terminal when tapped, and does not linger afterwards |
 | Pinching resizes the terminal and the server is told | `stty size` is read from the real shell before and after a pinch, and the column count really falls. Asserting the font changed would have proved nothing: the whole risk is a font change the remote is never told about, which leaves every wrapped line wrapping in the wrong place |
 | A session opens in a second window (iPad) | The context menu's "Open in New Window" is used, and the app's connected-scene count is asserted to **increase**. It is read through a Debug-only probe because the result is otherwise unverifiable: a screenshot looks the same whether a scene was created or the action did nothing, and XCUITest drives one scene at a time. Skipped on iPhone, which does not offer multiple windows |
@@ -294,6 +295,25 @@ work on an event loop that was already shutting down, and crashed the package su
 timeout bounds it correctly and the retry then continues, so the cost is a slow first
 retry against a dead load balancer, not a hang. `retriesWhileUnreachableAndStopsOnRequest`
 takes 33s for this reason.
+
+### Fuzzy ranking — 13 package tests
+
+The palette is only as good as its ranking: with forty things matching `wp`, which one is
+first *is* the feature. These pin the behaviour against names of the shape people actually
+use, rather than asserting that matching works at all.
+
+| Property | Example that pins it |
+| --- | --- |
+| Order matters, but adjacency does not | `wpr` matches `web-prod`; `rpw` does not match it |
+| Initials beat scattered letters | `wp` prefers `web-prod` over `wrapper` |
+| Consecutive beats spread out | `prod` prefers `prod-db` over `p-r-o-d` |
+| A prefix beats a match in the middle | `db` prefers `db-primary` over `backup-db` |
+| Shorter beats longer | `df` prefers `df -h` over `dpkg --force-confold --refresh` |
+| Word boundaries are found inside a name | `wp` matches the `P` of `webProd` |
+| Realistic hosts | `wp`→`web-prod-01`, `ws`→`web-staging`, `bn`→`backup-nightly` |
+| Realistic commands | `dps`→`docker ps`, `jf`→`journalctl -f` |
+| Ties keep the caller's order | Which is usually meaningful — most-used first, or alphabetical |
+| Matched positions are reported | So the palette can bold them; a fuzzy result that does not show *why* it matched reads as arbitrary |
 
 ### Windows — 11 app tests
 

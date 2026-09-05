@@ -24,6 +24,8 @@ final class TerminalInputView: UIView, UIKeyInput {
     var onHyperlinkTapped: ((TerminalPosition) -> Void)?
     /// Called when a pinch changes the requested font size, in points.
     var onFontSizeChange: ((CGFloat) -> Void)?
+    /// Called when the user asks for the command palette.
+    var onCommandPalette: (() -> Void)?
     /// Supplies the current screen so gestures can resolve positions and extract text.
     var currentScreen: (() -> TerminalScreen?)?
 
@@ -289,6 +291,12 @@ final class TerminalInputView: UIView, UIKeyInput {
     override var keyCommands: [UIKeyCommand]? {
         [
             UIKeyCommand(
+                title: "Command Palette",
+                action: #selector(showCommandPalette),
+                input: "k",
+                modifierFlags: .command
+            ),
+            UIKeyCommand(
                 title: "Copy",
                 action: #selector(copySelection),
                 input: "c",
@@ -313,6 +321,13 @@ final class TerminalInputView: UIView, UIKeyInput {
                 modifierFlags: .command
             ),
         ]
+    }
+
+    /// Declared here as well as in the app's menu because this view is first responder
+    /// whenever a terminal is on screen, and a key command declared only on the scene is
+    /// not reached while a responder below it is consuming key presses.
+    @objc func showCommandPalette() {
+        onCommandPalette?()
     }
 
     @objc func copySelection() {

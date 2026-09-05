@@ -167,6 +167,47 @@ final class TerminalUITests: XCTestCase {
     }
 
     /// Find opens, searches the buffer, and reports how many matches it found.
+    func testCommandPaletteFindsASnippetAndInsertsIt() throws {
+        try openTerminal()
+
+        // A snippet to find. Created through the interface so the palette is reading real
+        // stored data rather than something injected behind it.
+        app.buttons["Session"].tap()
+        app.buttons["Snippets…"].tap()
+        app.buttons["New snippet"].tap()
+        let name = app.textFields["Name"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5), "the snippet editor should appear")
+        name.tap()
+        name.typeText("Disk Free Here")
+        let editor = app.textViews["Snippet command"]
+        editor.tap()
+        app.typeText("printf 'PALETTE_%s\\n' OK")
+        app.buttons["Save"].tap()
+        app.buttons["Done"].tap()
+
+        app.buttons["Session"].tap()
+        let palette = app.buttons["Command Palette…"]
+        XCTAssertTrue(palette.waitForExistence(timeout: 5), "the session menu should offer the palette")
+        palette.tap()
+
+        let field = app.textFields["palette-query"]
+        XCTAssertTrue(field.waitForExistence(timeout: 5), "the palette should open with its field ready")
+        field.tap()
+        // Initials, not a substring: "dfh" appears nowhere in "Disk Free Here" as
+        // consecutive characters. A substring filter would find nothing at all.
+        field.typeText("dfh")
+
+        let match = app.descendants(matching: .any).matching(
+            NSPredicate(format: "identifier BEGINSWITH %@", "palette-snippet-")
+        ).firstMatch
+        XCTAssertTrue(match.waitForExistence(timeout: 5), "fuzzy initials should find the snippet")
+        match.tap()
+
+        // Inserted, not run — the palette uses the same snippet path as everything else.
+        let afterInsert = waitForScreen(containing: "printf", timeout: 10)
+        XCTAssertTrue(afterInsert.contains("PALETTE_"), "the snippet should be typed in: \(afterInsert)")
+    }
+
     func testPinchingResizesTheTerminalAndTellsTheServer() throws {
         try openTerminal()
 

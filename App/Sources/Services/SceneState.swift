@@ -22,6 +22,9 @@ final class SceneState {
     /// it opened the sheet in both, including the one the user was not looking at.
     var isCreatingConnection = false
 
+    /// Whether the command palette is up in this window.
+    var isShowingPalette = false
+
     init(selectedSessionID: TerminalSession.ID? = nil) {
         self.selectedSessionID = selectedSessionID
     }
