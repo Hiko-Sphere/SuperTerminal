@@ -3,6 +3,7 @@ import SwiftUI
 
 /// Hosts the terminal grid in SwiftUI and wires input back to the session.
 struct TerminalScreenView: UIViewRepresentable {
+    @Environment(AppContainer.self) private var container
     let session: TerminalSession
     let theme: TerminalTheme
     let fontSize: CGFloat
@@ -14,11 +15,14 @@ struct TerminalScreenView: UIViewRepresentable {
     let onHaptic: (Haptics.Event) -> Void
     /// Copies terminal text with the clipboard-expiry setting applied.
     let onCopy: (String) -> Void
+    /// ⌘F: opens the session's scrollback search.
+    let onFind: () -> Void
     /// Called when a pinch asks for a different font size, so it can be persisted.
     let onFontSizeChange: (CGFloat) -> Void
 
     func makeUIView(context: Context) -> TerminalInputView {
         let view = TerminalInputView()
+        view.shortcutRouter = container.shortcuts
         view.renderView.theme = theme
         view.renderView.fontSize = fontSize
         context.coordinator.attach(
@@ -28,7 +32,8 @@ struct TerminalScreenView: UIViewRepresentable {
             onFontSizeChange: onFontSizeChange,
             onCommandPalette: onCommandPalette,
             onHaptic: onHaptic,
-            onCopy: onCopy
+            onCopy: onCopy,
+            onFind: onFind
         )
         return view
     }
@@ -66,7 +71,8 @@ struct TerminalScreenView: UIViewRepresentable {
             onFontSizeChange: @escaping (CGFloat) -> Void,
             onCommandPalette: @escaping () -> Void,
             onHaptic: @escaping (Haptics.Event) -> Void,
-            onCopy: @escaping (String) -> Void
+            onCopy: @escaping (String) -> Void,
+            onFind: @escaping () -> Void
         ) {
             view.onInput = { data in
                 Task { @MainActor in
@@ -88,6 +94,9 @@ struct TerminalScreenView: UIViewRepresentable {
             }
             view.onCopy = { text in
                 Task { @MainActor in onCopy(text) }
+            }
+            view.onFind = {
+                Task { @MainActor in onFind() }
             }
             view.onFontSizeChange = { size in
                 Task { @MainActor in onFontSizeChange(size) }

@@ -158,6 +158,7 @@ public final class OpenSSHTestServer: @unchecked Sendable {
         process.standardError = logHandle
         process.standardOutput = logHandle
         try process.run()
+        Self.watch(sshd: process.processIdentifier, root: root)
 
         fixtures = Fixtures(
             root: root,
@@ -206,6 +207,31 @@ public final class OpenSSHTestServer: @unchecked Sendable {
 
     deinit {
         if process.isRunning { kill(process.processIdentifier, SIGKILL) }
+    }
+
+    /// Ties the server's life to this process's.
+    ///
+    /// `shutDown()` and `deinit` cover every path on which the test process keeps
+    /// running. They cover none on which it does not: a run killed from outside, or a
+    /// crash, left every server listening — over a hundred were found on one machine.
+    /// A separate shell polls for this process and kills the server when it is gone; it
+    /// costs one sleeping process per server and exits by itself when the run ends.
+    private static func watch(sshd: Int32, root: URL) {
+        let watchdog = Process()
+        watchdog.executableURL = URL(fileURLWithPath: "/bin/sh")
+        watchdog.arguments = [
+            "-c",
+            "while kill -0 \"$1\" 2>/dev/null; do sleep 1; done; kill -9 \"$2\" 2>/dev/null; rm -rf \"$3\"",
+            "st-sshd-watchdog",
+            String(ProcessInfo.processInfo.processIdentifier),
+            String(sshd),
+            root.path,
+        ]
+        watchdog.standardOutput = FileHandle.nullDevice
+        watchdog.standardError = FileHandle.nullDevice
+        // A watchdog that cannot start leaves things exactly as they were before it
+        // existed, so its failure is not the server's.
+        try? watchdog.run()
     }
 
     private func waitUntilListening(port: Int, timeout: TimeInterval = 15) throws {

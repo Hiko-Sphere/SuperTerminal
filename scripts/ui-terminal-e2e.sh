@@ -9,15 +9,22 @@
 # Usage:  ./scripts/ui-terminal-e2e.sh ["platform=iOS Simulator,name=iPhone 17 Pro"]
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT="${ST_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 DESTINATION="${1:-platform=iOS Simulator,name=iPhone 17 Pro}"
+# A single test or class can be repeated on its own — the way an intermittent crash is
+# measured — without editing this file: ST_ONLY_TESTING=SuperTerminalUITests/SomeClass/testX
+ONLY_TESTING="${ST_ONLY_TESTING:-SuperTerminalUITests}"
 WORK="$(mktemp -d)"
 
+XCODEBUILD_PID=""
 cleanup() {
+  if [[ -n "$XCODEBUILD_PID" ]]; then kill "$XCODEBUILD_PID" 2>/dev/null || true; fi
   if [[ -f "$WORK/sshd.pid" ]]; then kill "$(cat "$WORK/sshd.pid")" 2>/dev/null || true; fi
   rm -rf "$WORK"
 }
 trap cleanup EXIT
+# A killed harness must take xcodebuild with it, or the next run finds the simulator busy.
+trap 'exit 143' TERM INT
 
 ssh-keygen -t ed25519 -f "$WORK/host_ed25519" -N '' -q -C st-ui-host
 ssh-keygen -t ed25519 -f "$WORK/client" -N '' -q -C st-ui-client
@@ -48,7 +55,9 @@ cd "$ROOT"
 # before a single test ran. CI never sees this; a developer's checkout does.
 BUNDLE="${ST_RESULT_BUNDLE:-$ROOT/.build/ui-terminal.xcresult}"
 rm -rf "$BUNDLE"
-exec env \
+# Run as a child, not with exec: exec replaced this shell with xcodebuild, so the EXIT
+# trap never ran and every run left its sshd listening — over a hundred were found.
+env \
   TEST_RUNNER_ST_UITEST_SEED=1 \
   TEST_RUNNER_ST_UITEST_HOST=127.0.0.1 \
   TEST_RUNNER_ST_UITEST_PORT="$PORT" \
@@ -62,7 +71,12 @@ exec env \
     -destination "$DESTINATION" \
     -resultBundlePath "$BUNDLE" \
     -parallel-testing-enabled NO \
-    -only-testing:SuperTerminalUITests
+    -only-testing:"$ONLY_TESTING" &
+XCODEBUILD_PID=$!
+STATUS=0
+wait "$XCODEBUILD_PID" || STATUS=$?
+XCODEBUILD_PID=""
+exit "$STATUS"
 
 # Parallel testing is off deliberately. Xcode clones the simulator per worker, and the
 # clones race to install the runner — which fails intermittently with "Application failed

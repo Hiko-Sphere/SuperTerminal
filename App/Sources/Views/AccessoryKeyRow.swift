@@ -45,6 +45,8 @@ struct AccessoryKeyRow: View {
                 )
         }
         .buttonStyle(.plain)
+        // A pointer shows which key it is over, as every other control on iPad does.
+        .hoverEffect(.highlight)
         .accessibilityLabel("Control")
         .accessibilityValue(session.controlLatched ? "On" : "Off")
         .accessibilityHint("Latches Control for the next key you press")
@@ -65,6 +67,8 @@ struct AccessoryKeyRow: View {
                 )
         }
         .buttonStyle(.plain)
+        // A pointer shows which key it is over, as every other control on iPad does.
+        .hoverEffect(.highlight)
         .accessibilityLabel(key.accessibilityLabel)
     }
 

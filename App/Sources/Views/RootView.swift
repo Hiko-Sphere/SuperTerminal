@@ -46,7 +46,9 @@ struct RootView: View {
                 regularLayout
             }
         }
+        .background(appShortcuts)
         .overlay(alignment: .topLeading) { sceneCountProbe }
+        .overlay(alignment: .bottomTrailing) { keyPressProbe }
         // The App Switcher snapshot is taken while the scene is inactive. Covering the
         // terminal then is what "Hide content in the App Switcher" means.
         .overlay {
@@ -55,8 +57,12 @@ struct RootView: View {
             }
         }
         .animation(DesignTokens.Motion.standard, value: scenePhase)
+        .onAppear { container.activeScene = scene }
         .onChange(of: scenePhase) { _, phase in
-            if phase == .active { container.sync.handleForeground() }
+            if phase == .active {
+                container.activeScene = scene
+                container.sync.handleForeground()
+            }
         }
         .fullScreenCover(isPresented: consentBinding) {
             ConsentView { container.settings.acceptedTermsVersion = LegalDocument.currentVersion }
@@ -112,6 +118,51 @@ struct RootView: View {
     /// the same whether a second scene was created or the action did nothing, and
     /// XCUITest drives one scene at a time. Debug-only and only while seeded, so it
     /// cannot exist in anything shipped.
+    /// The app's shortcuts, as SwiftUI shortcut buttons that take no space and draw
+    /// nothing. They live in the view hierarchy because that is where SwiftUI dispatches a
+    /// hardware key when nothing of ours is first responder: the terminal exposes the same
+    /// table as `UIKeyCommand`s while it has the keyboard.
+    ///
+    /// The first design was a hidden `UIView` that made itself first responder whenever
+    /// nothing else was. It was measured to expose an iPadOS 26 focus-engine assertion
+    /// (`parentEnvironment != nil`, Apple r.154431813): with a hardware keyboard attached,
+    /// UIKit re-evaluates the environment it locked to that foreign first responder after
+    /// every commit, and scrolling a form sheet then aborted the app in five of eighteen
+    /// runs; the same build without the view, and the previous commit, never did in
+    /// seventeen. See D-018.
+    ///
+    /// The buttons keep their titles — that is what the ⌘-hold overlay on iPad lists —
+    /// and are `hidden()`, which is the one form of concealment that keeps them out of
+    /// the accessibility tree: zero size, zero opacity, `accessibilityHidden` on each
+    /// button and an ignored, hidden container all still left eighteen zero-size buttons
+    /// answering accessibility queries, so "Command Palette…" matched twice — the real
+    /// menu item and the shortcut — which a UI test caught and a dump of the tree proved.
+    @ViewBuilder private var appShortcuts: some View {
+        ZStack {
+            ForEach(AppShortcut.allCases, id: \.rawValue) { shortcut in
+                Button(shortcut.title) { container.shortcuts.perform(shortcut) }
+                    .keyboardShortcut(shortcut.keyEquivalent, modifiers: shortcut.eventModifiers)
+                    .disabled(!container.shortcuts.isAvailable(shortcut))
+                    .hidden()
+            }
+        }
+        .frame(width: 0, height: 0)
+    }
+
+    /// For the hardware-keyboard UI tests: how many shortcuts ran, and the last one seen.
+    /// Debug only, and only when asked for.
+    @ViewBuilder private var keyPressProbe: some View {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["ST_UITEST_KEY_PROBE"] == "1" {
+            Text(verbatim: "\(container.shortcuts.debugShortcutsPerformed)/\(container.shortcuts.debugLast)")
+                .font(.caption2)
+                .opacity(0.02)
+                .accessibilityIdentifier("key-probe")
+                .accessibilityValue(Text(verbatim: "\(container.shortcuts.debugShortcutsPerformed)/\(container.shortcuts.debugLast)"))
+        }
+        #endif
+    }
+
     @ViewBuilder
     private var sceneCountProbe: some View {
         #if DEBUG
@@ -202,71 +253,20 @@ struct EmptyStateView: View {
     }
 }
 
-/// Menu-bar and ⌘-hold shortcuts. Declaring them here is what makes them discoverable on
-/// iPad, where holding Command lists every shortcut the app offers.
-///
-/// Each command acts on the focused window rather than broadcasting. With two windows
-/// open, a broadcast ⌘N opened the sheet in both — including the one the user could not
-/// see — and ⌘W, which had no listener at all, did nothing anywhere.
+/// The one command SwiftUI has to own: the system's Settings item and its ⌘, which iOS
+/// dispatches itself. Every other shortcut is a `UIKeyCommand` on `AppDelegate`, where a
+/// hardware keyboard reaches it whatever has focus — SwiftUI `Commands` never received a
+/// hardware ⌘N or ⌘K in the UI tests, on either device.
 struct SuperTerminalCommands: Commands {
     let container: AppContainer
-    @FocusedValue(\.sceneState) private var scene
+    @FocusedValue(\.sceneState) private var focusedScene
+    /// The focused scene when there is one, else the active scene — see `AppContainer.activeScene`.
+    private var scene: SceneState? { focusedScene ?? container.activeScene }
 
     var body: some Commands {
-        CommandGroup(after: .newItem) {
-            Button("New Connection…") { scene?.isCreatingConnection = true }
-                .keyboardShortcut("n", modifiers: .command)
-                .disabled(scene == nil)
-            Button("Command Palette…") { scene?.isShowingPalette = true }
-                .keyboardShortcut("k", modifiers: .command)
-                .disabled(scene == nil)
+        CommandGroup(replacing: .appSettings) {
+            Button("Settings…") { scene?.isShowingSettings = true }
+                .keyboardShortcut(",", modifiers: .command)
         }
-        CommandMenu("Session") {
-            Button("Next Session") { cycleSession(by: 1) }
-                .keyboardShortcut("]", modifiers: [.command, .shift])
-                .disabled(container.sessionManager.sessions.count < 2)
-            Button("Previous Session") { cycleSession(by: -1) }
-                .keyboardShortcut("[", modifiers: [.command, .shift])
-                .disabled(container.sessionManager.sessions.count < 2)
-
-            Divider()
-
-            // ⌘1…⌘9, the way every browser and terminal numbers its tabs.
-            ForEach(1 ... 9, id: \.self) { number in
-                Button("Session \(number)") { selectSession(number) }
-                    .keyboardShortcut(KeyEquivalent(Character("\(number)")), modifiers: .command)
-                    .disabled(container.sessionManager.session(atOneBasedIndex: number) == nil)
-            }
-
-            Divider()
-
-            Button("Close Session") {
-                guard let session = displayedSession else { return }
-                container.sessionManager.close(session)
-            }
-            .keyboardShortcut("w", modifiers: .command)
-            // A shortcut that is listed but does nothing is worse than one that is not
-            // listed: the user concludes the app is broken rather than that the command
-            // does not apply.
-            .disabled(displayedSession == nil)
-        }
-    }
-
-    @MainActor
-    private var displayedSession: TerminalSession? {
-        container.sessionManager.session(withID: scene?.selectedSessionID)
-    }
-
-    @MainActor
-    private func selectSession(_ number: Int) {
-        guard let scene, let session = container.sessionManager.session(atOneBasedIndex: number) else { return }
-        scene.selectedSessionID = session.id
-    }
-
-    @MainActor
-    private func cycleSession(by delta: Int) {
-        guard let scene else { return }
-        guard let session = container.sessionManager.session(after: scene.selectedSessionID, delta: delta) else { return }
-        scene.selectedSessionID = session.id
     }
 }

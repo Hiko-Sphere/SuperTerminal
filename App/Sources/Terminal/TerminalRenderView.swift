@@ -85,6 +85,13 @@ final class TerminalRenderView: UIView {
     private var boldItalicFont: UIFont = .monospacedSystemFont(ofSize: 13, weight: .bold)
 
     private var screen: TerminalScreen?
+
+    /// The absolute index of the last row, scrollback included; nil before any content.
+    var lastRow: Int? {
+        guard let screen else { return nil }
+        let total = screen.scrollback.count + screen.lines.count
+        return total > 0 ? total - 1 : nil
+    }
     private var cursorVisibleInBlink = true
     private var blinkTimer: Timer?
 

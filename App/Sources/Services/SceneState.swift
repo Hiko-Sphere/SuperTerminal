@@ -24,6 +24,8 @@ final class SceneState {
 
     /// Whether the command palette is up in this window.
     var isShowingPalette = false
+    /// ⌘, from anywhere in the scene; the host list owns the sheet.
+    var isShowingSettings = false
 
     init(selectedSessionID: TerminalSession.ID? = nil) {
         self.selectedSessionID = selectedSessionID

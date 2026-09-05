@@ -58,7 +58,6 @@ struct CommandPaletteView: View {
 
     @State private var query = ""
     @State private var selection = 0
-    @FocusState private var queryFocused: Bool
 
     var body: some View {
         VStack(spacing: 0) {
@@ -69,7 +68,6 @@ struct CommandPaletteView: View {
         .background(DesignTokens.Color.surface)
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
-        .onAppear { queryFocused = true }
         .onChange(of: query) { _, _ in selection = 0 }
     }
 
@@ -77,20 +75,17 @@ struct CommandPaletteView: View {
         HStack(spacing: DesignTokens.Spacing.sm) {
             Image(systemName: "magnifyingglass")
                 .foregroundStyle(DesignTokens.Color.labelTertiary)
-            TextField("Search connections, snippets and actions", text: $query)
-                .textFieldStyle(.plain)
-                .font(DesignTokens.Typography.body)
-                .autocorrectionDisabled()
-                .textInputAutocapitalization(.never)
-                .focused($queryFocused)
-                .submitLabel(.go)
-                .onSubmit(runSelection)
-                .accessibilityIdentifier("palette-query")
-                // Arrows move the highlight without leaving the field, which is what makes
-                // the palette usable from a hardware keyboard at all.
-                .onKeyPress(.upArrow) { move(by: -1); return .handled }
-                .onKeyPress(.downArrow) { move(by: 1); return .handled }
-                .onKeyPress(.escape) { dismiss(); return .handled }
+            // Arrows move the highlight without leaving the field and Escape closes the
+            // palette — as key commands on the field itself, which is what makes it
+            // usable from a hardware keyboard at all (see `PaletteQueryField`).
+            PaletteQueryField(
+                text: $query,
+                placeholder: String(localized: "Search connections, snippets and actions"),
+                onSubmit: runSelection,
+                onMove: { move(by: $0) },
+                onEscape: { dismiss() }
+            )
+            .frame(maxWidth: .infinity)
             if !query.isEmpty {
                 Button("Clear", systemImage: "xmark.circle.fill") { query = "" }
                     .labelStyle(.iconOnly)
@@ -115,6 +110,8 @@ struct CommandPaletteView: View {
                 List {
                     ForEach(Array(matches.enumerated()), id: \.element.item.id) { index, match in
                         row(match.item, result: match.result, isSelected: index == selection)
+                            // VoiceOver and the UI tests both need to know which row is highlighted.
+                            .accessibilityAddTraits(index == selection ? .isSelected : [])
                             .id(match.item.id)
                             .listRowBackground(
                                 index == selection

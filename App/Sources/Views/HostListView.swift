@@ -14,7 +14,6 @@ struct HostListView: View {
     @State private var searchText = ""
     @State private var editingHost: Host?
 
-    @State private var showsSettings = false
 
     var body: some View {
         List(selection: selectionBinding) {
@@ -122,7 +121,7 @@ struct HostListView: View {
                 Button("New Connection", systemImage: "plus") { scene.isCreatingConnection = true }
             }
             ToolbarItem(placement: .topBarLeading) {
-                Button("Settings", systemImage: "gearshape") { showsSettings = true }
+                Button("Settings", systemImage: "gearshape") { scene.isShowingSettings = true }
             }
         }
         .sheet(isPresented: creatingBinding) {
@@ -131,7 +130,7 @@ struct HostListView: View {
         .sheet(item: $editingHost) { host in
             HostEditorView(host: host)
         }
-        .sheet(isPresented: $showsSettings) {
+        .sheet(isPresented: settingsBinding) {
             SettingsView()
         }
     }
@@ -199,6 +198,13 @@ struct HostListView: View {
             scene.selectedSessionID = first.id
             onOpen(first)
         }
+    }
+
+    private var settingsBinding: Binding<Bool> {
+        Binding(
+            get: { scene.isShowingSettings },
+            set: { scene.isShowingSettings = $0 }
+        )
     }
 
     private var creatingBinding: Binding<Bool> {

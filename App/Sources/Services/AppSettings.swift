@@ -71,7 +71,7 @@ final class AppSettings {
             Key.themeID: TerminalTheme.midnight.id,
             Key.lightThemeID: TerminalTheme.daylight.id,
             Key.followSystemAppearance: true,
-            Key.fontSize: 13.0,
+            Key.fontSize: Self.defaultFontSize,
             Key.scrollbackLimit: 10000,
             Key.clipboardExpirySeconds: 60,
             Key.keepAwakeWhileConnected: true,
@@ -190,4 +190,5 @@ final class AppSettings {
     /// Font size is clamped rather than free-form: below this the grid is unreadable on a
     /// phone, and above it a useful number of columns will not fit.
     static let fontSizeRange: ClosedRange<Double> = 8 ... 28
+    static let defaultFontSize = 13.0
 }

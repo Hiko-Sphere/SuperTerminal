@@ -25,6 +25,13 @@ final class AppContainer {
     let knownHosts: any KnownHostsStore
     let diagnostics: DiagnosticsCentre
     let sync: SyncCoordinator
+    /// App-level keyboard shortcuts; every responder that exposes them routes here.
+    let shortcuts: AppShortcutRouter
+    /// The scene most recently active. Menu commands target the *focused* scene when
+    /// SwiftUI reports one, and this otherwise: on iOS the focused-scene value is only
+    /// published while some view has focus, which a freshly launched host list does not —
+    /// and a ⌘K that does nothing until you tap a text field is a broken shortcut.
+    var activeScene: SceneState?
 
     private init(
         hostStore: HostStore,
@@ -37,7 +44,8 @@ final class AppContainer {
         vault: CredentialVault,
         knownHosts: any KnownHostsStore,
         diagnostics: DiagnosticsCentre,
-        sync: SyncCoordinator
+        sync: SyncCoordinator,
+        shortcuts: AppShortcutRouter
     ) {
         self.hostStore = hostStore
         self.snippetStore = snippetStore
@@ -50,6 +58,7 @@ final class AppContainer {
         self.knownHosts = knownHosts
         self.diagnostics = diagnostics
         self.sync = sync
+        self.shortcuts = shortcuts
     }
 
     static func live() -> AppContainer {
@@ -88,6 +97,7 @@ final class AppContainer {
         hostStore.didChange = { [weak sync] in sync?.scheduleSync() }
         snippetStore.didChange = { [weak sync] in sync?.scheduleSync() }
         sessionManager.didConnect = { [weak sync] in sync?.scheduleSync() }
+        let shortcuts = AppShortcutRouter(sessionManager: sessionManager, settings: settings)
         let container = AppContainer(
             hostStore: hostStore,
             snippetStore: snippetStore,
@@ -99,8 +109,10 @@ final class AppContainer {
             vault: vault,
             knownHosts: knownHosts,
             diagnostics: diagnostics,
-            sync: sync
+            sync: sync,
+            shortcuts: shortcuts
         )
+        shortcuts.sceneProvider = { [weak container] in container?.activeScene }
         #if DEBUG
         UITestSeeding.apply(to: container)
         #endif

@@ -119,6 +119,7 @@ struct TerminalView: View {
                     onCommandPalette: { scene.isShowingPalette = true },
                     onHaptic: { container.haptics.play($0) },
                     onCopy: { Clipboard.copy($0, expiringAfter: container.settings.clipboardExpirySeconds) },
+                    onFind: { isSearching = true },
                     onFontSizeChange: { size in
                         // Persisted, because a size chosen by pinching is a preference —
                         // having it snap back on the next session would make the gesture
@@ -344,16 +345,19 @@ struct TerminalView: View {
                 Button(String(localized: "Disconnect"), systemImage: "bolt.slash") {
                     Task { await session.disconnect() }
                 }
+                // No shortcut here: ⌘K is the shell's app-level shortcut (RootView) and the
+                // terminal view's own key command; a third SwiftUI registration on this
+                // menu item made two ⌘K shortcuts compete in one hierarchy.
                 Button(String(localized: "Command Palette…"), systemImage: "command") {
                     scene.isShowingPalette = true
                 }
-                .keyboardShortcut("k", modifiers: .command)
                 Button(String(localized: "Snippets…"), systemImage: "text.badge.plus") {
                     showsSnippets = true
                 }
                 Button(String(localized: "Find…"), systemImage: "magnifyingglass") {
                     isSearching = true
                 }
+                .keyboardShortcut("f", modifiers: .command)
                 Divider()
                 Toggle(String(localized: "Show Key Row"), isOn: keyRowBinding)
             } label: {

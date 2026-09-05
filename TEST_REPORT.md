@@ -216,6 +216,69 @@ carrier already sent the `Cf-Access-Client-Id` / `Cf-Access-Client-Secret` heade
 covered by `CarrierIntegrationTests`; the live Access run (`scripts/live-e2e.sh`) uses the
 same path and remains blocked on B-2.
 
+### Hardware keyboard and pointer — 19 unit tests and 7 UI tests
+
+`HardwareKeyMapTests` (8) pin the xterm mapping rule by rule: arrows in both cursor modes,
+the `CSI 1;m` parameter for Shift/Option/Control on arrows, Home/End and function keys,
+`CSI n;m~` for Insert/Delete/Page keys, control bytes, Option as Meta, Control-Backspace,
+Shift-Tab, and that Command never produces bytes for the host. `PointerConfigurationTests`
+(6) instantiate the real terminal view and assert the recognisers and interactions that
+make a scroll wheel, a click-drag, a secondary click, a middle click, the edit menu and the
+beam pointer work — configuration, because XCUITest on iOS cannot synthesise pointer
+gestures — and that both click recognisers take only indirect-pointer touches. That last
+assertion exists because of a measured failure: with a button mask as the only condition,
+a synthesised direct tap satisfied the middle-click recogniser, and every live-terminal UI
+test that tapped the terminal then pasted the previous test's copied prompt into the
+shell, which reported `command not found: ─░▒▓`. `AppShortcutTests` (5) hold the shortcut
+table to one declaration per key, agreement between its SwiftUI and UIKit spellings, a
+property-list round trip, the whole table on the terminal view, and
+disabled-without-a-scene.
+
+The same runs exposed two leaks in the test infrastructure, both fixed: the UI harness
+replaced itself with `xcodebuild` via `exec`, so its cleanup trap never ran and every run
+left its `sshd` listening (over a hundred were found on one machine); and the package's
+OpenSSH test server stopped only when its test process exited normally, so a run killed
+from outside left its servers behind. The harness now runs `xcodebuild` as a child and
+forwards a kill to it, and each package server has a watchdog shell that kills it when
+the test process is gone — verified by killing a running package test and finding no
+server and no watchdog afterwards.
+
+`HardwareKeyboardUITests` type real keys. Five pass outright: ⌘K opens the palette, ⌘N
+opens the connection editor, ⌘, opens Settings — each from a freshly launched host list
+with nothing focused — ⌘K opens the palette while the host list's search field is
+focused (measured after the redesign: delivered on the first key in 8 of 8 runs on iPhone
+and 4 of 4 on iPad; one full-suite run saw the simulator drop both the key and its retry,
+the probe showing the app received nothing, which is the instrument), and ↓ moves the
+palette's highlight to the second row. The live-terminal palette
+test also polices the shortcuts' accessibility: its query for the Session menu's
+"Command Palette…" item matched two elements while the shortcut buttons were concealed by
+size, opacity, `accessibilityHidden` or an ignored container — a dump of the tree showed
+eighteen zero-size labelled buttons — and matches one now that they are `hidden()`, with
+the keyboard suite proving hidden buttons still fire. The first hardware key after launch is sometimes dropped by the
+simulator before the app sees it; the tests read a debug probe of shortcuts performed
+(`ST_UITEST_KEY_PROBE`), retry once only when the probe did not move, and attach a note.
+Two are strict expected failures that name the instrument: Escape closing the palette and
+Return running the highlighted item — sent while a text field is first responder they
+measured as undelivered, while the field's arrow key commands and ⌘ keys arrive. They will
+flip to failures the day the simulator delivers them; the manual checks are in
+`docs/RELEASE.md`. (⌘K with the search field focused was a third while the shortcuts lived
+on a hidden first-responder view; it passes now, see the next section.)
+
+### iPadOS 26 focus-engine abort — measured, and the cause removed
+
+On the iPad simulator (iOS 26.5) with a hardware keyboard connected, the accessibility
+settings test aborted the app inside UIKit's focus engine (`parentEnvironment != nil` in
+`_UIFocusContainerGuideFallbackItemsContainer`; Apple r.154431813, forum thread 805681).
+Reproduced by repeating that one test through the harness (`ST_ONLY_TESTING`), counting
+crash reports per run, against the previous commit in a detached worktree (`ST_ROOT`) and
+as an interleaved A/B of the same build with the hidden first-responder view present and
+left out by a debug launch switch. Result: five aborts in eighteen valid runs with the
+view, none in seventeen without it (nine on the previous commit, eight with the switch).
+The persisted log placed the view's single first-responder acquisition two seconds after
+launch and nothing further before each abort. The view was removed and the shortcuts
+became SwiftUI shortcut buttons in the root view (D-018); the redesign was then verified
+with the keyboard UI suite on both devices and sixteen further runs of the same test.
+
 ### Clipboard expiry — 3 tests
 
 `ClipboardTests` prove the option mapping (0 → no expiry; n → `expirationDate` = now + n)

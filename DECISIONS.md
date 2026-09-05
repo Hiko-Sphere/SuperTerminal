@@ -575,3 +575,80 @@ package and knows nothing about sync, so the Known hosts screen reports a deleti
 coordinator. When a host is trusted again after a deletion, the adapter forgets the
 tombstone rather than pushing a deletion alongside the live record — found by asking what
 "delete a host key on one device" should mean on the other, and answering with a test.
+
+## D-018 · Keyboard and pointer follow xterm and iPadOS, in that order
+
+**The remote host gets what xterm would send.** Modified arrows, Home/End, Insert/Delete,
+Page and function keys carry their modifiers in the parameter form (`CSI 1;5C`), Control
+produces control bytes, Option is Meta, Control-Backspace is BS and Option-Backspace is
+Meta-DEL. Command never reaches the host: it belongs to the app and the system. The
+mapping is a pure function with a test per rule, because a `UIKey` cannot be built in a
+test and a mapping that cannot be tested drifts.
+
+**The pointer does what every iPadOS text surface does — unless a program asked for it.**
+A scroll wheel or trackpad scrolls the history; a secondary click shows the edit menu; a
+middle click pastes; a click-drag selects; the pointer is a beam. When the remote program
+is tracking the mouse, each of those is reported to it instead (wheel, right and middle
+buttons, drag), because `less`, `tmux` and `htop` own the pointer while they run. The
+recognisers are configured so scroll events and touches never compete: the wheel
+recogniser takes no touches at all, and the drag recogniser takes only the indirect
+pointer.
+The two click recognisers take only the indirect pointer as well, and this was learnt
+the hard way: a button mask is not a pointer check. With `.button(3)` as the only
+condition, a synthesised direct tap satisfied the middle-click recogniser, and every
+live-terminal UI test that tapped the terminal then pasted whatever the previous test had
+copied — the prompt's own glyphs, which the shell tried to run as a command. A finger is
+never a secondary or middle click; the unit tests now assert the touch types.
+
+**Verified as configuration, not as gestures.** XCUITest on iOS cannot move a mouse
+wheel or send a secondary click, so the tests assert the recognisers and interactions
+that make those work; the hardware checklist in `docs/RELEASE.md` names the manual
+checks. Hardware-keyboard shortcuts are driven for real through `typeKey`.
+
+**Shortcuts are SwiftUI shortcut buttons in the shell and `UIKeyCommand`s on the terminal.**
+UI tests that type real keys showed a hardware ⌘N and ⌘K never reaching SwiftUI `Commands` on
+either device (an iPhone has no menu bar at all), never reaching `keyCommands` on the
+SwiftUI-wrapped application delegate, and — inserting the same key equivalents into the
+system menu — crashing the app at launch. One table, `AppShortcut`, is exposed as hidden
+SwiftUI `.keyboardShortcut` buttons in the root view, which is where SwiftUI dispatches a
+hardware key when nothing of ours is first responder, and as `UIKeyCommand`s by the terminal
+view while it has the keyboard; both route to one `AppShortcutRouter`, so a key cannot fire
+twice, and each is disabled when it does not apply because a listed shortcut that does
+nothing reads as a broken app. The shortcut buttons keep their titles — that is what the
+⌘-hold overlay lists — and are `hidden()`, the one concealment that keeps them out of the
+accessibility tree: zero size and zero opacity, `accessibilityHidden` on each button, and
+an ignored, hidden container all left eighteen zero-size labelled buttons answering
+accessibility queries (a dump of the tree showed them), so "Command Palette…" matched
+twice — the real menu item and the shortcut — which the live-terminal palette UI test
+caught; hidden, the buttons still fire, measured with the keyboard suite. The Session
+menu's own palette item no longer carries ⌘K: with the shell's shortcut and the terminal's
+key command, a third registration made two SwiftUI ⌘K shortcuts compete in one hierarchy.
+The palette's query field is a UIKit text field with Escape and the arrows as its own priority
+key commands, because a SwiftUI `TextField` with `onKeyPress` never saw them.
+
+**A hidden first responder is not a delivery mechanism — measured.** The first design was a
+zero-size `UIView` that made itself first responder whenever nothing else was, so that the
+shortcuts had a responder to land on. On the iPad simulator (iOS 26.5) with a hardware
+keyboard connected, one UI test — open Settings, scroll the form — aborted the app inside
+UIKit's focus engine: `Invalid parameter not satisfying: parentEnvironment != nil` in
+`_UIFocusContainerGuideFallbackItemsContainer`, reached from `_reevaluateLockedEnvironments`
+after a commit. Apple tracks it as r.154431813 (forum thread 805681; FB21878739,
+FB24089896) and has not fixed it; the only workaround in circulation swizzles
+`updateFocusIfNeeded` into a no-op, which also ends keyboard focus navigation and is not
+acceptable. Measured over the same test, interleaving runs of the same build with the view
+present and with it left out by a debug launch switch, and against the previous commit:
+five aborts in eighteen runs with the view, none in seventeen without it. The persisted log
+showed the view taking first responder exactly once, two seconds after launch, and never
+again before the abort — it is the *presence* of a foreign first responder the focus
+system locks to, not any churn, that exposes the bug. The view is gone; the shortcuts moved
+to where SwiftUI already dispatches them.
+
+**What the instrument can and cannot show, measured.** On this simulator the first
+hardware key after launch is sometimes dropped before the app sees it; the tests read a
+debug probe of shortcuts performed to tell that from a key the app ignored, retry once,
+and record it. Escape and Return sent while a text field is first responder never arrive
+— measured, while the field's arrow key commands do arrive and ⌘ keys arrive whatever is
+focused — so those two cases are strict expected failures that name the instrument and
+will flip to failures the day it delivers, and the hardware checklist carries them. (⌘K
+with the search field focused was a third such case while the shortcuts lived on the
+hidden first-responder view; as a SwiftUI shortcut it arrives, and the test now asserts it.)

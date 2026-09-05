@@ -72,10 +72,22 @@ final class TerminalInputView: UIView, UIKeyInput {
 
     /// Only offer Copy while something is selected, so the edit menu never shows an
     /// action that would do nothing.
+    override func validate(_ command: UICommand) {
+        if let shortcut = AppShortcut(command: command) {
+            command.attributes = (shortcutRouter?.isAvailable(shortcut) ?? false) ? [] : .disabled
+        }
+    }
+
     override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
         switch action {
-        case #selector(copySelection):
+        case #selector(performAppShortcut(_:)):
+            return shortcutRouter != nil
+        case #selector(copySelection), #selector(copy(_:)):
             return renderView.selection != nil
+        case #selector(paste(_:)):
+            return UIPasteboard.general.hasStrings
+        case #selector(selectAll(_:)):
+            return renderView.lastRow != nil
         default:
             return super.canPerformAction(action, withSender: sender)
         }
@@ -206,85 +218,27 @@ final class TerminalInputView: UIView, UIKeyInput {
         }
     }
 
-    /// Maps a hardware key press to the bytes a terminal expects.
+    /// Maps a hardware key press to the bytes a terminal expects; see `HardwareKeyMap`.
     ///
     /// Returns `nil` for keys that should fall through to the system — so ⌘C still copies
     /// and ⌘K still reaches the app's own shortcuts, rather than being swallowed and sent
     /// to the remote host as gibberish.
     func encode(_ key: UIKey) -> Data? {
-        let modifiers = key.modifierFlags
-
-        // Command belongs to the app and the system, never to the remote host.
-        if modifiers.contains(.command) { return nil }
-
-        if modifiers.contains(.control), let scalar = key.charactersIgnoringModifiers.unicodeScalars.first {
-            if let control = Self.controlByte(for: scalar) { return Data([control]) }
-        }
-
-        let escapePrefix = modifiers.contains(.alternate) ? Data([0x1B]) : Data()
-
-        switch key.keyCode {
-        case .keyboardUpArrow: return cursorKey("A")
-        case .keyboardDownArrow: return cursorKey("B")
-        case .keyboardRightArrow: return cursorKey("C")
-        case .keyboardLeftArrow: return cursorKey("D")
-        case .keyboardHome: return cursorKey("H")
-        case .keyboardEnd: return cursorKey("F")
-        case .keyboardPageUp: return Data("\u{1B}[5~".utf8)
-        case .keyboardPageDown: return Data("\u{1B}[6~".utf8)
-        case .keyboardDeleteForward: return Data("\u{1B}[3~".utf8)
-        case .keyboardDeleteOrBackspace: return Data([0x7F])
-        case .keyboardReturnOrEnter: return Data([0x0D])
-        case .keyboardTab:
-            return modifiers.contains(.shift) ? Data("\u{1B}[Z".utf8) : Data([0x09])
-        case .keyboardEscape: return Data([0x1B])
-        case .keyboardF1: return Data("\u{1B}OP".utf8)
-        case .keyboardF2: return Data("\u{1B}OQ".utf8)
-        case .keyboardF3: return Data("\u{1B}OR".utf8)
-        case .keyboardF4: return Data("\u{1B}OS".utf8)
-        case .keyboardF5: return Data("\u{1B}[15~".utf8)
-        case .keyboardF6: return Data("\u{1B}[17~".utf8)
-        case .keyboardF7: return Data("\u{1B}[18~".utf8)
-        case .keyboardF8: return Data("\u{1B}[19~".utf8)
-        case .keyboardF9: return Data("\u{1B}[20~".utf8)
-        case .keyboardF10: return Data("\u{1B}[21~".utf8)
-        case .keyboardF11: return Data("\u{1B}[23~".utf8)
-        case .keyboardF12: return Data("\u{1B}[24~".utf8)
-        default:
-            break
-        }
-
-        guard !key.characters.isEmpty else { return nil }
-        if !escapePrefix.isEmpty {
-            // Option is Meta: `ESC` followed by the character, which is what readline and
-            // Emacs bindings expect.
-            return escapePrefix + Data(key.characters.utf8)
-        }
-        // Plain characters arrive through `insertText` as well; returning nil here avoids
-        // sending them twice.
-        return nil
+        HardwareKeyMap.encode(
+            keyCode: key.keyCode,
+            characters: key.characters,
+            charactersIgnoringModifiers: key.charactersIgnoringModifiers,
+            modifiers: key.modifierFlags,
+            applicationCursorKeys: modes.applicationCursorKeys
+        )
     }
+
+    static func controlByte(for scalar: Unicode.Scalar) -> UInt8? { HardwareKeyMap.controlByte(for: scalar) }
 
     /// Arrow and Home/End keys change encoding when the program sets application cursor
-    /// mode — the difference between arrows working in `vim` and inserting letters.
+    /// mode; used by the on-screen key row, which has no `UIKey` to map.
     private func cursorKey(_ letter: String) -> Data {
         Data((modes.applicationCursorKeys ? "\u{1B}O\(letter)" : "\u{1B}[\(letter)").utf8)
-    }
-
-    static func controlByte(for scalar: Unicode.Scalar) -> UInt8? {
-        switch scalar {
-        case "a" ... "z": UInt8(scalar.value - 0x60)
-        case "A" ... "Z": UInt8(scalar.value - 0x40)
-        case "@": 0x00
-        case "[": 0x1B
-        case "\\": 0x1C
-        case "]": 0x1D
-        case "^": 0x1E
-        case "_": 0x1F
-        case " ": 0x00
-        case "?": 0x7F
-        default: nil
-        }
     }
 
     // MARK: - Key commands
@@ -312,6 +266,18 @@ final class TerminalInputView: UIView, UIKeyInput {
                 modifierFlags: .command
             ),
             UIKeyCommand(
+                title: String(localized: "Find"),
+                action: #selector(findInScrollback),
+                input: "f",
+                modifierFlags: .command
+            ),
+            UIKeyCommand(
+                title: String(localized: "Select All"),
+                action: #selector(selectAll(_:)),
+                input: "a",
+                modifierFlags: .command
+            ),
+            UIKeyCommand(
                 title: String(localized: "Scroll Up"),
                 action: #selector(scrollPageUp),
                 input: UIKeyCommand.inputUpArrow,
@@ -323,7 +289,16 @@ final class TerminalInputView: UIView, UIKeyInput {
                 input: UIKeyCommand.inputDownArrow,
                 modifierFlags: .command
             ),
-        ]
+        ] + AppShortcut.keyCommands(action: #selector(performAppShortcut(_:)))
+    }
+
+    /// The app-level shortcuts, routed to the container's router; the terminal is first
+    /// responder whenever it is on screen, so they have to be reachable from here too.
+    var shortcutRouter: AppShortcutRouter?
+
+    @objc func performAppShortcut(_ sender: UIKeyCommand) {
+        guard let shortcut = AppShortcut(command: sender) else { return }
+        shortcutRouter?.perform(shortcut)
     }
 
     /// Declared here as well as in the app's menu because this view is first responder
@@ -331,6 +306,28 @@ final class TerminalInputView: UIView, UIKeyInput {
     /// not reached while a responder below it is consuming key presses.
     @objc func showCommandPalette() {
         onCommandPalette?()
+    }
+
+    /// Set by the SwiftUI wrapper: search belongs to the session view, the key belongs here.
+    var onFind: (() -> Void)?
+
+    @objc func findInScrollback() {
+        onFind?()
+    }
+
+    // MARK: - Standard edit actions
+
+    /// The edit menu a secondary click shows is built from these, so they are the
+    /// standard selectors rather than this view's own.
+    override func copy(_ sender: Any?) { copySelection() }
+    override func paste(_ sender: Any?) { pasteFromPasteboard() }
+    override func selectAll(_ sender: Any?) {
+        guard let last = renderView.lastRow, lastReportedGrid.columns > 0 else { return }
+        setSelection(TerminalRange(
+            start: TerminalPosition(row: 0, column: 0),
+            end: TerminalPosition(row: last, column: lastReportedGrid.columns - 1)
+        ))
+        onSelectionChange?(renderView.selection)
     }
 
     /// Set by the SwiftUI wrapper so the copy honours the clipboard-expiry setting; the
@@ -561,9 +558,105 @@ final class TerminalInputView: UIView, UIKeyInput {
     /// Hover only matters in "any event" tracking — the mode a program sets when it wants
     /// to highlight what is under the pointer — so nothing is sent otherwise, and a
     /// trackpad user does not flood the connection with motion reports.
+    private var editMenu: UIEditMenuInteraction?
+    private var pointerDragAnchor: TerminalPosition?
+
     private func installPointerTracking() {
         let hover = UIHoverGestureRecognizer(target: self, action: #selector(handleHover(_:)))
         addGestureRecognizer(hover)
+
+        // Scroll wheel and trackpad scrolling. Scroll events arrive with no touches, so
+        // this recogniser takes none — the two-finger pan above keeps direct touches, and
+        // the two cannot fight over a click-drag.
+        let wheel = UIPanGestureRecognizer(target: self, action: #selector(handlePan))
+        wheel.allowedScrollTypesMask = .all
+        wheel.allowedTouchTypes = []
+        addGestureRecognizer(wheel)
+
+        // Click-drag with a mouse or trackpad selects text; a program tracking the mouse
+        // gets the drag instead, which is how a tmux pane is resized with a pointer.
+        let drag = UIPanGestureRecognizer(target: self, action: #selector(handlePointerDrag(_:)))
+        drag.allowedTouchTypes = [NSNumber(value: UITouch.TouchType.indirectPointer.rawValue)]
+        drag.allowedScrollTypesMask = []
+        drag.minimumNumberOfTouches = 1
+        drag.maximumNumberOfTouches = 1
+        addGestureRecognizer(drag)
+
+        // Secondary click: the remote program's if it is tracking the mouse, otherwise the
+        // edit menu — the same contract as every text surface on iPadOS.
+        //
+        // Both click recognisers take pointer touches only. A button mask alone is not a
+        // pointer check: a synthesised direct tap satisfied `.button(3)`, and every
+        // live-terminal UI test that tapped the terminal then pasted whatever the previous
+        // test had copied — the prompt's own glyphs, which the shell tried to run.
+        let pointerOnly = [NSNumber(value: UITouch.TouchType.indirectPointer.rawValue)]
+        let secondary = UITapGestureRecognizer(target: self, action: #selector(handleSecondaryClick(_:)))
+        secondary.buttonMaskRequired = .secondary
+        secondary.allowedTouchTypes = pointerOnly
+        addGestureRecognizer(secondary)
+
+        // Middle click pastes, as it has on every X11 terminal; a tracking program gets it.
+        let middle = UITapGestureRecognizer(target: self, action: #selector(handleMiddleClick(_:)))
+        middle.buttonMaskRequired = .button(3)
+        middle.allowedTouchTypes = pointerOnly
+        addGestureRecognizer(middle)
+
+        let menu = UIEditMenuInteraction(delegate: nil)
+        addInteraction(menu)
+        editMenu = menu
+        addInteraction(UIPointerInteraction(delegate: self))
+    }
+
+    @objc private func handlePointerDrag(_ recognizer: UIPanGestureRecognizer) {
+        guard let position = renderView.position(at: recognizer.location(in: renderView)) else { return }
+        switch recognizer.state {
+        case .began:
+            if modes.mouseTracking != .off {
+                reportMouse(at: position, button: .left, action: .press)
+                pointerDragAnchor = position
+                return
+            }
+            pointerDragAnchor = position
+            setSelection(TerminalRange(start: position, end: position))
+        case .changed:
+            guard let anchor = pointerDragAnchor else { return }
+            if modes.mouseTracking != .off {
+                reportMouse(at: position, button: .left, action: .drag)
+                return
+            }
+            setSelection(TerminalRange(start: anchor, end: position))
+        case .ended:
+            if modes.mouseTracking != .off {
+                reportMouse(at: position, button: .left, action: .release)
+            } else {
+                onSelectionChange?(renderView.selection)
+            }
+            pointerDragAnchor = nil
+        case .cancelled, .failed:
+            pointerDragAnchor = nil
+        default:
+            break
+        }
+    }
+
+    @objc private func handleSecondaryClick(_ recognizer: UITapGestureRecognizer) {
+        let point = recognizer.location(in: self)
+        if modes.mouseTracking != .off, let position = renderView.position(at: recognizer.location(in: renderView)) {
+            reportMouse(at: position, button: .right, action: .press)
+            reportMouse(at: position, button: .right, action: .release)
+            return
+        }
+        if !isFirstResponder { _ = becomeFirstResponder() }
+        editMenu?.presentEditMenu(with: UIEditMenuConfiguration(identifier: nil, sourcePoint: point))
+    }
+
+    @objc private func handleMiddleClick(_ recognizer: UITapGestureRecognizer) {
+        if modes.mouseTracking != .off, let position = renderView.position(at: recognizer.location(in: renderView)) {
+            reportMouse(at: position, button: .middle, action: .press)
+            reportMouse(at: position, button: .middle, action: .release)
+            return
+        }
+        pasteFromPasteboard()
     }
 
     @objc private func handleHover(_ recognizer: UIHoverGestureRecognizer) {
@@ -709,5 +802,15 @@ extension TerminalInputView: UIDropInteractionDelegate {
             // several commands with no warning.
             onPaste?(text)
         }
+    }
+}
+
+// MARK: - Pointer style
+
+extension TerminalInputView: UIPointerInteractionDelegate {
+    /// A text surface shows a beam, sized to a cell so it reads as "here is where the
+    /// character goes" rather than as a generic cursor.
+    func pointerInteraction(_ interaction: UIPointerInteraction, styleFor region: UIPointerRegion) -> UIPointerStyle? {
+        UIPointerStyle(shape: .verticalBeam(length: renderView.metrics.cellHeight))
     }
 }
