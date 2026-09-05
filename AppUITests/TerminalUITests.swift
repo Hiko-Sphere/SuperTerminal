@@ -31,16 +31,56 @@ private extension XCUIApplication {
     /// artefact of the test, not a property of the screen, and it should not decide results.
     @discardableResult
     func scroll(to element: XCUIElement, attempts: Int = 20) -> Bool {
-        if element.exists, element.isHittable { return true }
+        if isTappable(element) { return true }
         // Down the form first: the row being looked for is usually below, and with Bold
         // Text every row is taller, so the budget has to cover a long form.
         for up in [true, false] {
             for _ in 0 ..< attempts {
-                if element.exists, element.isHittable { return true }
-                swipeSettingsForm(up: up)
+                if isTappable(element) { return true }
+                if element.exists, element.isHittable {
+                    // In view but its centre is under the sheet's bar or past the form's
+                    // bottom: a page swipe would overshoot, so move the content a little.
+                    // If that moves nothing, the form is already at its limit — a header
+                    // hugging the top on an iPhone — and the element is as reachable as
+                    // it will ever be.
+                    let before = element.frame
+                    nudgeSettingsForm(revealingTop: element.frame.midY < visibleTop())
+                    if abs(element.frame.midY - before.midY) < 1 { return element.isHittable }
+                } else {
+                    swipeSettingsForm(up: up)
+                }
             }
         }
-        return element.exists && element.isHittable
+        return isTappable(element)
+    }
+
+    /// `isHittable` is true for a row whose frame merely intersects the form, including
+    /// one mostly hidden under the navigation bar of an iPad form sheet — a tap at its
+    /// centre then lands on the bar and opens nothing. Found on the iPad run the day the
+    /// Security section grew a row. A row counts as tappable when its centre lies between
+    /// the bar and the form's bottom edge; judging the whole frame instead made a section
+    /// header hugging the top of an iPhone form unreachable.
+    func isTappable(_ element: XCUIElement) -> Bool {
+        guard element.exists, element.isHittable else { return false }
+        let form = collectionViews["settings-form"].firstMatch
+        guard form.exists else { return true }
+        // XCUITest taps the centre, so the centre is what has to be clear of the bar.
+        let centre = element.frame.midY
+        return centre >= visibleTop() && centre <= form.frame.maxY
+    }
+
+    private func visibleTop() -> CGFloat {
+        let form = collectionViews["settings-form"].firstMatch
+        guard form.exists else { return 0 }
+        let bars = navigationBars.allElementsBoundByIndex.filter { form.frame.intersects($0.frame) }
+        return bars.map(\.frame.maxY).max() ?? form.frame.minY
+    }
+
+    private func nudgeSettingsForm(revealingTop: Bool) {
+        let form = collectionViews["settings-form"].firstMatch
+        let from = form.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: revealingTop ? 0.4 : 0.6))
+        let to = form.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: revealingTop ? 0.6 : 0.4))
+        from.press(forDuration: 0.05, thenDragTo: to)
     }
 
     /// Brings the connection list's search field on screen and returns it.
@@ -60,8 +100,25 @@ private extension XCUIApplication {
 ///
 /// Needs a server; `scripts/ui-terminal-e2e.sh` starts one and passes its details in.
 /// Without them the tests skip, so a plain `xcodebuild test` still runs clean.
+@MainActor
 final class TerminalUITests: XCTestCase {
-    private var app: XCUIApplication!
+    /// Launched on first use, from the test body: XCTest's setUp is nonisolated, and
+    /// XCUIApplication is main-actor bound. Tests touch `app` first thing, so the
+    /// launch happens where it always did in practice.
+    private lazy var app: XCUIApplication = {
+            let environment = ProcessInfo.processInfo.environment
+            let app = XCUIApplication()
+            // The app reads these itself; XCUITest launches it as a separate process, so they
+            // have to be handed over explicitly rather than inherited.
+            for key in [
+                "ST_UITEST_SEED", "ST_UITEST_HOST", "ST_UITEST_PORT", "ST_UITEST_USER",
+                "ST_UITEST_KEY", "ST_UITEST_TRUST_HOST_KEYS", "ST_UITEST_NAME",
+            ] {
+                if let value = environment[key] { app.launchEnvironment[key] = value }
+            }
+            app.launch()
+        return app
+    }()
 
     override func setUpWithError() throws {
         continueAfterFailure = false
@@ -70,16 +127,6 @@ final class TerminalUITests: XCTestCase {
             environment["ST_UITEST_SEED"] == "1",
             "run scripts/ui-terminal-e2e.sh to provide a server"
         )
-        app = XCUIApplication()
-        // The app reads these itself; XCUITest launches it as a separate process, so they
-        // have to be handed over explicitly rather than inherited.
-        for key in [
-            "ST_UITEST_SEED", "ST_UITEST_HOST", "ST_UITEST_PORT", "ST_UITEST_USER",
-            "ST_UITEST_KEY", "ST_UITEST_TRUST_HOST_KEYS", "ST_UITEST_NAME",
-        ] {
-            if let value = environment[key] { app.launchEnvironment[key] = value }
-        }
-        app.launch()
     }
 
     /// Opens the seeded connection and waits until the shell has answered.
@@ -356,6 +403,7 @@ final class TerminalUITests: XCTestCase {
 }
 
 /// Key management is reachable and can generate a usable key without a server.
+@MainActor
 final class KeyManagementUITests: XCTestCase {
     override func setUpWithError() throws {
         continueAfterFailure = false
@@ -420,6 +468,7 @@ final class KeyManagementUITests: XCTestCase {
 /// These previously existed only as code that looked correct. Launch arguments drive the
 /// real system settings, so a regression that breaks high contrast or Reduce Transparency
 /// fails here rather than being discovered by someone who depends on them.
+@MainActor
 final class AccessibilityUITests: XCTestCase {
     override func setUpWithError() throws {
         continueAfterFailure = false
@@ -517,8 +566,23 @@ final class AccessibilityUITests: XCTestCase {
 /// interface and a real shell can show: that a snippet lands in the terminal *without*
 /// running, and that what gets recorded as history is the command the user actually
 /// typed — reconstructed from keystrokes, not scraped from the shell's echo.
+@MainActor
 final class SnippetUITests: XCTestCase {
-    private var app: XCUIApplication!
+    /// Launched on first use, from the test body: XCTest's setUp is nonisolated, and
+    /// XCUIApplication is main-actor bound. Tests touch `app` first thing, so the
+    /// launch happens where it always did in practice.
+    private lazy var app: XCUIApplication = {
+            let environment = ProcessInfo.processInfo.environment
+            let app = XCUIApplication()
+            for key in [
+                "ST_UITEST_SEED", "ST_UITEST_HOST", "ST_UITEST_PORT", "ST_UITEST_USER",
+                "ST_UITEST_KEY", "ST_UITEST_TRUST_HOST_KEYS", "ST_UITEST_NAME",
+            ] {
+                if let value = environment[key] { app.launchEnvironment[key] = value }
+            }
+            app.launch()
+        return app
+    }()
 
     override func setUpWithError() throws {
         continueAfterFailure = false
@@ -527,14 +591,6 @@ final class SnippetUITests: XCTestCase {
             environment["ST_UITEST_SEED"] == "1",
             "run scripts/ui-terminal-e2e.sh to provide a server"
         )
-        app = XCUIApplication()
-        for key in [
-            "ST_UITEST_SEED", "ST_UITEST_HOST", "ST_UITEST_PORT", "ST_UITEST_USER",
-            "ST_UITEST_KEY", "ST_UITEST_TRUST_HOST_KEYS", "ST_UITEST_NAME",
-        ] {
-            if let value = environment[key] { app.launchEnvironment[key] = value }
-        }
-        app.launch()
     }
 
     private var terminal: XCUIElement {
@@ -751,8 +807,23 @@ final class SnippetUITests: XCTestCase {
 ///
 /// Skips where multiple windows are not offered, which is every iPhone — so this runs
 /// only on the destination it is about.
+@MainActor
 final class MultiWindowUITests: XCTestCase {
-    private var app: XCUIApplication!
+    /// Launched on first use, from the test body: XCTest's setUp is nonisolated, and
+    /// XCUIApplication is main-actor bound. Tests touch `app` first thing, so the
+    /// launch happens where it always did in practice.
+    private lazy var app: XCUIApplication = {
+            let environment = ProcessInfo.processInfo.environment
+            let app = XCUIApplication()
+            for key in [
+                "ST_UITEST_SEED", "ST_UITEST_HOST", "ST_UITEST_PORT", "ST_UITEST_USER",
+                "ST_UITEST_KEY", "ST_UITEST_TRUST_HOST_KEYS", "ST_UITEST_NAME",
+            ] {
+                if let value = environment[key] { app.launchEnvironment[key] = value }
+            }
+            app.launch()
+        return app
+    }()
 
     override func setUpWithError() throws {
         continueAfterFailure = false
@@ -761,14 +832,6 @@ final class MultiWindowUITests: XCTestCase {
             environment["ST_UITEST_SEED"] == "1",
             "run scripts/ui-terminal-e2e.sh to provide a server"
         )
-        app = XCUIApplication()
-        for key in [
-            "ST_UITEST_SEED", "ST_UITEST_HOST", "ST_UITEST_PORT", "ST_UITEST_USER",
-            "ST_UITEST_KEY", "ST_UITEST_TRUST_HOST_KEYS", "ST_UITEST_NAME",
-        ] {
-            if let value = environment[key] { app.launchEnvironment[key] = value }
-        }
-        app.launch()
     }
 
     func testSessionsFromLastTimeAreOfferedAfterARelaunch() throws {
@@ -870,6 +933,7 @@ final class MultiWindowUITests: XCTestCase {
 /// Localization fails silently: an untranslated string compiles, ships, and simply shows
 /// English to someone who chose Chinese. Nothing crashes and no unit test notices. These
 /// launch the real app in each locale and read what is on screen.
+@MainActor
 final class LocalizationUITests: XCTestCase {
     private func launch(inLanguage language: String) -> XCUIApplication {
         let app = XCUIApplication()

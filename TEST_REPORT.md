@@ -57,6 +57,10 @@ swift test           # Executed 349 tests, with 0 failures (347 upstream + 2 for
 Warning counts were measured, not assumed:
 `swift build 2>&1 | grep -cE "Sources/.*warning:"` → **0**, and
 `xcodebuild ... build 2>&1 | grep -cE "warning:.*repo/superterminal/App"` → **0**.
+The test targets are held to the same bar, on a clean build so incremental compilation
+cannot hide a file that was not recompiled:
+`xcodebuild ... clean build-for-testing 2>&1 | grep -c "warning:.*repo/superterminal/App"` → **0**
+across `App/`, `AppTests/` and `AppUITests/`.
 
 ## What the suite covers
 
@@ -194,6 +198,14 @@ comment-free and to have at least ten headings. `MarkdownDocumentTests` cover th
 headings, lists, tables and comment stripping. `ConsentUITests` launch with the consent
 flag, read the User Notice from the gate, accept, relaunch without a reset and confirm the
 gate does not return; the second test opens the licences from Settings.
+
+### Clipboard expiry — 3 tests
+
+`ClipboardTests` prove the option mapping (0 → no expiry; n → `expirationDate` = now + n)
+and, on the real pasteboard in the app host, that text copied with an expiry is readable
+back immediately through `UIPasteboard.general.string` — the way every paste path reads
+it. The expiry itself is the system's: iOS removes the item after the interval, whether
+or not the app is running, which is why no app-side timer exists to test.
 
 ### The app itself — 5 tests, on an iPhone 17 Pro simulator
 

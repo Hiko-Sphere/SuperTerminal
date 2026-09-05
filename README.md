@@ -117,8 +117,6 @@ These are real and are not worked around silently:
 * **The legal texts carry placeholders.** Effective date, legal name, contact addresses
   and governing law are the project owner's to fill, and the texts have not been reviewed
   by a lawyer — they say so. See `PROJECT_STATUS.md` B-5.
-* **The clipboard is not cleared automatically.** Text copied from the terminal stays on
-  the pasteboard until replaced; the User Notice says so.
 
 ## Licence and trademarks
 

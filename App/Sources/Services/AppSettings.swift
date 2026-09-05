@@ -14,6 +14,7 @@ final class AppSettings {
         static let followSystemAppearance = "settings.followSystemAppearance"
         static let fontSize = "settings.fontSize"
         static let scrollbackLimit = "settings.scrollbackLimit"
+        static let clipboardExpirySeconds = "settings.clipboardExpirySeconds"
         static let keepAwakeWhileConnected = "settings.keepAwakeWhileConnected"
         static let commandHistoryEnabled = "settings.commandHistoryEnabled"
         static let confirmMultilinePaste = "settings.confirmMultilinePaste"
@@ -27,7 +28,7 @@ final class AppSettings {
         static let acceptedTermsVersion = "settings.acceptedTermsVersion"
 
         static let all = [
-            themeID, lightThemeID, followSystemAppearance, fontSize, scrollbackLimit,
+            themeID, lightThemeID, followSystemAppearance, fontSize, scrollbackLimit, clipboardExpirySeconds,
             keepAwakeWhileConnected, commandHistoryEnabled, confirmMultilinePaste,
             hideContentInAppSwitcher, cursorBlink, bellEnabled, keyRowVisible,
             automaticReconnect, hapticsEnabled, iCloudSyncEnabled, acceptedTermsVersion,
@@ -49,6 +50,7 @@ final class AppSettings {
         followSystemAppearance = defaults.bool(forKey: Key.followSystemAppearance)
         fontSize = defaults.double(forKey: Key.fontSize)
         scrollbackLimit = defaults.integer(forKey: Key.scrollbackLimit)
+        clipboardExpirySeconds = defaults.integer(forKey: Key.clipboardExpirySeconds)
         keepAwakeWhileConnected = defaults.bool(forKey: Key.keepAwakeWhileConnected)
         commandHistoryEnabled = defaults.bool(forKey: Key.commandHistoryEnabled)
         confirmMultilinePaste = defaults.bool(forKey: Key.confirmMultilinePaste)
@@ -71,6 +73,7 @@ final class AppSettings {
             Key.followSystemAppearance: true,
             Key.fontSize: 13.0,
             Key.scrollbackLimit: 10000,
+            Key.clipboardExpirySeconds: 60,
             Key.keepAwakeWhileConnected: true,
             // Command history is off by default. A terminal's history is among the most
             // sensitive things a device can hold, and a feature that records it should be
@@ -103,6 +106,7 @@ final class AppSettings {
         followSystemAppearance = defaults.bool(forKey: Key.followSystemAppearance)
         fontSize = defaults.double(forKey: Key.fontSize)
         scrollbackLimit = defaults.integer(forKey: Key.scrollbackLimit)
+        clipboardExpirySeconds = defaults.integer(forKey: Key.clipboardExpirySeconds)
         keepAwakeWhileConnected = defaults.bool(forKey: Key.keepAwakeWhileConnected)
         commandHistoryEnabled = defaults.bool(forKey: Key.commandHistoryEnabled)
         confirmMultilinePaste = defaults.bool(forKey: Key.confirmMultilinePaste)
@@ -127,6 +131,9 @@ final class AppSettings {
     }
 
     var scrollbackLimit: Int { didSet { defaults.set(scrollbackLimit, forKey: Key.scrollbackLimit) } }
+    /// Seconds after which text copied from the terminal leaves the pasteboard; 0 keeps
+    /// it until replaced. Public keys copied from the key list are not subject to this.
+    var clipboardExpirySeconds: Int { didSet { defaults.set(clipboardExpirySeconds, forKey: Key.clipboardExpirySeconds) } }
     var keepAwakeWhileConnected: Bool {
         didSet { defaults.set(keepAwakeWhileConnected, forKey: Key.keepAwakeWhileConnected) }
     }

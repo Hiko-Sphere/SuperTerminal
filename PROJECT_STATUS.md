@@ -41,6 +41,7 @@ This file is the resumable state of the work. It records what is *proven*, what 
 | Legal texts bundled in en / zh-Hans / zh-Hant, parsed and rendered | `LegalDocumentBundleTests` (11) prove every file is in the bundle, comment-free and substantial; `MarkdownDocumentTests` (3); CI fails if the bundled notices drift from `THIRD_PARTY_NOTICES.md` |
 | Consent gate and Settings → Legal | `ConsentUITests` (2): a fresh install is gated, the notice renders, acceptance persists across a relaunch, licences open from Settings |
 | App Switcher snapshot protection | `PrivacyShield` covers the window whenever the scene is not active; the previously unwired toggle now does what it says |
+| Clipboard expiry for terminal text | `ClipboardTests` (3): the option mapping, and a real copy in the app host read back through `UIPasteboard.general.string`; the UI copy test reads its selection back the same way. Expiry is enforced by iOS via `expirationDate`, 60 s by default, configurable in Settings → Security |
 | **Throughput, measured on the real path** | Release: 14.7 MB/s plain text, 33.5 MB/s coloured, 14.9 MB/s CJK, reflow of a full 5 000-line scrollback in 17 ms — all fed as `Data`, which is what the app feeds. The earlier figures in this table were measured on an `Array`, a path the app never takes and which was far slower, so they understated the product. Both paths are now benchmarked, and their parity is asserted as a ratio rather than a fixed number |
 | **Render cost, measured** | A full redraw of both an 80×24 and a 200×55 grid fits inside a 60 Hz frame on the simulator; run coalescing is asserted directly on the run count |
 | Selection and find gestures | UI tests: long-press-and-drag selects and offers Copy, and the find bar reports a match count |
@@ -161,10 +162,16 @@ outside the working tree and `source` it — the script's header documents the v
 Needed later, not now:
 
 4. **A test identity with MFA** for the interactive SSO login. That path runs through
-   `ASWebAuthenticationSession`, so it can only be exercised once the app target exists.
-5. **An Apple Developer team ID.** A paired iPhone 16 Pro is already visible to the
-   build machine and two Apple Development signing identities exist, so this is needed
-   for distribution rather than for device testing.
+   `ASWebAuthenticationSession` on a device; the app exists, so this is runnable as soon
+   as an identity is available.
+5. **An Apple Developer team ID**, with the iCloud capability and the container
+   `iCloud.dev.superterminal.app` enabled on the app identifier. A paired iPhone 16 Pro is
+   already visible to the build machine and two Apple Development signing identities
+   exist. *Unblocks:* archiving (B-4), and every live iCloud check in `docs/RELEASE.md` —
+   CloudKit sync between two devices, iCloud Keychain for opted-in keys, purge on delete.
+6. **The legal placeholders** (B-5): effective date, developer legal name, contact email,
+   security contact email, governing law and venue, postal address — in all three
+   languages of `App/Resources/Legal/` — and a counsel review of the three texts.
 
 ---
 

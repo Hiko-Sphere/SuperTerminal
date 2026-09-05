@@ -75,7 +75,7 @@ The switch is off until you turn it on. On: connection list, snippets, known hos
 - Whoever runs your network seeing which hostnames you connect to. The content is encrypted; the destination is not hidden.
 - Someone who can unlock your device and open the app. They can use any stored connection whose key is not biometric-protected.
 - Someone who controls your Apple Account, if iCloud sync is on.
-- Anything you copy from the terminal stays on the clipboard until you copy something else. The app does not clear it.
+- Anything you copy from the terminal stays on the clipboard for one minute by default, after which iOS removes it; Settings → Security changes the interval or turns this off. Public keys copied from the key list stay until replaced.
 - One dependency, libsodium, is included as a prebuilt binary from its maintainer rather than built from source. Its role is limited to opening the sealed Cloudflare sign-in result, which is independently verified afterwards, and to the ChaCha20-Poly1305 SSH cipher.
 - Cloudflare's FedRAMP endpoints are not supported.
 

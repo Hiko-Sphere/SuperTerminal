@@ -106,7 +106,8 @@ public final class SeverableTCPProxy: @unchecked Sendable {
 }
 
 /// Copies bytes one way and closes the other side when this one ends.
-private final class RelayHandler: ChannelInboundHandler {
+/// `Sendable` for real, not unchecked: its only state is an immutable `Channel`.
+private final class RelayHandler: ChannelInboundHandler, Sendable {
     typealias InboundIn = ByteBuffer
     typealias OutboundOut = ByteBuffer
 
@@ -115,7 +116,7 @@ private final class RelayHandler: ChannelInboundHandler {
     init(peer: Channel) { self.peer = peer }
 
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
-        peer.writeAndFlush(data, promise: nil)
+        peer.writeAndFlush(unwrapInboundIn(data), promise: nil)
     }
 
     func channelInactive(context: ChannelHandlerContext) {

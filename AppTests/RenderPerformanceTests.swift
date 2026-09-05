@@ -13,6 +13,7 @@ import XCTest
 /// every run, in CI as well as on a desk, and it fails when the number regresses. An
 /// Instruments trace is a better tool for finding *why* something is slow; this is the
 /// tool for noticing that it became slow.
+@MainActor
 final class RenderPerformanceTests: XCTestCase {
     /// A full screen of realistic output: text, colour changes, and some CJK.
     private func makeScreen(columns: Int, rows: Int) -> TerminalScreen {

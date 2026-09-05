@@ -171,6 +171,57 @@
         }
       }
     },
+    "1 minute": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 分钟"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 分鐘"
+          }
+        }
+      }
+    },
+    "30 seconds": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "30 秒"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "30 秒"
+          }
+        }
+      }
+    },
+    "5 minutes": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "5 分钟"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "5 分鐘"
+          }
+        }
+      }
+    },
     "A direct SSH connection to the host and port above.": {
       "extractionState": "manual",
       "localizations": {
@@ -779,6 +830,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "清除指令歷史紀錄"
+          }
+        }
+      }
+    },
+    "Clear copied text after": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "复制的文本保留时长"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "複製的文字保留時間"
           }
         }
       }
@@ -2717,6 +2785,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "名稱"
+          }
+        }
+      }
+    },
+    "Never": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "永不清除"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "永不清除"
           }
         }
       }
@@ -4842,6 +4927,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "使用條款"
+          }
+        }
+      }
+    },
+    "Text copied from the terminal is removed from the clipboard by iOS after this long. Public keys copied from the key list stay until replaced.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "从终端复制的文本会在这段时间后由 iOS 从剪贴板移除。从密钥列表复制的公钥会一直保留，直到被替换。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "從終端機複製的文字會在這段時間後由 iOS 從剪貼簿移除。從金鑰清單複製的公開金鑰會一直保留，直到被取代。"
           }
         }
       }

@@ -147,8 +147,11 @@ source is a tracked improvement, not a solved problem.
 *Status:* App Switcher snapshot protection is implemented: `PrivacyShield` covers the
 window with the logo whenever the scene is not active, on by default and switchable in
 Settings. Paste confirmation for multi-line content is implemented. Clipboard expiry is
-**not** implemented — copied text stays on the pasteboard until replaced, and the User
-Notice says so rather than implying otherwise.
+implemented with `UIPasteboard`'s `expirationDate` option: text copied from the terminal
+(selections and links) leaves the pasteboard after 60 seconds by default, configurable
+to 30 s / 1 min / 5 min / never in Settings → Security. The system enforces the expiry,
+so it holds even if the app is suspended. Public keys copied from the key list are
+exempt on purpose — they are public and meant to be pasted somewhere later.
 
 ### T-11 · Command history as a secondary store of secrets
 

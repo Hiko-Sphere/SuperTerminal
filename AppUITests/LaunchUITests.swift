@@ -5,6 +5,7 @@ import XCTest
 /// These are deliberately about *structure* rather than pixels: a screenshot test would
 /// break on every design change, while "the empty state offers a way forward" is a claim
 /// that should stay true.
+@MainActor
 final class LaunchUITests: XCTestCase {
     override func setUp() {
         continueAfterFailure = false

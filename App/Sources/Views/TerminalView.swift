@@ -118,6 +118,7 @@ struct TerminalView: View {
                     confirmMultilinePaste: container.settings.confirmMultilinePaste,
                     onCommandPalette: { scene.isShowingPalette = true },
                     onHaptic: { container.haptics.play($0) },
+                    onCopy: { Clipboard.copy($0, expiringAfter: container.settings.clipboardExpirySeconds) },
                     onFontSizeChange: { size in
                         // Persisted, because a size chosen by pinching is a preference —
                         // having it snap back on the next session would make the gesture
@@ -187,7 +188,9 @@ struct TerminalView: View {
                 }
             }
             Button(String(localized: "Copy Link")) {
-                UIPasteboard.general.string = session.pendingLink?.url
+                if let url = session.pendingLink?.url {
+                    Clipboard.copy(url, expiringAfter: container.settings.clipboardExpirySeconds)
+                }
                 session.pendingLink = nil
             }
             Button(String(localized: "Cancel"), role: .cancel) { session.pendingLink = nil }
@@ -244,7 +247,7 @@ struct TerminalView: View {
         HStack(spacing: DesignTokens.Spacing.lg) {
             Button {
                 if let text = session.selectedText {
-                    UIPasteboard.general.string = text
+                    Clipboard.copy(text, expiringAfter: container.settings.clipboardExpirySeconds)
                     session.selection = nil
                     container.haptics.play(.textInserted)
                 }

@@ -12,6 +12,8 @@ struct TerminalScreenView: UIViewRepresentable {
     let onCommandPalette: () -> Void
     /// Plays a haptic, if the user wants them.
     let onHaptic: (Haptics.Event) -> Void
+    /// Copies terminal text with the clipboard-expiry setting applied.
+    let onCopy: (String) -> Void
     /// Called when a pinch asks for a different font size, so it can be persisted.
     let onFontSizeChange: (CGFloat) -> Void
 
@@ -25,7 +27,8 @@ struct TerminalScreenView: UIViewRepresentable {
             confirmMultilinePaste: confirmMultilinePaste,
             onFontSizeChange: onFontSizeChange,
             onCommandPalette: onCommandPalette,
-            onHaptic: onHaptic
+            onHaptic: onHaptic,
+            onCopy: onCopy
         )
         return view
     }
@@ -62,7 +65,8 @@ struct TerminalScreenView: UIViewRepresentable {
             confirmMultilinePaste: Bool,
             onFontSizeChange: @escaping (CGFloat) -> Void,
             onCommandPalette: @escaping () -> Void,
-            onHaptic: @escaping (Haptics.Event) -> Void
+            onHaptic: @escaping (Haptics.Event) -> Void,
+            onCopy: @escaping (String) -> Void
         ) {
             view.onInput = { data in
                 Task { @MainActor in
@@ -81,6 +85,9 @@ struct TerminalScreenView: UIViewRepresentable {
             view.onCommandPalette = { onCommandPalette() }
             view.onHaptic = { event in
                 Task { @MainActor in onHaptic(event) }
+            }
+            view.onCopy = { text in
+                Task { @MainActor in onCopy(text) }
             }
             view.onFontSizeChange = { size in
                 Task { @MainActor in onFontSizeChange(size) }

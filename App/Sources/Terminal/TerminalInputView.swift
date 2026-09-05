@@ -333,9 +333,17 @@ final class TerminalInputView: UIView, UIKeyInput {
         onCommandPalette?()
     }
 
+    /// Set by the SwiftUI wrapper so the copy honours the clipboard-expiry setting; the
+    /// view has no access to settings and must not guess a default.
+    var onCopy: ((String) -> Void)?
+
     @objc func copySelection() {
         guard let text = selectedText() else { return }
-        UIPasteboard.general.string = text
+        if let onCopy {
+            onCopy(text)
+        } else {
+            UIPasteboard.general.string = text
+        }
         clearSelection()
         onHaptic?(.textInserted)
     }

@@ -118,12 +118,22 @@ struct SettingsView: View {
                     NavigationLink("Snippets") { SnippetLibraryView() }
                 }
 
-                Section("Security") {
+                Section {
                     NavigationLink("Keys") { KeyManagementView() }
                     NavigationLink("Known hosts") { KnownHostsView() }
+                    Picker("Clear copied text after", selection: $settings.clipboardExpirySeconds) {
+                        Text("Never").tag(0)
+                        Text("30 seconds").tag(30)
+                        Text("1 minute").tag(60)
+                        Text("5 minutes").tag(300)
+                    }
                     Button("Sign out of all Cloudflare Access apps") {
                         try? container.vault.deleteAllAccessTokens()
                     }
+                } header: {
+                    Text("Security")
+                } footer: {
+                    Text("Text copied from the terminal is removed from the clipboard by iOS after this long. Public keys copied from the key list stay until replaced.")
                 }
 
                 ICloudSyncSection()
