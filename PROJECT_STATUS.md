@@ -2,9 +2,10 @@
 
 **Updated:** 2026-09-06 · **Phase:** 5 of 7 in progress — the app is driven end to end
 through its own interface on iPhone and iPad; iCloud sync (opt-in, offline-verified), the
-legal texts with a consent gate, clipboard expiry, Access service tokens, and hardware
-keyboard and pointer support (xterm modifiers, app shortcuts, wheel, clicks, drag) are
-delivered. What remains needs the owner: a live Cloudflare environment (B-2), a
+legal texts with a consent gate, clipboard expiry, Access service tokens, hardware
+keyboard and pointer support (xterm modifiers, app shortcuts, wheel, clicks, drag), and
+server platform detection with a hand-set override are delivered. What remains needs the
+owner: a live Cloudflare environment (B-2), a
 development team for iCloud and archiving (B-4), and the legal placeholders with counsel
 review (B-5).
 
@@ -61,6 +62,7 @@ This file is the resumable state of the work. It records what is *proven*, what 
 | **Profiled with Instruments, for real** | `scripts/profile-emulator.sh` records a Time Profiler trace and attributes it to our own frames: 3.16 s of CPU, 99.6% symbolicated, 53.6% in the parse loop and 12.4% in `CharacterWidth.of`. The leaf frames say why — over a fifth in malloc/free and `_StringGuts`, because the parser deals in `Character`. Recorded rather than acted on: the throughput floors are met with room to spare, and rewriting the code every byte passes through is not an end-of-session change |
 | **One haptic vocabulary** | Seven ad-hoc feedback generators scattered through the views, none warmed up and none respecting a preference, replaced by a named vocabulary with a setting. Generators are prepared before the gesture that will fire them, because a haptic played cold arrives a beat late and reads as a bug |
 | **Keyboard shortcuts that land where you expect** | ⌘N, ⌘K, ⌘⇧[ / ⌘⇧], ⌘1–9, ⌘W, ⌘= / ⌘- / ⌘0 as one `AppShortcut` table exposed as SwiftUI shortcut buttons in the shell and as key commands on the terminal view, routed to one handler, reachable from a hardware keyboard whatever has focus, on iPhone and iPad; `HardwareKeyboardUITests` type ⌘K, ⌘N, ⌘,, ⌘K over a focused search field and Escape as real keys. SwiftUI `Commands` never received them, nor did `keyCommands` on the SwiftUI-wrapped application delegate — found by those tests. A hidden first-responder view was the first mechanism and was measured out: it exposed an iPadOS 26 focus-engine abort with a hardware keyboard (5 of 18 runs; 0 of 17 without it), see D-018 |
+| **The server says what it is, and can be overruled** | `HostPlatformTests` (5): `uname -s` and `cmd /c ver` output from macOS, Linux, the BSDs and Windows read into a platform, both Windows shells' complaints rejected, old records decode, the hand-set value wins, no store churn on repeats. `testConnectingDetectsTheServerPlatform` watches the row say macOS after connecting to this Mac's OpenSSH; `testServerPlatformCanBeSetByHand` sets Windows in the editor and sees the row change. Linux and Windows live detection are hardware checks (D-019) |
 | **Simplified and Traditional Chinese, gated** | 385 strings across the app and the two error-producing packages. Keys come from the compiler's `.stringsdata`, not the source, because interpolation becomes `%@` before lookup. `scripts/localization-audit.sh` fails CI on any untranslated string. Three UI tests run the app in each locale against a real server — including the assertion that Traditional shows 連線 and no 连接, which is what catches a converted rather than translated catalog. Terminal output is never translated |
 | **`NSFaceIDUsageDescription`, which was missing** | The app gates keys behind Face ID and had no usage description — iOS terminates an app that invokes Face ID without one. No test had reached it because the simulator never invokes Face ID. Added and localized |
 | **A command palette that actually ranks** | ⌘K over connections, open sessions, snippets and actions, with real fuzzy scoring — 13 tests pin the ranking against realistic names, so `wp` finds `web-prod-01` rather than `wrapper` and `dps` finds `docker ps`. The matched characters are bolded, which is what makes a fuzzy result legible instead of arbitrary. A UI test types `dfh` and lands on a snippet called "Disk Free Here" — a substring filter would find nothing at all |

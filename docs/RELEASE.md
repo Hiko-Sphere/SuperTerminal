@@ -32,6 +32,7 @@ cd ../.. && ./scripts/app-integration-e2e.sh
 - [ ] `vim` and `tmux` render and respond correctly
 - [ ] External keyboard shortcuts work, including Control and Option; Control-arrow moves by word in a shell, Shift-arrow selects in an editor, F-keys reach `htop`
 - [ ] Hardware keyboard, in the command palette: Escape closes it, ↑/↓ move the highlight, Return runs it
+- [ ] Server platform: connect to a Linux machine and a Windows OpenSSH machine; each row comes to say Linux / Windows without anything typed into the session (macOS is proven by the UI tests against this Mac)
 - [ ] With a mouse or trackpad: the wheel scrolls the scrollback and reaches `less` when it is running; a secondary click shows Copy / Paste / Select All, and reaches `tmux` when it is tracking; a middle click pastes; click-drag selects; the pointer is a beam over the terminal
 - [ ] Rotation, Split View and Stage Manager resize the terminal correctly
 - [ ] Backgrounding and returning does not lose a session

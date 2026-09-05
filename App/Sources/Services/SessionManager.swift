@@ -15,6 +15,8 @@ final class SessionManager {
     private(set) var sessions: [TerminalSession] = []
     /// A connection succeeded; the known-hosts file may have a new entry to sync.
     var didConnect: (() -> Void)?
+    /// A server reported its platform; the container records it against the host.
+    var didDetectPlatform: ((Host.ID, HostPlatform) -> Void)?
 
     /// Which window is currently displaying each session.
     ///
@@ -108,6 +110,7 @@ final class SessionManager {
             haptics: haptics
         )
         session.onConnected = { [weak self] in self?.didConnect?() }
+        session.onPlatformDetected = { [weak self] platform in self?.didDetectPlatform?(host.id, platform) }
         sessions.append(session)
         rememberOpenSessions()
         Task { await session.connect() }

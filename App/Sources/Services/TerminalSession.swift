@@ -153,9 +153,41 @@ final class TerminalSession: Identifiable {
 
     var displayName: String { title.isEmpty ? host.name : title }
 
+    /// Asks the server what it is, on a channel of its own, after the shell is already
+    /// serving the user. `uname -s` answers on every POSIX system; when it cannot run —
+    /// Windows OpenSSH has no `uname` — `cmd /c ver` is asked instead. Nothing is typed
+    /// into the user's shell, and a server that answers with nothing usable leaves the
+    /// record as it was.
+    private func detectPlatform(over connection: SSHConnection) {
+        Task { [weak self] in
+            var uname: String?
+            var version: String?
+            if let result = try? await connection.execute(command: HostPlatform.unameCommand, timeout: .seconds(10)),
+               result.exitStatus == 0 {
+                uname = result.standardOutputText
+            }
+            if HostPlatform.detect(unameOutput: uname, windowsVersionOutput: nil) == nil,
+               let result = try? await connection.execute(command: HostPlatform.windowsVersionCommand, timeout: .seconds(10)),
+               result.exitStatus == 0 {
+                version = result.standardOutputText
+            }
+            guard let platform = HostPlatform.detect(unameOutput: uname, windowsVersionOutput: version) else { return }
+            await MainActor.run { [weak self] in
+                guard let self else { return }
+                self.detectedPlatform = platform
+                self.log.info("server platform detected", ["platform": platform.rawValue])
+                self.onPlatformDetected?(platform)
+            }
+        }
+    }
+
     var isConnected: Bool { if case .connected = state { return true }; return false }
     /// Called once per successful handshake, on the main actor.
     var onConnected: (() -> Void)?
+    /// Called on the main actor with what the server reported about its platform (D-019).
+    var onPlatformDetected: ((HostPlatform) -> Void)?
+    /// What detection found for this session, kept so the terminal can show it.
+    private(set) var detectedPlatform: HostPlatform?
 
     // MARK: - Lifecycle
 
@@ -203,6 +235,7 @@ final class TerminalSession: Identifiable {
             onConnected?()
             haptics?.play(.connected)
             log.info("session connected", ["host": Redactor.hostname(host.hostname)])
+            detectPlatform(over: connection)
         } catch let error as STError {
             state = .failed(error)
             log.error("session failed", ["category": error.category.rawValue])

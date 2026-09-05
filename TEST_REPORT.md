@@ -279,6 +279,23 @@ launch and nothing further before each abort. The view was removed and the short
 became SwiftUI shortcut buttons in the root view (D-018); the redesign was then verified
 with the keyboard UI suite on both devices and sixteen further runs of the same test.
 
+### Server platform — 5 unit tests and 2 UI tests
+
+`HostPlatformTests` read platforms out of what real systems print: `uname -s` for macOS,
+Linux and the BSDs, MSYS and Cygwin kernel names as Windows, `cmd /c ver` for Windows
+proper, and both Windows shells' "not recognized" complaints, which must not be read as a
+kernel name; nothing usable yields nil rather than a guess. A record written before the two
+fields existed decodes; the hand-set value outranks the detected one; recording the same
+detection twice writes the store once and an unknown host is ignored.
+
+`TerminalUITests.testConnectingDetectsTheServerPlatform` connects to the harness's real
+OpenSSH on this Mac and watches the connection row come to say macOS — detection over a
+channel of its own after the shell is up. `HostEditorUITests.testServerPlatformCanBeSetByHand`
+opens the seeded connection's editor, sets Windows in the Advanced section, saves, and
+sees the row change. Linux and Windows detection are exercised by the parser against
+their real output; connecting to a machine of each kind is a hardware check in
+`docs/RELEASE.md`.
+
 ### Clipboard expiry — 3 tests
 
 `ClipboardTests` prove the option mapping (0 → no expiry; n → `expirationDate` = now + n)

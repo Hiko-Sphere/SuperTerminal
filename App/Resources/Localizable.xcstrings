@@ -596,6 +596,40 @@
         }
       }
     },
+    "Automatic": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自动"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自動"
+          }
+        }
+      }
+    },
+    "BSD": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "BSD"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "BSD"
+          }
+        }
+      }
+    },
     "Bastion destination (optional)": {
       "extractionState": "manual",
       "localizations": {
@@ -2908,6 +2942,23 @@
         }
       }
     },
+    "Linux": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Linux"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Linux"
+          }
+        }
+      }
+    },
     "Listening ports": {
       "extractionState": "manual",
       "localizations": {
@@ -3601,6 +3652,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "其他"
+          }
+        }
+      }
+    },
+    "Other system": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "其他系统"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "其他系統"
           }
         }
       }
@@ -4553,6 +4621,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "伺服器 fingerprint"
+          }
+        }
+      }
+    },
+    "Server platform": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器平台"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "伺服器平台"
           }
         }
       }
@@ -5985,6 +6070,23 @@
         }
       }
     },
+    "Windows": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Windows"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Windows"
+          }
+        }
+      }
+    },
     "Wired": {
       "extractionState": "manual",
       "localizations": {
@@ -6185,6 +6287,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "iCloud 暫時無法使用。"
+          }
+        }
+      }
+    },
+    "macOS": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS"
           }
         }
       }

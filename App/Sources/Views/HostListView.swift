@@ -266,14 +266,23 @@ private struct HostRow: View {
         // longer the element hit-testing resolves to, and XCUITest treats the row as not
         // hittable at all. The explicit label below still wins for VoiceOver.
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(host.name), \(host.subtitle)")
+        .accessibilityLabel("\(host.name), \(detail)")
         .accessibilityHint("Opens a terminal session")
         .accessibilityIdentifier("host-row")
     }
 
+    /// The platform's own symbol once it is known; the transport's until then, because a
+    /// Cloudflare connection is worth telling apart before the server has said anything.
     private var icon: some View {
-        Image(systemName: host.transport.isCloudflare ? "point.3.connected.trianglepath.dotted" : "server.rack")
+        Image(systemName: host.effectivePlatform?.systemImage
+            ?? (host.transport.isCloudflare ? "point.3.connected.trianglepath.dotted" : "server.rack"))
             .foregroundStyle(host.transport.isCloudflare ? DesignTokens.Color.info : DesignTokens.Color.labelSecondary)
+    }
+
+    /// "macOS · user@host" once the platform is known, from the server or by hand.
+    private var detail: String {
+        if let platform = host.effectivePlatform { return "\(platform.title) · \(host.subtitle)" }
+        return host.subtitle
     }
 
     private var labels: some View {
@@ -281,7 +290,7 @@ private struct HostRow: View {
             Text(host.name)
                 .font(DesignTokens.Typography.body)
                 .foregroundStyle(DesignTokens.Color.label)
-            Text(host.subtitle)
+            Text(detail)
                 .font(DesignTokens.Typography.caption)
                 .foregroundStyle(DesignTokens.Color.labelSecondary)
                 // Truncating a hostname at accessibility sizes hides the very thing that

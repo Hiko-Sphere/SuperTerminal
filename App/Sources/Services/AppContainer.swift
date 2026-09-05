@@ -97,6 +97,9 @@ final class AppContainer {
         hostStore.didChange = { [weak sync] in sync?.scheduleSync() }
         snippetStore.didChange = { [weak sync] in sync?.scheduleSync() }
         sessionManager.didConnect = { [weak sync] in sync?.scheduleSync() }
+        sessionManager.didDetectPlatform = { [weak hostStore] id, platform in
+            hostStore?.recordDetectedPlatform(platform, forHostID: id)
+        }
         let shortcuts = AppShortcutRouter(sessionManager: sessionManager, settings: settings)
         let container = AppContainer(
             hostStore: hostStore,

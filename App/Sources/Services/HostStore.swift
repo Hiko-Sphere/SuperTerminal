@@ -63,6 +63,16 @@ final class HostStore {
         persistHosts()
     }
 
+    /// Records what the server reported about itself. A repeat of what is already known
+    /// writes nothing, so a connection that detects the same platform every time does not
+    /// touch the store or wake sync.
+    func recordDetectedPlatform(_ platform: HostPlatform, forHostID id: Host.ID) {
+        guard let index = hosts.firstIndex(where: { $0.id == id }), hosts[index].detectedPlatform != platform else { return }
+        var host = hosts[index]
+        host.detectedPlatform = platform
+        update(host)
+    }
+
     func markConnected(_ host: Host, at date: Date = Date()) {
         guard let index = hosts.firstIndex(where: { $0.id == host.id }) else { return }
         hosts[index].lastConnected = date

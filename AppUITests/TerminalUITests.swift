@@ -187,6 +187,23 @@ final class TerminalUITests: XCTestCase {
         return latest
     }
 
+    /// The server says what it is (D-019). The test server is this Mac's own OpenSSH, so
+    /// `uname -s` answers "Darwin" and the row must come to say macOS — detected over a
+    /// channel of its own after the shell is up, never typed into the session.
+    func testConnectingDetectsTheServerPlatform() throws {
+        try openTerminal()
+        // On a phone the list is behind the terminal; on an iPad the sidebar is visible.
+        var row = app.buttons.matching(identifier: "host-row").firstMatch
+        if !row.waitForExistence(timeout: 2) {
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+            row = app.buttons.matching(identifier: "host-row").firstMatch
+            XCTAssertTrue(row.waitForExistence(timeout: 5), "the host list should come back")
+        }
+        let deadline = Date().addingTimeInterval(20)
+        while Date() < deadline, !row.label.contains("macOS") { usleep(250_000) }
+        XCTAssertTrue(row.label.contains("macOS"), "the row should say what the server reported; label was: \(row.label)")
+    }
+
     func testTerminalConnectsAndShowsAPrompt() throws {
         try openTerminal()
 
@@ -1061,5 +1078,56 @@ final class LocalizationUITests: XCTestCase {
             usleep(200_000)
         }
         XCTAssertTrue(screen.contains("NOT_TRANSLATED"), "remote output must reach the screen unchanged: \(screen)")
+    }
+}
+
+/// The platform picker in the editor (D-019): what the user sets outranks what the server
+/// said, and the row shows it at once.
+@MainActor
+final class HostEditorUITests: XCTestCase {
+    private lazy var app = XCUIApplication()
+
+    override func setUpWithError() throws {
+        continueAfterFailure = false
+        let environment = ProcessInfo.processInfo.environment
+        for key in ["ST_UITEST_SEED", "ST_UITEST_HOST", "ST_UITEST_PORT", "ST_UITEST_USER",
+                    "ST_UITEST_KEY", "ST_UITEST_TRUST_HOST_KEYS", "ST_UITEST_NAME"] {
+            if let value = environment[key] { app.launchEnvironment[key] = value }
+        }
+        try XCTSkipUnless(environment["ST_UITEST_SEED"] == "1", "needs the seeded connection")
+        app.launch()
+    }
+
+    func testServerPlatformCanBeSetByHand() throws {
+        let name = ProcessInfo.processInfo.environment["ST_UITEST_NAME"] ?? "Test Server"
+        let row = app.buttons.matching(identifier: "host-row")
+            .matching(NSPredicate(format: "label CONTAINS %@", name)).firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 10))
+        for _ in 0 ..< 20 where !row.isHittable { usleep(150_000) }
+        row.press(forDuration: 1.0)
+        let edit = app.buttons["Edit Connection"].firstMatch
+        XCTAssertTrue(edit.waitForExistence(timeout: 5), "the row should offer Edit Connection")
+        edit.tap()
+        XCTAssertTrue(app.navigationBars["Edit Connection"].waitForExistence(timeout: 5))
+
+        let picker = app.descendants(matching: .any).matching(identifier: "server-platform").firstMatch
+        XCTAssertTrue(app.scroll(to: picker), "the platform picker should be reachable in the editor")
+        picker.tap()
+        let windows = app.buttons["Windows"].firstMatch
+        XCTAssertTrue(windows.waitForExistence(timeout: 5), "the picker should list Windows")
+        windows.tap()
+        // A navigation-link picker returns to the form by itself; if this one did not,
+        // the form's own back button does.
+        if !app.buttons["Save"].waitForExistence(timeout: 3) {
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+        }
+        let save = app.buttons["Save"]
+        XCTAssertTrue(save.waitForExistence(timeout: 5))
+        save.tap()
+        XCTAssertTrue(app.navigationBars["Edit Connection"].waitForNonExistence(timeout: 5))
+
+        let deadline = Date().addingTimeInterval(5)
+        while Date() < deadline, !row.label.contains("Windows") { usleep(200_000) }
+        XCTAssertTrue(row.label.contains("Windows"), "the row should show the hand-set platform; label was: \(row.label)")
     }
 }

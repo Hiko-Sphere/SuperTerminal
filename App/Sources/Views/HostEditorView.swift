@@ -29,6 +29,8 @@ struct HostEditorView: View {
     @State private var savedPassword = ""
     @State private var folder = ""
     @State private var terminalType = "xterm-256color"
+    /// nil is "Automatic": use what the server reports.
+    @State private var platformOverride: HostPlatform?
 
     init(host: Host?) {
         existing = host
@@ -49,6 +51,7 @@ struct HostEditorView: View {
             _usesPassword = State(initialValue: host.credentials.contains(.password))
             _folder = State(initialValue: host.folder ?? "")
             _terminalType = State(initialValue: host.terminalType)
+            _platformOverride = State(initialValue: host.platformOverride)
         }
     }
 
@@ -132,6 +135,15 @@ struct HostEditorView: View {
                 Section("Advanced") {
                     TextField("Folder", text: $folder)
                     TextField("TERM", text: $terminalType)
+                    // Detected on connection; set here when the server's answer is wrong
+                    // or when there is a reason to treat it differently (D-019).
+                    Picker("Server platform", selection: $platformOverride) {
+                        Text("Automatic").tag(HostPlatform?.none)
+                        ForEach(HostPlatform.allCases, id: \.self) { platform in
+                            Text(platform.title).tag(HostPlatform?.some(platform))
+                        }
+                    }
+                    .accessibilityIdentifier("server-platform")
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                 }
@@ -184,7 +196,9 @@ struct HostEditorView: View {
             environment: existing?.environment ?? [:],
             themeID: existing?.themeID,
             lastConnected: existing?.lastConnected,
-            accessAuthentication: usesCloudflare ? accessAuthentication : nil
+            accessAuthentication: usesCloudflare ? accessAuthentication : nil,
+            platformOverride: platformOverride,
+            detectedPlatform: existing?.detectedPlatform
         )
     }
 

@@ -29,6 +29,13 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
     /// Keychain of the device it was entered on and never syncs; a synced record that
     /// says `.serviceToken` asks for the token again on the other device.
     public var accessAuthentication: AccessAuthentication?
+    /// The platform the user set by hand, which always wins over what was detected.
+    public var platformOverride: HostPlatform?
+    /// The platform the server last reported (D-019). Optional in the record so that a
+    /// record written before the field existed still decodes.
+    public var detectedPlatform: HostPlatform?
+    /// What the app treats the server as: the hand-set value, else the detected one.
+    public var effectivePlatform: HostPlatform? { platformOverride ?? detectedPlatform }
 
     public var usesServiceToken: Bool { accessAuthentication == .serviceToken }
     /// When this record last changed, on any device. Drives last-writer-wins in sync.
@@ -83,7 +90,9 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
         environment: [String: String] = [:],
         themeID: String? = nil,
         lastConnected: Date? = nil,
-        accessAuthentication: AccessAuthentication? = nil
+        accessAuthentication: AccessAuthentication? = nil,
+        platformOverride: HostPlatform? = nil,
+        detectedPlatform: HostPlatform? = nil
     ) {
         self.id = id
         self.name = name
@@ -99,6 +108,8 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
         self.themeID = themeID
         self.lastConnected = lastConnected
         self.accessAuthentication = accessAuthentication
+        self.platformOverride = platformOverride
+        self.detectedPlatform = detectedPlatform
     }
 
     /// The identity host keys are remembered against.

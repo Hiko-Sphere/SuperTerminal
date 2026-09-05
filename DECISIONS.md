@@ -660,3 +660,30 @@ focused — so those two cases are strict expected failures that name the instru
 will flip to failures the day it delivers, and the hardware checklist carries them. (⌘K
 with the search field focused was a third such case while the shortcuts lived on the
 hidden first-responder view; as a SwiftUI shortcut it arrives, and the test now asserts it.)
+
+## D-019 · The server is asked what it is, on its own channel, and the user can overrule it
+
+**Detection is a second channel, never keystrokes.** After the shell is up, the session
+opens an exec channel on the same connection and runs `uname -s`; when that cannot run —
+Windows OpenSSH has no `uname`, and its shell says so — it runs `cmd /c ver`. The answer is
+read by a pure function with a test per real string (Darwin, Linux, the BSDs, `ver`'s
+"Microsoft Windows [Version …]", MSYS and Cygwin kernel names, and both Windows shells'
+complaints, which must not be mistaken for a kernel). Nothing is typed into the user's
+shell, the prompt is never delayed, and a server that answers with nothing usable leaves
+the record as it was rather than overwriting it with a guess.
+
+**Two fields, one answer.** `detectedPlatform` is what the server last said;
+`platformOverride` is what the user set in the editor; `effectivePlatform` is the override
+if there is one, else the detection. Both are optional in the record so that a record
+written before the fields existed decodes, and both sync with the host, because they
+describe the server rather than the device. Recording a detection that matches what is
+already stored writes nothing, so a connection that reports the same platform every time
+neither touches the store nor wakes sync.
+
+**What it is for.** The row shows the platform's symbol and name once it is known, and the
+editor's picker corrects a wrong answer or names a server that will not say. The assistant
+(D-020) is told which platform a command is meant for, and the VNC and Siri work that
+follows reads the same field. The live proof is the test server itself: this Mac's OpenSSH
+reports Darwin, and the UI test watches the row come to say macOS; Linux and Windows
+detection are proven by the parser against their real output and are listed as hardware
+checks until a machine of each kind has been connected to.
