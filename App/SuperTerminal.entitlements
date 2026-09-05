@@ -11,5 +11,18 @@
 	<array>
 		<string>$(AppIdentifierPrefix)dev.superterminal.app</string>
 	</array>
+	<!--
+	  iCloud, for the opt-in sync of connections, snippets, known hosts and — through
+	  iCloud Keychain — keys the user has chosen not to protect with Face ID. The
+	  container is the app's own private database; nothing is shared or public.
+	-->
+	<key>com.apple.developer.icloud-container-identifiers</key>
+	<array>
+		<string>iCloud.dev.superterminal.app</string>
+	</array>
+	<key>com.apple.developer.icloud-services</key>
+	<array>
+		<string>CloudKit</string>
+	</array>
 </dict>
 </plist>

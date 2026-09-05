@@ -66,9 +66,17 @@ seconds, with no simulator in the loop.
 | `STCloudflare` | The whole Access story: app discovery, JWKS verification, token validation, interactive login, and the WebSocket carrier | `AccessDiscovery`, `JWKSProvider`, `AccessTokenValidator`, `AccessLoginService`, `CloudflareCarrierTransport` |
 | `STSSH` | SSH client: transports, host-key policy, credentials, key parsing, sessions | `SSHConnection`, `SSHShellSession`, `HostKeyVerifier`, `OpenSSHPrivateKeyParser`, `DirectTCPTransport` |
 | `CBcryptPBKDF` | Vendored OpenBSD `bcrypt_pbkdf` + Blowfish, needed to open passphrase-protected OpenSSH keys | — |
-| `STTerminal` | VT/ANSI emulation and the screen model | *in progress* |
-| `STPersistence` | Hosts, folders, snippets, settings | *in progress* |
+| `STTerminal` | VT/ANSI emulation and the screen model: parser, CSI/SGR handling, reflow on resize, selection and text access, mouse reporting, Unicode cell widths from generated UCD tables | `TerminalEmulator`, `TerminalScreen`, `TerminalParser`, `TerminalReflow`, `MouseReporting` |
 | `STTestSupport` | Real test infrastructure: an actual `sshd`, and a WebSocket carrier server that reproduces the edge's protocol and failure modes | `OpenSSHTestServer`, `WebSocketCarrierTestServer` |
+
+The app target adds what only makes sense with a UI and a Keychain around it:
+
+| Area | Responsibility | Notable types |
+| --- | --- | --- |
+| `App/Sources/Services` | Composition root, stores, the credential vault, session lifecycle | `AppContainer`, `HostStore`, `CredentialVault`, `SessionManager`, `TerminalSession` |
+| `App/Sources/Sync` | Opt-in iCloud sync: a transport-agnostic engine with last-writer-wins for ordinary records and *held* host-key disagreements, tombstones for deletions, an adapter over the stores, and a `CKSyncEngine` transport created only while the switch is on | `SyncEngine`, `SyncCoordinator`, `AppSyncStore`, `SyncTombstones`, `CloudKitSyncTransport` |
+| `App/Sources/Legal` | The bundled Terms, Privacy Policy and User Notice in three languages, the document version that gates first launch, and a parser for exactly the Markdown they use | `LegalDocument`, `MarkdownDocument` |
+| `App/Sources/Views` | SwiftUI, including the consent gate, Settings → iCloud and Legal, and the App Switcher privacy shield | `RootView`, `ConsentView`, `ICloudSyncSection`, `LegalView`, `PrivacyShield` |
 
 ## The Cloudflare path, end to end
 

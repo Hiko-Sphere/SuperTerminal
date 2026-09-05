@@ -24,6 +24,7 @@ final class AppContainer {
     let vault: CredentialVault
     let knownHosts: any KnownHostsStore
     let diagnostics: DiagnosticsCentre
+    let sync: SyncCoordinator
 
     private init(
         hostStore: HostStore,
@@ -35,7 +36,8 @@ final class AppContainer {
         haptics: Haptics,
         vault: CredentialVault,
         knownHosts: any KnownHostsStore,
-        diagnostics: DiagnosticsCentre
+        diagnostics: DiagnosticsCentre,
+        sync: SyncCoordinator
     ) {
         self.hostStore = hostStore
         self.snippetStore = snippetStore
@@ -47,6 +49,7 @@ final class AppContainer {
         self.vault = vault
         self.knownHosts = knownHosts
         self.diagnostics = diagnostics
+        self.sync = sync
     }
 
     static func live() -> AppContainer {
@@ -70,9 +73,24 @@ final class AppContainer {
             restoration: restoration,
             haptics: haptics
         )
+        let hostStore = HostStore(directory: directory)
+        let snippetStore = SnippetStore(directory: directory, settings: settings)
+        let tombstones = SyncTombstones(directory: directory)
+        hostStore.tombstones = tombstones
+        snippetStore.tombstones = tombstones
+        let sync = SyncCoordinator(
+            settings: settings,
+            directory: directory,
+            local: AppSyncStore(hosts: hostStore, snippets: snippetStore, knownHosts: knownHosts, tombstones: tombstones),
+            tombstones: tombstones,
+            log: diagnostics.logger
+        )
+        hostStore.didChange = { [weak sync] in sync?.scheduleSync() }
+        snippetStore.didChange = { [weak sync] in sync?.scheduleSync() }
+        sessionManager.didConnect = { [weak sync] in sync?.scheduleSync() }
         let container = AppContainer(
-            hostStore: HostStore(directory: directory),
-            snippetStore: SnippetStore(directory: directory, settings: settings),
+            hostStore: hostStore,
+            snippetStore: snippetStore,
             restoration: restoration,
             sessionManager: sessionManager,
             settings: settings,
@@ -80,7 +98,8 @@ final class AppContainer {
             haptics: haptics,
             vault: vault,
             knownHosts: knownHosts,
-            diagnostics: diagnostics
+            diagnostics: diagnostics,
+            sync: sync
         )
         #if DEBUG
         UITestSeeding.apply(to: container)

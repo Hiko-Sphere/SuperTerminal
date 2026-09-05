@@ -19,6 +19,8 @@ cd ../.. && ./scripts/app-integration-e2e.sh
 - [ ] Every suite passes, including the live Cloudflare run
 - [ ] `patches/niossh-rsa.patch` still applies to the pinned upstream tag
 - [ ] No placeholder implementations, no committed credentials (both gated in CI)
+- [ ] `scripts/localization-audit.sh` reports every string translated
+- [ ] The bundled `THIRD_PARTY_NOTICES.md` matches the repository copy (gated in CI)
 
 ### Verified on hardware, not only in a simulator
 
@@ -45,6 +47,17 @@ cd ../.. && ./scripts/app-integration-e2e.sh
 - [ ] `swift test -c release --filter TerminalThroughputTests` meets its floors
 - [ ] An Instruments trace of sustained output shows no runaway allocation
 - [ ] Memory is bounded under a long-running high-output session
+
+## Legal texts and iCloud
+
+- [ ] Every placeholder in `App/Resources/Legal/legal-*.md` is filled in all three languages: effective date, developer legal name, contact email, security contact email, governing law and venue, postal address (B-5)
+- [ ] Counsel has reviewed the Terms, Privacy Policy and User Notice; the "not legal advice" sentence is removed only when that is true
+- [ ] `LegalDocument.currentVersion` is bumped if any of the three texts changed in substance, so existing users see the consent screen again
+- [ ] The App Store privacy answers still read "Data not collected"; storage in the user's own CloudKit private database is not collection
+- [ ] The iCloud container `iCloud.dev.superterminal.app` exists in the developer account and the profile carries the iCloud capability; the simulator build has no entitlements, so nothing about iCloud is proven until a signed build runs (B-4)
+- [ ] The CloudKit schema (record type `SyncRecord`: `kind`, `payload`, `modifiedAt`; zone `SuperTerminal`) is deployed to the production environment — the development environment creates it on first use, production does not
+- [ ] Two signed devices on one Apple Account sync a host, a snippet, a known host key and an opted-in private key; a held host-key disagreement appears in Settings → iCloud; "Delete all data" empties the zone and the other device stops seeing the records
+- [ ] A key marked "Store private key in iCloud Keychain" appears on the second device with its secret; a biometric key appears as "not on this device"
 
 ## Signing and identifiers
 

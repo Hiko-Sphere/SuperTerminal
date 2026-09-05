@@ -23,12 +23,14 @@ final class AppSettings {
         static let keyRowVisible = "settings.keyRowVisible"
         static let automaticReconnect = "settings.automaticReconnect"
         static let hapticsEnabled = "settings.hapticsEnabled"
+        static let iCloudSyncEnabled = "settings.iCloudSyncEnabled"
+        static let acceptedTermsVersion = "settings.acceptedTermsVersion"
 
         static let all = [
             themeID, lightThemeID, followSystemAppearance, fontSize, scrollbackLimit,
             keepAwakeWhileConnected, commandHistoryEnabled, confirmMultilinePaste,
             hideContentInAppSwitcher, cursorBlink, bellEnabled, keyRowVisible,
-            automaticReconnect, hapticsEnabled,
+            automaticReconnect, hapticsEnabled, iCloudSyncEnabled, acceptedTermsVersion,
         ]
     }
 
@@ -56,6 +58,8 @@ final class AppSettings {
         keyRowVisible = defaults.bool(forKey: Key.keyRowVisible)
         automaticReconnect = defaults.bool(forKey: Key.automaticReconnect)
         hapticsEnabled = defaults.bool(forKey: Key.hapticsEnabled)
+        iCloudSyncEnabled = defaults.bool(forKey: Key.iCloudSyncEnabled)
+        acceptedTermsVersion = defaults.integer(forKey: Key.acceptedTermsVersion)
     }
     #endif
 
@@ -86,6 +90,13 @@ final class AppSettings {
             // is one nobody keeps open.
             Key.automaticReconnect: true,
             Key.hapticsEnabled: true,
+            // Off by default. Syncing keys and hosts to iCloud is a decision a person makes
+            // knowingly, and this app has promised that nothing leaves the device unless
+            // they do. The switch is where that promise is kept or set aside.
+            Key.iCloudSyncEnabled: false,
+            // Zero means never accepted. Compared against the current Terms version so a
+            // material change is shown again rather than assumed agreed.
+            Key.acceptedTermsVersion: 0,
         ])
         themeID = defaults.string(forKey: Key.themeID) ?? TerminalTheme.midnight.id
         lightThemeID = defaults.string(forKey: Key.lightThemeID) ?? TerminalTheme.daylight.id
@@ -101,6 +112,8 @@ final class AppSettings {
         keyRowVisible = defaults.bool(forKey: Key.keyRowVisible)
         automaticReconnect = defaults.bool(forKey: Key.automaticReconnect)
         hapticsEnabled = defaults.bool(forKey: Key.hapticsEnabled)
+        iCloudSyncEnabled = defaults.bool(forKey: Key.iCloudSyncEnabled)
+        acceptedTermsVersion = defaults.integer(forKey: Key.acceptedTermsVersion)
     }
 
     var themeID: String { didSet { defaults.set(themeID, forKey: Key.themeID) } }
@@ -120,6 +133,14 @@ final class AppSettings {
 
     var hapticsEnabled: Bool {
         didSet { defaults.set(hapticsEnabled, forKey: Key.hapticsEnabled) }
+    }
+
+    var iCloudSyncEnabled: Bool {
+        didSet { defaults.set(iCloudSyncEnabled, forKey: Key.iCloudSyncEnabled) }
+    }
+
+    var acceptedTermsVersion: Int {
+        didSet { defaults.set(acceptedTermsVersion, forKey: Key.acceptedTermsVersion) }
     }
 
     var automaticReconnect: Bool {

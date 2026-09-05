@@ -22,6 +22,8 @@ public struct Snippet: Identifiable, Sendable, Codable, Equatable {
     /// Bumped each time the snippet is used, so the list can put the useful ones first.
     public var useCount: Int
     public var lastUsed: Date?
+    /// See `Host.modifiedAt`: optional so files from before sync still decode.
+    public var modifiedAt: Date?
 
     public init(
         id: UUID = UUID(),

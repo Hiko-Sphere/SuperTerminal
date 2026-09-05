@@ -7,7 +7,7 @@ what it does not defend against.
 
 | Asset | Where it lives | Exposure if lost |
 | --- | --- | --- |
-| SSH private keys | Keychain, `WhenUnlockedThisDeviceOnly`, optionally biometric-gated | Full access to every server trusting the key |
+| SSH private keys | Keychain, `WhenUnlockedThisDeviceOnly`, optionally biometric-gated; `WhenUnlocked` + synchronisable only for a key the user put in iCloud Keychain (never with biometrics) | Full access to every server trusting the key |
 | SSH passwords | Keychain, `WhenUnlockedThisDeviceOnly` | Access to one account |
 | Cloudflare Access tokens | Keychain, `AfterFirstUnlockThisDeviceOnly` | Ability to reach the tunnelled service until the token expires |
 | Cloudflare service tokens | Keychain, `WhenUnlockedThisDeviceOnly` | Long-lived machine access |
@@ -97,8 +97,12 @@ travels through a redirect, so there is no callback to hijack.
 ### T-6 · Private key disclosure
 
 *Defence:* keys live in the Keychain with `ThisDeviceOnly` accessibility, so they cannot
-travel in an iCloud Keychain sync or in a backup restored onto another device.
-`kSecAttrSynchronizable` is explicitly `false` on both writes and queries. Biometric
+travel in an iCloud Keychain sync or in a backup restored onto another device — unless
+the user chose iCloud Keychain for that key when creating or importing it, in which case
+it is written `WhenUnlocked` with `kSecAttrSynchronizable` (D-015). Apple forbids access
+control on synchronisable items, so `CredentialVault` refuses the combination of iCloud
+and biometrics with a typed error rather than dropping one silently. Queries use
+`kSecAttrSynchronizableAny`, so "Delete all data" and the key list see both kinds. Biometric
 items use `.biometryCurrentSet`, which invalidates the item if a new face or finger is
 enrolled — so an attacker who learns the passcode still cannot enrol a biometric and
 read the key. Writes delete-then-add rather than update, so changing an item's
@@ -133,14 +137,18 @@ rationale recorded in `THIRD_PARTY_NOTICES.md`.
 The mitigations are that the package is maintained by libsodium's own author, that the
 version is pinned, and that the binary's role is limited to one operation
 (`crypto_box_open`) on data that is independently validated afterwards — a tampered
-result would fail the JWT signature, audience and issuer checks. Building libsodium from
+result would fail the JWT signature, audience and issuer checks — plus, since D-013, the
+`chacha20-poly1305@openssh.com` SSH cipher, whose output is checked against a real
+OpenSSH server in the integration suite (a wrong keystream cannot complete a handshake). Building libsodium from
 source is a tracked improvement, not a solved problem.
 
 ### T-10 · Screen capture and clipboard
 
-*Status:* App Switcher snapshot protection, paste confirmation for multi-line content,
-and clipboard expiry are designed but not yet implemented. Tracked in
-`PROJECT_STATUS.md` — this section will be updated when they land, and not before.
+*Status:* App Switcher snapshot protection is implemented: `PrivacyShield` covers the
+window with the logo whenever the scene is not active, on by default and switchable in
+Settings. Paste confirmation for multi-line content is implemented. Clipboard expiry is
+**not** implemented — copied text stays on the pasteboard until replaced, and the User
+Notice says so rather than implying otherwise.
 
 ### T-11 · Command history as a secondary store of secrets
 
@@ -210,3 +218,26 @@ the two vendored changes it required are in D-013.
 
 Security issues should be reported privately to the maintainers rather than through the
 public issue tracker.
+
+### T-13 · iCloud sync as a way into the trust store
+
+*Surface:* with sync on, the user's Apple Account can reach the connection list, snippets,
+key metadata, trusted host keys, and any private key the user chose to put in iCloud
+Keychain. Whoever controls that account can read those and can plant a host key that a
+device which has never met the host will trust.
+
+*Defence:* sync is off until the user turns it on. Passwords, Access tokens, command
+history, restoration state and diagnostics never sync. Biometric keys never sync (Apple
+forbids it; the vault refuses). A remote host key that differs from one this device
+already trusts is **held, not applied**: the connection keeps using the local key, the
+disagreement is shown in Settings → iCloud, and only an explicit choice replaces it.
+Deletions travel as tombstones with a 30-day retention so a stale device cannot resurrect
+a removed host. "Delete all data" purges the CloudKit zone and the local deletion history
+and switches sync off. The Privacy Policy and User Notice tell the user to keep two-factor
+authentication on for the Apple Account, because the account is now part of what protects
+their servers.
+
+*Not verified live:* CloudKit and iCloud Keychain need a signed build with the container
+entitlement (B-4). The engine's merge, conflict-holding and tombstone rules are verified
+against an in-memory transport; the CloudKit record mapping is unit-tested; the live path
+is not, and `TEST_REPORT.md` says so.

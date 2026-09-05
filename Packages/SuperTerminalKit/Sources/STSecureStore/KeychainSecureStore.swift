@@ -10,7 +10,8 @@ import Security
 /// * Every item is written with a `ThisDeviceOnly` accessibility class, so nothing
 ///   here can travel in an iCloud Keychain sync or in an encrypted device backup
 ///   restored onto a different device.
-/// * `kSecAttrSynchronizable` is explicitly `false` on both writes and queries, so a
+/// * `kSecAttrSynchronizable` is `false` on every write except the one protection level
+///   that opts into iCloud Keychain, and `kSecAttrSynchronizableAny` on queries so a
 ///   synchronised item can never be matched by accident.
 /// * Biometric items use `.biometryCurrentSet`, which invalidates the item if a new
 ///   finger or face is enrolled — an attacker who learns the passcode still cannot
@@ -33,6 +34,11 @@ public struct KeychainSecureStore: SecureStore {
             attributes[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
         case .afterFirstUnlockThisDeviceOnly:
             attributes[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+        case .whenUnlockedSynchronizable:
+            // Not ThisDeviceOnly, and no access control: both are forbidden for items that
+            // sync, and the framework rejects them rather than warning.
+            attributes[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlocked
+            attributes[kSecAttrSynchronizable as String] = true
         case .biometricThisDeviceOnly:
             var error: Unmanaged<CFError>?
             guard let access = SecAccessControlCreateWithFlags(
@@ -84,7 +90,7 @@ public struct KeychainSecureStore: SecureStore {
         var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
-            kSecAttrSynchronizable as String: false,
+            kSecAttrSynchronizable as String: kSecAttrSynchronizableAny,
             kSecReturnAttributes as String: true,
             kSecMatchLimit as String: kSecMatchLimitAll,
             // Listing accounts must never prompt: it runs while drawing the key list.
@@ -104,7 +110,7 @@ public struct KeychainSecureStore: SecureStore {
         var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
-            kSecAttrSynchronizable as String: false,
+            kSecAttrSynchronizable as String: kSecAttrSynchronizableAny,
         ]
         if let accessGroup { query[kSecAttrAccessGroup as String] = accessGroup }
         let status = SecItemDelete(query as CFDictionary)
@@ -116,7 +122,7 @@ public struct KeychainSecureStore: SecureStore {
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: key.service,
             kSecAttrAccount as String: key.account,
-            kSecAttrSynchronizable as String: false,
+            kSecAttrSynchronizable as String: kSecAttrSynchronizableAny,
         ]
         if let accessGroup { query[kSecAttrAccessGroup as String] = accessGroup }
         return query

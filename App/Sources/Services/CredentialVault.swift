@@ -31,11 +31,23 @@ struct CredentialVault: Sendable {
     /// Biometric protection is per-key rather than global: a key used for a production
     /// jump host deserves a Face ID prompt, while one for a scratch VM does not, and
     /// forcing the same answer for both trains people to turn the feature off.
-    func storePrivateKey(_ pem: String, id: UUID, requireBiometrics: Bool) throws {
+    ///
+    /// `syncToICloud` puts the key in iCloud Keychain. Apple forbids combining that with
+    /// biometric access control, so asking for both is refused rather than quietly
+    /// dropping one of them.
+    func storePrivateKey(_ pem: String, id: UUID, requireBiometrics: Bool, syncToICloud: Bool = false) throws {
+        if requireBiometrics, syncToICloud { throw CredentialVaultError.biometricKeyCannotSync }
+        let protection: SecureStoreProtection = if requireBiometrics {
+            .biometricThisDeviceOnly
+        } else if syncToICloud {
+            .whenUnlockedSynchronizable
+        } else {
+            .whenUnlockedThisDeviceOnly
+        }
         try store.set(
             Data(pem.utf8),
             for: SecureStoreKey(service: Service.privateKeys, account: id.uuidString),
-            protection: requireBiometrics ? .biometricThisDeviceOnly : .whenUnlockedThisDeviceOnly,
+            protection: protection,
             prompt: nil
         )
     }
@@ -49,6 +61,13 @@ struct CredentialVault: Sendable {
             throw SecureStoreError.itemNotFound
         }
         return pem
+    }
+
+    /// Whether the secret for a key record is on this device. A record can arrive by
+    /// sync without its private key, and the list must say so rather than fail on use.
+    /// Attribute-only, so a biometric key is never prompted for just to be listed.
+    func hasPrivateKey(id: UUID) -> Bool {
+        ((try? store.accounts(inService: Service.privateKeys)) ?? []).contains(id.uuidString)
     }
 
     func deletePrivateKey(id: UUID) throws {
@@ -114,6 +133,18 @@ struct CredentialVault: Sendable {
     func deleteEverything() throws {
         for service in [Service.privateKeys, Service.passwords, Service.accessTokens, Service.serviceTokens] {
             try store.removeAll(inService: service)
+        }
+    }
+}
+
+enum CredentialVaultError: Error, LocalizedError {
+    /// Apple's Keychain rejects synchronisable items that carry access control.
+    case biometricKeyCannotSync
+
+    var errorDescription: String? {
+        switch self {
+        case .biometricKeyCannotSync:
+            String(localized: "A key protected by Face ID or Touch ID cannot be stored in iCloud Keychain. Turn one of the two off.")
         }
     }
 }

@@ -23,11 +23,20 @@ struct RootView: View {
     // the user staring at "No session" with no visible way to add one. The list is the
     // app's primary surface, so it starts visible and the user can hide it.
     @State private var columnVisibility = NavigationSplitViewVisibility.all
+    @Environment(\.scenePhase) private var scenePhase
     /// The compact layout's navigation stack. A split view drives its detail column from
     /// the selection, but a stack has to be pushed explicitly — opening a session and
     /// showing it are two different things, and conflating them is how tapping a host
     /// ends up starting a connection the user never sees.
     @State private var path: [TerminalSession.ID] = []
+
+    /// The consent screen gates everything until the current documents are accepted.
+    private var consentBinding: Binding<Bool> {
+        Binding(
+            get: { container.settings.acceptedTermsVersion < LegalDocument.currentVersion },
+            set: { _ in }
+        )
+    }
 
     var body: some View {
         Group {
@@ -38,6 +47,21 @@ struct RootView: View {
             }
         }
         .overlay(alignment: .topLeading) { sceneCountProbe }
+        // The App Switcher snapshot is taken while the scene is inactive. Covering the
+        // terminal then is what "Hide content in the App Switcher" means.
+        .overlay {
+            if container.settings.hideContentInAppSwitcher, scenePhase != .active {
+                PrivacyShield().transition(.opacity)
+            }
+        }
+        .animation(DesignTokens.Motion.standard, value: scenePhase)
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { container.sync.handleForeground() }
+        }
+        .fullScreenCover(isPresented: consentBinding) {
+            ConsentView { container.settings.acceptedTermsVersion = LegalDocument.currentVersion }
+                .environment(container)
+        }
         .environment(scene)
         .sheet(isPresented: paletteBinding) {
             CommandPaletteView(

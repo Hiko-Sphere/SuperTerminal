@@ -13,6 +13,8 @@ import STSSH
 @MainActor
 final class SessionManager {
     private(set) var sessions: [TerminalSession] = []
+    /// A connection succeeded; the known-hosts file may have a new entry to sync.
+    var didConnect: (() -> Void)?
 
     /// Which window is currently displaying each session.
     ///
@@ -105,6 +107,7 @@ final class SessionManager {
             reachability: reachability,
             haptics: haptics
         )
+        session.onConnected = { [weak self] in self?.didConnect?() }
         sessions.append(session)
         rememberOpenSessions()
         Task { await session.connect() }

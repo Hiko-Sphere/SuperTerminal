@@ -100,10 +100,12 @@ def main() -> int:
             if missing:
                 failures += len(missing)
                 print(f"  {language}: MISSING {len(missing)}")
-                for key in missing[:20]:
+                shown = missing if os.environ.get("AUDIT_ALL") else missing[:20]
+                for key in shown:
                     print(f"      {key!r}")
                 if len(missing) > 20:
-                    print(f"      … and {len(missing) - 20} more")
+                    if len(shown) < len(missing):
+                        print(f"      … and {len(missing) - 20} more (AUDIT_ALL=1 lists every key)")
             else:
                 print(f"  {language}: complete")
         # A key in the catalog that the compiler no longer emits is dead weight; it is not

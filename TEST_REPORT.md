@@ -21,7 +21,7 @@ left out.
 ```bash
 cd Packages/SuperTerminalKit
 swift build          # 0 errors, 0 warnings from project code
-swift test           # 157 tests in 22 suites passed in 12.0s
+swift test           # 159 tests in 23 suites passed in 11.5s
 swift test -c release --filter TerminalThroughputTests   # the numbers below
 
 cd ..
@@ -38,12 +38,17 @@ xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal \
   CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
 # ** BUILD SUCCEEDED ** — arm64 device build compiles
 
-./scripts/app-integration-e2e.sh   # 81 app tests on iPhone 17 Pro simulator, ** TEST SUCCEEDED **
+xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal \
+  -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+  -only-testing:SuperTerminalTests test
+# 112 passed, 8 skipped (the sshd-backed cases, run by the script below), 0 failed
+
+./scripts/app-integration-e2e.sh   # 120 app tests on iPhone 17 Pro simulator, 0 skipped, ** TEST SUCCEEDED **
 ./scripts/profile-emulator.sh      # real Instruments trace of the emulator hot path
 ./scripts/localization-audit.sh    # every user-visible string translated (zh-Hans, zh-Hant): green
-./scripts/ui-terminal-e2e.sh       # 19 passed, 1 skipped on iPhone (three in Chinese), ** TEST SUCCEEDED **
+./scripts/ui-terminal-e2e.sh       # 21 passed, 1 skipped on iPhone (three in Chinese, two for the consent gate), ** TEST SUCCEEDED **
 ./scripts/ui-terminal-e2e.sh "platform=iOS Simulator,name=iPad Pro 13-inch (M5)"
-                                   # 20 passed on iPad (three in Chinese), ** TEST SUCCEEDED **
+                                   # 22 passed on iPad (three in Chinese, two for the consent gate), ** TEST SUCCEEDED **
 
 cd Packages/swift-nio-ssh-rsa
 swift test           # Executed 349 tests, with 0 failures (347 upstream + 2 for key extension)
@@ -163,6 +168,32 @@ The tests replace the login shell with `env -i … /bin/sh -i` before running an
 The account's real shell is a themed zsh that repaints its prompt and rewrites the window
 title on a timer, which would make "is the shell ready?" and "did the program set the
 title?" unanswerable. This is a test-harness decision, not a product limitation.
+
+### iCloud sync — 27 tests, offline by necessity
+
+`SyncEngineTests` drive the engine through an in-memory transport: pull/merge/push,
+last-writer-wins for ordinary records, a remote host key that differs from a trusted one
+is **held** and never applied, applied records are not echoed back, and an edit made
+within the same second as a push is still re-sent (the first version compared against the
+wall clock and was caught on the third sync). `AppSyncStoreTests` prove the adapter over
+the real `HostStore`, `SnippetStore` and `InMemoryKnownHostsStore`: stamping rules,
+tombstones on delete and their removal on resurrection, IPv6-safe known-host identities,
+and that the payload used for conflict detection is the key alone. One of these failed in
+one simulator clone and passed in the other until the test encoder was made canonical —
+recorded in D-015. `CloudKitMappingTests` cover the record ↔ `CKRecord` mapping.
+`KnownHostsRemoveAllTests` prove "Delete all data" forgets host keys on disk.
+
+**Not verified:** CloudKit and iCloud Keychain. The simulator build has no entitlements
+(B-4). Nothing in the app or its documents claims that live sync has been exercised.
+
+### Legal documents — 14 unit tests and 2 UI tests
+
+`LegalDocumentBundleTests` open every one of the nine bundled documents (three texts ×
+three languages) and the third-party notices from the built app, and require each to be
+comment-free and to have at least ten headings. `MarkdownDocumentTests` cover the parser's
+headings, lists, tables and comment stripping. `ConsentUITests` launch with the consent
+flag, read the User Notice from the gate, accept, relaunch without a reset and confirm the
+gate does not return; the second test opens the licences from Settings.
 
 ### The app itself — 5 tests, on an iPhone 17 Pro simulator
 

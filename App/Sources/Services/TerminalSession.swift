@@ -154,6 +154,8 @@ final class TerminalSession: Identifiable {
     var displayName: String { title.isEmpty ? host.name : title }
 
     var isConnected: Bool { if case .connected = state { return true }; return false }
+    /// Called once per successful handshake, on the main actor.
+    var onConnected: (() -> Void)?
 
     // MARK: - Lifecycle
 
@@ -198,6 +200,7 @@ final class TerminalSession: Identifiable {
             self.shell = shell
             startPump(shell: shell, connection: connection)
             state = .connected
+            onConnected?()
             haptics?.play(.connected)
             log.info("session connected", ["host": Redactor.hostname(host.hostname)])
         } catch let error as STError {
@@ -550,7 +553,7 @@ final class TerminalSession: Identifiable {
                     await self.consume(data)
                 case .exit:
                     // The shell ended on its own; the close that follows is expected.
-                    await self.noteShellExited()
+                    self.noteShellExited()
                     continue
                 case .closed:
                     await self.handleClosed()

@@ -188,6 +188,57 @@
         }
       }
     },
+    "A key protected by Face ID or Touch ID cannot be stored in iCloud Keychain. Turn one of the two off.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "受 Face ID 或 Touch ID 保护的密钥无法存放在 iCloud Keychain 中。请关闭其中一项。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "受 Face ID 或 Touch ID 保護的金鑰無法存放在 iCloud Keychain 中。請關閉其中一項。"
+          }
+        }
+      }
+    },
+    "A key protected by Face ID or Touch ID stays on this device; iCloud Keychain cannot hold it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "受 Face ID 或 Touch ID 保护的密钥只保留在本设备上；iCloud Keychain 无法存放它。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "受 Face ID 或 Touch ID 保護的金鑰只保留在本裝置上；iCloud Keychain 無法存放它。"
+          }
+        }
+      }
+    },
+    "Accept and continue": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "接受并继续"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "接受並繼續"
+          }
+        }
+      }
+    },
     "Access": {
       "extractionState": "manual",
       "localizations": {
@@ -358,6 +409,23 @@
         }
       }
     },
+    "Another device trusts a different key for %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "另一台设备信任的 %@ 的密钥与本设备不同"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "另一台裝置信任的 %@ 的金鑰與本裝置不同"
+          }
+        }
+      }
+    },
     "Appearance": {
       "extractionState": "manual",
       "localizations": {
@@ -477,6 +545,23 @@
         }
       }
     },
+    "Before you start": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "开始之前"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "開始之前"
+          }
+        }
+      }
+    },
     "Bell feedback": {
       "extractionState": "manual",
       "localizations": {
@@ -507,6 +592,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "游標閃爍"
+          }
+        }
+      }
+    },
+    "By continuing you accept the Terms of Use and confirm you have read the Privacy Policy and the User Notice. You may only connect to systems you are allowed to access.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "继续即表示您接受《使用条款》，并确认已阅读《隐私政策》和《用户须知》。您只能连接到您获准访问的系统。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "繼續即表示您接受《使用條款》，並確認已閱讀《隱私權政策》與《使用者須知》。您只能連線至您獲准存取的系統。"
           }
         }
       }
@@ -1055,6 +1157,23 @@
         }
       }
     },
+    "Could not determine the iCloud account state.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法确定 iCloud 账户状态。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法判斷 iCloud 帳號狀態。"
+          }
+        }
+      }
+    },
     "Could not reconnect": {
       "extractionState": "manual",
       "localizations": {
@@ -1578,6 +1697,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Esc 鍵"
+          }
+        }
+      }
+    },
+    "Every device signed in to your iCloud account and trusted for iCloud Keychain receives the private key.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每台登录了您 iCloud 账户并被 iCloud Keychain 信任的设备都会收到该私钥。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "每台登入您 iCloud 帳號且受信任可使用 iCloud Keychain 的裝置都會收到該私密金鑰。"
+          }
+        }
+      }
+    },
+    "Everything this app stored in your iCloud account is deleted. Data on this device stays. Other devices keep their copies until they sync.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本应用存放在您 iCloud 账户中的全部内容将被删除。本设备上的数据保留。其他设备在同步之前仍保留各自的副本。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本應用程式存放在您 iCloud 帳號中的全部內容將被刪除。本裝置上的資料保留。其他裝置在同步之前仍保留各自的副本。"
           }
         }
       }
@@ -2143,6 +2296,23 @@
         }
       }
     },
+    "In iCloud Keychain": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "位于 iCloud Keychain"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "位於 iCloud Keychain"
+          }
+        }
+      }
+    },
     "Keep the screen awake while connected": {
       "extractionState": "manual",
       "localizations": {
@@ -2156,6 +2326,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "連線時保持螢幕不休眠"
+          }
+        }
+      }
+    },
+    "Keep this device's key": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保留本设备的密钥"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保留本裝置的金鑰"
           }
         }
       }
@@ -2330,6 +2517,40 @@
         }
       }
     },
+    "Last sync failed: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上次同步失败：%@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上次同步失敗：%@"
+          }
+        }
+      }
+    },
+    "Last synced %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上次同步于%@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上次同步於%@"
+          }
+        }
+      }
+    },
     "Latches Control for the next key you press": {
       "extractionState": "manual",
       "localizations": {
@@ -2360,6 +2581,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "左方向鍵"
+          }
+        }
+      }
+    },
+    "Legal": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "法律"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "法律"
           }
         }
       }
@@ -2721,6 +2959,57 @@
         }
       }
     },
+    "Not signed in to iCloud on this device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本设备未登录 iCloud。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本裝置未登入 iCloud。"
+          }
+        }
+      }
+    },
+    "Not synced yet.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "尚未同步。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "尚未同步。"
+          }
+        }
+      }
+    },
+    "Nothing goes to the developer.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不会向开发者发送任何内容。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不會向開發者傳送任何內容。"
+          }
+        }
+      }
+    },
     "Nothing matches": {
       "extractionState": "manual",
       "localizations": {
@@ -2938,6 +3227,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "開啟此連結？"
+          }
+        }
+      }
+    },
+    "Open-source licences": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "开源许可"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "開放原始碼授權"
           }
         }
       }
@@ -3299,6 +3605,23 @@
         }
       }
     },
+    "Privacy Policy": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "隐私政策"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "隱私權政策"
+          }
+        }
+      }
+    },
     "Private key": {
       "extractionState": "manual",
       "localizations": {
@@ -3312,6 +3635,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "私密金鑰"
+          }
+        }
+      }
+    },
+    "Private key is not on this device": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "私钥不在本设备上"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "私密金鑰不在本裝置上"
+          }
+        }
+      }
+    },
+    "Private keys live in Apple's Keychain and are never sent to a server. iCloud sync is off until you turn it on, and even then only keys you choose go to iCloud Keychain.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "私钥存放在 Apple 的 Keychain 中，从不发送到服务器。iCloud 同步在您开启之前处于关闭状态；即使开启，也只有您选择的密钥才会进入 iCloud Keychain。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "私密金鑰存放在 Apple 的 Keychain 中，絕不會傳送至伺服器。iCloud 同步在您開啟之前處於關閉狀態；即使開啟，也只有您選擇的金鑰才會進入 iCloud Keychain。"
           }
         }
       }
@@ -3465,6 +3822,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "紀錄在寫入時即已去識別化：不會記錄任何指令、終端機輸出、主機名稱、密碼、金鑰或 token。"
+          }
+        }
+      }
+    },
+    "Remove from iCloud": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "从 iCloud 移除"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "從 iCloud 移除"
+          }
+        }
+      }
+    },
+    "Remove my data from iCloud": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "从 iCloud 移除我的数据"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "從 iCloud 移除我的資料"
+          }
+        }
+      }
+    },
+    "Remove the app's data from iCloud?": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "要从 iCloud 移除本应用的数据吗？"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "要從 iCloud 移除本應用程式的資料嗎？"
           }
         }
       }
@@ -4115,6 +4523,23 @@
         }
       }
     },
+    "Status": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "状态"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "狀態"
+          }
+        }
+      }
+    },
     "Stop": {
       "extractionState": "manual",
       "localizations": {
@@ -4128,6 +4553,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "停止"
+          }
+        }
+      }
+    },
+    "Store private key in iCloud Keychain": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "将私钥存放在 iCloud Keychain 中"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "將私密金鑰存放在 iCloud Keychain 中"
           }
         }
       }
@@ -4213,6 +4655,74 @@
           "stringUnit": {
             "state": "translated",
             "value": "SuperTerminal，%@"
+          }
+        }
+      }
+    },
+    "Sync now": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "立即同步"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "立即同步"
+          }
+        }
+      }
+    },
+    "Sync with iCloud": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "与 iCloud 同步"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "與 iCloud 同步"
+          }
+        }
+      }
+    },
+    "Syncing…": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在同步…"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在同步…"
+          }
+        }
+      }
+    },
+    "Syncs connections, key names and public keys, snippets and trusted host keys between your devices through your own iCloud account. Private keys are added to iCloud Keychain only when you choose that for a key, and keys protected by Face ID or Touch ID never leave this device. Passwords, command history and diagnostics are not synced.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "通过您自己的 iCloud 账户，在您的设备之间同步连接、密钥名称和公钥、片段以及已信任的 host key。只有当您为某个密钥选择了 iCloud Keychain 时，私钥才会加入 iCloud Keychain；受 Face ID 或 Touch ID 保护的密钥从不离开本设备。密码、命令历史和诊断信息不同步。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "透過您自己的 iCloud 帳號，在您的裝置之間同步連線、金鑰名稱與公開金鑰、指令片段以及已信任的 host key。只有當您為某把金鑰選擇了 iCloud Keychain 時，私密金鑰才會加入 iCloud Keychain；受 Face ID 或 Touch ID 保護的金鑰絕不會離開本裝置。密碼、指令歷史與診斷資訊不會同步。"
           }
         }
       }
@@ -4319,6 +4829,23 @@
         }
       }
     },
+    "Terms of Use": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用条款"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用條款"
+          }
+        }
+      }
+    },
     "That file could not be read as text.": {
       "extractionState": "manual",
       "localizations": {
@@ -4332,6 +4859,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "無法以文字形式讀取該檔案。"
+          }
+        }
+      }
+    },
+    "The app cannot tell a real server from an impostor on a first connection. Compare the fingerprint it shows with what the server reports. A changed key is always refused until you decide.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "首次连接时，本应用无法分辨真实服务器与冒充者。请将显示的 fingerprint 与服务器自身报告的进行比对。已更改的密钥总是会被拒绝，直到您作出决定。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "首次連線時，本應用程式無法分辨真實伺服器與冒充者。請將顯示的 fingerprint 與伺服器自身回報的內容比對。已變更的金鑰一律會被拒絕，直到您做出決定。"
           }
         }
       }
@@ -4383,6 +4927,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "與主機的連線已中斷。"
+          }
+        }
+      }
+    },
+    "The document %@ is not included in this build.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此版本未包含文档 %@。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此版本未包含文件 %@。"
           }
         }
       }
@@ -4472,6 +5033,23 @@
         }
       }
     },
+    "There is no account, no server, no analytics and no crash reporter. Traffic goes only to the servers you connect to and, for tunnelled hosts, to Cloudflare on your behalf.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "没有账户、没有服务器、没有分析，也没有崩溃报告器。流量只会发往您所连接的服务器，以及（对于经隧道连接的主机）代表您发往 Cloudflare。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "沒有帳號、沒有伺服器、沒有分析，也沒有當機回報器。流量只會傳送至您所連線的伺服器，以及（對於經隧道連線的主機）代表您傳送至 Cloudflare。"
+          }
+        }
+      }
+    },
     "This key is encrypted. The passphrase is used once to unlock it and is not stored.": {
       "extractionState": "manual",
       "localizations": {
@@ -4502,6 +5080,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "這將從本裝置移除你的連線、私密金鑰和 Cloudflare 工作階段。此操作無法復原。"
+          }
+        }
+      }
+    },
+    "This removes your connections, private keys, host keys and Cloudflare sessions from this device and from iCloud. It cannot be undone.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这会从本设备和 iCloud 中移除您的连接、私钥、host key 和 Cloudflare 会话。此操作无法撤销。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這會從本裝置與 iCloud 中移除您的連線、私密金鑰、host key 與 Cloudflare 工作階段。此操作無法復原。"
+          }
+        }
+      }
+    },
+    "This removes your connections, private keys, host keys and Cloudflare sessions from this device. It cannot be undone.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这会从本设备移除您的连接、私钥、host key 和 Cloudflare 会话。此操作无法撤销。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這會從本裝置移除您的連線、私密金鑰、host key 與 Cloudflare 工作階段。此操作無法復原。"
           }
         }
       }
@@ -4553,6 +5165,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "此文字包含換行字元，且遠端程式不支援 bracketed paste，因此每一行送達後會立即執行。"
+          }
+        }
+      }
+    },
+    "Three things worth knowing, and the documents behind them.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "三件值得了解的事，以及它们背后的文档。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "三件值得了解的事，以及它們背後的文件。"
           }
         }
       }
@@ -4676,6 +5305,23 @@
         }
       }
     },
+    "Turn on Sync with iCloud in Settings to keep this key in iCloud Keychain. The key's name and public key sync either way.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在设置中开启“与 iCloud 同步”，即可将此密钥存放在 iCloud Keychain 中。无论是否开启，密钥的名称和公钥都会同步。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在設定中開啟「與 iCloud 同步」，即可將此金鑰存放在 iCloud Keychain 中。無論是否開啟，金鑰的名稱與公開金鑰都會同步。"
+          }
+        }
+      }
+    },
     "Unknown": {
       "extractionState": "manual",
       "localizations": {
@@ -4706,6 +5352,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "未知主機"
+          }
+        }
+      }
+    },
+    "Unknown iCloud account state.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未知的 iCloud 账户状态。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未知的 iCloud 帳號狀態。"
           }
         }
       }
@@ -4774,6 +5437,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "運作時間與負載"
+          }
+        }
+      }
+    },
+    "Use the other device's key": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用另一台设备的密钥"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用另一台裝置的金鑰"
+          }
+        }
+      }
+    },
+    "User Notice": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用户须知"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用者須知"
           }
         }
       }
@@ -4880,6 +5577,23 @@
         }
       }
     },
+    "You verify the first fingerprint.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "首次 fingerprint 由您核对。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "首次 fingerprint 由您核對。"
+          }
+        }
+      }
+    },
     "Your data has been left untouched.": {
       "extractionState": "manual",
       "localizations": {
@@ -4910,6 +5624,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "你的資料未被更動。如果想從頭開始，重新安裝會將其清除。"
+          }
+        }
+      }
+    },
+    "Your keys stay on your device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "您的密钥保留在您的设备上。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "您的金鑰保留在您的裝置上。"
           }
         }
       }
@@ -4978,6 +5709,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "用於 %@@%@"
+          }
+        }
+      }
+    },
+    "iCloud": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud"
+          }
+        }
+      }
+    },
+    "iCloud is restricted on this device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本设备上的 iCloud 受到限制。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本裝置上的 iCloud 受到限制。"
+          }
+        }
+      }
+    },
+    "iCloud is temporarily unavailable.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud 暂时不可用。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud 暫時無法使用。"
           }
         }
       }

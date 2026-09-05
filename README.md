@@ -99,7 +99,8 @@ docs/                          Cloudflare setup, SSH guide, operations
 | [`docs/SSH.md`](docs/SSH.md) | Using the app: connections, keys, host key verification, the algorithm matrix, terminal gestures |
 | [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) | Building, testing, signing, and maintaining the vendored `swift-nio-ssh` |
 | [`docs/RELEASE.md`](docs/RELEASE.md) | App Store and TestFlight checklist, privacy answers, likely review questions |
-| [`docs/PRIVACY.md`](docs/PRIVACY.md) | What is stored, where, and what leaves the device |
+| [`docs/PRIVACY.md`](docs/PRIVACY.md) | What is stored, where, and what leaves the device — the engineering view |
+| [`App/Resources/Legal/`](App/Resources/Legal/) | The Terms of Use, Privacy Policy and User Notice as shipped, in English, Simplified and Traditional Chinese, plus the third-party notices |
 
 ## Known limitations
 
@@ -109,8 +110,15 @@ These are real and are not worked around silently:
   implemented and the carrier is tested locally, but no local harness can authenticate a
   real identity. See `PROJECT_STATUS.md` B-2.
 * **No HTTP proxy support** on the carrier path.
-* **No app yet.** The SwiftUI application, the terminal emulator and the design system
-  are not built.
+* **iCloud sync has not been verified against iCloud.** The engine, its conflict rules
+  and the CloudKit record mapping are tested offline; the live path needs a signed build
+  with the container entitlement, which an ad-hoc simulator build does not carry. See
+  `PROJECT_STATUS.md` B-4. Nothing in the app claims otherwise.
+* **The legal texts carry placeholders.** Effective date, legal name, contact addresses
+  and governing law are the project owner's to fill, and the texts have not been reviewed
+  by a lawyer — they say so. See `PROJECT_STATUS.md` B-5.
+* **The clipboard is not cleared automatically.** Text copied from the terminal stays on
+  the pasteboard until replaced; the User Notice says so.
 
 ## Licence and trademarks
 

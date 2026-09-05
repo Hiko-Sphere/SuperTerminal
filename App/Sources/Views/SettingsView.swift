@@ -126,6 +126,8 @@ struct SettingsView: View {
                     }
                 }
 
+                ICloudSyncSection()
+
                 Section {
                     Button("Export diagnostics") { showsDiagnostics = true }
                     if container.settings.commandHistoryEnabled {
@@ -136,6 +138,13 @@ struct SettingsView: View {
                     Text("Data")
                 } footer: {
                     Text("Diagnostics contain no commands, output, hostnames or credentials.")
+                }
+
+                Section("Legal") {
+                    ForEach([LegalDocument.terms, .privacy, .notice, .licences]) { document in
+                        NavigationLink(document.title) { LegalView(document: document) }
+                            .accessibilityIdentifier("settings-legal-\(document.rawValue)")
+                    }
                 }
 
                 Section {
@@ -168,9 +177,17 @@ struct SettingsView: View {
                     container.snippetStore.removeAll()
                     container.restoration.clear()
                     try? container.vault.deleteEverything()
+                    Task {
+                        // Host keys too: left behind with sync on, they would come back.
+                        try? await container.knownHosts.removeAll()
+                        if container.sync.isEnabled { try? await container.sync.purgeRemote() }
+                        container.sync.setEnabled(false)
+                    }
                 }
             } message: {
-                Text("This removes your connections, private keys and Cloudflare sessions from this device. It cannot be undone.")
+                Text(container.sync.isEnabled
+                    ? "This removes your connections, private keys, host keys and Cloudflare sessions from this device and from iCloud. It cannot be undone."
+                    : "This removes your connections, private keys, host keys and Cloudflare sessions from this device. It cannot be undone.")
             }
         }
     }

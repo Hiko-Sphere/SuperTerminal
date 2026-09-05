@@ -494,3 +494,60 @@ catches a converted catalog.
 come away calmer than an English one. Host key changes, trust prompts and paste warnings are
 in that set. Recorded here because a mistranslation there is a security defect, not a
 cosmetic one.
+
+## D-015 · iCloud sync is opt-in, per key, and never silent about disagreement
+
+**Off until switched on, and the transport does not exist until then.** `CKSyncEngine`
+registers for push and talks to the container the moment it is created, so
+`SyncCoordinator` builds the CloudKit transport when the switch goes on and drops it when
+the switch goes off. A user who never opens the setting never touches CloudKit.
+
+**What syncs is a list, not "everything".** Hosts, key metadata, snippets and trusted host
+keys. Not passwords (each device asks again), not Access tokens (each device signs in),
+not command history, restoration state or diagnostics. The list is short so the Privacy
+Policy can be exact.
+
+**A private key syncs only if the user says so for that key.** The choice is made when the
+key is created or imported, and it is refused — not silently downgraded — when the key is
+also biometric-protected, because Apple forbids access control on synchronisable items.
+A record that arrives without its secret is shown as "not on this device" rather than
+failing at connection time.
+
+**Host-key disagreements are held.** Last-writer-wins is right for a renamed connection
+and wrong for a host key: a newer record must not be able to replace a key this device
+already trusts. Such a record is kept aside, the connection continues with the local key,
+and Settings shows the two so the user can decide. Nothing in the sync path can accept a
+changed host key on its own.
+
+**Payload bytes are canonical.** Conflict detection compares this device's encoding of a
+key with another device's, so the adapter encodes with sorted keys. The first test of this
+passed in one simulator clone and failed in the other — Foundation's key order without
+`.sortedKeys` varies per process — which is why the sort is documented as load-bearing.
+
+**Not verified live, and recorded as such.** Without a development team the simulator
+build carries no entitlements, so CloudKit cannot be exercised (B-4). The engine is
+verified against an in-memory transport and the record mapping is unit-tested; the claim
+"sync works" is not made anywhere a user can read it.
+
+## D-016 · The legal texts ship in the bundle and gate first launch
+
+**Three documents, three languages, one source.** Terms of Use, Privacy Policy and User
+Notice live in `App/Resources/Legal/` as Markdown, one file per language, rendered by a
+parser written for exactly what they contain. They were drafted, judged and adversarially
+reviewed against the code before the first screen was built; every reviewer finding that
+described a claim the app did not honour was fixed in the app or in the text — never by
+softening the text into vagueness.
+
+**Consent is shown once per document version.** `LegalDocument.currentVersion` is bumped
+when a document changes in substance; a lower `acceptedTermsVersion` shows the screen
+again. UI-test runs pre-accept unless they ask to see the screen, so one gate does not
+block every other test.
+
+**Placeholders are visible, not hidden.** Effective date, legal name, contact addresses
+and governing law are the owner's to supply (B-5). They ship in square brackets rather than
+as invented values.
+
+**The third-party notices are the same file twice, checked.** Apache-2.0 requires the
+notices to reach the user, so `THIRD_PARTY_NOTICES.md` is copied into the bundle and CI
+fails if the copy drifts from the repository file.
+

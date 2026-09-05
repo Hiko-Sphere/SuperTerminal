@@ -13,6 +13,8 @@ import STCore
 @MainActor
 final class SnippetStore {
     private(set) var snippets: [Snippet] = []
+    /// See `HostStore.tombstones`.
+    var tombstones: SyncTombstones?
     private(set) var history: [HistoryEntry] = []
     private(set) var loadError: STError?
 
@@ -33,21 +35,26 @@ final class SnippetStore {
 
     // MARK: - Snippets
 
-    func add(_ snippet: Snippet) {
+    func add(_ snippet: Snippet, stamping: Bool = true) {
+        var snippet = snippet
+        if stamping { snippet.modifiedAt = Date() }
         snippets.append(snippet)
         sortSnippets()
         persistSnippets()
     }
 
-    func update(_ snippet: Snippet) {
+    func update(_ snippet: Snippet, stamping: Bool = true) {
         guard let index = snippets.firstIndex(where: { $0.id == snippet.id }) else { return }
+        var snippet = snippet
+        if stamping { snippet.modifiedAt = Date() }
         snippets[index] = snippet
         sortSnippets()
         persistSnippets()
     }
 
-    func remove(_ snippet: Snippet) {
+    func remove(_ snippet: Snippet, recordingTombstone: Bool = true) {
         snippets.removeAll { $0.id == snippet.id }
+        if recordingTombstone { tombstones?.record(SyncKey(kind: .snippet, id: snippet.id.uuidString)) }
         persistSnippets()
     }
 
@@ -152,7 +159,10 @@ final class SnippetStore {
         }
     }
 
-    private func persistSnippets() { persist(snippets, to: snippetsURL) }
+    /// Fired after a snippet change. History is not synced and does not fire it.
+    var didChange: (() -> Void)?
+
+    private func persistSnippets() { persist(snippets, to: snippetsURL); didChange?() }
 
     private func persistHistory() {
         persist(history, to: historyURL)

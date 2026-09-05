@@ -25,6 +25,12 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
     public var environment: [String: String]
     public var themeID: String?
     public var lastConnected: Date?
+    /// When this record last changed, on any device. Drives last-writer-wins in sync.
+    ///
+    /// Optional on purpose: files written before sync existed have no such field, and a
+    /// synthesized decoder throws on a missing key unless the property is optional. `nil`
+    /// means "never stamped", which sync treats as older than anything.
+    public var modifiedAt: Date?
 
     public enum TransportKind: Sendable, Codable, Equatable {
         /// A direct TCP connection to `hostname:port`.
@@ -130,8 +136,14 @@ public struct StoredKey: Identifiable, Sendable, Codable, Equatable {
     public var createdAt: Date
     /// Whether reading the private key requires a biometric or passcode check.
     public var requiresBiometrics: Bool
+    public var modifiedAt: Date?
     /// Whether the stored key material is itself passphrase-encrypted.
     public var isPassphraseProtected: Bool
+    /// Whether the private key itself is in iCloud Keychain. The metadata above syncs
+    /// through CloudKit regardless; this says whether another device will also have the
+    /// secret, or only know the key exists. Optional so records written before sync
+    /// existed still decode.
+    public var secretInICloud: Bool?
 
     public init(
         id: UUID = UUID(),
@@ -141,7 +153,8 @@ public struct StoredKey: Identifiable, Sendable, Codable, Equatable {
         fingerprintSHA256: String,
         createdAt: Date = Date(),
         requiresBiometrics: Bool,
-        isPassphraseProtected: Bool
+        isPassphraseProtected: Bool,
+        secretInICloud: Bool? = nil
     ) {
         self.id = id
         self.name = name
@@ -151,5 +164,6 @@ public struct StoredKey: Identifiable, Sendable, Codable, Equatable {
         self.createdAt = createdAt
         self.requiresBiometrics = requiresBiometrics
         self.isPassphraseProtected = isPassphraseProtected
+        self.secretInICloud = secretInICloud
     }
 }

@@ -12,6 +12,7 @@ final class LaunchUITests: XCTestCase {
 
     func testAppLaunchesAndOffersAConnection() throws {
         let app = XCUIApplication()
+        app.launchEnvironment["ST_UITEST_RESET"] = "1"
         app.launch()
 
         XCTAssertTrue(
@@ -26,6 +27,7 @@ final class LaunchUITests: XCTestCase {
 
     func testConnectionEditorValidatesBeforeSaving() throws {
         let app = XCUIApplication()
+        app.launchEnvironment["ST_UITEST_RESET"] = "1"
         app.launch()
 
         app.buttons["New Connection"].tap()

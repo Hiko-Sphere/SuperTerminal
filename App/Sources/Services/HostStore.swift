@@ -11,6 +11,9 @@ import STCore
 @MainActor
 final class HostStore {
     private(set) var hosts: [Host] = []
+    /// Where deletions are remembered for sync. Set by the container; nil in a store
+    /// that is not synchronised, in which case a deletion is simply a deletion.
+    var tombstones: SyncTombstones?
     private(set) var keys: [StoredKey] = []
     private(set) var loadError: STError?
 
@@ -32,21 +35,31 @@ final class HostStore {
 
     // MARK: - Hosts
 
-    func add(_ host: Host) {
+    /// `stamping` is false only when the record arrived from another device and already
+    /// carries the time it changed there; stamping it again would make this device the
+    /// newer writer and echo it straight back.
+    func add(_ host: Host, stamping: Bool = true) {
+        var host = host
+        if stamping { host.modifiedAt = Date() }
         hosts.append(host)
         sortHosts()
         persistHosts()
     }
 
-    func update(_ host: Host) {
+    func update(_ host: Host, stamping: Bool = true) {
         guard let index = hosts.firstIndex(where: { $0.id == host.id }) else { return }
+        var host = host
+        if stamping { host.modifiedAt = Date() }
         hosts[index] = host
         sortHosts()
         persistHosts()
     }
 
-    func remove(_ host: Host) {
+    /// `recordingTombstone` is false when the deletion itself came from sync: a tombstone
+    /// for it already exists on the device that deleted it.
+    func remove(_ host: Host, recordingTombstone: Bool = true) {
         hosts.removeAll { $0.id == host.id }
+        if recordingTombstone { tombstones?.record(SyncKey(kind: .host, id: host.id.uuidString)) }
         persistHosts()
     }
 
@@ -62,14 +75,29 @@ final class HostStore {
 
     // MARK: - Keys
 
-    func add(_ key: StoredKey) {
+    func add(_ key: StoredKey, stamping: Bool = true) {
+        var key = key
+        if stamping { key.modifiedAt = Date() }
         keys.append(key)
         keys.sort { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
         persistKeys()
     }
 
-    func remove(keyID: UUID) {
+    /// Insert or replace a key's metadata as it arrived from another device. Metadata
+    /// only: the private key itself is never in this store.
+    func upsert(_ key: StoredKey) {
+        if let index = keys.firstIndex(where: { $0.id == key.id }) {
+            keys[index] = key
+            keys.sort { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+            persistKeys()
+        } else {
+            add(key, stamping: false)
+        }
+    }
+
+    func remove(keyID: UUID, recordingTombstone: Bool = true) {
         keys.removeAll { $0.id == keyID }
+        if recordingTombstone { tombstones?.record(SyncKey(kind: .keyMetadata, id: keyID.uuidString)) }
         // A host that referenced the deleted key must stop referencing it, or the next
         // connection would fail with a confusing "credential not found".
         for index in hosts.indices {
@@ -120,8 +148,11 @@ final class HostStore {
         }
     }
 
-    private func persistHosts() { persist(hosts, to: hostsURL) }
-    private func persistKeys() { persist(keys, to: keysURL) }
+    /// Fired after any host or key change, so sync can follow edits without polling.
+    var didChange: (() -> Void)?
+
+    private func persistHosts() { persist(hosts, to: hostsURL); didChange?() }
+    private func persistKeys() { persist(keys, to: keysURL); didChange?() }
 
     private func persist(_ value: some Encodable, to url: URL) {
         let encoder = JSONEncoder()

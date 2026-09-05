@@ -51,6 +51,8 @@ jobs:
         working-directory: Packages/SuperTerminalKit
         run: swift test
 
+      - name: The bundled third-party notices match the repository copy
+        run: cmp THIRD_PARTY_NOTICES.md App/Resources/Legal/THIRD_PARTY_NOTICES.md
       - name: The RSA patch still reproduces the vendored tree
         run: |
           # A patch that has drifted from the tree is worse than no patch: it applies

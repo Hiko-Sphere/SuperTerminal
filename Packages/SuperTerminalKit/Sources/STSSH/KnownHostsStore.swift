@@ -13,6 +13,9 @@ public protocol KnownHostsStore: Sendable {
     func store(_ entry: KnownHostEntry) async throws
     func remove(_ identity: KnownHostIdentity) async throws
     func all() async throws -> [KnownHostEntry]
+    /// Forgets every host. "Delete all data" must include host keys: left behind with
+    /// sync on, they would be pushed straight back to iCloud.
+    func removeAll() async throws
 }
 
 /// File-backed ``KnownHostsStore``.
@@ -45,6 +48,10 @@ public actor FileKnownHostsStore: KnownHostsStore {
         var entries = try load()
         entries.removeValue(forKey: identity.storageKey)
         try save(entries)
+    }
+
+    public func removeAll() async throws {
+        try save([:])
     }
 
     public func all() async throws -> [KnownHostEntry] {
@@ -104,6 +111,10 @@ public actor InMemoryKnownHostsStore: KnownHostsStore {
 
     public func remove(_ identity: KnownHostIdentity) async throws {
         entries.removeValue(forKey: identity.storageKey)
+    }
+
+    public func removeAll() async throws {
+        entries.removeAll()
     }
 
     public func all() async throws -> [KnownHostEntry] {

@@ -85,6 +85,8 @@ struct KeyManagementView: View {
 private struct KeyRow: View {
     @Environment(AppContainer.self) private var container
     let key: StoredKey
+    /// Checked once per appearance, attribute-only, so listing never prompts.
+    @State private var hasSecret = true
 
     var body: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
@@ -121,7 +123,17 @@ private struct KeyRow: View {
                     .font(DesignTokens.Typography.caption)
                     .foregroundStyle(DesignTokens.Color.labelTertiary)
             }
+            if !hasSecret {
+                Label("Private key is not on this device", systemImage: "icloud.slash")
+                    .font(DesignTokens.Typography.caption)
+                    .foregroundStyle(DesignTokens.Color.warning)
+            } else if key.secretInICloud == true {
+                Label("In iCloud Keychain", systemImage: "icloud")
+                    .font(DesignTokens.Typography.caption)
+                    .foregroundStyle(DesignTokens.Color.labelTertiary)
+            }
         }
+        .task(id: key.id) { hasSecret = container.vault.hasPrivateKey(id: key.id) }
         .padding(.vertical, DesignTokens.Spacing.xxs)
         .accessibilityElement(children: .combine)
     }
@@ -135,6 +147,7 @@ struct GenerateKeySheet: View {
     @State private var name = ""
     @State private var algorithm: SSHKeyAlgorithm = .ed25519
     @State private var requireBiometrics = true
+    @State private var storeSecretInICloud = false
     @State private var generated: SSHKeyGenerator.GeneratedKey?
     @State private var errorMessage: String?
 
@@ -182,6 +195,8 @@ struct GenerateKeySheet: View {
                     } footer: {
                         Text("The key can only be used after a successful biometric or passcode check, and becomes unusable if the device's biometric enrolment changes.")
                     }
+
+                    ICloudKeyChoice(requireBiometrics: requireBiometrics, storeSecretInICloud: $storeSecretInICloud)
                 }
 
                 if let errorMessage {
@@ -217,18 +232,22 @@ struct GenerateKeySheet: View {
                 publicKeyOpenSSH: key.publicKeyOpenSSH,
                 fingerprintSHA256: key.fingerprintSHA256,
                 requiresBiometrics: requireBiometrics,
-                isPassphraseProtected: false
+                isPassphraseProtected: false,
+                secretInICloud: storeSecretInICloud
             )
             // Stored before the record is added, so a Keychain failure cannot leave a
             // record pointing at a key that does not exist.
             try container.vault.storePrivateKey(
                 key.privateKeyPEM,
                 id: record.id,
-                requireBiometrics: requireBiometrics
+                requireBiometrics: requireBiometrics,
+                syncToICloud: storeSecretInICloud
             )
             container.hostStore.add(record)
             generated = key
             errorMessage = nil
+        } catch let error as CredentialVaultError {
+            errorMessage = error.errorDescription
         } catch let error as STError {
             errorMessage = error.message
         } catch {
@@ -247,6 +266,7 @@ struct ImportKeySheet: View {
     @State private var passphrase = ""
     @State private var requiresPassphrase = false
     @State private var requireBiometrics = true
+    @State private var storeSecretInICloud = false
     @State private var errorMessage: String?
     @State private var isShowingFileImporter = false
 
@@ -284,6 +304,8 @@ struct ImportKeySheet: View {
                 Section {
                     Toggle("Require Face ID or Touch ID", isOn: $requireBiometrics)
                 }
+
+                ICloudKeyChoice(requireBiometrics: requireBiometrics, storeSecretInICloud: $storeSecretInICloud)
 
                 if let errorMessage {
                     Section {
@@ -356,17 +378,48 @@ struct ImportKeySheet: View {
                 publicKeyOpenSSH: material.publicKey.openSSHRepresentation,
                 fingerprintSHA256: material.publicKey.fingerprintSHA256,
                 requiresBiometrics: requireBiometrics,
-                isPassphraseProtected: requiresPassphrase
+                isPassphraseProtected: requiresPassphrase,
+                secretInICloud: storeSecretInICloud
             )
-            try container.vault.storePrivateKey(pem, id: record.id, requireBiometrics: requireBiometrics)
+            try container.vault.storePrivateKey(pem, id: record.id, requireBiometrics: requireBiometrics, syncToICloud: storeSecretInICloud)
             container.hostStore.add(record)
             dismiss()
         } catch let error as SSHKeyParseError {
             errorMessage = error.stError.message
+        } catch let error as CredentialVaultError {
+            errorMessage = error.errorDescription
         } catch let error as STError {
             errorMessage = error.message
         } catch {
             errorMessage = String(describing: error)
+        }
+    }
+}
+
+/// Per-key iCloud Keychain choice. Shown as a real control only when it can do
+/// something; otherwise it says what would make it available.
+private struct ICloudKeyChoice: View {
+    @Environment(AppContainer.self) private var container
+    let requireBiometrics: Bool
+    @Binding var storeSecretInICloud: Bool
+
+    var body: some View {
+        Section {
+            if container.sync.isEnabled {
+                Toggle("Store private key in iCloud Keychain", isOn: $storeSecretInICloud)
+                    .disabled(requireBiometrics)
+                    .onChange(of: requireBiometrics) { _, biometrics in
+                        if biometrics { storeSecretInICloud = false }
+                    }
+            }
+        } footer: {
+            if !container.sync.isEnabled {
+                Text("Turn on Sync with iCloud in Settings to keep this key in iCloud Keychain. The key's name and public key sync either way.")
+            } else if requireBiometrics {
+                Text("A key protected by Face ID or Touch ID stays on this device; iCloud Keychain cannot hold it.")
+            } else {
+                Text("Every device signed in to your iCloud account and trusted for iCloud Keychain receives the private key.")
+            }
         }
     }
 }

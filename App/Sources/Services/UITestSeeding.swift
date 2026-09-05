@@ -49,15 +49,26 @@ enum UITestSeeding {
     }
 
     /// Applies the seed, replacing anything already stored so runs are repeatable.
+    /// A run that asks for a reset, with or without an SSH seed. Preferences, snippets,
+    /// hosts and the accepted-terms version all outlive the app, so a run that changes
+    /// one would otherwise decide the outcome of the next.
+    static var resetsState: Bool {
+        ProcessInfo.processInfo.environment["ST_UITEST_RESET"] == "1" || seedFromEnvironment != nil
+    }
+
     @MainActor
     static func apply(to container: AppContainer) {
-        guard let seed = seedFromEnvironment else { return }
-        // Preferences and snippets outlive the app, so a run that changes one would
-        // otherwise decide the outcome of the next.
+        guard resetsState else { return }
         container.settings.resetToDefaults()
+        // Every run would otherwise start behind the consent screen. A run that tests
+        // that screen asks for it.
+        if ProcessInfo.processInfo.environment["ST_UITEST_SHOW_CONSENT"] != "1" {
+            container.settings.acceptedTermsVersion = LegalDocument.currentVersion
+        }
         container.snippetStore.removeAll()
         container.hostStore.removeAll()
         try? container.vault.deleteEverything()
+        guard let seed = seedFromEnvironment else { return }
         try? container.vault.storePrivateKey(seed.privateKeyPEM, id: seed.keyID, requireBiometrics: false)
         container.hostStore.add(seed.host)
     }

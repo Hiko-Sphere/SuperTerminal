@@ -72,9 +72,9 @@ Legend: ✅ done and proven · 🟡 written, awaiting verification · ⬜ not st
 * ✅ Accessibility run for real: text sizes, Reduce Transparency, Bold Text, label coverage
 * 🟡 VoiceOver wired and asserted structurally, but not heard
 
-## Phase 5 — Product features ⬜
+## Phase 5 — Product features 🟡 ← current
 
-Key generation, import and export ✅ · Snippets ✅ · searchable local history (off by default) ✅ · iPad multi-window ✅ · automatic reconnection ✅ · drag and drop ✅ · pinch to resize ✅ · reopen last session ✅ · command palette ✅ · haptic vocabulary ✅ · Instruments trace ✅ · chacha20-poly1305 ✅ · app icon ✅ · zh-Hans + zh-Hant with CI gate ✅ · host tags and folders · iCloud
+Key generation, import and export ✅ · Snippets ✅ · searchable local history (off by default) ✅ · iPad multi-window ✅ · automatic reconnection ✅ · drag and drop ✅ · pinch to resize ✅ · reopen last session ✅ · command palette ✅ · haptic vocabulary ✅ · Instruments trace ✅ · chacha20-poly1305 ✅ · app icon ✅ · zh-Hans + zh-Hant with CI gate ✅ · host tags and folders · iCloud · iCloud sync of hosts, key metadata, snippets and host keys, opt-in and per-key for secrets (CloudKit not live-verified, B-4) ✅ · Terms / Privacy / User Notice in three languages, consent gate, Settings → Legal with licences ✅ · App Switcher privacy shield ✅
 sync for non-sensitive config · theme and font customisation · Face ID / Touch ID gating
 · redacted diagnostics export · App Intents · Spotlight. Port forwarding and SFTP only if
 they can be shipped with full security tests.

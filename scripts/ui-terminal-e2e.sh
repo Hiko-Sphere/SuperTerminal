@@ -44,6 +44,10 @@ nc -z 127.0.0.1 "$PORT" || { echo "sshd did not start:"; cat "$WORK/sshd.log"; e
 echo "Test sshd listening on 127.0.0.1:$PORT"
 
 cd "$ROOT"
+# xcodebuild refuses to overwrite a result bundle, so a second local run would fail
+# before a single test ran. CI never sees this; a developer's checkout does.
+BUNDLE="${ST_RESULT_BUNDLE:-$ROOT/.build/ui-terminal.xcresult}"
+rm -rf "$BUNDLE"
 exec env \
   TEST_RUNNER_ST_UITEST_SEED=1 \
   TEST_RUNNER_ST_UITEST_HOST=127.0.0.1 \
@@ -56,7 +60,7 @@ exec env \
     -project SuperTerminal.xcodeproj \
     -scheme SuperTerminal \
     -destination "$DESTINATION" \
-    -resultBundlePath "${ST_RESULT_BUNDLE:-$ROOT/.build/ui-terminal.xcresult}" \
+    -resultBundlePath "$BUNDLE" \
     -parallel-testing-enabled NO \
     -only-testing:SuperTerminalUITests
 

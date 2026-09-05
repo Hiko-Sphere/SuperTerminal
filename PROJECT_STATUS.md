@@ -37,6 +37,10 @@ This file is the resumable state of the work. It records what is *proven*, what 
 | Selection, copy and scrollback search | 11 tests: soft wraps copy without an injected newline, block selection, wide characters copy once, selection reaches into history, search crosses wraps and is bounded |
 | Mouse reporting | 10 unit tests covering both encodings, modifiers, wheel, drag/motion gating and the legacy coordinate ceiling — plus a live round-trip: a remote program enables tracking, and `cat -v` on the far end shows the exact bytes a real terminal would have sent |
 | CI | `.github/workflows/ci.yml` — package build/test with a zero-warning gate, app Debug and unsigned-Release builds, both integration suites, and hygiene checks for placeholders and committed secrets |
+| iCloud sync engine — merge, tombstones, held host-key conflicts, canonical payloads | 27 tests: `SyncEngineTests` (11, in-memory transport), `CloudKitMappingTests` (5), `AppSyncStoreTests` (9), `KnownHostsRemoveAllTests` (2). CloudKit itself is **not** live-verified — B-4 |
+| Legal texts bundled in en / zh-Hans / zh-Hant, parsed and rendered | `LegalDocumentBundleTests` (11) prove every file is in the bundle, comment-free and substantial; `MarkdownDocumentTests` (3); CI fails if the bundled notices drift from `THIRD_PARTY_NOTICES.md` |
+| Consent gate and Settings → Legal | `ConsentUITests` (2): a fresh install is gated, the notice renders, acceptance persists across a relaunch, licences open from Settings |
+| App Switcher snapshot protection | `PrivacyShield` covers the window whenever the scene is not active; the previously unwired toggle now does what it says |
 | **Throughput, measured on the real path** | Release: 14.7 MB/s plain text, 33.5 MB/s coloured, 14.9 MB/s CJK, reflow of a full 5 000-line scrollback in 17 ms — all fed as `Data`, which is what the app feeds. The earlier figures in this table were measured on an `Array`, a path the app never takes and which was far slower, so they understated the product. Both paths are now benchmarked, and their parity is asserted as a ratio rather than a fixed number |
 | **Render cost, measured** | A full redraw of both an 80×24 and a 200×55 grid fits inside a 60 Hz frame on the simulator; run coalescing is asserted directly on the run count |
 | Selection and find gestures | UI tests: long-press-and-drag selects and offers Copy, and the find bar reports a match count |
@@ -103,12 +107,23 @@ tag `0.15.0`. Upstream's own suite still passes (347 tests, up from 346: one tes
 `ssh-rsa` as its example of an unrecognised algorithm and was moved to `ssh-dss`, with a
 new test added so the truncated-key case it covered is not lost).
 
+### B-5 · The legal documents carry the owner's placeholders *(open, owner-only)*
+
+The Terms of Use, Privacy Policy and User Notice ship in three languages with six values
+in square brackets that only the project owner can supply: effective date, developer legal
+name, contact email, security contact email, governing law and venue, and postal address.
+The texts were drafted for review by counsel and say so in their first paragraph; they are
+not legal advice until a lawyer has read them.
+
 ### B-4 · Archiving is blocked on a development team *(open)*
 
 `xcodebuild archive` fails with *"Signing for SuperTerminal requires a development
 team"*. The same configuration builds for a device with signing disabled, so the code is
 device-ready and signing is the only gap. Two Apple Development identities exist on the
-machine but no team is set in the project.
+machine but no team is set in the project. The same gap blocks iCloud: an ad-hoc simulator
+build carries no entitlements at all (the `.xcent` is `{}`), so CloudKit sync and iCloud
+Keychain cannot be exercised. The sync engine is verified against an in-memory transport;
+the live path is not, and nothing user-facing claims it is.
 
 ### B-3 · `trycloudflare.com` quick tunnels do not route from this network *(observed)*
 

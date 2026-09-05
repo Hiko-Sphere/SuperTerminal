@@ -16,6 +16,16 @@ public enum SecureStoreProtection: Sendable, Equatable {
     /// Requires a successful biometric or passcode check at every read, and is
     /// invalidated if the device's biometric enrolment changes.
     case biometricThisDeviceOnly
+    /// Readable while the device is unlocked, and synchronised through iCloud Keychain —
+    /// Apple's end-to-end-encrypted keychain sync — to the user's other devices.
+    ///
+    /// Opt-in per item, never a default. Two rules from Apple's `SecItem.h`, stated
+    /// there as caveats and enforced here: a synchronisable item may not use a
+    /// `…ThisDeviceOnly` accessibility class, and it cannot carry access-control based
+    /// protection — so an item that requires Face ID or Touch ID can never be
+    /// synchronised. That is why the app refuses the combination rather than silently
+    /// dropping the biometric requirement to make sync work.
+    case whenUnlockedSynchronizable
 }
 
 /// A single stored secret's address.
