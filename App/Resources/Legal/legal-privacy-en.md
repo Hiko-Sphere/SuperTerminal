@@ -19,6 +19,7 @@ SuperTerminal collects nothing about you. The developer runs no server, so there
 | SSH private keys | Keychain | Readable only while the device is unlocked; optionally locked behind Face ID or Touch ID as well | Never sent to a server; the server sees a signature, not the key. Through iCloud Keychain only if you turn sync on and choose that for the key; never when Face ID or Touch ID protected |
 | SSH passwords | Keychain | Readable only while the device is unlocked | To the server you are signing in to. Not synced |
 | Cloudflare Access tokens | Keychain | Readable after the device has been unlocked once since restart, so a reconnection can work from your pocket | Only back to Cloudflare, as the credential for your own connection. Not synced |
+| Cloudflare Access service tokens (only if you enter one for a connection) | Keychain | Readable only while the device is unlocked | Only to Cloudflare, as the credential for that connection. Not synced; deleted with the connection |
 | Known host keys | App storage | Encrypted while locked; excluded from device backups | Only if you turn iCloud sync on |
 | Snippets | App storage | Encrypted while locked; included in device backups | Only if you turn iCloud sync on |
 | Settings | App preferences | Standard app storage | No |
@@ -52,7 +53,7 @@ iCloud sync is **off** until you turn it on in Settings. When it is on:
 - **An SSH private key syncs only if you choose that for the key** when you create or import it, and only if it is not protected by Face ID or Touch ID. It then travels through iCloud Keychain, Apple's end-to-end-encrypted keychain sync, if iCloud Keychain is turned on for your device. **Passwords never sync**; each device asks for them again.
 - **Keys protected by Face ID or Touch ID never sync.** Apple does not allow it, and the app does not try. They exist only on the device where you created or imported them.
 - **Command history, the list of recently open sessions and diagnostics never sync**, whatever the switch says.
-- **Cloudflare Access tokens and settings are not part of the sync.** Each device signs in to Access on its own.
+- **Cloudflare Access tokens, service tokens and settings are not part of the sync.** Each device signs in to Access on its own, or asks for the service token again.
 
 Sync means "the same on every device signed in to your Apple Account". A host key you trusted on one device is trusted on the others, for a host they have not met yet. If another device sends a key that differs from one this device already trusts, the app does not apply it: this device keeps the key it has, and Settings → iCloud shows the disagreement so you can choose which key to keep. A key you allowed to sync is on every device trusted for iCloud Keychain.
 

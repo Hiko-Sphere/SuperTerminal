@@ -199,6 +199,21 @@ headings, lists, tables and comment stripping. `ConsentUITests` launch with the 
 flag, read the User Notice from the gate, accept, relaunch without a reset and confirm the
 gate does not return; the second test opens the licences from Settings.
 
+### Cloudflare Access service tokens — 3 unit tests and 1 UI test
+
+`ServiceTokenTests` prove the model migration (a host record without the new field decodes
+with no authentication choice), the Codable round-trip, and — on the real Keychain in the
+app host — that a service token is stored, read back with its secret intact, redacted in any
+description, and deleted. `ServiceTokenUITests` drives the connection editor: choosing
+"Service token" without entering one keeps Save disabled, entering both fields enables it,
+and reopening the saved connection shows the token as stored without displaying it — and
+that iOS's "Save Password?" sheet never appears: the first run of this test found AutoFill
+offering to keep the secret in iCloud Keychain passwords, which every secure field in the
+app now opts out of. The
+carrier already sent the `Cf-Access-Client-Id` / `Cf-Access-Client-Secret` headers and is
+covered by `CarrierIntegrationTests`; the live Access run (`scripts/live-e2e.sh`) uses the
+same path and remains blocked on B-2.
+
 ### Clipboard expiry — 3 tests
 
 `ClipboardTests` prove the option mapping (0 → no expiry; n → `expirationDate` = now + n)

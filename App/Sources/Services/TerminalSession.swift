@@ -763,6 +763,16 @@ final class TerminalSession: Identifiable {
             return .none
 
         case let .protected(appInfo):
+            if host.usesServiceToken {
+                guard let token = try vault.loadServiceToken(hostID: host.id) else {
+                    throw STError(
+                        category: .credential,
+                        message: String(localized: "This connection is set to use a Cloudflare Access service token, but none is stored on this device."),
+                        recoverySuggestion: String(localized: "Edit the connection and enter the service token's client ID and secret. Service tokens stay on the device they were entered on.")
+                    )
+                }
+                return .serviceToken(token)
+            }
             if let stored = try? vault.loadAccessToken(appIdentifier: appInfo.storageIdentifier),
                let validated = try? await validator.validate(rawToken: stored, appInfo: appInfo),
                !validated.isExpired() {

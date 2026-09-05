@@ -1,4 +1,5 @@
 import Foundation
+import STCloudflare
 import STCore
 import STSSH
 import STSecureStore
@@ -130,6 +131,31 @@ struct CredentialVault: Sendable {
 
     /// Removes every secret this app holds. Used by "delete all data", where leaving a
     /// single forgotten Keychain item behind would defeat the point.
+    // MARK: - Cloudflare Access service tokens
+
+    private struct StoredServiceToken: Codable { var clientID: String; var secret: String }
+
+    /// A long-lived machine credential: this device only, never synchronised, and deleted
+    /// with the connection it belongs to.
+    func storeServiceToken(clientID: String, secret: String, hostID: UUID) throws {
+        let data = try JSONEncoder().encode(StoredServiceToken(clientID: clientID, secret: secret))
+        try store.set(data, for: SecureStoreKey(service: Service.serviceTokens, account: hostID.uuidString), protection: .whenUnlockedThisDeviceOnly, prompt: nil)
+    }
+
+    func loadServiceToken(hostID: UUID) throws -> AccessServiceToken? {
+        guard let data = try store.getIfPresent(SecureStoreKey(service: Service.serviceTokens, account: hostID.uuidString)) else { return nil }
+        let stored = try JSONDecoder().decode(StoredServiceToken.self, from: data)
+        return AccessServiceToken(clientID: stored.clientID, clientSecret: stored.secret)
+    }
+
+    func hasServiceToken(hostID: UUID) -> Bool {
+        ((try? store.accounts(inService: Service.serviceTokens)) ?? []).contains(hostID.uuidString)
+    }
+
+    func deleteServiceToken(hostID: UUID) throws {
+        try store.remove(SecureStoreKey(service: Service.serviceTokens, account: hostID.uuidString))
+    }
+
     func deleteEverything() throws {
         for service in [Service.privateKeys, Service.passwords, Service.accessTokens, Service.serviceTokens] {
             try store.removeAll(inService: service)

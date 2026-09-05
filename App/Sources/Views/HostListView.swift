@@ -110,23 +110,7 @@ struct HostListView: View {
                 }
 
                 ForEach(filteredHosts) { host in
-                    HostRow(host: host) {
-                        let session = container.sessionManager.open(host)
-                        container.hostStore.markConnected(host)
-                        // Selecting is this list's job in both layouts; `onOpen` only
-                        // tells a stack-based layout to push. Leaving selection to the
-                        // caller meant the iPad detail column never followed a newly
-                        // opened session.
-                        scene.selectedSessionID = session.id
-                        onOpen(session)
-                    }
-                    .swipeActions(edge: .trailing) {
-                        Button("Delete", systemImage: "trash", role: .destructive) {
-                            container.hostStore.remove(host)
-                        }
-                        Button("Edit", systemImage: "pencil") { editingHost = host }
-                            .tint(DesignTokens.Color.info)
-                    }
+                    hostRow(host)
                 }
             }
         }
@@ -150,6 +134,34 @@ struct HostListView: View {
         .sheet(isPresented: $showsSettings) {
             SettingsView()
         }
+    }
+
+    /// One connection row. Kept out of the list body so the type checker has one row's
+    /// worth of expression to solve, not the whole list's.
+    private func hostRow(_ host: Host) -> some View {
+        HostRow(host: host, onEdit: { editingHost = host }, onDelete: { delete(host) }) {
+            let session = container.sessionManager.open(host)
+            container.hostStore.markConnected(host)
+            // Selecting is this list's job in both layouts; `onOpen` only
+            // tells a stack-based layout to push. Leaving selection to the
+            // caller meant the iPad detail column never followed a newly
+            // opened session.
+            scene.selectedSessionID = session.id
+            onOpen(session)
+        }
+        .swipeActions(edge: .trailing) {
+            Button("Delete", systemImage: "trash", role: .destructive) { delete(host) }
+            Button("Edit", systemImage: "pencil") { editingHost = host }
+                .tint(DesignTokens.Color.info)
+        }
+    }
+
+    /// The Keychain items belong to the connection; leaving them behind would keep a
+    /// password or service token nothing can use.
+    private func delete(_ host: Host) {
+        try? container.vault.deletePassword(hostID: host.id)
+        try? container.vault.deleteServiceToken(hostID: host.id)
+        container.hostStore.remove(host)
     }
 
     private var filteredHosts: [Host] {
@@ -207,6 +219,9 @@ struct HostListView: View {
 private struct HostRow: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     let host: Host
+    let onEdit: () -> Void
+    let onDelete: () -> Void
+    /// Last, so the call site can pass it as the trailing closure.
     let open: () -> Void
 
     var body: some View {
@@ -235,9 +250,19 @@ private struct HostRow: View {
             }
         }
         .buttonStyle(.plain)
-        .accessibilityElement(children: .ignore)
+        // On the button itself, as the session rows do: attached outside, the button's own
+        // press handling swallowed the long press and the menu never appeared.
+        .contextMenu {
+            Button("Edit Connection", systemImage: "pencil", action: onEdit)
+            Button("Delete Connection", systemImage: "trash", role: .destructive, action: onDelete)
+        }
+        // `.combine`, not `.ignore`: with children ignored the button underneath is no
+        // longer the element hit-testing resolves to, and XCUITest treats the row as not
+        // hittable at all. The explicit label below still wins for VoiceOver.
+        .accessibilityElement(children: .combine)
         .accessibilityLabel("\(host.name), \(host.subtitle)")
         .accessibilityHint("Opens a terminal session")
+        .accessibilityIdentifier("host-row")
     }
 
     private var icon: some View {

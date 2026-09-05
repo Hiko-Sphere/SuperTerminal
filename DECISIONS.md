@@ -551,3 +551,20 @@ as invented values.
 notices to reach the user, so `THIRD_PARTY_NOTICES.md` is copied into the bundle and CI
 fails if the copy drifts from the repository file.
 
+## D-017 · Service tokens are a per-connection, per-device credential
+
+**They exist because the carrier already honoured them.** The Access carrier sent the
+`Cf-Access-Client-Id` / `Cf-Access-Client-Secret` headers and the vault reserved a Keychain
+service for them, but nothing above that layer could set one — dead storage that the
+Security table described as if it were live. Wiring the editor, the vault and the
+session's credential resolution made the table true rather than deleting the row.
+
+**Per device, on purpose.** A service token is long-lived machine access. It is written
+`WhenUnlockedThisDeviceOnly`, excluded from iCloud sync, and deleted with its connection —
+as is a saved password, which previously outlived the host it belonged to. A synced record
+that says "service token" produces a typed credential error naming what to do, not a
+silent fall-back to the browser login.
+
+**AutoFill is told to stay out.** iOS offered to save the service-token secret — and would
+the SSH password and key passphrases — into iCloud Keychain passwords, which sync. Every
+secure field opts out; the UI test asserts the system sheet never appears.

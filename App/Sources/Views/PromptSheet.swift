@@ -131,7 +131,9 @@ struct PromptSheet: View {
         Form {
             Section {
                 SecureField(title, text: $secret)
-                    .textContentType(.password)
+                    // Opts out of iOS Password AutoFill's "Save Password?" sheet, which would store
+                    // this secret in iCloud Keychain passwords — the one place the policy says it never goes.
+                    .textContentType(.oneTimeCode)
                     .autocorrectionDisabled()
                     .textInputAutocapitalization(.never)
                     .onSubmit {

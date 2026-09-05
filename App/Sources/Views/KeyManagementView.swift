@@ -296,6 +296,9 @@ struct ImportKeySheet: View {
                 if requiresPassphrase {
                     Section {
                         SecureField("Passphrase", text: $passphrase)
+                            // Opts out of iOS Password AutoFill's "Save Password?" sheet, which would store
+                            // this secret in iCloud Keychain passwords — the one place the policy says it never goes.
+                            .textContentType(.oneTimeCode)
                     } footer: {
                         Text("This key is encrypted. The passphrase is used once to unlock it and is not stored.")
                     }

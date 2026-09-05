@@ -14,6 +14,7 @@ code does to keep the policy true. If the two disagree, the code is wrong or thi
 | Key metadata (name, algorithm, public key, fingerprint, flags) | App container, complete file protection | Only through iCloud sync, if on |
 | SSH passwords | Keychain, `WhenUnlockedThisDeviceOnly` | No — never synced |
 | Cloudflare Access tokens | Keychain, `AfterFirstUnlockThisDeviceOnly` | Only back to Cloudflare, as the credential for your own connection. Never synced |
+| Cloudflare Access service tokens (only if entered for a connection) | Keychain, `WhenUnlockedThisDeviceOnly` | Only to Cloudflare, as that connection's credential. Never synced; deleted with the connection |
 | Known host keys | App container, complete file protection, excluded from backup | Only through iCloud sync, if on; a key that differs from a trusted one is held, not applied |
 | Snippets | App container, complete file protection | Only through iCloud sync, if on |
 | Terminal scrollback | Memory only | No |

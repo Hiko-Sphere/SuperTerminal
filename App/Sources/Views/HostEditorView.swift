@@ -17,6 +17,12 @@ struct HostEditorView: View {
     @State private var port = "22"
     @State private var username = ""
     @State private var usesCloudflare = false
+    @State private var accessAuthentication: Host.AccessAuthentication = .browserLogin
+    @State private var serviceTokenID = ""
+    @State private var serviceTokenSecret = ""
+    /// Whether a token is already in the Keychain for this connection, so the fields can
+    /// say "stored" instead of demanding it again.
+    @State private var hasStoredServiceToken = false
     @State private var jumpDestination = ""
     @State private var selectedKeyID: UUID?
     @State private var usesPassword = false
@@ -35,6 +41,7 @@ struct HostEditorView: View {
             if case let .cloudflare(destination) = host.transport {
                 _jumpDestination = State(initialValue: destination ?? "")
             }
+            _accessAuthentication = State(initialValue: host.accessAuthentication ?? .browserLogin)
             _selectedKeyID = State(initialValue: host.credentials.compactMap {
                 if case let .privateKey(id) = $0 { return id }
                 return nil
@@ -66,6 +73,26 @@ struct HostEditorView: View {
                         TextField("Bastion destination (optional)", text: $jumpDestination)
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled()
+                        Picker("Sign in with", selection: $accessAuthentication) {
+                            Text("Browser login").tag(Host.AccessAuthentication.browserLogin)
+                            Text("Service token").tag(Host.AccessAuthentication.serviceToken)
+                        }
+                        .pickerStyle(.menu)
+                        .accessibilityIdentifier("access-auth-picker")
+                        if accessAuthentication == .serviceToken {
+                            TextField(hasStoredServiceToken ? "Client ID (stored — enter to replace)" : "Client ID", text: $serviceTokenID)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
+                                // Also opted out: AutoFill pairs the text field before a secure field as a
+                                // username and then offers to save the "login".
+                                .textContentType(.oneTimeCode)
+                                .accessibilityIdentifier("service-token-id")
+                            SecureField(hasStoredServiceToken ? "Client secret (stored — enter to replace)" : "Client secret", text: $serviceTokenSecret)
+                                // Opts out of iOS Password AutoFill's "Save Password?" sheet, which would store
+                                // this secret in iCloud Keychain passwords — the one place the policy says it never goes.
+                                .textContentType(.oneTimeCode)
+                                .accessibilityIdentifier("service-token-secret")
+                        }
                     } else {
                         TextField("Port", text: $port)
                             .keyboardType(.numberPad)
@@ -73,9 +100,13 @@ struct HostEditorView: View {
                 } header: {
                     Text("Transport")
                 } footer: {
-                    Text(usesCloudflare
-                        ? "SuperTerminal signs in to Cloudflare Access in a system browser, then opens the tunnel itself. No cloudflared install is needed on this device."
-                        : "A direct SSH connection to the host and port above.")
+                    if !usesCloudflare {
+                        Text("A direct SSH connection to the host and port above.")
+                    } else if accessAuthentication == .serviceToken {
+                        Text("A service token signs in without a browser. Create one in Cloudflare Zero Trust → Access → Service Auth and allow it in the application's policy. It is kept in this device's Keychain, never synced, and deleted with the connection.")
+                    } else {
+                        Text("SuperTerminal signs in to Cloudflare Access in a system browser, then opens the tunnel itself. No cloudflared install is needed on this device.")
+                    }
                 }
 
                 Section {
@@ -88,6 +119,9 @@ struct HostEditorView: View {
                     Toggle("Offer a password", isOn: $usesPassword)
                     if usesPassword {
                         SecureField("Password (optional, saved to Keychain)", text: $savedPassword)
+                            // Opts out of iOS Password AutoFill's "Save Password?" sheet, which would store
+                            // this secret in iCloud Keychain passwords — the one place the policy says it never goes.
+                            .textContentType(.oneTimeCode)
                     }
                 } header: {
                     Text("Authentication")
@@ -111,6 +145,9 @@ struct HostEditorView: View {
                         }
                     }
                 }
+            }
+            .task {
+                if let existing { hasStoredServiceToken = container.vault.hasServiceToken(hostID: existing.id) }
             }
             .navigationTitle(existing == nil ? "New Connection" : "Edit Connection")
             .navigationBarTitleDisplayMode(.inline)
@@ -146,16 +183,34 @@ struct HostEditorView: View {
             terminalType: terminalType,
             environment: existing?.environment ?? [:],
             themeID: existing?.themeID,
-            lastConnected: existing?.lastConnected
+            lastConnected: existing?.lastConnected,
+            accessAuthentication: usesCloudflare ? accessAuthentication : nil
         )
     }
 
-    private var problems: [String] { draft.validationProblems }
+    private var problems: [String] { draft.validationProblems + editorProblems }
+
+    /// Problems the model cannot see because the secret never enters the model.
+    private var editorProblems: [String] {
+        guard usesCloudflare, accessAuthentication == .serviceToken else { return [] }
+        let typedBoth = !serviceTokenID.isEmpty && !serviceTokenSecret.isEmpty
+        let typedNeither = serviceTokenID.isEmpty && serviceTokenSecret.isEmpty
+        if typedBoth || (hasStoredServiceToken && typedNeither) { return [] }
+        return [String(localized: "Enter the service token's client ID and secret.")]
+    }
 
     private func save() {
         let host = draft
         if usesPassword, !savedPassword.isEmpty {
             try? container.vault.storePassword(savedPassword, hostID: host.id)
+        }
+        if host.usesServiceToken {
+            if !serviceTokenID.isEmpty, !serviceTokenSecret.isEmpty {
+                try? container.vault.storeServiceToken(clientID: serviceTokenID, secret: serviceTokenSecret, hostID: host.id)
+            }
+        } else if hasStoredServiceToken {
+            // No longer used by this connection; a credential nothing uses is only a risk.
+            try? container.vault.deleteServiceToken(hostID: host.id)
         }
         if existing == nil {
             container.hostStore.add(host)

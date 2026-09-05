@@ -5,7 +5,7 @@ This is what the app does with your keys, in plain words. It is not the Privacy 
 ## What the app does
 
 - Opens SSH sessions to servers you add, directly or through a Cloudflare Tunnel.
-- For tunnelled hosts, signs you in to Cloudflare Access in a system browser and uses the resulting token to open the tunnel on your behalf. The app never sees your Cloudflare password.
+- For tunnelled hosts, signs you in to Cloudflare Access in a system browser and uses the resulting token to open the tunnel on your behalf — or, if you gave the connection an Access service token, presents that instead, with no browser. The app never sees your Cloudflare password.
 - Stores your connections, keys, passwords, Access tokens, host keys and snippets on your device so you do not re-enter them.
 - Optionally syncs connections, snippets, host keys and the private keys you choose across your own devices through your own iCloud account. Passwords never sync.
 

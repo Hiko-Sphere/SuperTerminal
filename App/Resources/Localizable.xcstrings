@@ -273,6 +273,23 @@
         }
       }
     },
+    "A service token signs in without a browser. Create one in Cloudflare Zero Trust → Access → Service Auth and allow it in the application's policy. It is kept in this device's Keychain, never synced, and deleted with the connection.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务令牌无需浏览器即可登录。请在 Cloudflare Zero Trust → Access → Service Auth 中创建一个，并在该应用程序的策略中允许它。它保存在本设备的 Keychain 中，从不同步，并随连接一起删除。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服務權杖無需瀏覽器即可登入。請在 Cloudflare Zero Trust → Access → Service Auth 中建立一個，並在該應用程式的政策中允許它。它保存在本裝置的 Keychain 中，絕不同步，並隨連線一併刪除。"
+          }
+        }
+      }
+    },
     "Accept and continue": {
       "extractionState": "manual",
       "localizations": {
@@ -647,6 +664,23 @@
         }
       }
     },
+    "Browser login": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "浏览器登录"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "瀏覽器登入"
+          }
+        }
+      }
+    },
     "By continuing you accept the Terms of Use and confirm you have read the Privacy Policy and the User Notice. You may only connect to systems you are allowed to access.": {
       "extractionState": "manual",
       "localizations": {
@@ -847,6 +881,74 @@
           "stringUnit": {
             "state": "translated",
             "value": "複製的文字保留時間"
+          }
+        }
+      }
+    },
+    "Client ID": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "客户端 ID"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用戶端 ID"
+          }
+        }
+      }
+    },
+    "Client ID (stored — enter to replace)": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "客户端 ID（已存储 — 输入以替换）"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用戶端 ID（已儲存 — 輸入以取代）"
+          }
+        }
+      }
+    },
+    "Client secret": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "客户端密钥"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用戶端密鑰"
+          }
+        }
+      }
+    },
+    "Client secret (stored — enter to replace)": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "客户端密钥（已存储 — 输入以替换）"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用戶端密鑰（已儲存 — 輸入以取代）"
           }
         }
       }
@@ -1361,6 +1463,23 @@
         }
       }
     },
+    "Delete Connection": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除连接"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "刪除連線"
+          }
+        }
+      }
+    },
     "Delete all data": {
       "extractionState": "manual",
       "localizations": {
@@ -1667,6 +1786,23 @@
         }
       }
     },
+    "Edit the connection and enter the service token's client ID and secret. Service tokens stay on the device they were entered on.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请编辑该连接并输入服务令牌的客户端 ID 和密钥。服务令牌只保留在输入它的设备上。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請編輯該連線並輸入服務權杖的用戶端 ID 與密鑰。服務權杖只保留在輸入它的裝置上。"
+          }
+        }
+      }
+    },
     "End": {
       "extractionState": "manual",
       "localizations": {
@@ -1731,6 +1867,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "請輸入使用者名稱。"
+          }
+        }
+      }
+    },
+    "Enter the service token's client ID and secret.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请输入服务令牌的客户端 ID 和密钥。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請輸入服務權杖的用戶端 ID 與密鑰。"
           }
         }
       }
@@ -4336,6 +4489,23 @@
         }
       }
     },
+    "Service token": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务令牌"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服務權杖"
+          }
+        }
+      }
+    },
     "Session": {
       "extractionState": "manual",
       "localizations": {
@@ -4468,6 +4638,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "在此顯示"
+          }
+        }
+      }
+    },
+    "Sign in with": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "登录方式"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "登入方式"
           }
         }
       }
@@ -5148,6 +5335,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "沒有帳號、沒有伺服器、沒有分析，也沒有當機回報器。流量只會傳送至您所連線的伺服器，以及（對於經隧道連線的主機）代表您傳送至 Cloudflare。"
+          }
+        }
+      }
+    },
+    "This connection is set to use a Cloudflare Access service token, but none is stored on this device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此连接设置为使用 Cloudflare Access 服务令牌，但本设备上未存储任何令牌。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此連線設定為使用 Cloudflare Access 服務權杖，但本裝置上未儲存任何權杖。"
           }
         }
       }

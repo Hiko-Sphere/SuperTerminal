@@ -102,7 +102,11 @@ the user chose iCloud Keychain for that key when creating or importing it, in wh
 it is written `WhenUnlocked` with `kSecAttrSynchronizable` (D-015). Apple forbids access
 control on synchronisable items, so `CredentialVault` refuses the combination of iCloud
 and biometrics with a typed error rather than dropping one silently. Queries use
-`kSecAttrSynchronizableAny`, so "Delete all data" and the key list see both kinds. Biometric
+`kSecAttrSynchronizableAny`, so "Delete all data" and the key list see both kinds. Every
+secure field in the app opts out of iOS Password AutoFill's "Save Password?" prompt
+(`textContentType(.oneTimeCode)`): AutoFill would otherwise offer to keep an SSH password,
+a key passphrase or an Access service token in iCloud Keychain *passwords*, which sync —
+found by a UI test that could not reach the row behind the system sheet. Biometric
 items use `.biometryCurrentSet`, which invalidates the item if a new face or finger is
 enrolled — so an attacker who learns the passcode still cannot enrol a biometric and
 read the key. Writes delete-then-add rather than update, so changing an item's

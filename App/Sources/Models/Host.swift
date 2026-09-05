@@ -25,6 +25,12 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
     public var environment: [String: String]
     public var themeID: String?
     public var lastConnected: Date?
+    /// Only meaningful for a Cloudflare transport. The service token itself lives in the
+    /// Keychain of the device it was entered on and never syncs; a synced record that
+    /// says `.serviceToken` asks for the token again on the other device.
+    public var accessAuthentication: AccessAuthentication?
+
+    public var usesServiceToken: Bool { accessAuthentication == .serviceToken }
     /// When this record last changed, on any device. Drives last-writer-wins in sync.
     ///
     /// Optional on purpose: files written before sync existed have no such field, and a
@@ -45,6 +51,13 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
             if case .cloudflare = self { return true }
             return false
         }
+    }
+
+    /// How a tunnelled connection authenticates to Cloudflare Access. `nil` on records
+    /// written before this existed, meaning the browser login.
+    public enum AccessAuthentication: String, Sendable, Codable, Equatable {
+        case browserLogin
+        case serviceToken
     }
 
     public enum CredentialReference: Sendable, Codable, Equatable, Hashable {
@@ -69,7 +82,8 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
         terminalType: String = "xterm-256color",
         environment: [String: String] = [:],
         themeID: String? = nil,
-        lastConnected: Date? = nil
+        lastConnected: Date? = nil,
+        accessAuthentication: AccessAuthentication? = nil
     ) {
         self.id = id
         self.name = name
@@ -84,6 +98,7 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
         self.environment = environment
         self.themeID = themeID
         self.lastConnected = lastConnected
+        self.accessAuthentication = accessAuthentication
     }
 
     /// The identity host keys are remembered against.

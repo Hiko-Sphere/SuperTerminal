@@ -120,6 +120,11 @@ remembered per destination, so two servers behind one bastion do not share an en
 
 ## Service tokens, for automation
 
+**In the app:** edit a tunnelled connection, set *Sign in with* to *Service token* and enter
+the client ID and secret. They are stored in that device's Keychain only — never synced —
+and deleted with the connection. A connection whose record arrived by iCloud sync asks
+for the token again rather than failing silently.
+
 A service token authenticates without a browser, which is what makes the app's live test
 suite runnable in CI.
 
