@@ -127,6 +127,34 @@ final class TerminalRenderView: UIView {
         return TerminalPosition(row: absoluteRow(forDisplayRow: displayRow), column: column)
     }
 
+    /// The on-screen rectangle covering a selection, for a drag preview.
+    ///
+    /// Clipped to what is visible: a selection can reach far back into the scrollback,
+    /// and a preview the height of the whole buffer is not a preview.
+    func boundingRect(of range: TerminalRange) -> CGRect {
+        guard let screen else { return .null }
+        let normalised = range.normalised
+        let firstVisible = screen.scrollback.count - min(scrollbackOffset, screen.scrollback.count)
+        let topRow = max(normalised.start.row - firstVisible, 0)
+        let bottomRow = min(normalised.end.row - firstVisible, screen.rows - 1)
+        guard topRow <= bottomRow else { return .null }
+
+        let spansOneRow = normalised.start.row == normalised.end.row
+        let leftColumn = spansOneRow || normalised.isBlock
+            ? min(normalised.start.column, normalised.end.column)
+            : 0
+        let rightColumn = spansOneRow || normalised.isBlock
+            ? max(normalised.start.column, normalised.end.column)
+            : max(screen.columns - 1, 0)
+
+        return CGRect(
+            x: CGFloat(leftColumn) * metrics.cellWidth,
+            y: CGFloat(topRow) * metrics.cellHeight,
+            width: CGFloat(rightColumn - leftColumn + 1) * metrics.cellWidth,
+            height: CGFloat(bottomRow - topRow + 1) * metrics.cellHeight
+        ).intersection(bounds)
+    }
+
     /// The absolute index of a visible row, taking the scrollback offset into account.
     func absoluteRow(forDisplayRow displayRow: Int) -> Int {
         guard let screen else { return displayRow }

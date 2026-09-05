@@ -8,18 +8,29 @@ struct TerminalScreenView: UIViewRepresentable {
     let fontSize: CGFloat
     let blinkCursor: Bool
     let confirmMultilinePaste: Bool
+    /// Called when a pinch asks for a different font size, so it can be persisted.
+    let onFontSizeChange: (CGFloat) -> Void
 
     func makeUIView(context: Context) -> TerminalInputView {
         let view = TerminalInputView()
         view.renderView.theme = theme
         view.renderView.fontSize = fontSize
-        context.coordinator.attach(to: view, session: session, confirmMultilinePaste: confirmMultilinePaste)
+        context.coordinator.attach(
+            to: view,
+            session: session,
+            confirmMultilinePaste: confirmMultilinePaste,
+            onFontSizeChange: onFontSizeChange
+        )
         return view
     }
 
     func updateUIView(_ view: TerminalInputView, context: Context) {
         view.renderView.theme = theme
+        let fontChanged = view.renderView.fontSize != fontSize
         view.renderView.fontSize = fontSize
+        // A different font means a different number of cells in the same bounds, and the
+        // remote program has to be told before it draws anything else.
+        if fontChanged { view.reportGridSizeIfChanged() }
         view.renderView.update(screen: session.screen)
         view.renderView.scrollbackOffset = session.scrollbackOffset
         view.renderView.selection = session.selection
@@ -39,7 +50,12 @@ struct TerminalScreenView: UIViewRepresentable {
 
     @MainActor
     final class Coordinator {
-        func attach(to view: TerminalInputView, session: TerminalSession, confirmMultilinePaste: Bool) {
+        func attach(
+            to view: TerminalInputView,
+            session: TerminalSession,
+            confirmMultilinePaste: Bool,
+            onFontSizeChange: @escaping (CGFloat) -> Void
+        ) {
             view.onInput = { data in
                 Task { @MainActor in
                     session.noteTypedInput(data)
@@ -53,6 +69,9 @@ struct TerminalScreenView: UIViewRepresentable {
             }
             view.onScroll = { rows in
                 Task { @MainActor in session.scrollBack(by: rows) }
+            }
+            view.onFontSizeChange = { size in
+                Task { @MainActor in onFontSizeChange(size) }
             }
             view.onGridSizeChange = { columns, rows in
                 Task { @MainActor in await session.resize(columns: columns, rows: rows) }

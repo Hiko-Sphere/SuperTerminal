@@ -115,7 +115,13 @@ struct TerminalView: View {
                     theme: theme,
                     fontSize: container.settings.fontSize,
                     blinkCursor: container.settings.cursorBlink,
-                    confirmMultilinePaste: container.settings.confirmMultilinePaste
+                    confirmMultilinePaste: container.settings.confirmMultilinePaste,
+                    onFontSizeChange: { size in
+                        // Persisted, because a size chosen by pinching is a preference —
+                        // having it snap back on the next session would make the gesture
+                        // feel broken rather than temporary.
+                        container.settings.fontSize = Double(size)
+                    }
                 )
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("Terminal for \(session.host.name)")

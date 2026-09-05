@@ -22,6 +22,8 @@ final class TerminalInputView: UIView, UIKeyInput {
     var onMouseEvent: ((TerminalMouseEvent) -> Void)?
     /// Called when the user taps a cell carrying an OSC 8 hyperlink.
     var onHyperlinkTapped: ((TerminalPosition) -> Void)?
+    /// Called when a pinch changes the requested font size, in points.
+    var onFontSizeChange: ((CGFloat) -> Void)?
     /// Supplies the current screen so gestures can resolve positions and extract text.
     var currentScreen: (() -> TerminalScreen?)?
 
@@ -53,6 +55,7 @@ final class TerminalInputView: UIView, UIKeyInput {
         isUserInteractionEnabled = true
         installGestures()
         installPointerTracking()
+        installDragAndDrop()
     }
 
     @available(*, unavailable)
@@ -97,6 +100,16 @@ final class TerminalInputView: UIView, UIKeyInput {
 
     override func layoutSubviews() {
         super.layoutSubviews()
+        reportGridSizeIfChanged()
+    }
+
+    /// Re-measures the grid and tells the session if it changed.
+    ///
+    /// Called on layout *and* whenever the font changes: a pinch changes the size of a
+    /// cell without changing the view's bounds, so `layoutSubviews` never runs and the
+    /// remote program would go on believing it has the old number of columns. Every line
+    /// it wraps would then wrap in the wrong place.
+    func reportGridSizeIfChanged() {
         let grid = renderView.gridSize(for: bounds.size)
         guard grid.columns != lastReportedGrid.columns || grid.rows != lastReportedGrid.rows else { return }
         lastReportedGrid = grid
@@ -317,6 +330,22 @@ final class TerminalInputView: UIView, UIKeyInput {
     @objc private func scrollPageUp() { onScroll?(max(1, lastReportedGrid.rows - 2)) }
     @objc private func scrollPageDown() { onScroll?(-max(1, lastReportedGrid.rows - 2)) }
 
+    // MARK: - Drag and drop
+
+    /// Text can be dragged out of a selection, and dropped in from anywhere.
+    ///
+    /// On iPad this is how text moves between apps, and a terminal that does not take part
+    /// is a terminal you have to copy and paste through. Both directions are wired to the
+    /// same paths the existing gestures use, so a drop is a paste and a drag is a copy —
+    /// including the confirmation a multi-line paste triggers. A drop that bypassed that
+    /// would be a way to run several commands at once with one gesture and no warning.
+    private func installDragAndDrop() {
+        let drag = UIDragInteraction(delegate: self)
+        drag.isEnabled = true
+        addInteraction(drag)
+        addInteraction(UIDropInteraction(delegate: self))
+    }
+
     // MARK: - Gestures
 
     private func installGestures() {
@@ -338,6 +367,12 @@ final class TerminalInputView: UIView, UIKeyInput {
         pan.minimumNumberOfTouches = 2
         pan.maximumNumberOfTouches = 2
         addGestureRecognizer(pan)
+
+        // Pinch resizes the text, which on a phone is the difference between reading a
+        // log and squinting at one. The grid is re-measured from the new metrics, so the
+        // remote program is told the new geometry rather than being left to guess.
+        let pinch = UIPinchGestureRecognizer(target: self, action: #selector(handlePinch(_:)))
+        addGestureRecognizer(pinch)
 
         let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress))
         longPress.minimumPressDuration = 0.35
@@ -410,6 +445,32 @@ final class TerminalInputView: UIView, UIKeyInput {
     }
 
     /// The selected text, ready for the pasteboard.
+    private var fontSizeAtPinchStart: CGFloat?
+
+    @objc private func handlePinch(_ recognizer: UIPinchGestureRecognizer) {
+        switch recognizer.state {
+        case .began:
+            fontSizeAtPinchStart = renderView.fontSize
+        case .changed:
+            guard let start = fontSizeAtPinchStart else { return }
+            let proposed = start * recognizer.scale
+            let clamped = min(max(proposed, Self.fontSizeRange.lowerBound), Self.fontSizeRange.upperBound)
+            // Rounded to whole points: the grid is measured in character cells, and a
+            // fractional size makes every cell boundary land somewhere different.
+            onFontSizeChange?(clamped.rounded())
+        case .ended, .cancelled, .failed:
+            fontSizeAtPinchStart = nil
+        default:
+            break
+        }
+    }
+
+    /// Taken from the setting rather than declared again: the pinch and the stepper in
+    /// Settings must not disagree about what sizes are allowed.
+    static var fontSizeRange: ClosedRange<CGFloat> {
+        CGFloat(AppSettings.fontSizeRange.lowerBound) ... CGFloat(AppSettings.fontSizeRange.upperBound)
+    }
+
     func selectedText() -> String? {
         guard let selection = renderView.selection, let screen = currentScreen?() else { return nil }
         let text = screen.text(in: selection)
@@ -548,6 +609,77 @@ enum AccessoryKey: String, CaseIterable, Identifiable {
         case .end: "End"
         case .pageUp: "Page up"
         case .pageDown: "Page down"
+        }
+    }
+}
+
+
+// MARK: - Dragging text out
+
+extension TerminalInputView: UIDragInteractionDelegate {
+    func dragInteraction(
+        _ interaction: UIDragInteraction,
+        itemsForBeginning session: any UIDragSession
+    ) -> [UIDragItem] {
+        // Only a selection is draggable. Without this, any press-and-move on the grid
+        // would start a drag and there would be no way to select anything at all.
+        guard let text = selectedText(), !text.isEmpty else { return [] }
+        guard let selection = renderView.selection else { return [] }
+        let point = session.location(in: self)
+        guard let position = renderView.position(at: point), selection.contains(position) else { return [] }
+
+        let provider = NSItemProvider(object: text as NSString)
+        return [UIDragItem(itemProvider: provider)]
+    }
+
+    func dragInteraction(
+        _ interaction: UIDragInteraction,
+        previewForLifting item: UIDragItem,
+        session: any UIDragSession
+    ) -> UITargetedDragPreview? {
+        guard let selection = renderView.selection else { return nil }
+        let rect = renderView.boundingRect(of: selection)
+        guard !rect.isNull, !rect.isEmpty else { return nil }
+
+        // A snapshot of the selected cells, so what lifts off the screen is the text the
+        // user is moving rather than an opaque rectangle.
+        let renderer = UIGraphicsImageRenderer(bounds: rect)
+        let image = renderer.image { context in
+            context.cgContext.translateBy(x: -rect.minX, y: -rect.minY)
+            renderView.draw(renderView.bounds)
+        }
+        let preview = UIImageView(image: image)
+        preview.frame = CGRect(origin: .zero, size: rect.size)
+        let target = UIDragPreviewTarget(container: self, center: CGPoint(x: rect.midX, y: rect.midY))
+        return UITargetedDragPreview(view: preview, parameters: UIDragPreviewParameters(), target: target)
+    }
+}
+
+// MARK: - Dropping text in
+
+extension TerminalInputView: UIDropInteractionDelegate {
+    func dropInteraction(_ interaction: UIDropInteraction, canHandle session: any UIDropSession) -> Bool {
+        session.canLoadObjects(ofClass: NSString.self)
+    }
+
+    func dropInteraction(
+        _ interaction: UIDropInteraction,
+        sessionDidUpdate session: any UIDropSession
+    ) -> UIDropProposal {
+        // Copy, never move: text dragged from another app should still be there
+        // afterwards, and there is nothing in a terminal for a move to remove.
+        UIDropProposal(operation: .copy)
+    }
+
+    func dropInteraction(_ interaction: UIDropInteraction, performDrop session: any UIDropSession) {
+        session.loadObjects(ofClass: NSString.self) { [weak self] items in
+            guard let self else { return }
+            let text = items.compactMap { $0 as? String }.joined()
+            guard !text.isEmpty else { return }
+            // The same path a paste takes, so a multi-line drop is confirmed exactly as a
+            // multi-line paste is. Dropping past that check would turn one gesture into
+            // several commands with no warning.
+            onPaste?(text)
         }
     }
 }

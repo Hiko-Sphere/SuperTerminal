@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 import NIOTransportServices
 import STSSH
 import STTerminal
@@ -107,4 +108,43 @@ struct SessionSearchTests {
 /// A shared event loop group for tests that construct sessions without connecting.
 enum SessionTestSupport {
     static let group = NIOTSEventLoopGroup(loopCount: 1)
+}
+
+/// Dropping text, and pinching to resize.
+///
+/// The drop tests are about one property: a drop is a paste. Text arriving by drag is
+/// indistinguishable from text arriving by paste once it reaches the shell, so it must go
+/// through the same confirmation — otherwise dragging a block of commands in runs all of
+/// them on one gesture with no warning, which is precisely what the paste confirmation
+/// exists to prevent.
+@Suite("Drop and pinch")
+@MainActor
+struct DropAndPinchTests {
+    @Test("A multi-line drop is confirmed, exactly as a multi-line paste is")
+    func multilineDropIsConfirmed() {
+        let dropped = "cd /var/log\nrm -rf old\n"
+        #expect(
+            PastePolicy.decide(text: dropped, confirmMultiline: true, bracketedPaste: false) == .confirm
+        )
+    }
+
+    @Test("A single-line drop goes straight in")
+    func singleLineDropIsSent() {
+        #expect(
+            PastePolicy.decide(text: "uptime", confirmMultiline: true, bracketedPaste: false) == .send
+        )
+    }
+
+    @Test("An empty drop does nothing")
+    func emptyDropIsIgnored() {
+        #expect(PastePolicy.decide(text: "", confirmMultiline: true, bracketedPaste: false) == .ignore)
+    }
+
+    @Test("Pinching cannot leave the terminal at a size the settings would refuse")
+    func pinchStaysWithinTheSettingsRange() {
+        // Two ranges that disagree would let a pinch reach a size the stepper in Settings
+        // then refuses to show or restore.
+        #expect(TerminalInputView.fontSizeRange.lowerBound == CGFloat(AppSettings.fontSizeRange.lowerBound))
+        #expect(TerminalInputView.fontSizeRange.upperBound == CGFloat(AppSettings.fontSizeRange.upperBound))
+    }
 }

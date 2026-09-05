@@ -45,6 +45,8 @@ This file is the resumable state of the work. It records what is *proven*, what 
 | **Key generation, import and export** | Generated keys are read by `ssh-keygen`, which agrees on the fingerprint, and both algorithms authenticate against a real `sshd` that trusts only the generated key. A UI test generates one through the interface. |
 | **Snippets insert without running** | A UI test creates a snippet through the editor, taps it, and asserts against a real shell that the text is on the line *and its output is not* — then presses Return and sees the output appear. The default that a snippet waits for Return is the safety property, so it is tested by observing the absence. |
 | **Command history is off until asked for** | A UI test runs a command, finds history empty and off, turns it on through Settings, runs another command, and sees exactly the second one — recorded as typed, with no prompt and no output, and with nothing resurrected from before the opt-in. Turning it off deletes the file, not just the list. |
+| **Pinch to resize, and the server is told** | A UI test pinches the live terminal and reads `stty size` from the shell before and after: the column count really drops. A font change alters the size of a cell without changing the view's bounds, so `layoutSubviews` never runs — without an explicit re-measure the remote program would go on wrapping to the old width |
+| **Text drags out and drops in** | `UIDragInteraction` lifts the current selection with a snapshot of the selected cells; a drop goes through the same path a paste does, so a multi-line drop is confirmed exactly as a multi-line paste is. A drop that skipped that would run several commands on one gesture with no warning |
 | **A dropped connection comes back on its own** | Six integration tests against a real `sshd`, with the traffic running through a relay whose sockets are closed underneath the session — a connection that really dies, not a state flag set by hand. Proves it notices, retries with backoff, comes back with the scrollback intact, gives a working shell, stops when told, retries at once when the network returns, spends no attempts while offline, and does **not** reconnect when the user types `exit` |
 | **A second window on iPad is a real second window** | A UI test opens a session in a new window and asserts the app's scene count *increases* — through a Debug-only probe, because a screenshot of the result looks identical whether a scene was created or the menu item did nothing. Selection is per window; a session is displayed by one window at a time so two windows cannot resize the remote program against each other |
 | **The iPad layout is tested, not assumed** | The whole UI suite runs on an iPad Pro as a CI gate. Adding that run found four defects the phone run could not see: a snippet row where only the text was tappable, an open-session row that would not select, no Control key at all on a full-screen iPad, and ⌘W listed in the menu with nothing behind it |
@@ -71,8 +73,8 @@ live connection to screenshot at that setting.
 
 ### Not started
 
-Drag-and-drop on iPad · Instruments profiling of the renderer · session restoration
-across launches · iCloud sync · SFTP · port forwarding · App Intents · Spotlight.
+Instruments profiling of the renderer · session restoration across launches · iCloud
+sync · SFTP · port forwarding · App Intents · Spotlight.
 
 ---
 

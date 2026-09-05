@@ -167,6 +167,56 @@ final class TerminalUITests: XCTestCase {
     }
 
     /// Find opens, searches the buffer, and reports how many matches it found.
+    func testPinchingResizesTheTerminalAndTellsTheServer() throws {
+        try openTerminal()
+
+        // The shell's own idea of the geometry, which is the only thing that matters:
+        // a font change the remote is not told about makes every wrapped line wrap in
+        // the wrong place.
+        app.typeText("stty size\n")
+        _ = waitForScreen(containing: "stty size")
+        guard let before = latestSttySize() else {
+            XCTFail("could not read the starting geometry: \(terminalValue())")
+            return
+        }
+
+        // Zoom in: larger text, so fewer columns fit.
+        terminal.pinch(withScale: 2.0, velocity: 3)
+
+        app.typeText("stty size\n")
+        var after: (rows: Int, columns: Int)?
+        let deadline = Date().addingTimeInterval(15)
+        while Date() < deadline {
+            if let latest = latestSttySize(), latest != before { after = latest; break }
+            usleep(250_000)
+        }
+
+        guard let after else {
+            XCTFail("the server was never told about the new size; it still reports \(before)")
+            return
+        }
+        XCTAssertLessThan(after.columns, before.columns, "zooming in should leave room for fewer columns")
+    }
+
+    /// The most recent `rows columns` pair printed by `stty size`.
+    private func latestSttySize() -> (rows: Int, columns: Int)? {
+        let lines = terminalValue().split(separator: "\n", omittingEmptySubsequences: true)
+        for line in lines.reversed() {
+            let parts = line.split(separator: " ").compactMap { Int($0) }
+            // Two bare numbers on a line, which the echoed command itself never is.
+            if parts.count == 2, line.trimmingCharacters(in: .whitespaces).allSatisfy({ $0.isNumber || $0 == " " }) {
+                return (parts[0], parts[1])
+            }
+        }
+        return nil
+    }
+
+    private func terminalValue() -> String { terminal.value as? String ?? "" }
+
+    private var terminal: XCUIElement {
+        app.otherElements.matching(NSPredicate(format: "label BEGINSWITH %@", "Terminal for")).firstMatch
+    }
+
     func testFindSearchesTheScrollback() throws {
         try openTerminal()
 
