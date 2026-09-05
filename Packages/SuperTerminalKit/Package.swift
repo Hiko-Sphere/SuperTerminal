@@ -3,6 +3,10 @@ import PackageDescription
 
 let package = Package(
     name: "SuperTerminalKit",
+    // Required before any target may ship localized resources. The error messages these
+    // modules produce are shown to the user verbatim, so they are translated here rather
+    // than re-worded in the app — the app would have to know every failure mode to do it.
+    defaultLocalization: "en",
     platforms: [
         .iOS(.v17),
         .macOS(.v14),

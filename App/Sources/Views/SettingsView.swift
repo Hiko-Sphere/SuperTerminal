@@ -4,8 +4,20 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(AppContainer.self) private var container
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openURL) private var openURL
     @State private var showsDiagnostics = false
     @State private var confirmingDeletion = false
+
+    /// The language iOS actually resolved for this app, in that language's own words.
+    ///
+    /// Read from the bundle rather than from `Locale.current`: the two differ whenever the
+    /// user has set a per-app language, and the bundle is the one that decided what is on
+    /// screen.
+    private var currentLanguageName: String {
+        let code = Bundle.main.preferredLocalizations.first ?? "en"
+        return Locale(identifier: code).localizedString(forIdentifier: code)?.capitalized(with: Locale(identifier: code))
+            ?? code
+    }
 
     var body: some View {
         @Bindable var settings = container.settings
@@ -71,6 +83,35 @@ struct SettingsView: View {
                     Text("Connection")
                 } footer: {
                     Text("When a connection drops, SuperTerminal retries on its own and as soon as the network comes back. Your scrollback is kept, and the new shell is marked in the terminal — it starts fresh, in the home directory, with nothing running.")
+                }
+
+                Section {
+                    Button {
+                        // iOS owns per-app language. An in-app override would have to
+                        // rebuild every view hierarchy to take effect, and would disagree
+                        // with what Settings.app reports — so this goes where the real
+                        // control lives rather than pretending to be it.
+                        if let url = URL(string: UIApplication.openSettingsURLString) {
+                            openURL(url)
+                        }
+                    } label: {
+                        HStack {
+                            Text("Language")
+                                .foregroundStyle(DesignTokens.Color.label)
+                            Spacer()
+                            Text(currentLanguageName)
+                                .foregroundStyle(DesignTokens.Color.labelSecondary)
+                            Image(systemName: "arrow.up.forward.app")
+                                .font(DesignTokens.Typography.caption)
+                                .foregroundStyle(DesignTokens.Color.labelTertiary)
+                        }
+                        .contentShape(Rectangle())
+                    }
+                    .accessibilityHint("Opens this app's language setting in Settings")
+                } header: {
+                    Text("Language")
+                } footer: {
+                    Text("SuperTerminal is available in English, Simplified Chinese and Traditional Chinese. Terminal output is never translated — it comes from the remote machine exactly as it was sent.")
                 }
 
                 Section("Commands") {
