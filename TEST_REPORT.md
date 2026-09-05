@@ -38,8 +38,10 @@ xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal \
   CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
 # ** BUILD SUCCEEDED ** — arm64 device build compiles
 
-./scripts/app-integration-e2e.sh   # 42 app tests on iPhone 17 Pro simulator, ** TEST SUCCEEDED **
-./scripts/ui-terminal-e2e.sh       # 13 UI tests driving the real interface, ** TEST SUCCEEDED **
+./scripts/app-integration-e2e.sh   # 53 app tests on iPhone 17 Pro simulator, ** TEST SUCCEEDED **
+./scripts/ui-terminal-e2e.sh       # 13 passed, 1 skipped on iPhone, ** TEST SUCCEEDED **
+./scripts/ui-terminal-e2e.sh "platform=iOS Simulator,name=iPad Pro 13-inch (M5)"
+                                   # 14 passed on iPad, ** TEST SUCCEEDED **
 
 cd Packages/swift-nio-ssh-rsa
 swift test           # Executed 347 tests, with 0 failures
@@ -174,7 +176,27 @@ machine, with the emulator attached.
 | A host key the app has not seen is refused until approved | The prompt machinery gates the connection, the fingerprint offered matches the server's real one, and refusing fails the session with `.hostKey` |
 | Host model (3 tests) | A Cloudflare host is recorded against port 443 rather than the origin's SSH port; validation reports every problem |
 
-### UI tests — 13 tests, driving the real interface
+### The iPad, run for real — the same suite on a regular-width device
+
+The whole UI suite now runs on an iPad Pro 13-inch as well as an iPhone, and is a CI gate
+rather than an occasional check. Doing this for the first time found four defects, none of
+which the phone run could have seen:
+
+| Defect | Why the phone run could not see it |
+| --- | --- |
+| A full-screen iPad had **no Control key at all** | The key row was shown when the size class was compact. An iPhone is always compact, so the row was always there; an iPad at full width never had it, and the software keyboard has no Control, Esc, Tab or arrows. There was no way to interrupt a running command. Now a persisted preference, on by default everywhere |
+| Most of a **snippet row was not tappable** | `.buttonStyle(.plain)` inside a `List` gives the button a hit area the size of its text. On a narrow phone row the text nearly fills the row, so a tap landed on it; on a wide iPad row the middle of the row is empty space |
+| An **open session could not be selected** from the sidebar | Same class of defect in the row above it, and invisible on a phone for the same reason. The detail column stayed on "No session" while the session sat there marked Connected |
+| **⌘W was listed and did nothing** | It posted a notification nothing listened for. It also would have been wrong once a second window existed: both commands broadcast, so ⌘N opened the new-connection sheet in every window at once. Commands now act on the focused window |
+
+Two further bugs were found and fixed in the multi-window work itself, before it could be
+claimed: a split view *reuses* the detail view when the selection changes, so `onAppear`
+never fired again and the newly selected session was never claimed; and tying the claim to
+the terminal view's lifetime at all was wrong, because presenting a sheet over the terminal
+released it and dismissing the sheet did not always take it back. Ownership now follows the
+window's selection, which cannot drift out of sync with what is on screen.
+
+### UI tests — 14 tests, driving the real interface
 
 `scripts/ui-terminal-e2e.sh` starts an `sshd`, seeds a connection through a Debug-only
 environment hook, and drives the app the way a person would.
@@ -193,6 +215,7 @@ environment hook, and drives the app the way a person would.
 | Every control on the host list is labelled | An unlabelled button reads out as "button" and is unusable without sight |
 | A snippet is typed into the terminal but not run | Created through the editor, tapped, and asserted against a real shell: the command text is on the line and its output is **not**, for three seconds. Pressing Return then produces the output. The absence is the assertion — a snippet that ran on tap would pass a test that only looked for the text |
 | History is empty until turned on, then records what was typed | A command run before opting in leaves history off and empty; the setting is turned on through Settings; a second command is then recorded as exactly the typed string — no prompt, no output — and the earlier command does not reappear |
+| A session opens in a second window (iPad) | The context menu's "Open in New Window" is used, and the app's connected-scene count is asserted to **increase**. It is read through a Debug-only probe because the result is otherwise unverifiable: a screenshot looks the same whether a scene was created or the action did nothing, and XCUITest drives one scene at a time. Skipped on iPhone, which does not offer multiple windows |
 
 Running these rather than reading the code found a layout defect immediately: at
 `AccessibilityXXXL` the server icon sat across the wrapped connection name, and the
@@ -231,6 +254,18 @@ The app was installed and launched on the iPhone 17 Pro and iPad Pro 13-inch (M5
 simulators and screenshotted. That found a real defect: on iPad the split view opened
 with the sidebar collapsed, so a fresh install showed "No session" and no visible way to
 add one. Fixed by starting at `.all` visibility.
+
+### Windows — 11 app tests
+
+| Area | What is asserted |
+| --- | --- |
+| Selection is per window | Two windows hold different selections and are distinguishable from each other |
+| Opening a session decides nothing about display | The manager owns the connection; which window shows it is the window's business |
+| Claiming transfers | A second window taking a session takes it from the first |
+| A departing window cannot revoke a live claim | SwiftUI can run the arriving window's appearance before the leaving one's disappearance; an unconditional release would leave the visible window owning nothing and reporting no size |
+| A new window takes an unclaimed session | Opening a second window must not empty the first; when everything is on screen already it opens empty |
+| Closing forgets the claim | Both for one session and for all of them |
+| The claim follows the selection | The case a split view creates by reusing one view for whichever session is selected |
 
 ### Snippets and command history — 24 app tests
 

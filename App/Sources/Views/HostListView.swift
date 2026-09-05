@@ -3,14 +3,17 @@ import SwiftUI
 /// The list of saved connections, with any open sessions surfaced alongside.
 struct HostListView: View {
     @Environment(AppContainer.self) private var container
+    @Environment(SceneState.self) private var scene
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.supportsMultipleWindows) private var supportsMultipleWindows
+    @Environment(\.openWindow) private var openWindow
 
     /// Called after a session is opened, so a stack-based layout can push to it.
     let onOpen: (TerminalSession) -> Void
 
     @State private var searchText = ""
     @State private var editingHost: Host?
-    @State private var isCreating = false
+
     @State private var showsSettings = false
 
     var body: some View {
@@ -19,15 +22,31 @@ struct HostListView: View {
                 Section("Open sessions") {
                     ForEach(container.sessionManager.sessions) { session in
                         Button {
-                            container.sessionManager.selectedSessionID = session.id
+                            scene.selectedSessionID = session.id
                             onOpen(session)
                         } label: {
+                            // The hit area goes on the label, not on the styled button:
+                            // that is what `HostRow` does and what makes a whole row
+                            // tappable rather than just the text inside it.
                             SessionRow(session: session)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
+                        .accessibilityIdentifier("open-session")
                             .tag(session.id)
                             .swipeActions {
                                 Button("Close", systemImage: "xmark", role: .destructive) {
+                                    container.sessionManager.close(session)
+                                }
+                            }
+                            .contextMenu {
+                                if supportsMultipleWindows {
+                                    Button("Open in New Window", systemImage: "macwindow.badge.plus") {
+                                        openWindow(value: session.id)
+                                    }
+                                }
+                                Button("Close Session", systemImage: "xmark", role: .destructive) {
                                     container.sessionManager.close(session)
                                 }
                             }
@@ -50,7 +69,7 @@ struct HostListView: View {
                         )
                     } actions: {
                         if container.hostStore.hosts.isEmpty {
-                            Button("Add Connection") { isCreating = true }
+                            Button("Add Connection") { scene.isCreatingConnection = true }
                         }
                     }
                 }
@@ -59,6 +78,11 @@ struct HostListView: View {
                     HostRow(host: host) {
                         let session = container.sessionManager.open(host)
                         container.hostStore.markConnected(host)
+                        // Selecting is this list's job in both layouts; `onOpen` only
+                        // tells a stack-based layout to push. Leaving selection to the
+                        // caller meant the iPad detail column never followed a newly
+                        // opened session.
+                        scene.selectedSessionID = session.id
                         onOpen(session)
                     }
                     .swipeActions(edge: .trailing) {
@@ -76,13 +100,13 @@ struct HostListView: View {
         .navigationTitle("SuperTerminal")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button("New Connection", systemImage: "plus") { isCreating = true }
+                Button("New Connection", systemImage: "plus") { scene.isCreatingConnection = true }
             }
             ToolbarItem(placement: .topBarLeading) {
                 Button("Settings", systemImage: "gearshape") { showsSettings = true }
             }
         }
-        .sheet(isPresented: $isCreating) {
+        .sheet(isPresented: creatingBinding) {
             HostEditorView(host: nil)
         }
         .sheet(item: $editingHost) { host in
@@ -90,9 +114,6 @@ struct HostListView: View {
         }
         .sheet(isPresented: $showsSettings) {
             SettingsView()
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .stNewConnectionRequested)) { _ in
-            isCreating = true
         }
     }
 
@@ -107,10 +128,17 @@ struct HostListView: View {
         }
     }
 
+    private var creatingBinding: Binding<Bool> {
+        Binding(
+            get: { scene.isCreatingConnection },
+            set: { scene.isCreatingConnection = $0 }
+        )
+    }
+
     private var selectionBinding: Binding<TerminalSession.ID?> {
         Binding(
-            get: { container.sessionManager.selectedSessionID },
-            set: { container.sessionManager.selectedSessionID = $0 }
+            get: { scene.selectedSessionID },
+            set: { scene.selectedSessionID = $0 }
         )
     }
 }

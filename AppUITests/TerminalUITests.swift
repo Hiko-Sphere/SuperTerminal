@@ -45,6 +45,7 @@ final class TerminalUITests: XCTestCase {
         ).firstMatch
         XCTAssertTrue(terminal.waitForExistence(timeout: 30), "the terminal screen should appear")
 
+        waitUntilConnected()
         // The terminal focuses itself when it appears, but tapping makes the test
         // independent of that timing rather than racing it.
         if terminal.isHittable { terminal.tap() }
@@ -52,6 +53,20 @@ final class TerminalUITests: XCTestCase {
             app.keyboards.element.waitForExistence(timeout: 10),
             "the keyboard should be up so the terminal can receive typing"
         )
+    }
+
+    /// Waits for the connecting overlay to go away.
+    ///
+    /// Input sent before the shell exists is dropped — deliberately, and the overlay says
+    /// so — but a test that types into a connecting session then proves nothing about
+    /// what it meant to prove.
+    private func waitUntilConnected(timeout: TimeInterval = 30) {
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            if !app.activityIndicators.firstMatch.exists { return }
+            usleep(200_000)
+        }
+        XCTFail("the session was still connecting after \(Int(timeout))s")
     }
 
     /// The terminal's accessibility value is the rendered screen text, so it doubles as
@@ -94,7 +109,11 @@ final class TerminalUITests: XCTestCase {
         // convenience.
         app.typeText("sleep 30\n")
         let control = app.buttons["Control"]
-        XCTAssertTrue(control.waitForExistence(timeout: 10), "the accessory row should offer Control")
+        XCTAssertTrue(
+            control.waitForExistence(timeout: 10),
+            "the accessory row should offer Control; buttons on screen: "
+                + app.buttons.allElementsBoundByIndex.map { $0.label }.joined(separator: " | ")
+        )
         control.tap()
         app.typeText("c")
 
@@ -381,14 +400,37 @@ final class SnippetUITests: XCTestCase {
     }
 
     private func openTerminal() throws {
-        let byName = app.buttons.containing(
-            NSPredicate(format: "label CONTAINS %@", "Local Test Server")
-        ).firstMatch
-        XCTAssertTrue(byName.waitForExistence(timeout: 10), "the seeded connection should be listed")
-        byName.tap()
+        // Prefer a session that is already running: opening a second connection to the
+        // same server just to type into it is neither what a person would do nor what
+        // this test is about, and on iPad it swaps the detail column mid-tap.
+        let running = app.buttons["open-session"].firstMatch
+        if running.exists, running.isHittable {
+            running.tap()
+        } else {
+            let byName = app.buttons.containing(
+                NSPredicate(format: "label CONTAINS %@", "Local Test Server")
+            ).firstMatch
+            XCTAssertTrue(byName.waitForExistence(timeout: 10), "the seeded connection should be listed")
+            byName.tap()
+        }
         XCTAssertTrue(terminal.waitForExistence(timeout: 30), "the terminal screen should appear")
+        waitUntilConnected()
         if terminal.isHittable { terminal.tap() }
         XCTAssertTrue(app.keyboards.element.waitForExistence(timeout: 10), "the keyboard should be up")
+    }
+
+    /// Waits for the connecting overlay to go away.
+    ///
+    /// Input sent before the shell exists is dropped — deliberately, and the overlay says
+    /// so — but a test that types into a connecting session then proves nothing about
+    /// what it meant to prove.
+    private func waitUntilConnected(timeout: TimeInterval = 30) {
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            if !app.activityIndicators.firstMatch.exists { return }
+            usleep(200_000)
+        }
+        XCTFail("the session was still connecting after \(Int(timeout))s")
     }
 
     @discardableResult
@@ -417,6 +459,14 @@ final class SnippetUITests: XCTestCase {
         let snippets = app.buttons["Snippets…"]
         XCTAssertTrue(snippets.waitForExistence(timeout: 5), "the session menu should offer snippets")
         snippets.tap()
+    }
+
+    /// Gets back to the connection list from a terminal, in either layout.
+    private func returnToHostList() {
+        let settings = app.buttons["Settings"]
+        if settings.exists, settings.isHittable { return }
+        let back = app.navigationBars.buttons.element(boundBy: 0)
+        if back.exists, back.isHittable { back.tap() }
     }
 
     /// Switches a settings toggle on and waits for it to take.
@@ -469,13 +519,25 @@ final class SnippetUITests: XCTestCase {
         app.typeText("printf 'SNIP_%s\\n' RAN")
         app.buttons["Save"].tap()
 
-        let saved = app.buttons.containing(NSPredicate(format: "label CONTAINS %@", "Marker")).firstMatch
+        // By identifier rather than by a label search: `containing` matches any ancestor
+        // with a matching descendant, and on iPad the first such ancestor was a container
+        // whose centre is not the row.
+        let saved = app.buttons["snippet-Marker"]
         XCTAssertTrue(saved.waitForExistence(timeout: 5), "the snippet should be listed")
-        saved.tap()
+        XCTAssertTrue(saved.isHittable, "the snippet row should be reachable")
+        // Same lesson as the settings toggle: XCUITest's plain `tap()` aims at the centre
+        // of the accessibility element, which for a composed SwiftUI row activates
+        // nothing on iPad.
+        saved.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
 
         // Inserted, so the text is on screen…
         let afterInsert = waitForScreen(containing: "printf", timeout: 10)
-        XCTAssertTrue(afterInsert.contains("SNIP_"), "the snippet text should be in the terminal: \(afterInsert)")
+        XCTAssertTrue(
+            afterInsert.contains("SNIP_"),
+            "the snippet text should be in the terminal: \(afterInsert); "
+                + "buttons: " + app.buttons.allElementsBoundByIndex.map { $0.label }.joined(separator: " | ")
+                + "; static texts: " + app.staticTexts.allElementsBoundByIndex.map { $0.label }.joined(separator: " | ")
+        )
         // …and not run, so its output is not. This is the whole point of the default.
         XCTAssertTrue(
             screenDoesNotContain("SNIP_RAN", within: 3),
@@ -491,7 +553,10 @@ final class SnippetUITests: XCTestCase {
         // Off by default: the feature is visible, but nothing has been kept.
         try openTerminal()
         app.typeText("printf 'BEFORE_%s\\n' OPTIN\n")
-        _ = waitForScreen(containing: "BEFORE_OPTIN")
+        XCTAssertTrue(
+            waitForScreen(containing: "BEFORE_OPTIN").contains("BEFORE_OPTIN"),
+            "the command must actually reach the shell, or the rest of this test proves nothing"
+        )
 
         openSnippets()
         app.segmentedControls.buttons["History"].tap()
@@ -501,8 +566,9 @@ final class SnippetUITests: XCTestCase {
         )
         app.buttons["Done"].tap()
 
-        // Turn it on through the interface, the way a user would.
-        app.navigationBars.buttons.element(boundBy: 0).tap()
+        // Turn it on through the interface, the way a user would. On a phone that means
+        // going back up the stack; on an iPad the sidebar is already beside the terminal.
+        returnToHostList()
         let settings = app.buttons["Settings"]
         XCTAssertTrue(settings.waitForExistence(timeout: 10), "the host list should offer settings")
         settings.tap()
@@ -511,7 +577,10 @@ final class SnippetUITests: XCTestCase {
 
         try openTerminal()
         app.typeText("printf 'AFTER_%s\\n' OPTIN\n")
-        _ = waitForScreen(containing: "AFTER_OPTIN")
+        XCTAssertTrue(
+            waitForScreen(containing: "AFTER_OPTIN").contains("AFTER_OPTIN"),
+            "the command must actually reach the shell before history can be expected to hold it"
+        )
 
         openSnippets()
         app.segmentedControls.buttons["History"].tap()
@@ -536,5 +605,87 @@ final class SnippetUITests: XCTestCase {
             app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "BEFORE_")).firstMatch.exists,
             "turning history on must not resurrect commands run before it was on"
         )
+    }
+}
+
+
+/// Opening a session in a second window on iPad.
+///
+/// Skips where multiple windows are not offered, which is every iPhone — so this runs
+/// only on the destination it is about.
+final class MultiWindowUITests: XCTestCase {
+    private var app: XCUIApplication!
+
+    override func setUpWithError() throws {
+        continueAfterFailure = false
+        let environment = ProcessInfo.processInfo.environment
+        try XCTSkipUnless(
+            environment["ST_UITEST_SEED"] == "1",
+            "run scripts/ui-terminal-e2e.sh to provide a server"
+        )
+        app = XCUIApplication()
+        for key in [
+            "ST_UITEST_SEED", "ST_UITEST_HOST", "ST_UITEST_PORT", "ST_UITEST_USER",
+            "ST_UITEST_KEY", "ST_UITEST_TRUST_HOST_KEYS", "ST_UITEST_NAME",
+        ] {
+            if let value = environment[key] { app.launchEnvironment[key] = value }
+        }
+        app.launch()
+    }
+
+    func testASessionCanBeOpenedInASecondWindow() throws {
+        let host = app.buttons.containing(
+            NSPredicate(format: "label CONTAINS %@", "Local Test Server")
+        ).firstMatch
+        XCTAssertTrue(host.waitForExistence(timeout: 10), "the seeded connection should be listed")
+        host.tap()
+
+        // On a phone opening a session pushes to it, so come back to the list before
+        // looking for the row. On iPad the list never went away.
+        let session = app.buttons["open-session"].firstMatch
+        if !session.waitForExistence(timeout: 15) {
+            let back = app.navigationBars.buttons.element(boundBy: 0)
+            if back.exists, back.isHittable { back.tap() }
+        }
+        XCTAssertTrue(session.waitForExistence(timeout: 15), "the session should be listed")
+
+        // Counted rather than assumed to be one: iPadOS restores the windows a previous
+        // run left behind, so the app may well start with two.
+        let probe = app.descendants(matching: .any).matching(identifier: "scene-count").firstMatch
+        XCTAssertTrue(probe.waitForExistence(timeout: 10), "the scene probe should be present in a seeded run")
+        let before = Int(probe.value as? String ?? "") ?? 0
+        XCTAssertGreaterThan(before, 0, "the app should report at least its own window")
+
+        session.press(forDuration: 1.0)
+        let openInNewWindow = app.buttons["Open in New Window"]
+        guard openInNewWindow.waitForExistence(timeout: 5) else {
+            throw XCTSkip("this device does not offer multiple windows")
+        }
+        openInNewWindow.tap()
+
+        // The window that opens shows the session it was given, and the app stays alive.
+        let terminal = app.otherElements.matching(
+            NSPredicate(format: "label BEGINSWITH %@", "Terminal for")
+        ).firstMatch
+        XCTAssertTrue(terminal.waitForExistence(timeout: 30), "the new window should show the session")
+        XCTAssertEqual(app.state, .runningForeground)
+
+        // The point of the feature: a *second* window exists. Without this the test would
+        // pass just as happily if the menu item did nothing at all.
+        var after = Int(probe.value as? String ?? "") ?? 0
+        for _ in 0 ..< 20 where after <= before {
+            usleep(250_000)
+            after = Int(probe.value as? String ?? "") ?? 0
+        }
+        XCTAssertGreaterThan(
+            after, before,
+            "opening in a new window should create another scene; without this the test "
+                + "would pass just as happily if the menu item did nothing at all"
+        )
+
+        let screenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        screenshot.name = "Second window showing the session"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
     }
 }

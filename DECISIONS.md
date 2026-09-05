@@ -289,3 +289,50 @@ Recorded here because they are the parts that are easy to get wrong:
 * `ssh-rsa` with SHA-1 is **not** implemented and will not be. OpenSSH disabled it by
   default in 8.8 because SHA-1 collisions are practical; supporting it would mean shipping
   a downgrade a server could ask for.
+
+
+## D-008 · A session is displayed by one window at a time
+
+**Decision.** Sessions are shared by the app, but exactly one window *displays* each one.
+The window holding the claim draws the grid and reports its geometry; another window that
+selects the same session takes the claim, and the first shows "Open in another window"
+with a way to take it back. Ownership follows the window's selection, not any view's
+lifetime.
+
+**Why.** A terminal's size is a property of the connection, not of a view: the remote
+program is told how many columns and rows it has, and `SIGWINCH` is a real event with real
+consequences for a full-screen program like `vim`. Two windows showing one session would
+each report their own geometry and resize the far end against each other for as long as
+both were open.
+
+Two alternatives were rejected. Letting both windows draw and having the last resize win
+produces a terminal that visibly fights itself, which is worse than a clear message.
+Refusing to select a session another window holds is simpler but strands a user who has
+lost track of which window has what — moving it is recoverable, refusing is not.
+
+**Why selection rather than view lifetime.** The first implementation claimed in
+`onAppear` and released in `onDisappear`. That looked equivalent and was not: presenting a
+sheet over the terminal made the view disappear, releasing the claim, and dismissing the
+sheet did not reliably bring it back — so the window told the user their session was open
+somewhere else when it was not. A split view also *reuses* the detail view when the
+selection changes, so `onAppear` never fired for the newly selected session. Deriving the
+claim from the window's selection cannot drift out of sync with what the window is showing.
+
+**Reversible.** Yes. Removing the claim map and letting every window draw every session is
+a small change; the resize fight is the reason not to.
+
+## D-009 · The on-screen key row is a preference, not a layout consequence
+
+**Decision.** The accessory key row is shown according to a persisted setting that defaults
+to on, on every device.
+
+**Why.** It was previously shown when the horizontal size class was compact. An iPhone is
+always compact so the row was always there, and a full-screen iPad never had it — leaving
+no way to send `^C`, Esc, Tab or the arrows, none of which the software keyboard offers. An
+iPad is as likely to be used without a hardware keyboard as a phone is.
+
+**Rejected: detecting the hardware keyboard.** `GCKeyboard.coalesced` is the documented way
+to ask, and hiding the row automatically when a Magic Keyboard is attached would be tidier.
+It was implemented and then removed: the simulator reports a keyboard whether or not one is
+connected, so the behaviour could not be verified here, and shipping automatic behaviour
+that cannot be tested is worse than a predictable setting a user changes once.

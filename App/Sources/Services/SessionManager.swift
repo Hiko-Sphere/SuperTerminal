@@ -13,7 +13,15 @@ import STSSH
 @MainActor
 final class SessionManager {
     private(set) var sessions: [TerminalSession] = []
-    var selectedSessionID: TerminalSession.ID?
+
+    /// Which window is currently displaying each session.
+    ///
+    /// A terminal's size is a property of the connection, not of a view: the remote
+    /// program is told how many columns and rows it has. Two windows showing the same
+    /// session would each report their own geometry and resize the far end against each
+    /// other, so exactly one window displays a session at a time and only that window
+    /// reports its size.
+    private(set) var displayOwners: [TerminalSession.ID: UUID] = [:]
 
     private let group: NIOTSEventLoopGroup
     private let vault: CredentialVault
@@ -37,9 +45,37 @@ final class SessionManager {
         self.diagnostics = diagnostics
     }
 
-    var selectedSession: TerminalSession? {
-        guard let selectedSessionID else { return nil }
-        return sessions.first { $0.id == selectedSessionID }
+    func session(withID id: TerminalSession.ID?) -> TerminalSession? {
+        guard let id else { return nil }
+        return sessions.first { $0.id == id }
+    }
+
+    // MARK: - Display ownership
+
+    func owner(ofSessionWithID id: TerminalSession.ID) -> UUID? { displayOwners[id] }
+
+    /// Gives a window the right to display a session, taking it from whichever window
+    /// held it. The previous holder notices and stops showing it.
+    func claimDisplay(ofSessionWithID id: TerminalSession.ID, by scene: UUID) {
+        displayOwners[id] = scene
+    }
+
+    /// The first session no window is displaying.
+    ///
+    /// What a newly opened window should show: picking the first session outright would
+    /// take it away from the window that is already showing it, which is a strange thing
+    /// for opening a *new* window to do.
+    func firstUnclaimedSession() -> TerminalSession? {
+        sessions.first { displayOwners[$0.id] == nil }
+    }
+
+    /// Gives up a claim, but only if this window still holds it.
+    ///
+    /// Windows appear and disappear in an order SwiftUI decides: a new window can claim
+    /// a session before the old one has finished going away. Checking the holder means a
+    /// departing window cannot revoke the claim of the window that just took over.
+    func releaseDisplay(ofSessionWithID id: TerminalSession.ID, by scene: UUID) {
+        if displayOwners[id] == scene { displayOwners[id] = nil }
     }
 
     @discardableResult
@@ -53,7 +89,6 @@ final class SessionManager {
             log: diagnostics.logger
         )
         sessions.append(session)
-        selectedSessionID = session.id
         Task { await session.connect() }
         return session
     }
@@ -61,9 +96,7 @@ final class SessionManager {
     func close(_ session: TerminalSession) {
         Task { await session.disconnect() }
         sessions.removeAll { $0.id == session.id }
-        if selectedSessionID == session.id {
-            selectedSessionID = sessions.last?.id
-        }
+        displayOwners[session.id] = nil
     }
 
     func closeAll() {
@@ -71,7 +104,7 @@ final class SessionManager {
             Task { await session.disconnect() }
         }
         sessions.removeAll()
-        selectedSessionID = nil
+        displayOwners.removeAll()
     }
 
     /// Sessions for a given host, so the host list can show what is already open.

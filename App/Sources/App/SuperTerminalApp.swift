@@ -10,13 +10,16 @@ struct SuperTerminalApp: App {
     @State private var container = AppContainer.live()
 
     var body: some Scene {
-        WindowGroup {
-            RootView()
+        // Taking a session id means "Open in New Window" can hand the new window
+        // something to show. Opened from the app icon the value is nil, which is the
+        // ordinary launch.
+        WindowGroup(for: TerminalSession.ID.self) { $sessionID in
+            RootView(initialSessionID: sessionID)
                 .environment(container)
                 .tint(DesignTokens.Color.accent)
         }
         // Multiple windows are how iPad multitasking works: Split View, Stage Manager
         // and a second window of the same app all need their own scene.
-        .commands { SuperTerminalCommands() }
+        .commands { SuperTerminalCommands(container: container) }
     }
 }

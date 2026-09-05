@@ -45,6 +45,8 @@ This file is the resumable state of the work. It records what is *proven*, what 
 | **Key generation, import and export** | Generated keys are read by `ssh-keygen`, which agrees on the fingerprint, and both algorithms authenticate against a real `sshd` that trusts only the generated key. A UI test generates one through the interface. |
 | **Snippets insert without running** | A UI test creates a snippet through the editor, taps it, and asserts against a real shell that the text is on the line *and its output is not* — then presses Return and sees the output appear. The default that a snippet waits for Return is the safety property, so it is tested by observing the absence. |
 | **Command history is off until asked for** | A UI test runs a command, finds history empty and off, turns it on through Settings, runs another command, and sees exactly the second one — recorded as typed, with no prompt and no output, and with nothing resurrected from before the opt-in. Turning it off deletes the file, not just the list. |
+| **A second window on iPad is a real second window** | A UI test opens a session in a new window and asserts the app's scene count *increases* — through a Debug-only probe, because a screenshot of the result looks identical whether a scene was created or the menu item did nothing. Selection is per window; a session is displayed by one window at a time so two windows cannot resize the remote program against each other |
+| **The iPad layout is tested, not assumed** | The whole UI suite runs on an iPad Pro as a CI gate. Adding that run found four defects the phone run could not see: a snippet row where only the text was tappable, an open-session row that would not select, no Control key at all on a full-screen iPad, and ⌘W listed in the menu with nothing behind it |
 | **Typed commands are reconstructed, not scraped** | 12 tests over the keystroke accounting: character-at-a-time, whole-line chunks, multi-line pastes, backspace, `^C`/`^D`/`^Z`/`^U`, and escape sequences. A line the remote line editor may have changed — history recall, cursor movement, tab completion — is dropped rather than guessed at. |
 
 ### Written, builds, not yet proven end to end
@@ -68,9 +70,8 @@ live connection to screenshot at that setting.
 
 ### Not started
 
-Multi-scene (`UISceneSession`) support · drag-and-drop on iPad · Instruments profiling of
-the renderer · session restoration and reconnection · iCloud sync · SFTP · port
-forwarding · App Intents · Spotlight.
+Drag-and-drop on iPad · Instruments profiling of the renderer · session restoration and
+reconnection · iCloud sync · SFTP · port forwarding · App Intents · Spotlight.
 
 ---
 

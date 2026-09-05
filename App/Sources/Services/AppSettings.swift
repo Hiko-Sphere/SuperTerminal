@@ -20,11 +20,12 @@ final class AppSettings {
         static let hideContentInAppSwitcher = "settings.hideContentInAppSwitcher"
         static let cursorBlink = "settings.cursorBlink"
         static let bellEnabled = "settings.bellEnabled"
+        static let keyRowVisible = "settings.keyRowVisible"
 
         static let all = [
             themeID, lightThemeID, followSystemAppearance, fontSize, scrollbackLimit,
             keepAwakeWhileConnected, commandHistoryEnabled, confirmMultilinePaste,
-            hideContentInAppSwitcher, cursorBlink, bellEnabled,
+            hideContentInAppSwitcher, cursorBlink, bellEnabled, keyRowVisible,
         ]
     }
 
@@ -49,6 +50,7 @@ final class AppSettings {
         hideContentInAppSwitcher = defaults.bool(forKey: Key.hideContentInAppSwitcher)
         cursorBlink = defaults.bool(forKey: Key.cursorBlink)
         bellEnabled = defaults.bool(forKey: Key.bellEnabled)
+        keyRowVisible = defaults.bool(forKey: Key.keyRowVisible)
     }
     #endif
 
@@ -69,6 +71,11 @@ final class AppSettings {
             Key.hideContentInAppSwitcher: true,
             Key.cursorBlink: true,
             Key.bellEnabled: true,
+            // On by default on every device. The software keyboard has no Control, Esc,
+            // Tab or arrows, so without this row there is no way to interrupt a running
+            // command — and an iPad is as likely to be used without a keyboard as an
+            // iPhone. Someone with a Magic Keyboard turns it off once.
+            Key.keyRowVisible: true,
         ])
         themeID = defaults.string(forKey: Key.themeID) ?? TerminalTheme.midnight.id
         lightThemeID = defaults.string(forKey: Key.lightThemeID) ?? TerminalTheme.daylight.id
@@ -81,6 +88,7 @@ final class AppSettings {
         hideContentInAppSwitcher = defaults.bool(forKey: Key.hideContentInAppSwitcher)
         cursorBlink = defaults.bool(forKey: Key.cursorBlink)
         bellEnabled = defaults.bool(forKey: Key.bellEnabled)
+        keyRowVisible = defaults.bool(forKey: Key.keyRowVisible)
     }
 
     var themeID: String { didSet { defaults.set(themeID, forKey: Key.themeID) } }
@@ -96,6 +104,10 @@ final class AppSettings {
     var scrollbackLimit: Int { didSet { defaults.set(scrollbackLimit, forKey: Key.scrollbackLimit) } }
     var keepAwakeWhileConnected: Bool {
         didSet { defaults.set(keepAwakeWhileConnected, forKey: Key.keepAwakeWhileConnected) }
+    }
+
+    var keyRowVisible: Bool {
+        didSet { defaults.set(keyRowVisible, forKey: Key.keyRowVisible) }
     }
 
     var commandHistoryEnabled: Bool {

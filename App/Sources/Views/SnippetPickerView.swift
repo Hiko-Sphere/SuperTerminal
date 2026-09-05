@@ -89,7 +89,14 @@ struct SnippetPickerView: View {
                             .lineLimit(2)
                     }
                 }
-                .buttonStyle(.plain)
+                // Deliberately the default button style rather than `.plain`: inside a
+                // `List` that is what makes the whole row tappable and highlight on
+                // press. With `.plain` the hit area is the text alone, so on a wide row
+                // most of what looks like a button is not one. The label sets its own
+                // colours, so nothing here reads as a blue link.
+                .contentShape(Rectangle())
+                .accessibilityElement(children: .combine)
+                .accessibilityIdentifier("snippet-\(snippet.name)")
                 .swipeActions(edge: .trailing) {
                     Button("Delete", systemImage: "trash", role: .destructive) {
                         container.snippetStore.remove(snippet)
@@ -134,7 +141,12 @@ struct SnippetPickerView: View {
                             .foregroundStyle(DesignTokens.Color.labelTertiary)
                     }
                 }
-                .buttonStyle(.plain)
+                // Deliberately the default button style rather than `.plain`: inside a
+                // `List` that is what makes the whole row tappable and highlight on
+                // press. With `.plain` the hit area is the text alone, so on a wide row
+                // most of what looks like a button is not one. The label sets its own
+                // colours, so nothing here reads as a blue link.
+                .contentShape(Rectangle())
             }
         }
     }
@@ -301,7 +313,12 @@ struct SnippetLibraryView: View {
                             .lineLimit(2)
                     }
                 }
-                .buttonStyle(.plain)
+                // Deliberately the default button style rather than `.plain`: inside a
+                // `List` that is what makes the whole row tappable and highlight on
+                // press. With `.plain` the hit area is the text alone, so on a wide row
+                // most of what looks like a button is not one. The label sets its own
+                // colours, so nothing here reads as a blue link.
+                .contentShape(Rectangle())
                 .swipeActions {
                     Button("Delete", systemImage: "trash", role: .destructive) {
                         container.snippetStore.remove(snippet)

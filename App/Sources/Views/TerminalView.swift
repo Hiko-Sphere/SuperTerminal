@@ -4,6 +4,7 @@ import SwiftUI
 /// A single terminal, with its connection state, prompts and accessory keys.
 struct TerminalView: View {
     @Environment(AppContainer.self) private var container
+    @Environment(SceneState.self) private var scene
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
@@ -11,7 +12,6 @@ struct TerminalView: View {
 
     let session: TerminalSession
 
-    @State private var showsControlRow = false
     @State private var isSearching = false
     @State private var showsSnippets = false
     @State private var searchQuery = ""
@@ -26,7 +26,49 @@ struct TerminalView: View {
         )
     }
 
+    /// The key row is a preference rather than per-session state: someone who turns it
+    /// off because they have a hardware keyboard means it for every session, and having
+    /// it come back on the next connection would be a bug they have to fix repeatedly.
+    private var keyRowBinding: Binding<Bool> {
+        Binding(
+            get: { container.settings.keyRowVisible },
+            set: { container.settings.keyRowVisible = $0 }
+        )
+    }
+
+    /// Whether this window is the one displaying the session.
+    ///
+    /// A session shown in two windows would be told two different sizes, and the remote
+    /// program would be resized back and forth between them. Only the window holding the
+    /// claim draws the grid and reports its geometry.
+    private var isDisplaying: Bool {
+        container.sessionManager.owner(ofSessionWithID: session.id) == scene.id
+    }
+
     var body: some View {
+        terminal
+    }
+
+    @ViewBuilder
+    private var terminal: some View {
+        if isDisplaying {
+            connectedTerminal
+        } else {
+            EmptyStateView(
+                title: "Open in another window",
+                message: "\(session.host.name) is showing in a different window. The connection is still running.",
+                systemImage: "macwindow.on.rectangle",
+                action: (
+                    title: "Show it here",
+                    perform: {
+                        container.sessionManager.claimDisplay(ofSessionWithID: session.id, by: scene.id)
+                    }
+                )
+            )
+        }
+    }
+
+    private var connectedTerminal: some View {
         ZStack {
             theme.background.swiftUIColor.ignoresSafeArea()
 
@@ -74,7 +116,10 @@ struct TerminalView: View {
                 // The accessory row is the only way to send Escape, Tab or Control on a
                 // phone. It sits above the keyboard rather than inside it so it is
                 // reachable whether or not a hardware keyboard is attached.
-                if horizontalSizeClass == .compact || showsControlRow {
+                // Shown unless the user has turned it off. The size class used to decide
+                // this, which left a full-screen iPad with no Control key at all — and an
+                // iPad is as likely to be used without a keyboard as a phone.
+                if container.settings.keyRowVisible {
                     AccessoryKeyRow(session: session, theme: theme)
                 }
             }
@@ -275,7 +320,7 @@ struct TerminalView: View {
                     isSearching = true
                 }
                 Divider()
-                Toggle("Show Key Row", isOn: $showsControlRow)
+                Toggle("Show Key Row", isOn: keyRowBinding)
             } label: {
                 Label("Session", systemImage: "ellipsis.circle")
             }

@@ -9,6 +9,16 @@ struct RootView: View {
     @Environment(AppContainer.self) private var container
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
+    /// This window's own state. Created here, so every window gets its own — which is
+    /// the whole point of opening a second one.
+    @State private var scene: SceneState
+
+    /// A session to show as soon as the window opens, set when the window was opened
+    /// from "Open in New Window" rather than from the app icon.
+    init(initialSessionID: TerminalSession.ID? = nil) {
+        _scene = State(initialValue: SceneState(selectedSessionID: initialSessionID))
+    }
+
     // `.automatic` collapses the sidebar in portrait, which on a fresh install leaves
     // the user staring at "No session" with no visible way to add one. The list is the
     // app's primary surface, so it starts visible and the user can hide it.
@@ -27,7 +37,54 @@ struct RootView: View {
                 regularLayout
             }
         }
-        .onAppear { container.sessionManager.selectedSessionID = container.sessionManager.sessions.first?.id }
+        .overlay(alignment: .topLeading) { sceneCountProbe }
+        .environment(scene)
+        // Tells the menu commands which window they are acting on.
+        .focusedSceneValue(\.sceneState, scene)
+        .onAppear {
+            // A window opened from the app icon shows whatever is already running, but
+            // must not steal a session another window is displaying.
+            if scene.selectedSessionID == nil {
+                scene.selectedSessionID = container.sessionManager.firstUnclaimedSession()?.id
+            }
+        }
+        // The claim follows the window's selection rather than a view's lifetime.
+        // Tying it to the terminal view's `onAppear`/`onDisappear` looked equivalent and
+        // was not: presenting a sheet over the terminal made the view disappear, which
+        // released the claim, and the sheet's dismissal did not always bring it back —
+        // leaving the window telling the user their session was open somewhere else.
+        .onChange(of: scene.selectedSessionID, initial: true) { previous, current in
+            if let previous {
+                container.sessionManager.releaseDisplay(ofSessionWithID: previous, by: scene.id)
+            }
+            if let current {
+                container.sessionManager.claimDisplay(ofSessionWithID: current, by: scene.id)
+            }
+        }
+        .onDisappear {
+            // The window itself is going away.
+            if let id = scene.selectedSessionID {
+                container.sessionManager.releaseDisplay(ofSessionWithID: id, by: scene.id)
+            }
+        }
+    }
+
+    /// Reports how many windows the app has, for automated runs only.
+    ///
+    /// "Open in New Window" is otherwise unverifiable: a screenshot of the result looks
+    /// the same whether a second scene was created or the action did nothing, and
+    /// XCUITest drives one scene at a time. Debug-only and only while seeded, so it
+    /// cannot exist in anything shipped.
+    @ViewBuilder
+    private var sceneCountProbe: some View {
+        #if DEBUG
+        if UITestSeeding.seedFromEnvironment != nil {
+            Color.clear
+                .frame(width: 1, height: 1)
+                .accessibilityIdentifier("scene-count")
+                .accessibilityValue("\(UIApplication.shared.connectedScenes.count)")
+        }
+        #endif
     }
 
     private var compactLayout: some View {
@@ -51,12 +108,12 @@ struct RootView: View {
 
     private var regularLayout: some View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
-            // In a split view the detail column follows the selection, so opening a
-            // session is all that is needed.
+            // In a split view the detail column follows the selection, so there is
+            // nothing to push.
             HostListView { _ in }
                 .navigationSplitViewColumnWidth(min: 260, ideal: 320, max: 420)
         } detail: {
-            if let session = container.sessionManager.selectedSession {
+            if let session = container.sessionManager.session(withID: scene.selectedSessionID) {
                 NavigationStack {
                     TerminalView(session: session)
                 }
@@ -103,24 +160,35 @@ struct EmptyStateView: View {
 
 /// Menu-bar and ⌘-hold shortcuts. Declaring them here is what makes them discoverable on
 /// iPad, where holding Command lists every shortcut the app offers.
+///
+/// Each command acts on the focused window rather than broadcasting. With two windows
+/// open, a broadcast ⌘N opened the sheet in both — including the one the user could not
+/// see — and ⌘W, which had no listener at all, did nothing anywhere.
 struct SuperTerminalCommands: Commands {
+    let container: AppContainer
+    @FocusedValue(\.sceneState) private var scene
+
     var body: some Commands {
         CommandGroup(after: .newItem) {
-            Button("New Connection…") {
-                NotificationCenter.default.post(name: .stNewConnectionRequested, object: nil)
-            }
-            .keyboardShortcut("n", modifiers: .command)
+            Button("New Connection…") { scene?.isCreatingConnection = true }
+                .keyboardShortcut("n", modifiers: .command)
+                .disabled(scene == nil)
         }
         CommandMenu("Session") {
             Button("Close Session") {
-                NotificationCenter.default.post(name: .stCloseSessionRequested, object: nil)
+                guard let session = displayedSession else { return }
+                container.sessionManager.close(session)
             }
             .keyboardShortcut("w", modifiers: .command)
+            // A shortcut that is listed but does nothing is worse than one that is not
+            // listed: the user concludes the app is broken rather than that the command
+            // does not apply.
+            .disabled(displayedSession == nil)
         }
     }
-}
 
-extension Notification.Name {
-    static let stNewConnectionRequested = Notification.Name("dev.superterminal.newConnection")
-    static let stCloseSessionRequested = Notification.Name("dev.superterminal.closeSession")
+    @MainActor
+    private var displayedSession: TerminalSession? {
+        container.sessionManager.session(withID: scene?.selectedSessionID)
+    }
 }

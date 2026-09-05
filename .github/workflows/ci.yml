@@ -15,6 +15,7 @@ env:
   # compiler under a green build.
   XCODE_VERSION: "26.6"
   SIMULATOR: "platform=iOS Simulator,name=iPhone 17 Pro"
+  IPAD_SIMULATOR: "platform=iOS Simulator,name=iPad Pro 13-inch (M5)"
 
 jobs:
   package:
@@ -92,12 +93,22 @@ jobs:
       - name: UI tests (real sshd, real interface)
         run: ./scripts/ui-terminal-e2e.sh "$SIMULATOR"
 
+      - name: UI tests on iPad
+        # The regular-width layout is a different app in the ways that matter. Running
+        # these on an iPad found four defects the phone run could not see, so it is a
+        # gate rather than an occasional check.
+        env:
+          ST_RESULT_BUNDLE: .build/ui-terminal-ipad.xcresult
+        run: ./scripts/ui-terminal-e2e.sh "$IPAD_SIMULATOR"
+
       - name: Upload UI test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ui-test-results
-          path: .build/ui-terminal.xcresult
+          path: |
+            .build/ui-terminal.xcresult
+            .build/ui-terminal-ipad.xcresult
           if-no-files-found: ignore
 
   hygiene:
