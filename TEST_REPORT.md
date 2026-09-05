@@ -182,7 +182,9 @@ within the same second as a push is still re-sent (the first version compared ag
 wall clock and was caught on the third sync). `AppSyncStoreTests` prove the adapter over
 the real `HostStore`, `SnippetStore` and `InMemoryKnownHostsStore`: stamping rules,
 tombstones on delete and their removal on resurrection, IPv6-safe known-host identities,
-and that the payload used for conflict detection is the key alone. One of these failed in
+that the payload used for conflict detection is the key alone, that a host key removed by
+hand becomes a tombstone rather than silently returning from the other device, and that a
+host trusted again after deletion wins over its own stale tombstone. One of these failed in
 one simulator clone and passed in the other until the test encoder was made canonical —
 recorded in D-015. `CloudKitMappingTests` cover the record ↔ `CKRecord` mapping.
 `KnownHostsRemoveAllTests` prove "Delete all data" forgets host keys on disk.

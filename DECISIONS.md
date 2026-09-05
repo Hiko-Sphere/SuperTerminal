@@ -568,3 +568,10 @@ silent fall-back to the browser login.
 **AutoFill is told to stay out.** iOS offered to save the service-token secret — and would
 the SSH password and key passphrases — into iCloud Keychain passwords, which sync. Every
 secure field opts out; the UI test asserts the system sheet never appears.
+
+**Known-host deletions are tombstoned too, and a re-trusted host wins.** Hosts and
+snippets record their tombstones inside their stores; the known-hosts store lives in the
+package and knows nothing about sync, so the Known hosts screen reports a deletion to the
+coordinator. When a host is trusted again after a deletion, the adapter forgets the
+tombstone rather than pushing a deletion alongside the live record — found by asking what
+"delete a host key on one device" should mean on the other, and answering with a test.

@@ -26,6 +26,40 @@ struct AppSyncStoreTests {
         Host(name: name, hostname: "example.invalid", username: "u", credentials: [.none])
     }
 
+    // MARK: Known-host deletions
+
+    @Test("Removing a trusted host key by hand produces a tombstone, not silence")
+    func knownHostDeletionIsATombstone() async throws {
+        let (_, _, known, tombstones, store, dir) = makeStores()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let identity = KnownHostIdentity(host: "gone.example", port: 22)
+        try await known.store(KnownHostEntry(identity: identity, key: SSHHostKey(algorithm: "ssh-ed25519", blob: Data(repeating: 1, count: 32)),
+                                             firstSeen: Date(timeIntervalSince1970: 1), lastSeen: Date(timeIntervalSince1970: 2)))
+        // What the Known hosts screen does, in order.
+        try await known.remove(identity)
+        tombstones.record(SyncKey(kind: .knownHost, id: AppSyncStore.knownHostID(identity)))
+        let records = await store.localRecords().filter { $0.kind == .knownHost }
+        #expect(records.count == 1)
+        #expect(records.first?.deleted == true)
+        #expect(records.first?.id == "gone.example:22")
+    }
+
+    @Test("A host trusted again after deletion wins over its own tombstone")
+    func retrustedHostForgetsItsTombstone() async throws {
+        let (_, _, known, tombstones, store, dir) = makeStores()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let identity = KnownHostIdentity(host: "back.example", port: 22)
+        let key = SyncKey(kind: .knownHost, id: AppSyncStore.knownHostID(identity))
+        tombstones.record(key)
+        // The next connection trusts the key again through the verifier's store call.
+        try await known.store(KnownHostEntry(identity: identity, key: SSHHostKey(algorithm: "ssh-ed25519", blob: Data(repeating: 2, count: 32)),
+                                             firstSeen: Date(timeIntervalSince1970: 5), lastSeen: Date(timeIntervalSince1970: 6)))
+        let records = await store.localRecords().filter { $0.kind == .knownHost }
+        #expect(records.count == 1)
+        #expect(records.first?.deleted == false)
+        #expect(!tombstones.all.contains { $0.key == key }, "the stale tombstone must be forgotten, not pushed")
+    }
+
     // MARK: Migration
 
     @Test("A host written before sync existed still decodes")

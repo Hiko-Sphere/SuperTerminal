@@ -2,6 +2,7 @@ import CloudKit
 import Foundation
 import Observation
 import STCore
+import STSSH
 
 /// Owns the iCloud switch.
 ///
@@ -62,6 +63,15 @@ final class SyncCoordinator {
 
     func syncNow() async {
         await engine?.sync()
+    }
+
+    /// A trusted host key removed by hand must stay removed on every device: without a
+    /// tombstone the other device's copy would come straight back on the next pull.
+    /// Hosts and snippets record theirs inside their stores; known hosts live in the
+    /// package store, which knows nothing about sync, so the screen reports it here.
+    func recordDeletion(ofKnownHost identity: KnownHostIdentity) {
+        tombstones.record(SyncKey(kind: .knownHost, id: AppSyncStore.knownHostID(identity)))
+        scheduleSync()
     }
 
     func handleForeground() {

@@ -121,7 +121,15 @@ final class AppSyncStore: SyncLocalStore {
                 }
             }
         }
+        // A tombstone for something that exists again — a host key deleted, then trusted
+        // again on the next connection — would push a deletion alongside the live record.
+        // The live record is the truth; the tombstone is forgotten.
+        let live = Set(records.map(\.key))
         for tombstone in tombstones.all {
+            if live.contains(tombstone.key) {
+                tombstones.forget(tombstone.key)
+                continue
+            }
             records.append(SyncRecord(kind: tombstone.key.kind, id: tombstone.key.id, payload: Data(),
                                       modifiedAt: tombstone.deletedAt, deleted: true))
         }

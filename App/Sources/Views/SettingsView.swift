@@ -259,6 +259,7 @@ struct KnownHostsView: View {
                     Button("Forget", systemImage: "trash", role: .destructive) {
                         Task {
                             try? await container.knownHosts.remove(entry.identity)
+                            container.sync.recordDeletion(ofKnownHost: entry.identity)
                             await load()
                         }
                     }
