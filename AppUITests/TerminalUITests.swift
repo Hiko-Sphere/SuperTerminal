@@ -683,6 +683,43 @@ final class MultiWindowUITests: XCTestCase {
         app.launch()
     }
 
+    func testSessionsFromLastTimeAreOfferedAfterARelaunch() throws {
+        let host = app.buttons.containing(
+            NSPredicate(format: "label CONTAINS %@", "Local Test Server")
+        ).firstMatch
+        XCTAssertTrue(host.waitForExistence(timeout: 10), "the seeded connection should be listed")
+        host.tap()
+
+        let terminal = app.otherElements.matching(
+            NSPredicate(format: "label BEGINSWITH %@", "Terminal for")
+        ).firstMatch
+        XCTAssertTrue(terminal.waitForExistence(timeout: 30), "the terminal should open")
+
+        // Killed rather than backgrounded: this is what the system does to an app it
+        // decides to reclaim, and the case the feature exists for.
+        app.terminate()
+        app.launch()
+
+        let reopen = app.buttons.containing(
+            NSPredicate(format: "label CONTAINS %@", "Reopen")
+        ).firstMatch
+        XCTAssertTrue(reopen.waitForExistence(timeout: 15), "the app should offer to reopen what was open")
+        // The offer says plainly that these are new sessions rather than the old ones.
+        XCTAssertTrue(
+            app.staticTexts.containing(
+                NSPredicate(format: "label CONTAINS %@", "nothing that was running has survived")
+            ).firstMatch.exists,
+            "the offer must not imply the old shells came back"
+        )
+
+        reopen.tap()
+        XCTAssertTrue(terminal.waitForExistence(timeout: 30), "tapping should reach a terminal")
+        XCTAssertFalse(
+            app.buttons.containing(NSPredicate(format: "label CONTAINS %@", "Reopen")).firstMatch.exists,
+            "the offer should not linger once it has been taken"
+        )
+    }
+
     func testASessionCanBeOpenedInASecondWindow() throws {
         let host = app.buttons.containing(
             NSPredicate(format: "label CONTAINS %@", "Local Test Server")

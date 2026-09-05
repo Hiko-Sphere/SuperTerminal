@@ -379,3 +379,30 @@ working directory, nothing running, none of the environment that was set — and
 that reconnects silently has handed the user a different machine state with no sign that
 anything changed. That is how someone runs a command in the place they did not mean to. The
 app's name is in the rule so the line can never be read as something the server said.
+
+
+## D-012 · Sessions are reopened, never "restored", and the scrollback is not kept
+
+**Decision.** After a relaunch the app offers to reopen the connections that were open, and
+says in the offer that these are new sessions. The scrollback is not written to disk.
+
+**Why "reopened".** A live SSH session cannot survive the process dying. The socket is
+gone, the shell is gone, and whatever was running went with it. An app that presented a
+fresh connection as a restored session would be making the same false claim that D-011
+guards against inside a running session — with the added risk that someone picks up where
+they think they left off, in a directory they are not in.
+
+**Why not the scrollback.** It is the same asset as command history: every command and
+everything the server printed back, including whatever was typed on a command line that
+should not have been. It is far larger than history and there is no bound on it that means
+anything. The app refuses to write command history to disk unless explicitly asked (T-11);
+writing the entire buffer instead would make that refusal meaningless.
+
+**Why an offer rather than reconnecting on launch.** Opening an SSH connection is not a
+local act. It creates login records, it can trigger MFA, and with a biometric-gated key it
+puts a Face ID prompt in front of someone who only opened the app to look something up.
+One tap is cheap; a connection nobody asked for is not.
+
+**Reversible.** Yes. Reconnecting automatically is a setting away, and keeping the
+scrollback would be a store much like the history one — with the same argument to have
+first.

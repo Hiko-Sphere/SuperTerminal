@@ -16,6 +16,7 @@ import STSSH
 final class AppContainer {
     let hostStore: HostStore
     let snippetStore: SnippetStore
+    let restoration: SessionRestorationStore
     let sessionManager: SessionManager
     let settings: AppSettings
     let reachability: NetworkReachability
@@ -26,6 +27,7 @@ final class AppContainer {
     private init(
         hostStore: HostStore,
         snippetStore: SnippetStore,
+        restoration: SessionRestorationStore,
         sessionManager: SessionManager,
         settings: AppSettings,
         reachability: NetworkReachability,
@@ -35,6 +37,7 @@ final class AppContainer {
     ) {
         self.hostStore = hostStore
         self.snippetStore = snippetStore
+        self.restoration = restoration
         self.sessionManager = sessionManager
         self.settings = settings
         self.reachability = reachability
@@ -53,16 +56,19 @@ final class AppContainer {
         )
         let settings = AppSettings()
         let reachability = NetworkReachability()
+        let restoration = SessionRestorationStore(directory: directory)
         let sessionManager = SessionManager(
             vault: vault,
             knownHosts: knownHosts,
             settings: settings,
             diagnostics: diagnostics,
-            reachability: reachability
+            reachability: reachability,
+            restoration: restoration
         )
         let container = AppContainer(
             hostStore: HostStore(directory: directory),
             snippetStore: SnippetStore(directory: directory, settings: settings),
+            restoration: restoration,
             sessionManager: sessionManager,
             settings: settings,
             reachability: reachability,

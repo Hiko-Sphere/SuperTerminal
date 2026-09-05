@@ -115,6 +115,7 @@ struct SettingsView: View {
                     container.sessionManager.closeAll()
                     container.hostStore.removeAll()
                     container.snippetStore.removeAll()
+                    container.restoration.clear()
                     try? container.vault.deleteEverything()
                 }
             } message: {

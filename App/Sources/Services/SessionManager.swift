@@ -30,13 +30,15 @@ final class SessionManager {
     private let diagnostics: DiagnosticsCentre
     /// Optional so a test can run without a live path monitor, or drive one by hand.
     private let reachability: NetworkReachability?
+    private let restoration: SessionRestorationStore?
 
     init(
         vault: CredentialVault,
         knownHosts: any KnownHostsStore,
         settings: AppSettings,
         diagnostics: DiagnosticsCentre,
-        reachability: NetworkReachability? = nil
+        reachability: NetworkReachability? = nil,
+        restoration: SessionRestorationStore? = nil
     ) {
         // One loop per core, shared by every session: each connection is mostly idle
         // waiting for a person to type, so a loop per session would be threads doing
@@ -47,6 +49,12 @@ final class SessionManager {
         self.settings = settings
         self.diagnostics = diagnostics
         self.reachability = reachability
+        self.restoration = restoration
+    }
+
+    /// Writes down what is open, so a relaunch can offer to reopen it.
+    private func rememberOpenSessions() {
+        restoration?.record(hosts: sessions.map { (id: $0.host.id, name: $0.host.name) })
     }
 
     func session(withID id: TerminalSession.ID?) -> TerminalSession? {
@@ -94,6 +102,7 @@ final class SessionManager {
             reachability: reachability
         )
         sessions.append(session)
+        rememberOpenSessions()
         Task { await session.connect() }
         return session
     }
@@ -102,6 +111,7 @@ final class SessionManager {
         Task { await session.disconnect() }
         sessions.removeAll { $0.id == session.id }
         displayOwners[session.id] = nil
+        rememberOpenSessions()
     }
 
     func closeAll() {
@@ -110,6 +120,7 @@ final class SessionManager {
         }
         sessions.removeAll()
         displayOwners.removeAll()
+        rememberOpenSessions()
     }
 
     /// Sessions for a given host, so the host list can show what is already open.

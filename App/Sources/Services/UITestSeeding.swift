@@ -29,9 +29,13 @@ enum UITestSeeding {
               let pem = environment["ST_UITEST_KEY"], !pem.isEmpty
         else { return nil }
 
-        let keyID = UUID()
+        // Stable across launches, so a relaunch sees the same connection rather than a
+        // new one that happens to point at the same server. Anything testing behaviour
+        // that spans a launch — reopening the sessions from last time — depends on it.
+        let keyID = UUID(uuidString: "00000000-0000-4000-A000-000000000001")!
         return Seed(
             host: Host(
+                id: UUID(uuidString: "00000000-0000-4000-A000-000000000002")!,
                 name: environment["ST_UITEST_NAME"] ?? "Test Server",
                 hostname: hostname,
                 port: port,

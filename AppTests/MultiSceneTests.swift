@@ -233,3 +233,83 @@ struct ReconnectionWordingTests {
         #expect(counting != exhausted)
     }
 }
+
+/// Reopening the connections that were open last time.
+@Suite("Session restoration")
+@MainActor
+struct SessionRestorationTests {
+    private func makeStore() -> (SessionRestorationStore, URL) {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("st-restore-\(UUID().uuidString)", isDirectory: true)
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        return (SessionRestorationStore(directory: directory), directory)
+    }
+
+    @Test("What was open is offered after a relaunch")
+    func openSessionsAreOffered() {
+        let (store, directory) = makeStore()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let web = UUID()
+
+        store.record(hosts: [(id: web, name: "web")])
+        // A fresh store is what a relaunch looks like.
+        let reopened = SessionRestorationStore(directory: directory)
+        #expect(reopened.pending.count == 1)
+        #expect(reopened.pending.first?.hostID == web)
+    }
+
+    @Test("Recording does not change what is currently being offered")
+    func recordingDoesNotDisturbTheOffer() {
+        let (store, directory) = makeStore()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        store.record(hosts: [(id: UUID(), name: "web")])
+
+        let relaunched = SessionRestorationStore(directory: directory)
+        #expect(relaunched.pending.count == 1)
+        // Opening something new during this run must not make the banner change under
+        // the user while they are looking at it.
+        relaunched.record(hosts: [(id: UUID(), name: "db"), (id: UUID(), name: "cache")])
+        #expect(relaunched.pending.count == 1, "the offer describes last time, not now")
+    }
+
+    @Test("Closing everything leaves nothing to reopen")
+    func closingEverythingClearsTheOffer() {
+        let (store, directory) = makeStore()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        store.record(hosts: [(id: UUID(), name: "web")])
+        store.record(hosts: [])
+
+        #expect(SessionRestorationStore(directory: directory).pending.isEmpty)
+    }
+
+    @Test("Clearing removes the file, not just the list")
+    func clearingRemovesTheFile() {
+        let (store, directory) = makeStore()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        store.record(hosts: [(id: UUID(), name: "web")])
+        let file = directory.appendingPathComponent("open_sessions.json")
+        #expect(FileManager.default.fileExists(atPath: file.path))
+
+        SessionRestorationStore(directory: directory).clear()
+        #expect(!FileManager.default.fileExists(atPath: file.path))
+    }
+
+    @Test("A stale list is not offered as where you left off")
+    func staleEntriesAreDropped() throws {
+        let (_, directory) = makeStore()
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let old = SessionRestorationStore.RestorableSession(
+            id: UUID(),
+            hostID: UUID(),
+            hostName: "web",
+            endedAt: Date().addingTimeInterval(-SessionRestorationStore.maximumAge - 60)
+        )
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        try encoder.encode([old]).write(to: directory.appendingPathComponent("open_sessions.json"))
+
+        // Two weeks later this is not "carry on where you were", it is clutter.
+        #expect(SessionRestorationStore(directory: directory).pending.isEmpty)
+    }
+}

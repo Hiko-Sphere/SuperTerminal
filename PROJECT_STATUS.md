@@ -45,6 +45,7 @@ This file is the resumable state of the work. It records what is *proven*, what 
 | **Key generation, import and export** | Generated keys are read by `ssh-keygen`, which agrees on the fingerprint, and both algorithms authenticate against a real `sshd` that trusts only the generated key. A UI test generates one through the interface. |
 | **Snippets insert without running** | A UI test creates a snippet through the editor, taps it, and asserts against a real shell that the text is on the line *and its output is not* — then presses Return and sees the output appear. The default that a snippet waits for Return is the safety property, so it is tested by observing the absence. |
 | **Command history is off until asked for** | A UI test runs a command, finds history empty and off, turns it on through Settings, runs another command, and sees exactly the second one — recorded as typed, with no prompt and no output, and with nothing resurrected from before the opt-in. Turning it off deletes the file, not just the list. |
+| **The connections from last time are offered back** | A UI test opens a session, *terminates* the app rather than backgrounding it, relaunches, and finds the offer — then taps it and reaches a terminal, with the offer gone afterwards. What is remembered is which machines were open, not the scrollback: the buffer is the same asset as command history but far larger, and writing it to disk would make the app's refusal to keep history meaningless |
 | **Pinch to resize, and the server is told** | A UI test pinches the live terminal and reads `stty size` from the shell before and after: the column count really drops. A font change alters the size of a cell without changing the view's bounds, so `layoutSubviews` never runs — without an explicit re-measure the remote program would go on wrapping to the old width |
 | **Text drags out and drops in** | `UIDragInteraction` lifts the current selection with a snapshot of the selected cells; a drop goes through the same path a paste does, so a multi-line drop is confirmed exactly as a multi-line paste is. A drop that skipped that would run several commands on one gesture with no warning |
 | **A dropped connection comes back on its own** | Six integration tests against a real `sshd`, with the traffic running through a relay whose sockets are closed underneath the session — a connection that really dies, not a state flag set by hand. Proves it notices, retries with backoff, comes back with the scrollback intact, gives a working shell, stops when told, retries at once when the network returns, spends no attempts while offline, and does **not** reconnect when the user types `exit` |
@@ -73,8 +74,8 @@ live connection to screenshot at that setting.
 
 ### Not started
 
-Instruments profiling of the renderer · session restoration across launches · iCloud
-sync · SFTP · port forwarding · App Intents · Spotlight.
+Instruments profiling of the renderer · iCloud sync · SFTP · port forwarding · App
+Intents · Spotlight.
 
 ---
 

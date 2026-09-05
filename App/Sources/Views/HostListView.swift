@@ -18,6 +18,41 @@ struct HostListView: View {
 
     var body: some View {
         List(selection: selectionBinding) {
+            if !resumable.isEmpty, container.sessionManager.sessions.isEmpty {
+                Section {
+                    Button {
+                        reopenPreviousSessions()
+                    } label: {
+                        HStack(spacing: DesignTokens.Spacing.md) {
+                            Image(systemName: "arrow.clockwise.circle.fill")
+                                .font(.title2)
+                                .foregroundStyle(DesignTokens.Color.accent)
+                            VStack(alignment: .leading, spacing: DesignTokens.Spacing.xxs) {
+                                Text(resumable.count == 1
+                                    ? "Reopen \(resumable[0].hostName)"
+                                    : "Reopen \(resumable.count) connections")
+                                    .font(DesignTokens.Typography.body)
+                                    .foregroundStyle(DesignTokens.Color.label)
+                                // Honest about what this does. The shells are gone; these
+                                // are new connections to the same machines.
+                                Text("From last time. These are new sessions — nothing that was running has survived.")
+                                    .font(DesignTokens.Typography.caption)
+                                    .foregroundStyle(DesignTokens.Color.labelSecondary)
+                            }
+                            Spacer(minLength: 0)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .swipeActions {
+                        Button("Dismiss", systemImage: "xmark", role: .destructive) {
+                            container.restoration.clear()
+                        }
+                    }
+                }
+            }
+
             if !container.sessionManager.sessions.isEmpty {
                 Section("Open sessions") {
                     ForEach(container.sessionManager.sessions) { session in
@@ -125,6 +160,32 @@ struct HostListView: View {
                 || $0.hostname.lowercased().contains(needle)
                 || $0.username.lowercased().contains(needle)
                 || $0.tags.contains { $0.lowercased().contains(needle) }
+        }
+    }
+
+    /// Connections from last time that still exist. A host deleted since then is not
+    /// offered, because reopening it is not something the app can do.
+    private var resumable: [SessionRestorationStore.RestorableSession] {
+        container.restoration.pending.filter { entry in
+            container.hostStore.hosts.contains { $0.id == entry.hostID }
+        }
+    }
+
+    private func reopenPreviousSessions() {
+        let entries = resumable
+        // Cleared first: if one of these fails to connect the offer should not reappear
+        // and invite the user to try the whole set again.
+        container.restoration.clear()
+        var first: TerminalSession?
+        for entry in entries {
+            guard let host = container.hostStore.hosts.first(where: { $0.id == entry.hostID }) else { continue }
+            let session = container.sessionManager.open(host)
+            container.hostStore.markConnected(host)
+            if first == nil { first = session }
+        }
+        if let first {
+            scene.selectedSessionID = first.id
+            onOpen(first)
         }
     }
 
