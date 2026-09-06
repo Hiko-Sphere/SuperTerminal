@@ -45,7 +45,7 @@ struct RSAInteropTests {
     @Test("An RSA user key authenticates against a real sshd")
     func rsaUserKeyAuthenticates() async throws {
         let server = try OpenSSHTestServer()
-        let group = NIOTSEventLoopGroup(loopCount: 1)
+        let group = NIOTSEventLoopGroup.singleton
         defer { server.shutDown() }
 
         do {
@@ -58,10 +58,8 @@ struct RSAInteropTests {
             let connection = try await connect(to: server, credentials: [.privateKey(key)], group: group)
             let result = try await connection.execute(command: "printf 'RSA_USER_KEY_%s\\n' OK")
             await connection.close()
-            try? await group.shutdownGracefully()
             #expect(result.standardOutputText == "RSA_USER_KEY_OK\n")
         } catch {
-            try? await group.shutdownGracefully()
             throw error
         }
     }
@@ -71,7 +69,7 @@ struct RSAInteropTests {
         // No Ed25519 and no ECDSA host key exists on this server, so a successful
         // connection can only have gone through RSA host key verification.
         let server = try OpenSSHTestServer(hostKeyAlgorithms: [.rsa])
-        let group = NIOTSEventLoopGroup(loopCount: 1)
+        let group = NIOTSEventLoopGroup.singleton
         defer { server.shutDown() }
 
         do {
@@ -102,9 +100,7 @@ struct RSAInteropTests {
             let remembered = try await store.entry(for: identity)
             #expect(remembered?.key.algorithm == "ssh-rsa")
             #expect(remembered?.key == (try SSHHostKey(openSSHLine: server.hostKeyOpenSSHLine)))
-            try? await group.shutdownGracefully()
         } catch {
-            try? await group.shutdownGracefully()
             throw error
         }
     }
@@ -115,7 +111,7 @@ struct RSAInteropTests {
         // transport-specific bugs survive.
         let ssh = try OpenSSHTestServer()
         let carrier = try WebSocketCarrierTestServer(configuration: .init(originPort: ssh.fixtures.port))
-        let group = NIOTSEventLoopGroup(loopCount: 1)
+        let group = NIOTSEventLoopGroup.singleton
         defer {
             carrier.shutDown()
             ssh.shutDown()
@@ -148,10 +144,8 @@ struct RSAInteropTests {
             )
             let result = try await connection.execute(command: "printf 'RSA_CARRIER_%s\\n' OK")
             await connection.close()
-            try? await group.shutdownGracefully()
             #expect(result.standardOutputText == "RSA_CARRIER_OK\n")
         } catch {
-            try? await group.shutdownGracefully()
             throw error
         }
     }

@@ -190,6 +190,8 @@ struct SettingsView: View {
                     container.hostStore.removeAll()
                     container.snippetStore.removeAll()
                     container.restoration.clear()
+                    container.screens.closeAll()
+                    container.screenStore.removeAll()
                     try? container.vault.deleteEverything()
                     Task {
                         // Host keys too: left behind with sync on, they would come back.

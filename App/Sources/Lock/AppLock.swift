@@ -322,9 +322,16 @@ enum AppLockError: Error, LocalizedError, Equatable {
 @MainActor
 final class AppLockWindows {
     private var windows: [ObjectIdentifier: UIWindow] = [:]
+    /// The window that was key before the lock covered the scene, so it can be made key
+    /// again — `scene.windows` is unordered and on iPad includes UIKit's own keyboard
+    /// windows, so "the first one that is not the lock" is not the app's window (D-025).
+    private var previousKeyWindow: [ObjectIdentifier: UIWindow] = [:]
 
     func show(in scene: UIWindowScene, content: @escaping () -> AnyView) {
         let key = ObjectIdentifier(scene)
+        if previousKeyWindow[key] == nil {
+            previousKeyWindow[key] = scene.windows.first { $0.isKeyWindow } ?? scene.keyWindow
+        }
         if let existing = windows[key] {
             existing.isHidden = false
             existing.makeKeyAndVisible()
@@ -350,8 +357,12 @@ final class AppLockWindows {
             window.rootViewController = nil
         }
         windows[key] = nil
-        // The scene's own key window takes the keyboard back.
-        scene.windows.first { !$0.isHidden && $0 !== window }?.makeKey()
+        // The window that had the keyboard before the lock takes it back. The terminal
+        // re-acquires first-responder status itself once the lock releases, through
+        // `wantsKeyboard`.
+        let restored = previousKeyWindow[key] ?? scene.windows.first { !$0.isHidden && $0 !== window }
+        previousKeyWindow[key] = nil
+        restored?.makeKey()
     }
 
     func hideAll() {
@@ -360,6 +371,7 @@ final class AppLockWindows {
             window.rootViewController = nil
         }
         windows = [:]
+        previousKeyWindow = [:]
     }
 }
 

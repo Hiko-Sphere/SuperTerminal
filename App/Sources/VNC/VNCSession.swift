@@ -54,8 +54,11 @@ final class VNCSession: Identifiable {
     }
 
     let id = UUID()
-    let host: Host
-    let settings: Host.VNCSettings
+    let screen: ScreenConnection
+    /// The SSH connection the screen's route names, resolved when it was opened. `nil`
+    /// for a direct screen — and `nil` when the route names a connection that no longer
+    /// exists, which `connect` reports rather than quietly connecting some other way.
+    let sshHost: Host?
 
     private(set) var state: State = .idle
     /// The framebuffer, redrawn at most once per display frame.
@@ -71,13 +74,13 @@ final class VNCSession: Identifiable {
     var sendsCommandKey = false
 
     var isConnected: Bool { if case .connected = state { return true }; return false }
-    var displayName: String { desktopName.isEmpty ? host.name : desktopName }
+    var displayName: String { desktopName.isEmpty ? screen.name : desktopName }
 
     private var client: VNCClient?
     private var connection: SSHConnection?
     private var eventsTask: Task<Void, Never>?
     private var redrawScheduled = false
-    private let connector: HostConnector
+    private let connector: HostConnector?
     private let prompts: PromptCoordinator
     private let group: NIOTSEventLoopGroup
     private let vault: CredentialVault
@@ -85,23 +88,28 @@ final class VNCSession: Identifiable {
     private let haptics: Haptics?
 
     init(
-        host: Host,
-        settings: Host.VNCSettings,
+        screen: ScreenConnection,
+        sshHost: Host?,
         group: NIOTSEventLoopGroup,
         vault: CredentialVault,
         knownHosts: any KnownHostsStore,
         log: STLogger,
         haptics: Haptics? = nil
     ) {
-        self.host = host
-        self.settings = settings
+        self.screen = screen
+        self.sshHost = sshHost
         self.group = group
         self.vault = vault
         self.haptics = haptics
-        self.log = log.child(subsystem: "screen")
+        let sessionLog = log.child(subsystem: "screen")
+        self.log = sessionLog
         let prompts = PromptCoordinator()
         self.prompts = prompts
-        connector = HostConnector(host: host, group: group, vault: vault, knownHosts: knownHosts, log: self.log, prompts: prompts)
+        // Built only when there is an SSH connection to make; a direct screen never
+        // touches SSH at all.
+        connector = sshHost.map {
+            HostConnector(host: $0, group: group, vault: vault, knownHosts: knownHosts, log: sessionLog, prompts: prompts)
+        }
         Task { [weak self, prompts] in
             await prompts.setPromptHandler { prompt in
                 Task { @MainActor in self?.state = .awaitingUser(prompt: prompt) }
@@ -113,12 +121,22 @@ final class VNCSession: Identifiable {
 
     func connect() async {
         guard !isConnected else { return }
-        state = .connecting(step: String(localized: "Resolving \(host.hostname)"))
+        state = .connecting(step: String(localized: "Resolving \(screen.address)"))
         do {
-            var password = settings.hasPassword ? try vault.loadVNCPassword(hostID: host.id) : nil
-            if settings.viaSSH, connection == nil {
-                connection = try await connector.connect { [weak self] step in
-                    self?.state = .connecting(step: step)
+            var password = screen.hasPassword ? try vault.loadVNCPassword(screenID: screen.id) : nil
+            if !screen.route.isDirect {
+                guard let connector else {
+                    state = .failed(STError(
+                        category: .configuration,
+                        message: String(localized: "The SSH connection this screen goes through no longer exists."),
+                        recoverySuggestion: String(localized: "Edit the screen and choose an SSH connection, or connect to it directly.")
+                    ))
+                    return
+                }
+                if connection == nil {
+                    connection = try await connector.connect { [weak self] step in
+                        self?.state = .connecting(step: step)
+                    }
                 }
             }
             // The server says whether it wants a password only after the version
@@ -131,14 +149,14 @@ final class VNCSession: Identifiable {
                 } catch VNCError.passwordRequired where attempt == 0 {
                     password = try await prompts.requestPassword(
                         username: String(localized: "screen sharing"),
-                        host: host.hostname
+                        host: screen.name
                     )
                     state = .connecting(step: String(localized: "Starting screen sharing"))
                 }
             }
             state = .connected
             haptics?.play(.connected)
-            log.info("screen connected", ["host": Redactor.hostname(host.hostname), "viaSSH": "\(settings.viaSSH)"])
+            log.info("screen connected", ["address": Redactor.hostname(screen.address), "direct": "\(screen.route.isDirect)"])
         } catch let error as STError {
             await tearDown()
             state = .failed(error)
@@ -160,16 +178,16 @@ final class VNCSession: Identifiable {
     /// One handshake over a fresh channel.
     private func open(password: String?) async throws {
         let channel: Channel
-        if settings.viaSSH {
-            guard let connection else { throw VNCError.protocolError("no SSH connection") }
-            state = .connecting(step: String(localized: "Opening a tunnel to the screen"))
-            channel = try await connection.openDirectTCPIP(host: settings.targetHost ?? "127.0.0.1", port: settings.port)
-        } else {
+        if screen.route.isDirect {
             state = .connecting(step: String(localized: "Connecting to the screen"))
             channel = try await DirectTCPTransport(
-                endpoint: TransportEndpoint(host: host.hostname, port: settings.port),
+                endpoint: TransportEndpoint(host: screen.address, port: screen.port),
                 log: log
             ).connect(on: group.next())
+        } else {
+            guard let connection else { throw VNCError.protocolError("no SSH connection") }
+            state = .connecting(step: String(localized: "Opening a tunnel to the screen"))
+            channel = try await connection.openDirectTCPIP(host: screen.address, port: screen.port)
         }
         state = .connecting(step: String(localized: "Starting screen sharing"))
         let client = try await VNCClient.start(on: channel, options: .init(password: password))
@@ -313,14 +331,14 @@ final class VNCSession: Identifiable {
             STError(
                 category: .credential,
                 message: String(localized: "The screen sharing server refused the password."),
-                recoverySuggestion: String(localized: "Check the VNC password in this connection's settings. It is separate from the SSH password."),
+                recoverySuggestion: String(localized: "Check the VNC password in this screen's settings. It is separate from the SSH password."),
                 underlyingDescription: reason
             )
         case .passwordRequired:
             STError(
                 category: .credential,
                 message: String(localized: "This screen needs a VNC password."),
-                recoverySuggestion: String(localized: "Edit the connection and enter the VNC password under Screen Sharing.")
+                recoverySuggestion: String(localized: "Edit the screen and enter its VNC password.")
             )
         case let .noAcceptableSecurity(offered):
             STError(

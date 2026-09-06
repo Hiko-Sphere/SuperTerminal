@@ -11,6 +11,9 @@ enum SyncKind: String, Codable, CaseIterable, Sendable {
     case keyMetadata
     case snippet
     case knownHost
+    /// A saved remote screen (D-027). A device still on an older version drops records of
+    /// a kind it does not know, which is exactly the right behaviour here.
+    case screen
 }
 
 /// One synchronised record, as the engine sees it: an opaque payload plus what it needs

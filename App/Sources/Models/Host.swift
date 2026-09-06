@@ -11,7 +11,10 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
     public var id: UUID
     public var name: String
     public var hostname: String
+    /// The port the connection is made to: the SSH port for a direct connection, the
+    /// Cloudflare edge's HTTPS port (443 unless published otherwise) through a tunnel.
     public var port: Int
+    /// May be empty: the connection then asks for a user name when it opens (D-024).
     public var username: String
     /// How the connection reaches the server.
     public var transport: TransportKind
@@ -34,8 +37,11 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
     /// The platform the server last reported (D-019). Optional in the record so that a
     /// record written before the field existed still decodes.
     public var detectedPlatform: HostPlatform?
-    /// Screen sharing (D-022), when the user set it up. Optional so records written
-    /// before the field existed still decode.
+    /// Screen sharing as it used to be configured, inside the SSH connection (D-022).
+    ///
+    /// Screens are their own connections now (D-027). This is kept only so that records
+    /// written before that — and records arriving from a device still on the old version —
+    /// decode and can be migrated. Nothing writes it; `ScreenMigration` empties it.
     public var vnc: VNCSettings?
     /// What the app treats the server as: the hand-set value, else the detected one.
     public var effectivePlatform: HostPlatform? { platformOverride ?? detectedPlatform }
@@ -103,7 +109,10 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
         id: UUID = UUID(),
         name: String,
         hostname: String,
-        port: Int = 22,
+        /// Omitted means the transport's default: 22 for a direct connection, 443 for the
+        /// Cloudflare edge. A fixed 22 here would have any Cloudflare host built in code
+        /// — rather than through the editor — dial the edge on the SSH port.
+        port: Int? = nil,
         username: String,
         transport: TransportKind = .directTCP,
         credentials: [CredentialReference] = [],
@@ -115,13 +124,12 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
         lastConnected: Date? = nil,
         accessAuthentication: AccessAuthentication? = nil,
         platformOverride: HostPlatform? = nil,
-        detectedPlatform: HostPlatform? = nil,
-        vnc: VNCSettings? = nil
+        detectedPlatform: HostPlatform? = nil
     ) {
         self.id = id
         self.name = name
         self.hostname = hostname
-        self.port = port
+        self.port = port ?? Self.defaultPort(for: transport)
         self.username = username
         self.transport = transport
         self.credentials = credentials
@@ -134,7 +142,6 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
         self.accessAuthentication = accessAuthentication
         self.platformOverride = platformOverride
         self.detectedPlatform = detectedPlatform
-        self.vnc = vnc
     }
 
     /// The identity host keys are remembered against.
@@ -143,23 +150,26 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
         case .directTCP:
             KnownHostIdentity(host: hostname, port: port)
         case let .cloudflare(jumpDestination):
-            // A Cloudflare host is always reached on 443; the port field describes the
-            // origin's SSH port, which the tunnel handles.
-            KnownHostIdentity(host: hostname, port: 443, jumpDestination: jumpDestination)
+            KnownHostIdentity(host: hostname, port: port, jumpDestination: jumpDestination)
         }
     }
 
-    /// A short subtitle for the host list.
+    /// The port a transport uses when the field is left blank.
+    public static func defaultPort(for transport: TransportKind) -> Int {
+        transport.isCloudflare ? 443 : 22
+    }
+
+    /// A short subtitle for the host list: `user@host`, the port when it is not the
+    /// default, and no user at all when none is saved.
     public var subtitle: String {
+        let account = username.isEmpty ? hostname : "\(username)@\(hostname)"
+        let address = port == Self.defaultPort(for: transport) ? account : "\(account):\(port)"
         switch transport {
         case .directTCP:
-            port == 22 ? "\(username)@\(hostname)" : "\(username)@\(hostname):\(port)"
+            return address
         case let .cloudflare(jumpDestination):
-            if let jumpDestination {
-                "\(username)@\(hostname) → \(jumpDestination)"
-            } else {
-                "\(username)@\(hostname)"
-            }
+            if let jumpDestination { return "\(address) → \(jumpDestination)" }
+            return address
         }
     }
 
@@ -167,10 +177,7 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
         var problems: [String] = []
         if name.trimmingCharacters(in: .whitespaces).isEmpty { problems.append(String(localized: "Give this connection a name.")) }
         if hostname.trimmingCharacters(in: .whitespaces).isEmpty { problems.append(String(localized: "Enter a hostname.")) }
-        if username.trimmingCharacters(in: .whitespaces).isEmpty { problems.append(String(localized: "Enter a username.")) }
         if !(1 ... 65535).contains(port) { problems.append(String(localized: "Port must be between 1 and 65535.")) }
-        if credentials.isEmpty { problems.append(String(localized: "Choose at least one way to authenticate.")) }
-        if let vnc, !(1 ... 65535).contains(vnc.port) { problems.append(String(localized: "The screen sharing port must be between 1 and 65535.")) }
         return problems
     }
 }

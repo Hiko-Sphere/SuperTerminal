@@ -24,14 +24,14 @@ final class ConsentUITests: XCTestCase {
 
         XCTAssertTrue(accept.waitForExistence(timeout: 5))
         accept.tap()
-        XCTAssertTrue(app.buttons["New Connection"].waitForExistence(timeout: 10), "accepting should reveal the app")
+        XCTAssertTrue(app.buttons["add-connection"].waitForExistence(timeout: 10), "accepting should reveal the app")
         XCTAssertFalse(accept.exists)
 
         // A relaunch without a reset must not ask again.
         app.terminate()
         let again = XCUIApplication()
         again.launch()
-        XCTAssertTrue(again.buttons["New Connection"].waitForExistence(timeout: 10))
+        XCTAssertTrue(again.buttons["add-connection"].waitForExistence(timeout: 10))
         XCTAssertFalse(again.buttons["consent-accept"].exists)
     }
 

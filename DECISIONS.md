@@ -864,3 +864,190 @@ the setting-without-record case. A UI run sets a passcode in Settings, sees a mi
 refused, relaunches the app keeping its state and finds the lock in front of everything,
 gets a wrong passcode refused and the right one accepted, then leaves and returns and is
 locked again. Face ID itself is a device check.
+
+## D-024 · Blank means "ask", and the hostname field takes what people paste
+
+**The port is the user's.** It was hidden for Cloudflare connections and fixed at 443
+inside the code; the field is now always there, for both transports, and blank means the
+transport's default — 22 for a direct connection, 443 for the Cloudflare edge, which also
+publishes on 2053, 2083, 2087, 2096 and 8443. For a Cloudflare connection the port is the
+edge's, not the origin's: the tunnel's ingress decides where SSH is, and nothing typed here
+can change that. Records from before carried the SSH default on Cloudflare connections,
+where the field meant nothing; they are rewritten to 443 on load, which no Cloudflare
+hostname can contradict.
+
+**A pasted address is taken apart.** `ssh.example.com:443` copied from a dashboard,
+`ssh://deploy@build.example.com:2222/` copied from a terminal, `[2001:db8::1]:22` — each
+used to be treated as the hostname itself and failed name resolution with a message that
+blamed the network. `HostAddress.parse` keeps the host, moves a port into a blank port
+field and a user name into a blank user-name field, and drops scheme, path, query and any
+password. It is pure and tested on its own.
+
+**A blank user name is asked for.** SSH cannot open without one, so a connection saved
+without a user name asks for it when it opens — a plain field, not a secret one — and
+keeps the answer for that attempt only. Saving one is a matter of editing the connection.
+
+**No credential chosen means "let the server say".** The connection offers `none` first,
+which is how a server discloses the methods it takes, and the credential chain then asks
+the person for a password if — and only if — `password` is among them. A key-only server
+is never asked; a wrong password is not a loop of prompts, because the chain asks once
+per attempt; declining ends the attempt with a message that says so. NIOSSH has no
+keyboard-interactive, so a server that takes only that method still fails honestly.
+
+**Verified how.** `HostAddressTests` cover the parser's shapes and refusals.
+`SSHCredentialChainTests` drive the chain call by call, as the SSH handler does: none
+first, the typed password offered once, a key-only server never asked, a cancelled prompt
+failing cleanly, stored credentials unchanged. A UI run edits the seeded connection to a
+hostname carrying its port, a blank port field and a blank user name, connects, answers
+the user-name prompt, and reaches the shell over the real OpenSSH server. Password
+authentication against a real server stays a live check: the harness's sshd takes keys only.
+
+## D-025 · The terminal keeps the keyboard, follows the session on screen, and takes a wheel
+
+Reported from an iPad with a Magic Keyboard: neither the keyboard nor the pointer could
+drive the terminal. Every one of these was invisible to the suite, and each has a reason
+it could only appear on a device or on an iPad.
+
+**First-responder status is taken and never handed back.** `TerminalInputView` became
+first responder once, when it entered the window, and again on a tap. Nothing re-acquired
+it after a sheet, the command palette, the find bar, the sidebar's search field or the app
+lock — UIKit does not restore the previous responder when a presentation ends. With a
+software keyboard that is self-correcting: the keyboard disappears, which tells the user
+to tap the terminal. With a hardware keyboard there is nothing to disappear and nothing
+worth tapping, so typing just stops. Connecting to a new host makes it near-certain,
+because the unknown-host-key sheet is the first thing that happens. The terminal now says
+whether it should hold the keyboard — `wantsKeyboard`, false while anything covers it —
+and takes it back itself, which is the discipline the VNC screen already used (D-022).
+
+**One terminal view, many sessions.** On iPad the detail column keeps one SwiftUI identity
+for every session, so switching sessions does not build a new view: `makeUIView` runs once
+and the callbacks it installed keep pointing at the session the view was created with,
+while `updateUIView` draws the new one. The grid showed session B and every keystroke went
+to session A's shell. The coordinator now remembers which session it is bound to and
+rebinds when it changes. The compact layout was never affected, which is why the iPhone
+suite never saw it.
+
+**A wheel is a whole gesture.** iPadOS delivers one mouse-wheel notch as `.began` then
+`.ended`, with no `.changed`, and the handler read the translation only while changing —
+so a mouse wheel did nothing at all while a trackpad, which sends a continuous stream,
+worked. Consuming every state that carries a translation is only half of it: a notch is
+usually shorter than a line, so zeroing the accumulator per gesture would still never
+reach a whole row. The arithmetic is now a value type, `ScrollAccumulator`, that keeps its
+remainder between gestures and is tested directly.
+
+**A drag interaction that was always on ate the selection.** A pointer begins a drag lift
+on click-and-drag with no long press, and the lift fails every competing recogniser —
+including the pan that selects text. The delegate refused the drag a moment later (nothing
+was selected), but by then the selection gesture was gone. The interaction is now enabled
+only while there is a selection to drag, which is what its own comment already claimed.
+
+**Smaller ones, same session.** A pointer drag anchored where the recogniser recognised
+rather than where the button went down, losing the first character or two of every
+selection. The privacy shield covered an inactive scene and, being a filled SwiftUI
+overlay with no `allowsHitTesting(false)`, swallowed the click meant for the terminal
+underneath. ⌘1…⌘9 in a stack layout changed the selection without pushing anything, so the
+visible terminal lost its claim and became "Open in another window". Unlocking made "the
+first window that is not the lock" key, which on iPad is not reliably the app's window.
+The Control latch was mirrored from the session on every SwiftUI update while being
+cleared asynchronously, so an update landing between the two re-armed it and ate the next
+character; it is cleared synchronously now, and turning the key row off disarms it.
+
+**Verified how.** `PointerScrollTests` pin the scrolling arithmetic — notches smaller than
+a row accumulating across gestures, direction, the reset, a zero cell height — and that
+the drag interaction follows the selection. `HardwareKeyboardStateUITests` type into the
+terminal without ever waiting for a software keyboard, which is the state a hardware
+keyboard puts the app in, and assert the shell received it after the find bar, the command
+palette and a whole sheet have each taken focus; a second test opens a second session and
+asserts the typing lands in the session on screen and not the first. What still needs a
+device: a real Magic Keyboard and a real mouse, and the iPadOS focus engine, none of which
+XCUITest reproduces — they stay on the release checklist.
+
+## D-026 · A Cloudflare failure says what failed
+
+`AccessError` has carried a precise `STError` for every case since D-001 — "No Cloudflare
+Access application was found for this hostname", "Your Cloudflare Access session has
+expired", "Could not verify that this hostname is genuinely protected by your Cloudflare
+team" — with its own recovery sentence. Nothing ever called it. `HostConnector` let the
+error propagate raw and `TerminalSession.connect` recognises only `STError`, wrapping
+anything else as `.internalError` with "The connection could not be established." So every
+failure before the tunnel opened — a hostname with no Access application, an expired
+session, a rejected service token, DNS that did not resolve, a clock that is wrong —
+reached the user as the same sentence with no recovery text.
+
+The translation is one `catch` at the Access boundary. It is worth its own note because
+the missing line was not in the Cloudflare code, which was complete: it was at the seam,
+where a well-described error met a caller that only understood one type.
+
+**Verified how.** `SSHErrorCategoryTests` already pin the mapping's categories.
+A live Cloudflare environment is still what proves the messages appear on the right
+failures (B-2), and that remains true; what changed is that when it fails, it now says
+which failure it was.
+
+## D-027 · A remote screen is its own connection, not a setting on an SSH one
+
+D-022 made a screen "a second kind of session over the same connection", and put its
+settings in the SSH connection's editor. That was wrong in a way only using it shows: the
+two are not the same thing. A screen has its own address — often a different machine from
+the one you SSH to — its own port, its own password, and it may not involve SSH at all.
+Configuring it inside a connection meant a screen could not exist without one, two screens
+behind the same bastion were impossible, and the SSH editor grew a section most people
+never wanted.
+
+**A record of its own.** `ScreenConnection` — name, address, port, route, and whether a
+password is stored — in `ScreenStore`, beside the host list and shaped like it. The choice
+against a `kind` field on `Host` is deliberate: `Host` means "something you can SSH to",
+and half its fields (username, credentials, transport, terminal type) are meaningless for a
+screen. A kind field would put a `where kind == .ssh` filter in every consumer of
+`hostStore.hosts` — the session manager, Siri's connection query, the command palette,
+session restoration — and one missed filter opens a terminal to a screen. A separate type
+makes that a compile error instead.
+
+**"Through SSH" is a reference, not a property.** `Route.throughSSH(hostID:)` names a saved
+connection; `.direct` names none. The screen contributes what the SSH side cannot know: the
+address and port *as that server sees them*, and its own password. Deleting the connection
+does not cascade — the row says "SSH connection missing" and opening reports a
+configuration error rather than quietly connecting some other way, which also covers the
+case where sync applies a screen before the connection it names.
+
+**Migration, once, on every device.** A screen configured the old way moves out at launch:
+the password is stored under the screen's id *before* it is deleted from the connection's,
+so an interruption can leave it in both places and never in neither; the record is inserted
+only if absent; the connection is then stripped and saved without stamping, so a device
+still on the old version keeps its working screen until it upgrades and migrates its own
+copy. Both devices derive the same screen id — a name-based UUID from the connection's id —
+so the two migrations converge instead of producing two screens. A connection arriving
+through sync still carrying its old block is migrated the same way on the spot.
+
+**Sync.** `SyncKind.screen`, its own record name and its own tombstones. A device still on
+the old version drops records of a kind it does not know, which is exactly right here — it
+keeps working from its own copy, and gets the screens when it upgrades.
+
+**Verified how.** `ScreenConnectionTests` cover the record and its validation, the route,
+the derived id's stability across devices, the mapping out of every old shape (through SSH
+with and without a target, and direct, which used to dial the SSH connection's own
+hostname), a migration that moves the password and empties the connection and changes
+nothing when run again, and the store's add, update, delete-with-tombstone and
+insert-if-absent. `VNCUITests` now open the screen from its own row in the list — checking
+the row says which connection it travels through — and drive it against LibVNCServer
+behind the harness's OpenSSH server as before; a second test opens the screen's own editor
+and asserts the SSH editor no longer has any screen sharing in it. macOS Screen Sharing and
+a Linux desktop remain hardware checks.
+
+**Not done here.** Siri has no "open the screen called X" intent yet; "Disconnect all
+sessions" already closes screens.
+
+## D-028 · The package tests share one event-loop group
+
+The package suite crashed intermittently — twice in six runs — with
+`Cannot schedule tasks on an EventLoop that has already shut down` followed by a trap on a
+leaking promise. Seven test files each built their own `MultiThreadedEventLoopGroup` or
+`NIOTSEventLoopGroup` and shut it down in a `defer`, some of them from a detached `Task`,
+while swift-testing ran suites in parallel and connections were still closing on those
+loops. The crash took the whole run with it, so a green run proved less than it looked.
+
+Every test now uses NIO's singleton groups, which are never shut down — the pattern NIO
+itself recommends for exactly this. Fifteen group constructions and twenty-five shutdowns
+went; measured afterwards, five consecutive runs produced no shutdown error at all. This
+was pre-existing and unrelated to the changes above; it is recorded because an
+intermittently-crashing suite quietly weakens every claim made from it.
+

@@ -13,7 +13,14 @@ ROOT="${ST_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 DESTINATION="${1:-platform=iOS Simulator,name=iPhone 17 Pro}"
 # A single test or class can be repeated on its own — the way an intermittent crash is
 # measured — without editing this file: ST_ONLY_TESTING=SuperTerminalUITests/SomeClass/testX
+# Several, comma-separated, become several flags: xcodebuild takes one identifier per
+# -only-testing, and passing a comma-separated list to one flag silently runs nothing.
 ONLY_TESTING="${ST_ONLY_TESTING:-SuperTerminalUITests}"
+ONLY_TESTING_FLAGS=()
+IFS=',' read -ra ONLY_TESTING_PARTS <<< "$ONLY_TESTING"
+for part in "${ONLY_TESTING_PARTS[@]}"; do
+  [[ -n "$part" ]] && ONLY_TESTING_FLAGS+=("-only-testing:$part")
+done
 WORK="$(mktemp -d)"
 
 XCODEBUILD_PID=""
@@ -97,7 +104,7 @@ env \
     -destination "$DESTINATION" \
     -resultBundlePath "$BUNDLE" \
     -parallel-testing-enabled NO \
-    -only-testing:"$ONLY_TESTING" &
+    "${ONLY_TESTING_FLAGS[@]}" &
 XCODEBUILD_PID=$!
 STATUS=0
 wait "$XCODEBUILD_PID" || STATUS=$?

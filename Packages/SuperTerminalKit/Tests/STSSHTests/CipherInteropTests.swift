@@ -17,7 +17,7 @@ struct CipherInteropTests {
         _ server: OpenSSHTestServer,
         marker: String
     ) async throws -> String {
-        let group = NIOTSEventLoopGroup(loopCount: 1)
+        let group = NIOTSEventLoopGroup.singleton
         do {
             let key = try OpenSSHPrivateKeyParser.parse(pem: server.fixtures.clientPrivateKeyPEM)
             let identity = KnownHostIdentity(host: "127.0.0.1", port: server.fixtures.port)
@@ -39,10 +39,8 @@ struct CipherInteropTests {
             )
             let result = try await connection.execute(command: "printf '\(marker)\\n'")
             await connection.close()
-            try? await group.shutdownGracefully()
             return result.standardOutputText
         } catch {
-            try? await group.shutdownGracefully()
             throw error
         }
     }
@@ -67,7 +65,7 @@ struct CipherInteropTests {
         )
         defer { server.shutDown() }
 
-        let group = NIOTSEventLoopGroup(loopCount: 1)
+        let group = NIOTSEventLoopGroup.singleton
         do {
             let key = try OpenSSHPrivateKeyParser.parse(pem: server.fixtures.clientPrivateKeyPEM)
             let identity = KnownHostIdentity(host: "127.0.0.1", port: server.fixtures.port)
@@ -93,12 +91,10 @@ struct CipherInteropTests {
                 command: "head -c 400000 /dev/zero | tr '\\0' 'q'; printf '\\nCTR_BURST_%s\\n' DONE"
             )
             await connection.close()
-            try? await group.shutdownGracefully()
 
             #expect(result.standardOutputText.contains("CTR_BURST_DONE"))
             #expect(result.standardOutput.count > 400_000)
         } catch {
-            try? await group.shutdownGracefully()
             throw error
         }
     }
@@ -127,7 +123,7 @@ struct CipherInteropTests {
         )
         defer { server.shutDown() }
 
-        let group = NIOTSEventLoopGroup(loopCount: 1)
+        let group = NIOTSEventLoopGroup.singleton
         do {
             let key = try OpenSSHPrivateKeyParser.parse(pem: server.fixtures.clientPrivateKeyPEM)
             let identity = KnownHostIdentity(host: "127.0.0.1", port: server.fixtures.port)
@@ -152,12 +148,10 @@ struct CipherInteropTests {
                 command: "head -c 400000 /dev/zero | tr '\\0' 'c'; printf '\\nCHACHA_BURST_%s\\n' DONE"
             )
             await connection.close()
-            try? await group.shutdownGracefully()
 
             #expect(result.standardOutputText.contains("CHACHA_BURST_DONE"))
             #expect(result.standardOutput.count > 400_000)
         } catch {
-            try? await group.shutdownGracefully()
             throw error
         }
     }

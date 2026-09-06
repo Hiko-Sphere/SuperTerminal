@@ -19,6 +19,15 @@ struct TerminalScreenView: UIViewRepresentable {
     let onFind: () -> Void
     /// Called when a pinch asks for a different font size, so it can be persisted.
     let onFontSizeChange: (CGFloat) -> Void
+    /// Whether the terminal should be holding the keyboard right now: this window is
+    /// showing the session and nothing is covering it.
+    ///
+    /// UIKit hands first-responder status to a sheet, a search field or the lock screen
+    /// and never gives it back. With a software keyboard that is invisible — it goes away
+    /// and the user taps the terminal to bring it back — but with a hardware keyboard
+    /// there is nothing to see and nothing to tap: typing simply stops working. So the
+    /// terminal takes it back itself, whenever it should have it (D-025).
+    let wantsKeyboard: Bool
 
     func makeUIView(context: Context) -> TerminalInputView {
         let view = TerminalInputView()
@@ -39,6 +48,22 @@ struct TerminalScreenView: UIViewRepresentable {
     }
 
     func updateUIView(_ view: TerminalInputView, context: Context) {
+        // SwiftUI keeps one view for the whole detail column on iPad, so switching
+        // sessions does not make a new one — and the callbacks installed when it was
+        // created still point at the session it was created with. Every keystroke went
+        // to the first session opened until this rebound them (D-025).
+        if context.coordinator.boundSessionID != session.id {
+            context.coordinator.attach(
+                to: view,
+                session: session,
+                confirmMultilinePaste: confirmMultilinePaste,
+                onFontSizeChange: onFontSizeChange,
+                onCommandPalette: onCommandPalette,
+                onHaptic: onHaptic,
+                onCopy: onCopy,
+                onFind: onFind
+            )
+        }
         view.renderView.theme = theme
         let fontChanged = view.renderView.fontSize != fontSize
         view.renderView.fontSize = fontSize
@@ -51,9 +76,18 @@ struct TerminalScreenView: UIViewRepresentable {
         view.renderView.searchMatches = session.searchMatches.map(\.range)
         view.renderView.focusedMatch = session.focusedMatch
         view.modes = session.modes
+        // Not mirrored while the view has already consumed it: the view clears its own
+        // latch the instant a character arrives and clears the session's synchronously,
+        // but an update that lands between the two would arm it again and eat the next
+        // character.
         view.controlLatched = session.controlLatched
         // Blinking is an animation; when the system asks for reduced motion the cursor
         // stays solid rather than pulsing.
+        if wantsKeyboard, view.window != nil, !view.isFirstResponder {
+            _ = view.becomeFirstResponder()
+        } else if !wantsKeyboard, view.isFirstResponder {
+            _ = view.resignFirstResponder()
+        }
         let shouldBlink = blinkCursor
             && !context.environment.accessibilityReduceMotion
             && view.isFirstResponder
@@ -64,6 +98,9 @@ struct TerminalScreenView: UIViewRepresentable {
 
     @MainActor
     final class Coordinator {
+        /// The session the view's callbacks currently point at.
+        private(set) var boundSessionID: TerminalSession.ID?
+
         func attach(
             to view: TerminalInputView,
             session: TerminalSession,
@@ -74,6 +111,7 @@ struct TerminalScreenView: UIViewRepresentable {
             onCopy: @escaping (String) -> Void,
             onFind: @escaping () -> Void
         ) {
+            boundSessionID = session.id
             view.onInput = { data in
                 Task { @MainActor in
                     session.noteTypedInput(data)
@@ -111,7 +149,9 @@ struct TerminalScreenView: UIViewRepresentable {
                 MainActor.assumeIsolated { session?.screen }
             }
             view.onControlConsumed = {
-                Task { @MainActor in session.controlLatched = false }
+                // Synchronous: `insertText` is on the main thread, and a hop would let a
+                // SwiftUI update mirror the still-armed latch back into the view.
+                MainActor.assumeIsolated { session.controlLatched = false }
             }
             view.onMouseEvent = { event in
                 Task { @MainActor in await session.reportMouse(event) }

@@ -296,6 +296,50 @@ sees the row change. Linux and Windows detection are exercised by the parser aga
 their real output; connecting to a machine of each kind is a hardware check in
 `docs/RELEASE.md`.
 
+### Blank means "ask", and a pasted address is taken apart (D-024)
+
+`HostAddressTests` (STCore) take the hostname field's input apart the way people paste it:
+bare hosts with and without a port, URLs with a user name (never a password, path or
+query), IPv6 literals bracketed and bare — including a zone identifier — and the shapes
+that are not an address at all, `a:b:c` among them, which a character-set test cannot tell
+from an address but the system can. `SSHCredentialChainTests` drive the chain call by call
+as the SSH handler does: with nothing stored it offers `none` first so the server says what
+it takes, then the typed password once and only if the server listed `password`; a key-only
+server is never asked; a cancelled prompt fails the attempt with a message that says so;
+stored credentials behave as before. `HostModelTests` pin that a Cloudflare connection
+built without a port takes the edge's 443 rather than SSH's 22, that a record written
+before the field existed is rewritten on load, and that a connection with no user name and
+no credential is valid. `BlankFieldsUITests` edit the seeded connection to `host:port` with
+the port field blank and no user name, save, see the row show `host:port` without a user,
+open it, answer the user-name prompt and reach the shell over the harness's real OpenSSH
+server. Password authentication against a real server remains a live check: the harness's
+sshd takes keys only.
+
+### The terminal keeps the keyboard and takes a wheel (D-025)
+
+`PointerScrollTests` pin the scrolling arithmetic that a wheel needs — notches smaller than
+a row accumulating across gestures, direction, the reset, a zero cell height — and that the
+drag interaction is enabled only while there is a selection, which is what lets a pointer
+select at all. `HardwareKeyboardStateUITests` type into the terminal without ever waiting
+for a software keyboard, which is the state a hardware keyboard puts the app in, and assert
+the shell received it after the find bar, the command palette and a whole sheet have each
+taken focus; a second test opens a second session and asserts the typing lands in the
+session on screen rather than the first. A real Magic Keyboard, a real mouse and the
+iPadOS focus engine stay on the release checklist: XCUITest reproduces none of them.
+
+### Remote screens are their own connections (D-027)
+
+`ScreenConnectionTests` cover the record, its validation and its endpoint; the route; the
+derived id that makes two devices migrating the same connection converge on one screen
+(version and variant bits checked, so it is derived rather than random); the mapping out of
+every old shape — through SSH with and without a target, and direct, which used to dial the
+SSH connection's own hostname; a migration that moves the password to the screen's Keychain
+account, empties the connection and changes nothing when run again; and the store's add,
+update, delete-with-tombstone, insert-if-absent and reload from disk. `VNCUITests` open the
+screen from its own row — checking the row names the connection it travels through — and
+drive it against LibVNCServer behind the harness's OpenSSH server; a second test opens the
+screen's own editor and asserts the SSH editor has no screen sharing left in it.
+
 ### App lock — 8 unit tests and 1 UI test
 
 `AppLockTests` run the lock (D-023) with a fake biometric check and a movable clock, on

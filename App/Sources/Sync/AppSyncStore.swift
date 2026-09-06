@@ -60,12 +60,15 @@ final class SyncTombstones: @unchecked Sendable {
 ///     key, and otherwise not at all. This type holds no reference to the vault, so it
 ///     cannot leak a secret by mistake.
 ///   * `snippet` — the snippet. Command history is not a snippet and is never here.
+///   * `screen` — a saved remote screen (D-027). Its VNC password is in the Keychain and
+///     is not part of the record, the same rule the connection record follows.
 ///   * `knownHost` — a host key the user has trusted. Applied only when this device has no
 ///     key for that host or the same key; a *different* key is held by the engine for the
 ///     changed-key prompt. This store reports what it trusts so the engine can tell.
 @MainActor
 final class AppSyncStore: SyncLocalStore {
     private let hosts: HostStore
+    private let screens: ScreenStore
     private let snippets: SnippetStore
     private let knownHosts: any KnownHostsStore
     private let tombstones: SyncTombstones
@@ -84,8 +87,9 @@ final class AppSyncStore: SyncLocalStore {
         return decoder
     }()
 
-    init(hosts: HostStore, snippets: SnippetStore, knownHosts: any KnownHostsStore, tombstones: SyncTombstones) {
+    init(hosts: HostStore, screens: ScreenStore, snippets: SnippetStore, knownHosts: any KnownHostsStore, tombstones: SyncTombstones) {
         self.hosts = hosts
+        self.screens = screens
         self.snippets = snippets
         self.knownHosts = knownHosts
         self.tombstones = tombstones
@@ -111,6 +115,12 @@ final class AppSyncStore: SyncLocalStore {
             if let payload = try? encoder.encode(snippet) {
                 records.append(SyncRecord(kind: .snippet, id: snippet.id.uuidString, payload: payload,
                                           modifiedAt: snippet.modifiedAt ?? .distantPast, deleted: false))
+            }
+        }
+        for screen in screens.screens {
+            if let payload = try? encoder.encode(screen) {
+                records.append(SyncRecord(kind: .screen, id: screen.id.uuidString, payload: payload,
+                                          modifiedAt: screen.modifiedAt ?? .distantPast, deleted: false))
             }
         }
         if let entries = try? await knownHosts.all() {
@@ -145,6 +155,16 @@ final class AppSyncStore: SyncLocalStore {
         case (.host, false):
             var host = try decoder.decode(Host.self, from: record.payload)
             host.modifiedAt = record.modifiedAt
+            // A connection from a device still on the old version carries its screen
+            // inside it (D-027). The screen comes across — under the same derived id both
+            // devices produce, so it merges rather than doubling — and the connection is
+            // stored without it. No password moves here: this store deliberately cannot
+            // reach the Keychain, and the only copy this device could hold was already
+            // moved at launch.
+            if let migrated = ScreenMigration.screen(fromLegacy: host) {
+                screens.insertIfAbsent(migrated, stamping: false)
+                host.vnc = nil
+            }
             if hosts.hosts.contains(where: { $0.id == host.id }) {
                 hosts.update(host, stamping: false)
             } else {
@@ -169,6 +189,19 @@ final class AppSyncStore: SyncLocalStore {
                 snippets.update(snippet, stamping: false)
             } else {
                 snippets.add(snippet, stamping: false)
+            }
+            tombstones.forget(record.key)
+        case (.screen, true):
+            if let id = UUID(uuidString: record.id), let screen = screens.screen(withID: id) {
+                screens.remove(screen, recordingTombstone: false)
+            }
+        case (.screen, false):
+            var screen = try decoder.decode(ScreenConnection.self, from: record.payload)
+            screen.modifiedAt = record.modifiedAt
+            if screens.screen(withID: screen.id) != nil {
+                screens.update(screen, stamping: false)
+            } else {
+                screens.add(screen, stamping: false)
             }
             tombstones.forget(record.key)
         case (.knownHost, true):

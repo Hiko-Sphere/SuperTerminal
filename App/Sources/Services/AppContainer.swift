@@ -15,6 +15,8 @@ import STSSH
 @MainActor
 final class AppContainer {
     let hostStore: HostStore
+    /// Saved remote screens (D-027), separate from the SSH connections.
+    let screenStore: ScreenStore
     let snippetStore: SnippetStore
     let restoration: SessionRestorationStore
     let sessionManager: SessionManager
@@ -45,6 +47,7 @@ final class AppContainer {
 
     private init(
         hostStore: HostStore,
+        screenStore: ScreenStore,
         snippetStore: SnippetStore,
         restoration: SessionRestorationStore,
         sessionManager: SessionManager,
@@ -61,6 +64,7 @@ final class AppContainer {
         appLock: AppLock
     ) {
         self.hostStore = hostStore
+        self.screenStore = screenStore
         self.snippetStore = snippetStore
         self.restoration = restoration
         self.sessionManager = sessionManager
@@ -99,18 +103,24 @@ final class AppContainer {
             haptics: haptics
         )
         let hostStore = HostStore(directory: directory)
+        let screenStore = ScreenStore(directory: directory)
         let snippetStore = SnippetStore(directory: directory, settings: settings)
         let tombstones = SyncTombstones(directory: directory)
         hostStore.tombstones = tombstones
+        screenStore.tombstones = tombstones
         snippetStore.tombstones = tombstones
+        // Before anything can sync: a screen configured inside a connection becomes its
+        // own record, on this device, once (D-027).
+        ScreenMigration.runAtLaunch(hosts: hostStore, screens: screenStore, vault: vault, log: diagnostics.logger)
         let sync = SyncCoordinator(
             settings: settings,
             directory: directory,
-            local: AppSyncStore(hosts: hostStore, snippets: snippetStore, knownHosts: knownHosts, tombstones: tombstones),
+            local: AppSyncStore(hosts: hostStore, screens: screenStore, snippets: snippetStore, knownHosts: knownHosts, tombstones: tombstones),
             tombstones: tombstones,
             log: diagnostics.logger
         )
         hostStore.didChange = { [weak sync] in sync?.scheduleSync() }
+        screenStore.didChange = { [weak sync] in sync?.scheduleSync() }
         snippetStore.didChange = { [weak sync] in sync?.scheduleSync() }
         sessionManager.didConnect = { [weak sync] in sync?.scheduleSync() }
         sessionManager.didDetectPlatform = { [weak hostStore] id, platform in
@@ -122,6 +132,7 @@ final class AppContainer {
         let appLock = AppLock(settings: settings, vault: vault, log: diagnostics.logger)
         let container = AppContainer(
             hostStore: hostStore,
+            screenStore: screenStore,
             snippetStore: snippetStore,
             restoration: restoration,
             sessionManager: sessionManager,
@@ -159,11 +170,12 @@ final class AppContainer {
             reachability: reachability, restoration: restoration, haptics: haptics
         )
         let hostStore = HostStore(directory: directory)
+        let screenStore = ScreenStore(directory: directory)
         let snippetStore = SnippetStore(directory: directory, settings: settings)
         let tombstones = SyncTombstones(directory: directory)
         let sync = SyncCoordinator(
             settings: settings, directory: directory,
-            local: AppSyncStore(hosts: hostStore, snippets: snippetStore, knownHosts: knownHosts, tombstones: tombstones),
+            local: AppSyncStore(hosts: hostStore, screens: screenStore, snippets: snippetStore, knownHosts: knownHosts, tombstones: tombstones),
             tombstones: tombstones, log: diagnostics.logger
         )
         let shortcuts = AppShortcutRouter(sessionManager: sessionManager, settings: settings)
@@ -171,7 +183,7 @@ final class AppContainer {
         let screens = VNCSessionManager(vault: vault, knownHosts: knownHosts, diagnostics: diagnostics, haptics: haptics)
         let appLock = AppLock(settings: settings, vault: vault, log: diagnostics.logger)
         let container = AppContainer(
-            hostStore: hostStore, snippetStore: snippetStore, restoration: restoration, sessionManager: sessionManager,
+            hostStore: hostStore, screenStore: screenStore, snippetStore: snippetStore, restoration: restoration, sessionManager: sessionManager,
             settings: settings, reachability: reachability, haptics: haptics, vault: vault, knownHosts: knownHosts,
             diagnostics: diagnostics, sync: sync, shortcuts: shortcuts, assistant: assistant, screens: screens, appLock: appLock
         )

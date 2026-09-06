@@ -111,6 +111,16 @@ struct RootView: View {
         // was not: presenting a sheet over the terminal made the view disappear, which
         // released the claim, and the sheet's dismissal did not always bring it back —
         // leaving the window telling the user their session was open somewhere else.
+        // ⌘1…⌘9 and ⌘⇧] only change the selection; in a stack layout the terminal on
+        // screen is whatever was pushed, so without this the shortcut swapped the claim
+        // out from under the visible terminal and replaced it with "Open in another
+        // window" (D-025).
+        .onChange(of: scene.selectedSessionID) { _, current in
+            guard horizontalSizeClass == .compact, let current else { return }
+            if path.last != .terminal(current) {
+                if case .terminal = path.last { path[path.count - 1] = .terminal(current) } else { path.append(.terminal(current)) }
+            }
+        }
         .onChange(of: scene.selectedSessionID, initial: true) { previous, current in
             if current != nil { scene.selectedScreenID = nil }
             if let previous {

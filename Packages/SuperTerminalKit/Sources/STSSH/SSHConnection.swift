@@ -21,19 +21,24 @@ public struct SSHConnectionConfiguration: Sendable {
     public var keepAliveInterval: TimeAmount
     /// How long the handshake and authentication may take in total.
     public var handshakeTimeout: TimeAmount
+    /// Asked for a password when the stored credentials are spent and the server takes
+    /// one (D-024). `nil` means the attempt fails there instead.
+    public var passwordProvider: SSHPasswordProvider?
 
     public init(
         username: String,
         credentials: [SSHCredential],
         knownHostIdentity: KnownHostIdentity,
         keepAliveInterval: TimeAmount = .seconds(30),
-        handshakeTimeout: TimeAmount = .seconds(30)
+        handshakeTimeout: TimeAmount = .seconds(30),
+        passwordProvider: SSHPasswordProvider? = nil
     ) {
         self.username = username
         self.credentials = credentials
         self.knownHostIdentity = knownHostIdentity
         self.keepAliveInterval = keepAliveInterval
         self.handshakeTimeout = handshakeTimeout
+        self.passwordProvider = passwordProvider
     }
 }
 
@@ -94,6 +99,7 @@ public actor SSHConnection {
         let chain = SSHCredentialChain(
             username: configuration.username,
             credentials: configuration.credentials,
+            passwordProvider: configuration.passwordProvider,
             log: log
         )
         // The handler is constructed *inside* the event loop and never leaves it:

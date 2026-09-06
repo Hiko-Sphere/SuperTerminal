@@ -23,6 +23,7 @@ struct FindBar: View {
                 .foregroundStyle(DesignTokens.Color.labelSecondary)
 
             TextField("Find in scrollback", text: $query)
+                .accessibilityIdentifier("find-query")
                 .textFieldStyle(.plain)
                 .autocorrectionDisabled()
                 .textInputAutocapitalization(.never)
@@ -54,6 +55,8 @@ struct FindBar: View {
                 .disabled(matchCount == 0)
                 .accessibilityLabel("Next match")
             Button(action: onClose) { Image(systemName: "xmark.circle.fill") }
+                .accessibilityIdentifier("find-close")
+                .accessibilityLabel(String(localized: "Close find"))
                 .foregroundStyle(DesignTokens.Color.labelTertiary)
                 .accessibilityLabel("Close search")
         }

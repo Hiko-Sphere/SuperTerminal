@@ -30,12 +30,13 @@ final class VNCSessionManager {
         self.haptics = haptics
     }
 
-    /// Opens a screen to `host`, which must have screen sharing configured; connecting
-    /// starts at once.
-    func open(_ host: Host, settings: Host.VNCSettings) -> VNCSession {
+    /// Opens `screen`, through `sshHost` when its route names one. Connecting starts at
+    /// once; the caller resolves the host so a route naming a deleted connection arrives
+    /// as `nil` and is reported rather than silently changed.
+    func open(_ screen: ScreenConnection, through sshHost: Host?) -> VNCSession {
         let session = VNCSession(
-            host: host,
-            settings: settings,
+            screen: screen,
+            sshHost: sshHost,
             group: group,
             vault: vault,
             knownHosts: knownHosts,
@@ -63,7 +64,7 @@ final class VNCSessionManager {
         return sessions.first { $0.id == id }
     }
 
-    func sessions(for host: Host) -> [VNCSession] {
-        sessions.filter { $0.host.id == host.id }
+    func sessions(for screen: ScreenConnection) -> [VNCSession] {
+        sessions.filter { $0.screen.id == screen.id }
     }
 }

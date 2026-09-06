@@ -1,3 +1,4 @@
+import STCore
 import STSSH
 import SwiftUI
 
@@ -14,7 +15,8 @@ struct HostEditorView: View {
 
     @State private var name = ""
     @State private var hostname = ""
-    @State private var port = "22"
+    /// Blank means the transport's default: 22 direct, 443 through Cloudflare.
+    @State private var port = ""
     @State private var username = ""
     @State private var usesCloudflare = false
     @State private var accessAuthentication: Host.AccessAuthentication = .browserLogin
@@ -31,19 +33,13 @@ struct HostEditorView: View {
     @State private var terminalType = "xterm-256color"
     /// nil is "Automatic": use what the server reports.
     @State private var platformOverride: HostPlatform?
-    @State private var vncEnabled = false
-    @State private var vncPort = "5900"
-    @State private var vncViaSSH = true
-    @State private var vncTargetHost = ""
-    @State private var vncPassword = ""
-    @State private var hasStoredVNCPassword = false
 
     init(host: Host?) {
         existing = host
         if let host {
             _name = State(initialValue: host.name)
             _hostname = State(initialValue: host.hostname)
-            _port = State(initialValue: String(host.port))
+            _port = State(initialValue: host.port == Host.defaultPort(for: host.transport) ? "" : String(host.port))
             _username = State(initialValue: host.username)
             _usesCloudflare = State(initialValue: host.transport.isCloudflare)
             if case let .cloudflare(destination) = host.transport {
@@ -58,28 +54,31 @@ struct HostEditorView: View {
             _folder = State(initialValue: host.folder ?? "")
             _terminalType = State(initialValue: host.terminalType)
             _platformOverride = State(initialValue: host.platformOverride)
-            if let vnc = host.vnc {
-                _vncEnabled = State(initialValue: true)
-                _vncPort = State(initialValue: String(vnc.port))
-                _vncViaSSH = State(initialValue: vnc.viaSSH)
-                _vncTargetHost = State(initialValue: vnc.targetHost ?? "")
-            }
         }
     }
 
     var body: some View {
         NavigationStack {
             Form {
-                Section("Connection") {
+                Section {
                     TextField("Name", text: $name)
                         .textInputAutocapitalization(.words)
                     TextField("Hostname", text: $hostname)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                         .keyboardType(.URL)
+                        .accessibilityIdentifier("hostname")
+                    TextField(usesCloudflare ? "Port (blank for 443)" : "Port (blank for 22)", text: $port)
+                        .keyboardType(.numberPad)
+                        .accessibilityIdentifier("port")
                     TextField("Username", text: $username)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
+                        .accessibilityIdentifier("username")
+                } header: {
+                    Text("Connection")
+                } footer: {
+                    Text("A pasted address is taken apart: ssh.example.com:443, ssh://deploy@host:2222 and [2001:db8::1]:22 all work. A blank user name is asked for each time the connection opens.")
                 }
 
                 Section {
@@ -108,9 +107,6 @@ struct HostEditorView: View {
                                 .textContentType(.oneTimeCode)
                                 .accessibilityIdentifier("service-token-secret")
                         }
-                    } else {
-                        TextField("Port", text: $port)
-                            .keyboardType(.numberPad)
                     }
                 } header: {
                     Text("Transport")
@@ -141,38 +137,7 @@ struct HostEditorView: View {
                 } header: {
                     Text("Authentication")
                 } footer: {
-                    Text("Credentials are stored in the Keychain, never in the connection list. Leave the password empty to be asked each time.")
-                }
-
-                Section {
-                    Toggle("Show the server's screen (VNC)", isOn: $vncEnabled.animation())
-                        .accessibilityIdentifier("vnc-enabled")
-                    if vncEnabled {
-                        TextField("VNC port", text: $vncPort)
-                            .keyboardType(.numberPad)
-                            .accessibilityIdentifier("vnc-port")
-                        Toggle("Through the SSH connection", isOn: $vncViaSSH)
-                            .accessibilityIdentifier("vnc-via-ssh")
-                        if vncViaSSH {
-                            TextField("Screen address as the server sees it (optional)", text: $vncTargetHost)
-                                .textInputAutocapitalization(.never)
-                                .autocorrectionDisabled()
-                                .accessibilityIdentifier("vnc-target")
-                        }
-                        SecureField(hasStoredVNCPassword ? "VNC password (stored — enter to replace)" : "VNC password (optional, saved to Keychain)", text: $vncPassword)
-                            .textContentType(.oneTimeCode)
-                            .accessibilityIdentifier("vnc-password")
-                    }
-                } header: {
-                    Text("Screen sharing")
-                } footer: {
-                    if !vncEnabled {
-                        Text("Show and control the server's desktop with touch, keyboard and pointer.")
-                    } else if vncViaSSH {
-                        Text("The screen travels inside the SSH connection, so nothing extra is exposed and the VNC server can stay bound to localhost. Leave the address empty for the server itself.")
-                    } else {
-                        Text("A direct connection to the VNC port. VNC itself is unencrypted and its password check is weak: use this only on a network you trust.")
-                    }
+                    Text("Credentials are stored in the Keychain, never in the connection list. Leave the password empty to be asked each time. With no key and no password chosen, the server is asked what it takes and you are asked for a password only if it takes one.")
                 }
 
                 Section("Advanced") {
@@ -202,10 +167,7 @@ struct HostEditorView: View {
                 }
             }
             .task {
-                if let existing {
-                    hasStoredServiceToken = container.vault.hasServiceToken(hostID: existing.id)
-                    hasStoredVNCPassword = container.vault.hasVNCPassword(hostID: existing.id)
-                }
+                if let existing { hasStoredServiceToken = container.vault.hasServiceToken(hostID: existing.id) }
             }
             .navigationTitle(existing == nil ? "New Connection" : "Edit Connection")
             .navigationBarTitleDisplayMode(.inline)
@@ -226,15 +188,24 @@ struct HostEditorView: View {
         if let selectedKeyID { credentials.append(.privateKey(id: selectedKeyID)) }
         if usesPassword { credentials.append(.password) }
 
+        // What was typed or pasted into the hostname field, taken apart (D-024): the host
+        // is the host; a port or user name that came with it fills a blank field.
+        let transport: Host.TransportKind = usesCloudflare
+            ? .cloudflare(jumpDestination: jumpDestination.isEmpty ? nil : jumpDestination)
+            : .directTCP
+        let address = HostAddress.parse(hostname)
+        let typedPort = port.trimmingCharacters(in: .whitespaces)
+        let resolvedPort = typedPort.isEmpty
+            ? (address?.port ?? Host.defaultPort(for: transport))
+            : (Int(typedPort) ?? 0)
+        let typedUser = username.trimmingCharacters(in: .whitespaces)
         return Host(
             id: existing?.id ?? UUID(),
             name: name,
-            hostname: hostname.trimmingCharacters(in: .whitespaces),
-            port: Int(port) ?? 22,
-            username: username.trimmingCharacters(in: .whitespaces),
-            transport: usesCloudflare
-                ? .cloudflare(jumpDestination: jumpDestination.isEmpty ? nil : jumpDestination)
-                : .directTCP,
+            hostname: address?.host ?? hostname.trimmingCharacters(in: .whitespaces),
+            port: resolvedPort,
+            username: typedUser.isEmpty ? (address?.user ?? "") : typedUser,
+            transport: transport,
             credentials: credentials,
             folder: folder.isEmpty ? nil : folder,
             tags: existing?.tags ?? [],
@@ -244,15 +215,7 @@ struct HostEditorView: View {
             lastConnected: existing?.lastConnected,
             accessAuthentication: usesCloudflare ? accessAuthentication : nil,
             platformOverride: platformOverride,
-            detectedPlatform: existing?.detectedPlatform,
-            vnc: vncEnabled
-                ? Host.VNCSettings(
-                    port: Int(vncPort) ?? 0,
-                    viaSSH: vncViaSSH,
-                    targetHost: vncTargetHost.trimmingCharacters(in: .whitespaces).isEmpty ? nil : vncTargetHost.trimmingCharacters(in: .whitespaces),
-                    hasPassword: !vncPassword.isEmpty || hasStoredVNCPassword
-                )
-                : nil
+            detectedPlatform: existing?.detectedPlatform
         )
     }
 
@@ -271,11 +234,6 @@ struct HostEditorView: View {
         let host = draft
         if usesPassword, !savedPassword.isEmpty {
             try? container.vault.storePassword(savedPassword, hostID: host.id)
-        }
-        if vncEnabled, !vncPassword.isEmpty {
-            try? container.vault.storeVNCPassword(vncPassword, hostID: host.id)
-        } else if !vncEnabled, hasStoredVNCPassword {
-            try? container.vault.deleteVNCPassword(hostID: host.id)
         }
         if host.usesServiceToken {
             if !serviceTokenID.isEmpty, !serviceTokenSecret.isEmpty {

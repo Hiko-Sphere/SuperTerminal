@@ -57,7 +57,7 @@ struct SSHKeyGenerationTests {
         let server = try OpenSSHTestServer(extraAuthorizedKeys: [generated.publicKeyOpenSSH])
         defer { server.shutDown() }
 
-        let group = NIOTSEventLoopGroup(loopCount: 1)
+        let group = NIOTSEventLoopGroup.singleton
         let key = try OpenSSHPrivateKeyParser.parse(pem: generated.privateKeyPEM)
         let identity = KnownHostIdentity(host: "127.0.0.1", port: server.fixtures.port)
 
@@ -80,10 +80,8 @@ struct SSHKeyGenerationTests {
             )
             let result = try await connection.execute(command: "printf 'GENERATED_KEY_%s\\n' OK")
             await connection.close()
-            try? await group.shutdownGracefully()
             #expect(result.standardOutputText == "GENERATED_KEY_OK\n")
         } catch {
-            try? await group.shutdownGracefully()
             throw error
         }
     }

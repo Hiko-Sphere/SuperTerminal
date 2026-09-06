@@ -15,6 +15,7 @@ struct HostListView: View {
 
     @State private var searchText = ""
     @State private var editingHost: Host?
+    @State private var editingScreen: ScreenConnection?
 
 
     var body: some View {
@@ -114,6 +115,14 @@ struct HostListView: View {
                 }
             }
 
+            if !filteredScreens.isEmpty || !container.screenStore.screens.isEmpty {
+                Section("Screens") {
+                    ForEach(filteredScreens) { screen in
+                        savedScreenRow(screen)
+                    }
+                }
+            }
+
             Section("Connections") {
                 if filteredHosts.isEmpty {
                     ContentUnavailableView {
@@ -124,7 +133,7 @@ struct HostListView: View {
                     } description: {
                         Text(
                             container.hostStore.hosts.isEmpty
-                                ? "Add a server to get started. SuperTerminal supports plain SSH and servers published through Cloudflare Tunnel."
+                                ? "Add a server to get started. SuperTerminal supports plain SSH and servers published through Cloudflare Tunnel, and remote screens over VNC."
                                 : "Try a different search."
                         )
                     } actions: {
@@ -144,7 +153,15 @@ struct HostListView: View {
         .navigationTitle("SuperTerminal")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button("New Connection", systemImage: "plus") { scene.isCreatingConnection = true }
+                // Two kinds of connection, so the button asks which (D-027). A menu rather
+                // than a picker inside one editor: the two have almost no fields in common.
+                Menu {
+                    Button("New Connection", systemImage: "terminal") { scene.isCreatingConnection = true }
+                    Button("New Screen", systemImage: "display") { scene.isCreatingScreen = true }
+                } label: {
+                    Label("Add", systemImage: "plus")
+                }
+                .accessibilityIdentifier("add-connection")
             }
             ToolbarItem(placement: .topBarLeading) {
                 Button("Settings", systemImage: "gearshape") { scene.isShowingSettings = true }
@@ -153,8 +170,14 @@ struct HostListView: View {
         .sheet(isPresented: creatingBinding) {
             HostEditorView(host: nil)
         }
+        .sheet(isPresented: creatingScreenBinding) {
+            ScreenEditorView(screen: nil)
+        }
         .sheet(item: $editingHost) { host in
             HostEditorView(host: host)
+        }
+        .sheet(item: $editingScreen) { screen in
+            ScreenEditorView(screen: screen)
         }
         .sheet(isPresented: settingsBinding) {
             SettingsView()
@@ -168,7 +191,7 @@ struct HostListView: View {
             host: host,
             onEdit: { editingHost = host },
             onDelete: { delete(host) },
-            onOpenScreen: host.vnc == nil ? nil : { openScreen(host) }
+            onOpenScreen: nil
         ) {
             let session = container.sessionManager.open(host)
             container.hostStore.markConnected(host)
@@ -185,22 +208,46 @@ struct HostListView: View {
             Button("Edit", systemImage: "pencil") { editingHost = host }
                 .tint(DesignTokens.Color.info)
         }
-        .swipeActions(edge: .leading) {
-            if host.vnc != nil {
-                Button("Screen", systemImage: "display") { openScreen(host) }
-                    .tint(DesignTokens.Color.accent)
-            }
+    }
+
+    /// One saved screen (D-027), which opens the same way a connection does.
+    private func savedScreenRow(_ screen: ScreenConnection) -> some View {
+        SavedScreenRow(
+            screen: screen,
+            sshHostName: screen.route.sshHostID.flatMap { id in
+                container.hostStore.hosts.first { $0.id == id }?.name
+            },
+            onEdit: { editingScreen = screen },
+            onDelete: { delete(screen) }
+        ) {
+            openScreen(screen)
+        }
+        .swipeActions(edge: .trailing) {
+            Button("Delete", systemImage: "trash", role: .destructive) { delete(screen) }
+            Button("Edit", systemImage: "pencil") { editingScreen = screen }
+                .tint(DesignTokens.Color.info)
         }
     }
 
-    /// Opens the server's screen (D-022) and shows it, the way `hostRow` shows a terminal.
-    private func openScreen(_ host: Host) {
-        guard let settings = host.vnc else { return }
-        let screen = container.screens.open(host, settings: settings)
-        container.hostStore.markConnected(host)
+    /// Opens a saved screen and shows it, the way `hostRow` shows a terminal. The SSH
+    /// connection its route names is resolved here, so a route naming one that has been
+    /// deleted arrives as `nil` and the session says so.
+    private func openScreen(_ screen: ScreenConnection) {
+        let host = screen.route.sshHostID.flatMap { id in
+            container.hostStore.hosts.first { $0.id == id }
+        }
+        let session = container.screens.open(screen, through: host)
+        container.screenStore.markConnected(screen)
         scene.selectedSessionID = nil
-        scene.selectedScreenID = screen.id
-        onOpenScreen(screen)
+        scene.selectedScreenID = session.id
+        onOpenScreen(session)
+    }
+
+    /// The Keychain item belongs to the screen; leaving it behind would keep a password
+    /// nothing can use.
+    private func delete(_ screen: ScreenConnection) {
+        try? container.vault.deleteVNCPassword(screenID: screen.id)
+        container.screenStore.remove(screen)
     }
 
     /// The Keychain items belong to the connection; leaving them behind would keep a
@@ -208,8 +255,15 @@ struct HostListView: View {
     private func delete(_ host: Host) {
         try? container.vault.deletePassword(hostID: host.id)
         try? container.vault.deleteServiceToken(hostID: host.id)
-        try? container.vault.deleteVNCPassword(hostID: host.id)
         container.hostStore.remove(host)
+    }
+
+    private var filteredScreens: [ScreenConnection] {
+        guard !searchText.isEmpty else { return container.screenStore.screens }
+        let needle = searchText.lowercased()
+        return container.screenStore.screens.filter {
+            $0.name.lowercased().contains(needle) || $0.address.lowercased().contains(needle)
+        }
     }
 
     private var filteredHosts: [Host] {
@@ -260,6 +314,13 @@ struct HostListView: View {
         Binding(
             get: { scene.isCreatingConnection },
             set: { scene.isCreatingConnection = $0 }
+        )
+    }
+
+    private var creatingScreenBinding: Binding<Bool> {
+        Binding(
+            get: { scene.isCreatingScreen },
+            set: { scene.isCreatingScreen = $0 }
         )
     }
 
@@ -443,5 +504,68 @@ private struct ScreenRow: View {
         case .disconnected: String(localized: "Disconnected")
         case let .failed(error): error.message
         }
+    }
+}
+
+/// A saved screen (D-027): where it is, and how it gets there.
+private struct SavedScreenRow: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    let screen: ScreenConnection
+    /// The name of the SSH connection the route names, when it still exists.
+    let sshHostName: String?
+    let onEdit: () -> Void
+    let onDelete: () -> Void
+    let open: () -> Void
+
+    var body: some View {
+        Button(action: open) {
+            HStack(spacing: DesignTokens.Spacing.md) {
+                Image(systemName: "display")
+                    .foregroundStyle(DesignTokens.Color.accent)
+                    .frame(width: 24)
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.xxs) {
+                    Text(screen.name)
+                        .font(DesignTokens.Typography.body)
+                        .foregroundStyle(DesignTokens.Color.label)
+                    Text(detail)
+                        .font(DesignTokens.Typography.caption)
+                        .foregroundStyle(DesignTokens.Color.labelSecondary)
+                        .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
+                }
+                Spacer(minLength: 0)
+                if screen.route.isDirect { directBadge }
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .contextMenu {
+            Button("Edit Screen", systemImage: "pencil", action: onEdit)
+            Button("Delete Screen", systemImage: "trash", role: .destructive, action: onDelete)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(screen.name), \(detail)")
+        .accessibilityHint("Opens the remote screen")
+        .accessibilityIdentifier("screen-row")
+    }
+
+    /// "10.0.0.2:5901 through Build box", or the reason it cannot connect.
+    private var detail: String {
+        switch screen.route {
+        case .direct:
+            return screen.endpoint
+        case .throughSSH:
+            guard let sshHostName else { return String(localized: "SSH connection missing") }
+            return String(localized: "\(screen.endpoint) through \(sshHostName)")
+        }
+    }
+
+    /// Said plainly, because a direct VNC connection is not encrypted.
+    private var directBadge: some View {
+        Text("Direct")
+            .font(DesignTokens.Typography.caption)
+            .padding(.horizontal, DesignTokens.Spacing.sm)
+            .padding(.vertical, DesignTokens.Spacing.xxs)
+            .background(Capsule().fill(DesignTokens.Color.warning.opacity(0.15)))
+            .foregroundStyle(DesignTokens.Color.warning)
     }
 }

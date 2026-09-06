@@ -517,7 +517,7 @@ final class AccessibilityUITests: XCTestCase {
                 "the host list should render at \(category)"
             )
             XCTAssertTrue(
-                app.buttons["New Connection"].exists,
+                app.buttons["add-connection"].exists,
                 "the primary action should stay reachable at \(category)"
             )
             let shot = XCTAttachment(screenshot: app.screenshot())
@@ -799,7 +799,16 @@ final class SnippetUITests: XCTestCase {
         )
 
         openSnippets()
-        app.segmentedControls.buttons["History"].tap()
+        // Wait for the segment and for it to actually take: a tap dispatched while the
+        // sheet is still animating in lands on nothing, and the list then shows Commands.
+        let history = app.segmentedControls.buttons["History"]
+        XCTAssertTrue(history.waitForExistence(timeout: 5), "the snippet sheet should offer History")
+        history.tap()
+        for _ in 0 ..< 20 where !history.isSelected {
+            usleep(150_000)
+            if !history.isSelected { history.tap() }
+        }
+        XCTAssertTrue(history.isSelected, "the History segment should be selected")
 
         // Match on the part of the command line that is distinctive, not on the output
         // it produces — those are different strings, and only the command is recorded.

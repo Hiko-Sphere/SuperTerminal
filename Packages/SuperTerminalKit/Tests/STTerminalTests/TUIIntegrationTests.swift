@@ -132,14 +132,13 @@ struct TUIIntegrationTests {
         _ body: (Session, OpenSSHTestServer) async throws -> T
     ) async throws -> T {
         let server = try OpenSSHTestServer()
-        let group = NIOTSEventLoopGroup(loopCount: 1)
+        let group = NIOTSEventLoopGroup.singleton
 
         func teardown(_ session: Session?, _ connection: SSHConnection?) async {
             session?.stop()
             if let session { await session.shell.close() }
             if let connection { await connection.close() }
             server.shutDown()
-            try? await group.shutdownGracefully()
         }
 
         var session: Session?

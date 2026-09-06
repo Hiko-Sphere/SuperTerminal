@@ -364,8 +364,14 @@ final class TerminalInputView: UIView, UIKeyInput {
     /// would be a way to run several commands at once with one gesture and no warning.
     private func installDragAndDrop() {
         let drag = UIDragInteraction(delegate: self)
-        drag.isEnabled = true
+        // Off until something is selected. A pointer begins a drag lift on click-and-drag
+        // with no long press, and the lift fails every competing recogniser — including
+        // the pan that makes a selection — so an always-on drag interaction means a mouse
+        // can never select anything. The delegate would refuse the drag a moment later,
+        // but by then the selection gesture is gone.
+        drag.isEnabled = false
         addInteraction(drag)
+        dragInteraction = drag
         addInteraction(UIDropInteraction(delegate: self))
     }
 
@@ -460,6 +466,8 @@ final class TerminalInputView: UIView, UIKeyInput {
 
     func setSelection(_ range: TerminalRange?) {
         renderView.selection = range
+        // Only a selection is draggable, so the interaction exists only while one does.
+        dragInteraction?.isEnabled = range != nil
         onSelectionChange?(range)
     }
 
@@ -502,33 +510,42 @@ final class TerminalInputView: UIView, UIKeyInput {
 
     private var panAccumulator: CGFloat = 0
 
+    /// Scrolling, from two fingers on the glass and from a wheel or trackpad.
+    ///
+    /// Every state that can carry a translation is consumed, and the accumulator survives
+    /// between gestures. A wheel is why: iPadOS delivers one notch as a whole gesture —
+    /// `.began` and then `.ended`, with no `.changed` at all — so reading only `.changed`
+    /// made a mouse wheel do nothing while a trackpad worked, and zeroing the accumulator
+    /// per gesture would have thrown away every notch smaller than one cell, which is most
+    /// of them. Only a cancelled or failed gesture discards what it had accumulated.
     @objc private func handlePan(_ recognizer: UIPanGestureRecognizer) {
         switch recognizer.state {
-        case .began:
-            panAccumulator = 0
-        case .changed:
-            let translation = recognizer.translation(in: self).y
-            recognizer.setTranslation(.zero, in: self)
-            panAccumulator += translation
-            let rows = Int(panAccumulator / renderView.metrics.cellHeight)
-            guard rows != 0 else { return }
-            panAccumulator -= CGFloat(rows) * renderView.metrics.cellHeight
-
-            if modes.mouseTracking != .off {
-                // A program tracking the mouse expects wheel events; scrolling our own
-                // history instead would leave `less` and `htop` unable to scroll at all.
-                let position = renderView.position(at: recognizer.location(in: renderView))
-                    ?? TerminalPosition(row: 0, column: 0)
-                let button: TerminalMouseEvent.Button = rows > 0 ? .scrollUp : .scrollDown
-                for _ in 0 ..< min(abs(rows), 10) {
-                    reportMouse(at: position, button: button, action: .press)
-                }
-                return
-            }
-            onScroll?(rows)
+        case .began, .changed, .ended:
+            consumeScroll(from: recognizer)
         default:
-            panAccumulator = 0
+            scroll.reset()
         }
+    }
+
+    private func consumeScroll(from recognizer: UIPanGestureRecognizer) {
+        let translation = recognizer.translation(in: self).y
+        guard translation != 0 else { return }
+        recognizer.setTranslation(.zero, in: self)
+        let rows = scroll.consume(translation: translation, cellHeight: renderView.metrics.cellHeight)
+        guard rows != 0 else { return }
+
+        if modes.mouseTracking != .off {
+            // A program tracking the mouse expects wheel events; scrolling our own
+            // history instead would leave `less` and `htop` unable to scroll at all.
+            let position = renderView.position(at: recognizer.location(in: renderView))
+                ?? TerminalPosition(row: 0, column: 0)
+            let button: TerminalMouseEvent.Button = rows > 0 ? .scrollUp : .scrollDown
+            for _ in 0 ..< min(abs(rows), 10) {
+                reportMouse(at: position, button: button, action: .press)
+            }
+            return
+        }
+        onScroll?(rows)
     }
 
     @objc private func handleLongPress(_ recognizer: UILongPressGestureRecognizer) {
@@ -559,6 +576,8 @@ final class TerminalInputView: UIView, UIKeyInput {
     /// to highlight what is under the pointer — so nothing is sent otherwise, and a
     /// trackpad user does not flood the connection with motion reports.
     private var editMenu: UIEditMenuInteraction?
+    private var scroll = ScrollAccumulator()
+    private var dragInteraction: UIDragInteraction?
     private var pointerDragAnchor: TerminalPosition?
 
     private func installPointerTracking() {
@@ -611,6 +630,14 @@ final class TerminalInputView: UIView, UIKeyInput {
         guard let position = renderView.position(at: recognizer.location(in: renderView)) else { return }
         switch recognizer.state {
         case .began:
+            // Where the button went down, not where the recogniser recognised: a pan only
+            // begins once the pointer has moved past its slop, which at this cell size is
+            // a character or two — enough to lose the first letter of every selection.
+            let origin = CGPoint(
+                x: recognizer.location(in: renderView).x - recognizer.translation(in: renderView).x,
+                y: recognizer.location(in: renderView).y - recognizer.translation(in: renderView).y
+            )
+            let position = renderView.position(at: origin) ?? position
             if modes.mouseTracking != .off {
                 reportMouse(at: position, button: .left, action: .press)
                 pointerDragAnchor = position

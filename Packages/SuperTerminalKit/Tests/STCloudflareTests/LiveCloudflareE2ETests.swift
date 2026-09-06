@@ -86,8 +86,7 @@ struct LiveCloudflareE2ETests {
     @Test("A service token opens the carrier and reaches a real interactive PTY")
     func serviceTokenReachesInteractivePTY() async throws {
         let environment = try environment
-        let group = NIOTSEventLoopGroup(loopCount: 1)
-        defer { Task { try? await group.shutdownGracefully() } }
+        let group = NIOTSEventLoopGroup.singleton
 
         let identity = KnownHostIdentity(
             host: environment.hostname,
@@ -156,8 +155,7 @@ struct LiveCloudflareE2ETests {
     @Test("A token for the wrong audience is refused")
     func wrongAudienceIsRefused() async throws {
         let environment = try environment
-        let group = NIOTSEventLoopGroup(loopCount: 1)
-        defer { Task { try? await group.shutdownGracefully() } }
+        let group = NIOTSEventLoopGroup.singleton
 
         // A service token with a valid-looking but incorrect secret must be refused by
         // the edge, not merely fail later during SSH.
@@ -182,8 +180,7 @@ struct LiveCloudflareE2ETests {
     @Test("An unauthenticated connection is refused rather than silently allowed")
     func unauthenticatedIsRefused() async throws {
         let environment = try environment
-        let group = NIOTSEventLoopGroup(loopCount: 1)
-        defer { Task { try? await group.shutdownGracefully() } }
+        let group = NIOTSEventLoopGroup.singleton
 
         let transport = CloudflareCarrierTransport(
             configuration: .init(host: environment.hostname, userAgent: "SuperTerminal-live-test"),

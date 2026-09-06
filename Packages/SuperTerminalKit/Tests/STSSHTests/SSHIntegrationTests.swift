@@ -19,15 +19,13 @@ struct SSHIntegrationTests {
     /// `sshd` process or a loop thread behind for the next test to trip over.
     private func withServer<T>(_ body: (OpenSSHTestServer, NIOTSEventLoopGroup) async throws -> T) async throws -> T {
         let server = try OpenSSHTestServer()
-        let group = NIOTSEventLoopGroup(loopCount: 1)
+        let group = NIOTSEventLoopGroup.singleton
         do {
             let result = try await body(server, group)
             server.shutDown()
-            try? await group.shutdownGracefully()
             return result
         } catch {
             server.shutDown()
-            try? await group.shutdownGracefully()
             throw error
         }
     }

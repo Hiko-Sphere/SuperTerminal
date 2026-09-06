@@ -8,26 +8,39 @@ import UIKit
 /// package; the screen over SSH end to end is a UI test against the same server.
 @Suite("Remote screens")
 struct VNCTests {
-    @Test("Records without screen sharing still decode, and settings round-trip")
-    func settingsCodable() throws {
-        let host = Host(
-            name: "Desk", hostname: "desk.example", username: "me", credentials: [.password],
-            vnc: Host.VNCSettings(port: 5901, viaSSH: true, targetHost: "10.0.0.2", hasPassword: true)
-        )
-        let data = try JSONEncoder().encode(host)
-        let back = try JSONDecoder().decode(Host.self, from: data)
-        #expect(back.vnc == host.vnc)
-        #expect(back == host)
-
-        var object = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
-        object.removeValue(forKey: "vnc")
-        let older = try JSONDecoder().decode(Host.self, from: JSONSerialization.data(withJSONObject: object))
-        #expect(older.vnc == nil, "a record written before screen sharing existed decodes with none")
-
-        var bad = host
-        bad.vnc?.port = 70000
-        #expect(bad.validationProblems.contains { $0.contains("port") })
+    /// Screens are their own connections now (D-027), so the only job left for the old
+    /// field is to decode: a record written before the split, or one arriving from a
+    /// device still on the old version, must be readable so it can be migrated. What it
+    /// then becomes is `ScreenConnectionTests`.
+    @Test("A connection record written before the split still decodes, with and without its screen")
+    func legacyScreenSettingsStillDecode() throws {
+        let json = """
+        {
+          "id": "00000000-0000-4000-A000-0000000000FF",
+          "name": "Desk",
+          "hostname": "desk.example",
+          "port": 22,
+          "username": "me",
+          "transport": { "directTCP": {} },
+          "credentials": [{ "password": {} }],
+          "tags": [],
+          "terminalType": "xterm-256color",
+          "environment": {},
+          "vnc": { "port": 5901, "viaSSH": true, "targetHost": "10.0.0.2", "hasPassword": true }
+        }
+        """
+        let host = try JSONDecoder().decode(Host.self, from: Data(json.utf8))
+        #expect(host.vnc?.port == 5901)
+        #expect(host.vnc?.viaSSH == true)
+        #expect(host.vnc?.targetHost == "10.0.0.2")
+        #expect(host.vnc?.hasPassword == true)
+        // The screen no longer takes part in the connection's own validity.
         #expect(host.validationProblems.isEmpty)
+
+        var object = try #require(JSONSerialization.jsonObject(with: Data(json.utf8)) as? [String: Any])
+        object.removeValue(forKey: "vnc")
+        let without = try JSONDecoder().decode(Host.self, from: JSONSerialization.data(withJSONObject: object))
+        #expect(without.vnc == nil, "a record that never had a screen decodes with none")
     }
 
     @Test("Hardware keys become keysyms; ⌘ stays with the app unless asked for")

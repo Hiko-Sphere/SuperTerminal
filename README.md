@@ -41,8 +41,9 @@ in [`DECISIONS.md`](DECISIONS.md) (D-001).
 * **A real terminal**: its own emulator with scrollback, search, selection, mouse
   reporting, themes, snippets and command history; a hardware keyboard and a mouse or
   trackpad on iPad work the way they do on a desktop (D-018).
-* **Remote screens over VNC** through the same SSH connection — touch, keyboard and
-  pointer control, proven against LibVNCServer (D-022).
+* **Remote screens over VNC**, configured as connections of their own and reached through
+  a saved SSH connection or directly — touch, keyboard and pointer control, proven against
+  LibVNCServer (D-022, D-027).
 * **An assistant** for "how do I…", "explain this" and "what went wrong", on the device's
   own model where it is eligible, else a provider you configure — it shows what it will
   send before it sends it, and a suggested command is inserted, never run (D-020).
@@ -135,6 +136,10 @@ These are real and are not worked around silently:
   and the CloudKit record mapping are tested offline; the live path needs a signed build
   with the container entitlement, which an ad-hoc simulator build does not carry. See
   `PROJECT_STATUS.md` B-4. Nothing in the app claims otherwise.
+* **The iPad's hardware keyboard and pointer are proven only as far as a simulator can.**
+  The defects found in that path (D-025) are covered by tests that reproduce them, but a
+  real Magic Keyboard, a real mouse and the iPadOS focus engine are on the release
+  checklist, not in CI.
 * **Face ID and Touch ID for the app lock are proven with a stand-in.** The lock's rules
   are tested with a biometric check the test controls and the real Keychain and
   derivation; the system prompt itself is a device check on the release checklist.

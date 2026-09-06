@@ -31,17 +31,15 @@ struct CarrierIntegrationTests {
                 behaviour: behaviour
             )
         )
-        let group = NIOTSEventLoopGroup(loopCount: 1)
+        let group = NIOTSEventLoopGroup.singleton
         do {
             let result = try await body(ssh, carrier, group)
             carrier.shutDown()
             ssh.shutDown()
-            try? await group.shutdownGracefully()
             return result
         } catch {
             carrier.shutDown()
             ssh.shutDown()
-            try? await group.shutdownGracefully()
             throw error
         }
     }
@@ -316,8 +314,7 @@ struct CarrierIntegrationTests {
 
     @Test("A plaintext carrier refuses any host that is not loopback")
     func plaintextCarrierRefusesRemoteHosts() async throws {
-        let group = NIOTSEventLoopGroup(loopCount: 1)
-        defer { Task { try? await group.shutdownGracefully() } }
+        let group = NIOTSEventLoopGroup.singleton
 
         let transport = CloudflareCarrierTransport(
             configuration: .init(

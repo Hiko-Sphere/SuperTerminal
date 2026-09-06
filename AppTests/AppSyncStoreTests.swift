@@ -14,12 +14,14 @@ struct AppSyncStoreTests {
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         let settings = AppSettings(defaults: UserDefaults(suiteName: "sync-\(UUID())")!)
         let hosts = HostStore(directory: directory)
+        let screens = ScreenStore(directory: directory)
         let snippets = SnippetStore(directory: directory, settings: settings)
         let known = InMemoryKnownHostsStore()
         let tombstones = SyncTombstones(directory: directory)
         hosts.tombstones = tombstones
+        screens.tombstones = tombstones
         snippets.tombstones = tombstones
-        return (hosts, snippets, known, tombstones, AppSyncStore(hosts: hosts, snippets: snippets, knownHosts: known, tombstones: tombstones), directory)
+        return (hosts, snippets, known, tombstones, AppSyncStore(hosts: hosts, screens: screens, snippets: snippets, knownHosts: known, tombstones: tombstones), directory)
     }
 
     private func host(_ name: String) -> Host {

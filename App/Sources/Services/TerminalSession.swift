@@ -32,6 +32,8 @@ final class TerminalSession: Identifiable {
         case changedHostKey(identity: KnownHostIdentity, expected: SSHHostKey, presented: SSHHostKey)
         case password(username: String, host: String)
         case keyPassphrase(keyName: String)
+        /// The connection was saved without a user name (D-024).
+        case username(host: String)
     }
 
     let id = UUID()
@@ -65,6 +67,8 @@ final class TerminalSession: Identifiable {
     /// Whether the shell reported an exit status before the channel closed. A shell that
     /// exited is a session the user ended; a channel that closed without one is a drop.
     private var shellExited = false
+    /// Whether the user has already been told that what they type is going nowhere.
+    private var hasSaidInputIsGoingNowhere = false
     /// The rendered screen. Replaced wholesale on each update so the view has a single,
     /// consistent snapshot rather than a grid mutating underneath it.
     private(set) var screen: TerminalScreen
@@ -441,7 +445,17 @@ final class TerminalSession: Identifiable {
     private var submittedCommandObservers: [UUID: (String) -> Void] = [:]
 
     func send(_ data: Data) async {
-        guard let shell else { return }
+        guard let shell else {
+            // Typing into a session with no shell used to vanish without a word, which
+            // looks exactly like a broken keyboard — and was reported as one. Said once
+            // per disconnection, not once per keystroke.
+            if !hasSaidInputIsGoingNowhere {
+                hasSaidInputIsGoingNowhere = true
+                annotate(String(localized: "Not connected — what you type is not being sent."))
+            }
+            return
+        }
+        hasSaidInputIsGoingNowhere = false
         do {
             try await shell.send(data)
             scrollbackOffset = 0

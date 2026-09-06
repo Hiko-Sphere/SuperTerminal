@@ -40,23 +40,40 @@ public enum SSHCredential: Sendable {
     }
 }
 
+/// Asked for a password once the stored credentials are spent and the server has said
+/// it takes one. Returns `nil` when the person declines, which ends the attempt.
+public typealias SSHPasswordProvider = @Sendable (_ username: String) async throws -> String?
+
 /// Offers credentials in order and reports which one succeeded.
 ///
 /// SSH servers reveal which methods they will accept as authentication proceeds, so
 /// this delegate skips offers the server has already ruled out instead of burning
 /// attempts against `MaxAuthTries` — a real failure mode that otherwise locks users
 /// out after a couple of reconnects.
+///
+/// With nothing stored (D-024) the caller offers `none` first, so the server says what
+/// it takes, and the chain then asks the person for a password — once, and only if the
+/// server listed `password`. A key-only server is never asked; a wrong password is not
+/// a loop of prompts.
 public final class SSHCredentialChain: NIOSSHClientUserAuthenticationDelegate, @unchecked Sendable {
     private let username: String
     private var remaining: [SSHCredential]
+    private let passwordProvider: SSHPasswordProvider?
+    private var askedForPassword = false
     private let log: STLogger
     private let lock = NSLock()
     private var lastOffered: SSHCredential?
     private var attempted: [String] = []
 
-    public init(username: String, credentials: [SSHCredential], log: STLogger = .disabled) {
+    public init(
+        username: String,
+        credentials: [SSHCredential],
+        passwordProvider: SSHPasswordProvider? = nil,
+        log: STLogger = .disabled
+    ) {
         self.username = username
         remaining = credentials
+        self.passwordProvider = passwordProvider
         self.log = log.child(subsystem: "ssh.auth")
     }
 
@@ -93,6 +110,32 @@ public final class SSHCredentialChain: NIOSSHClientUserAuthenticationDelegate, @
             return
         }
 
+        // Nothing stored is left. If the server takes passwords and there is someone
+        // to ask, ask — once — and answer the server when the person does. The handshake
+        // waits meanwhile; sshd's LoginGraceTime (two minutes by default) is the bound.
+        if !askedForPassword, availableMethods.contains(.password), let passwordProvider {
+            askedForPassword = true
+            lastOffered = nil
+            let username = username
+            let log = log
+            log.info("asking for a password", ["methods": "\(availableMethods)"])
+            // The promise runs the task and takes its result, so nothing crosses a
+            // concurrency boundary by hand.
+            nextChallengePromise.completeWithTask { [weak self] in
+                guard let password = try await passwordProvider(username) else {
+                    self?.record(attempt: "password (cancelled)", offered: nil)
+                    throw SSHAuthenticationError.noRemainingCredentials(
+                        attempted: self?.attemptedSoFar ?? ["password (cancelled)"]
+                    )
+                }
+                let credential = SSHCredential.password(Redacted(password, label: "ssh-password"))
+                self?.record(attempt: "password (typed)", offered: credential)
+                log.info("offering credential", ["kind": "password (typed)"])
+                return NIOSSHUserAuthenticationOffer(username: username, serviceName: "", offer: credential.asOffer)
+            }
+            return
+        }
+
         // No offers left. Failing the promise ends the handshake immediately.
         //
         // Succeeding with `nil` instead would leave the connection idle until the
@@ -100,6 +143,19 @@ public final class SSHCredentialChain: NIOSSHClientUserAuthenticationDelegate, @
         // "Connecting…" spinner before the user learns their key was wrong.
         lastOffered = nil
         nextChallengePromise.fail(SSHAuthenticationError.noRemainingCredentials(attempted: attempted))
+    }
+
+    private var attemptedSoFar: [String] {
+        lock.lock()
+        defer { lock.unlock() }
+        return attempted
+    }
+
+    private func record(attempt: String, offered: SSHCredential?) {
+        lock.lock()
+        defer { lock.unlock() }
+        attempted.append(attempt)
+        lastOffered = offered
     }
 }
 
@@ -113,7 +169,7 @@ public struct SSHAuthenticationError: Error, Sendable, Equatable {
     }
 }
 
-private extension SSHCredential {
+extension SSHCredential {
     var asOffer: NIOSSHUserAuthenticationOffer.Offer {
         switch self {
         case let .password(secret):

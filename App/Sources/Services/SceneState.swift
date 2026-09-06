@@ -24,6 +24,8 @@ final class SceneState {
     /// Per window, because ⌘N used to be a broadcast notification: with two windows open
     /// it opened the sheet in both, including the one the user was not looking at.
     var isCreatingConnection = false
+    /// Whether this window is showing the new-screen sheet (D-027).
+    var isCreatingScreen = false
 
     /// Whether the command palette is up in this window.
     var isShowingPalette = false

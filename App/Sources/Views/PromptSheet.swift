@@ -43,6 +43,8 @@ struct PromptSheet: View {
                         detail: String(localized: "to unlock \(keyName)"),
                         submit: { resolve(.passphrase(secret)) }
                     )
+                case let .username(host):
+                    usernameEntry(host: host)
                 }
             }
             .toolbar {
@@ -132,6 +134,41 @@ struct PromptSheet: View {
             .padding(DesignTokens.Spacing.lg)
         }
         .navigationTitle(String(localized: "Host key changed"))
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    // MARK: - User name
+
+    /// Not a secret, so a plain field; the connection was saved without one on purpose
+    /// and is asked each time (D-024).
+    private func usernameEntry(host: String) -> some View {
+        Form {
+            Section {
+                TextField(String(localized: "User name"), text: $secret)
+                    .textContentType(.username)
+                    .autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
+                    .submitLabel(.go)
+                    .onSubmit {
+                        guard !secret.isEmpty else { return }
+                        resolve(.username(secret))
+                        dismiss()
+                    }
+                    .accessibilityIdentifier("prompt-username")
+            } header: {
+                Text(String(localized: "for \(host)"))
+            } footer: {
+                Text(String(localized: "This connection has no user name saved. Edit the connection to save one."))
+            }
+
+            Button(String(localized: "Continue")) {
+                resolve(.username(secret))
+                dismiss()
+            }
+            .disabled(secret.isEmpty)
+            .frame(maxWidth: .infinity)
+        }
+        .navigationTitle(String(localized: "User name"))
         .navigationBarTitleDisplayMode(.inline)
     }
 

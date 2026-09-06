@@ -18,6 +18,23 @@
         }
       }
     },
+    "%@ Screen": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 屏幕"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 螢幕"
+          }
+        }
+      }
+    },
     "%@ at %@": {
       "extractionState": "manual",
       "localizations": {
@@ -65,6 +82,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@ 正在另一個視窗中顯示。連線仍在使用中。"
+          }
+        }
+      }
+    },
+    "%@ through %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@，经由 %2$@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@，經由 %2$@"
           }
         }
       }
@@ -341,6 +375,23 @@
         }
       }
     },
+    "A pasted address is taken apart: ssh.example.com:443, ssh://deploy@host:2222 and [2001:db8::1]:22 all work. A blank user name is asked for each time the connection opens.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "粘贴的地址会被自动拆分：ssh.example.com:443、ssh://deploy@host:2222 和 [2001:db8::1]:22 都可以。用户名留空时，每次打开连接都会询问。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "貼上的位址會被自動拆分：ssh.example.com:443、ssh://deploy@host:2222 和 [2001:db8::1]:22 都可以。使用者名稱留空時，每次開啟連線都會詢問。"
+          }
+        }
+      }
+    },
     "A service token signs in without a browser. Create one in Cloudflare Zero Trust → Access → Service Auth and allow it in the application's policy. It is kept in this device's Keychain, never synced, and deleted with the connection.": {
       "extractionState": "manual",
       "localizations": {
@@ -460,6 +511,23 @@
         }
       }
     },
+    "Add": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加入"
+          }
+        }
+      }
+    },
     "Add Connection": {
       "extractionState": "manual",
       "localizations": {
@@ -490,6 +558,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "新增伺服器"
+          }
+        }
+      }
+    },
+    "Add a server to get started. SuperTerminal supports plain SSH and servers published through Cloudflare Tunnel, and remote screens over VNC.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加一台服务器即可开始。SuperTerminal 支持普通 SSH、通过 Cloudflare Tunnel 发布的服务器，以及基于 VNC 的远程屏幕。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加入一台伺服器即可開始。SuperTerminal 支援一般 SSH、透過 Cloudflare Tunnel 發布的伺服器，以及基於 VNC 的遠端螢幕。"
           }
         }
       }
@@ -528,6 +613,23 @@
         }
       }
     },
+    "Add an SSH connection first, or connect to the screen directly.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请先添加一个 SSH 连接，或改为直接连接屏幕。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請先加入一個 SSH 連線，或改為直接連線螢幕。"
+          }
+        }
+      }
+    },
     "Add key": {
       "extractionState": "manual",
       "localizations": {
@@ -558,6 +660,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "將這一行加入伺服器上的 ~/.ssh/authorized_keys。私密金鑰部分保留在本裝置上，絕不會被顯示或分享。"
+          }
+        }
+      }
+    },
+    "Address": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "地址"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "位址"
           }
         }
       }
@@ -1276,6 +1395,23 @@
         }
       }
     },
+    "Check the VNC password in this screen's settings. It is separate from the SSH password.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请检查此屏幕设置中的 VNC 密码。它与 SSH 密码是分开的。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請檢查此螢幕設定中的 VNC 密碼。它與 SSH 密碼是分開的。"
+          }
+        }
+      }
+    },
     "Checking Cloudflare Access": {
       "extractionState": "manual",
       "localizations": {
@@ -1340,6 +1476,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "請至少選擇一種身分驗證方式。"
+          }
+        }
+      }
+    },
+    "Choose the SSH connection this screen goes through.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请选择此屏幕经由的 SSH 连接。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請選擇此螢幕經由的 SSH 連線。"
+          }
+        }
+      }
+    },
+    "Choose…": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请选择…"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請選擇…"
           }
         }
       }
@@ -1527,6 +1697,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "關閉工作階段"
+          }
+        }
+      }
+    },
+    "Close find": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "关闭查找"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "關閉尋找"
           }
         }
       }
@@ -2109,6 +2296,23 @@
         }
       }
     },
+    "Credentials are stored in the Keychain, never in the connection list. Leave the password empty to be asked each time. With no key and no password chosen, the server is asked what it takes and you are asked for a password only if it takes one.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "凭据保存在钥匙串中，绝不会进入连接列表。密码留空则每次询问。既不选密钥也不选密码时，会先询问服务器接受哪些方式，仅当服务器接受密码时才向您询问密码。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "憑證儲存在鑰匙圈中，絕不會進入連線列表。密碼留空則每次詢問。既不選金鑰也不選密碼時，會先詢問伺服器接受哪些方式，僅當伺服器接受密碼時才向您詢問密碼。"
+          }
+        }
+      }
+    },
     "Ctrl+Alt+Del": {
       "extractionState": "manual",
       "localizations": {
@@ -2262,6 +2466,23 @@
         }
       }
     },
+    "Delete Screen": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除屏幕"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "刪除螢幕"
+          }
+        }
+      }
+    },
     "Delete all data": {
       "extractionState": "manual",
       "localizations": {
@@ -2377,6 +2598,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "診斷資訊不包含任何指令、輸出、主機名稱或憑據。"
+          }
+        }
+      }
+    },
+    "Direct": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "直连"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "直連"
           }
         }
       }
@@ -2602,6 +2840,23 @@
         }
       }
     },
+    "Edit Screen": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "编辑屏幕"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "編輯螢幕"
+          }
+        }
+      }
+    },
     "Edit Snippet": {
       "extractionState": "manual",
       "localizations": {
@@ -2649,6 +2904,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "請編輯該連線並輸入服務權杖的用戶端 ID 與密鑰。服務權杖只保留在輸入它的裝置上。"
+          }
+        }
+      }
+    },
+    "Edit the screen and choose an SSH connection, or connect to it directly.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请编辑此屏幕并选择一个 SSH 连接，或改为直接连接。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請編輯此螢幕並選擇一個 SSH 連線，或改為直接連線。"
+          }
+        }
+      }
+    },
+    "Edit the screen and enter its VNC password.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请编辑此屏幕并输入其 VNC 密码。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請編輯此螢幕並輸入其 VNC 密碼。"
           }
         }
       }
@@ -2717,6 +3006,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "請輸入使用者名稱。"
+          }
+        }
+      }
+    },
+    "Enter the screen's address.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请输入屏幕的地址。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請輸入螢幕的位址。"
           }
         }
       }
@@ -3163,6 +3469,23 @@
         }
       }
     },
+    "Give this screen a name.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请为此屏幕命名。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請為此螢幕命名。"
+          }
+        }
+      }
+    },
     "Give this snippet a name.": {
       "extractionState": "manual",
       "localizations": {
@@ -3384,6 +3707,23 @@
         }
       }
     },
+    "How it connects": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "连接方式"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "連線方式"
+          }
+        }
+      }
+    },
     "Idle": {
       "extractionState": "manual",
       "localizations": {
@@ -3601,6 +3941,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "保留回捲紀錄"
+          }
+        }
+      }
+    },
+    "Kept in this device's Keychain, never synced and never in the screen's record. Leave it empty to be asked when the screen opens.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存在本设备的钥匙串中，不会同步，也不会写入屏幕的记录。留空则在打开屏幕时询问。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "儲存在本裝置的鑰匙圈中，不會同步，也不會寫入螢幕的記錄。留空則在開啟螢幕時詢問。"
           }
         }
       }
@@ -4128,6 +4485,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "新增金鑰"
+          }
+        }
+      }
+    },
+    "New Screen": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新建屏幕"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新增螢幕"
           }
         }
       }
@@ -4829,6 +5203,23 @@
         }
       }
     },
+    "Opens the remote screen": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打开远程屏幕"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "開啟遠端螢幕"
+          }
+        }
+      }
+    },
     "Opens this app's language setting in Settings": {
       "extractionState": "manual",
       "localizations": {
@@ -5097,6 +5488,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "連接埠"
+          }
+        }
+      }
+    },
+    "Port (blank for 22)": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "端口（留空为 22）"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "連接埠（留空為 22）"
+          }
+        }
+      }
+    },
+    "Port (blank for 443)": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "端口（留空为 443）"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "連接埠（留空為 443）"
+          }
+        }
+      }
+    },
+    "Port (blank for 5900)": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "端口（留空为 5900）"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "連接埠（留空為 5900）"
           }
         }
       }
@@ -5543,6 +5985,23 @@
         }
       }
     },
+    "Remove stored password": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "移除已保存的密码"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "移除已儲存的密碼"
+          }
+        }
+      }
+    },
     "Remove the app's data from iCloud?": {
       "extractionState": "manual",
       "localizations": {
@@ -5713,6 +6172,40 @@
         }
       }
     },
+    "SSH connection": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SSH 连接"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SSH 連線"
+          }
+        }
+      }
+    },
+    "SSH connection missing": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SSH 连接已不存在"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SSH 連線已不存在"
+          }
+        }
+      }
+    },
     "Save": {
       "extractionState": "manual",
       "localizations": {
@@ -5862,6 +6355,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "螢幕共享"
+          }
+        }
+      }
+    },
+    "Screens": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "屏幕"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "螢幕"
           }
         }
       }
@@ -7039,6 +7549,57 @@
         }
       }
     },
+    "The SSH connection this screen goes through no longer exists.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此屏幕经由的 SSH 连接已不存在。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此螢幕經由的 SSH 連線已不存在。"
+          }
+        }
+      }
+    },
+    "The address as the SSH server sees it. For that server's own desktop this is 127.0.0.1; for another machine on its network, that machine's address. A pasted address carrying its port is taken apart.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此地址是 SSH 服务器所看到的地址。若是该服务器自己的桌面，请填 127.0.0.1；若是其网络中的另一台机器，请填那台机器的地址。粘贴的带端口地址会被自动拆分。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此位址是 SSH 伺服器所看到的位址。若是該伺服器自己的桌面，請填 127.0.0.1；若是其網路中的另一台機器，請填那台機器的位址。貼上的帶連接埠位址會被自動拆分。"
+          }
+        }
+      }
+    },
+    "The address this device dials. A pasted address carrying its port is taken apart.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本设备直接拨号的地址。粘贴的带端口地址会被自动拆分。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本裝置直接撥號的位址。貼上的帶連接埠位址會被自動拆分。"
+          }
+        }
+      }
+    },
     "The app cannot tell a real server from an impostor on a first connection. Compare the fingerprint it shows with what the server reports. A changed key is always refused until you decide.": {
       "extractionState": "manual",
       "localizations": {
@@ -7481,6 +8042,23 @@
         }
       }
     },
+    "The screen travels inside that connection, so the VNC server can stay bound to the server's own localhost and nothing extra is exposed. Its encryption is SSH's.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画面在该连接内部传输，因此 VNC 服务器可以只绑定服务器自己的 localhost，无需额外暴露任何端口。其加密即 SSH 的加密。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "畫面在該連線內部傳輸，因此 VNC 伺服器可以只繫結伺服器自己的 localhost，無需額外暴露任何連接埠。其加密即 SSH 的加密。"
+          }
+        }
+      }
+    },
     "The screen travels inside the SSH connection, so nothing extra is exposed and the VNC server can stay bound to localhost. Leave the address empty for the server itself.": {
       "extractionState": "manual",
       "localizations": {
@@ -7579,6 +8157,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "沒有帳號、沒有伺服器、沒有分析，也沒有當機回報器。流量只會傳送至您所連線的伺服器，以及（對於經隧道連線的主機）代表您傳送至 Cloudflare。"
+          }
+        }
+      }
+    },
+    "This connection has no user name saved. Edit the connection to save one.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此连接没有保存用户名。编辑连接即可保存一个。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此連線沒有儲存使用者名稱。編輯連線即可儲存一個。"
           }
         }
       }
@@ -7800,6 +8395,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "透過 Cloudflare Tunnel"
+          }
+        }
+      }
+    },
+    "Through an SSH connection": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "经由 SSH 连接"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "經由 SSH 連線"
           }
         }
       }
@@ -8246,6 +8858,40 @@
         }
       }
     },
+    "User name": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用户名"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用者名稱"
+          }
+        }
+      }
+    },
+    "User name entry was cancelled.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已取消输入用户名。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已取消輸入使用者名稱。"
+          }
+        }
+      }
+    },
     "Username": {
       "extractionState": "manual",
       "localizations": {
@@ -8259,6 +8905,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "使用者名稱"
+          }
+        }
+      }
+    },
+    "VNC password (optional)": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VNC 密码（可选）"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VNC 密碼（選填）"
           }
         }
       }
@@ -8569,6 +9232,40 @@
         }
       }
     },
+    "Your saved screens could not be read.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法读取已保存的屏幕。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法讀取已儲存的螢幕。"
+          }
+        }
+      }
+    },
+    "Your saved screens could not be written.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法保存屏幕。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法儲存螢幕。"
+          }
+        }
+      }
+    },
     "Your snippets could not be read.": {
       "extractionState": "manual",
       "localizations": {
@@ -8633,6 +9330,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "ctrl"
+          }
+        }
+      }
+    },
+    "for %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用于 %@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用於 %@"
           }
         }
       }

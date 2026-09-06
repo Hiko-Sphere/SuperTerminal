@@ -1,8 +1,9 @@
 import XCTest
 
-/// A remote screen end to end (D-022): the harness runs LibVNCServer behind the local
-/// OpenSSH server; the app reaches it through a `direct-tcpip` channel on the SSH
-/// connection, decodes the desktop, and its taps and keys arrive in the server's log.
+/// A remote screen end to end (D-022, D-027): the harness runs LibVNCServer behind the
+/// local OpenSSH server; the screen is its own saved connection that names the SSH one it
+/// travels through, and the app reaches it through a `direct-tcpip` channel, decodes the
+/// desktop, and its taps and keys arrive in the server's log.
 @MainActor
 final class VNCUITests: XCTestCase {
     private lazy var app = XCUIApplication()
@@ -36,13 +37,12 @@ final class VNCUITests: XCTestCase {
     }
 
     func testOpeningTheScreenOverSSHShowsTheDesktopAndDeliversInput() throws {
-        let host = app.buttons.matching(identifier: "host-row")
-            .matching(NSPredicate(format: "label CONTAINS %@", "Local Test Server")).firstMatch
-        XCTAssertTrue(host.waitForExistence(timeout: 10))
-        host.press(forDuration: 1.0)
-        let open = app.buttons["Open Screen"].firstMatch
-        XCTAssertTrue(open.waitForExistence(timeout: 5), "a connection with screen sharing offers Open Screen")
-        open.tap()
+        // A screen is its own row, in its own section — not an action on an SSH connection.
+        let row = app.buttons.matching(identifier: "screen-row").firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 10), "the saved screen should be in the list")
+        XCTAssertTrue(row.label.contains("through"), "the row says which SSH connection it goes through; label was: \(row.label)")
+        for _ in 0 ..< 20 where !row.isHittable { usleep(150_000) }
+        row.tap()
 
         let screen = app.descendants(matching: .any).matching(identifier: "vnc-screen").firstMatch
         XCTAssertTrue(screen.waitForExistence(timeout: 30), "the screen view should appear")
@@ -79,5 +79,37 @@ final class VNCUITests: XCTestCase {
             XCTAssertTrue(controlDown.lowerBound < tabDown.lowerBound, "the modifier is pressed before the key")
         }
         XCTAssertTrue(log.contains("key up 0xffe3"), "and released after it")
+    }
+
+    /// A screen is configured on its own (D-027): its own editor, reached from its own
+    /// row, with the SSH connection it uses as one field among its own.
+    func testAScreenIsEditedOnItsOwnAndTheSSHEditorHasNoScreenSection() throws {
+        let row = app.buttons.matching(identifier: "screen-row").firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 10))
+        for _ in 0 ..< 20 where !row.isHittable { usleep(150_000) }
+        row.press(forDuration: 1.0)
+        let edit = app.buttons["Edit Screen"].firstMatch
+        XCTAssertTrue(edit.waitForExistence(timeout: 5), "a screen row offers to edit the screen")
+        edit.tap()
+        XCTAssertTrue(app.navigationBars["Edit Screen"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.textFields["screen-address"].exists, "the screen has its own address")
+        XCTAssertTrue(app.textFields["screen-port"].exists, "and its own port")
+        XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "screen-ssh-host").firstMatch.exists,
+                      "and names the SSH connection it travels through")
+        app.buttons["Cancel"].firstMatch.tap()
+        XCTAssertTrue(app.navigationBars["Edit Screen"].waitForNonExistence(timeout: 5))
+
+        // The SSH editor no longer carries any of it.
+        let host = app.buttons.matching(identifier: "host-row").firstMatch
+        XCTAssertTrue(host.waitForExistence(timeout: 5))
+        for _ in 0 ..< 20 where !host.isHittable { usleep(150_000) }
+        host.press(forDuration: 1.0)
+        let editHost = app.buttons["Edit Connection"].firstMatch
+        XCTAssertTrue(editHost.waitForExistence(timeout: 5))
+        editHost.tap()
+        XCTAssertTrue(app.navigationBars["Edit Connection"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.descendants(matching: .any).matching(identifier: "vnc-enabled").firstMatch.exists,
+                       "the SSH editor has no screen sharing section any more")
+        XCTAssertFalse(app.buttons["Open Screen"].exists)
     }
 }

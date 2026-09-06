@@ -10,6 +10,7 @@ struct TerminalView: View {
     @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
     @Environment(\.colorSchemeContrast) private var colorSchemeContrast
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var scenePhase
 
     let session: TerminalSession
 
@@ -41,7 +42,12 @@ struct TerminalView: View {
     private var keyRowBinding: Binding<Bool> {
         Binding(
             get: { container.settings.keyRowVisible },
-            set: { container.settings.keyRowVisible = $0 }
+            set: { visible in
+                container.settings.keyRowVisible = visible
+                // A Control armed from the row and then hidden would eat the next
+                // character typed, minutes later, with nothing on screen to explain it.
+                if !visible { session.controlLatched = false }
+            }
         )
     }
 
@@ -52,6 +58,24 @@ struct TerminalView: View {
     /// claim draws the grid and reports its geometry.
     private var isDisplaying: Bool {
         container.sessionManager.owner(ofSessionWithID: session.id) == scene.id
+    }
+
+    /// Whether the terminal should be holding the keyboard (D-025): this window is showing
+    /// the session, the app is in front and unlocked, and nothing is covering the grid.
+    /// Every term is something that takes first-responder status away and never returns it.
+    private var wantsKeyboard: Bool {
+        isDisplaying
+            && scenePhase == .active
+            && !container.appLock.isLocked
+            && !isSearching
+            && !showsSnippets
+            && !scene.isShowingPalette
+            && !scene.isShowingSettings
+            && !scene.isShowingAssistant
+            && !scene.isCreatingConnection
+            && promptBinding.wrappedValue == nil
+            && session.pendingLink == nil
+            && session.pendingPaste == nil
     }
 
     var body: some View {
@@ -133,7 +157,8 @@ struct TerminalView: View {
                         // having it snap back on the next session would make the gesture
                         // feel broken rather than temporary.
                         container.settings.fontSize = Double(size)
-                    }
+                    },
+                    wantsKeyboard: wantsKeyboard
                 )
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(String(localized: "Terminal for \(session.host.name)"))
@@ -389,6 +414,7 @@ extension TerminalSession.PendingPrompt: Identifiable {
         case let .changedHostKey(identity, _, _): "changed-\(identity.storageKey)"
         case let .password(username, host): "password-\(username)@\(host)"
         case let .keyPassphrase(name): "passphrase-\(name)"
+        case let .username(host): "username-\(host)"
         }
     }
 }

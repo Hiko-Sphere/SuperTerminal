@@ -132,6 +132,15 @@ final class HostStore {
 
     // MARK: - Persistence
 
+    /// Records from before D-024 carried the SSH default port on Cloudflare connections,
+    /// where the field was hidden and meant nothing; the edge is reached on 443. A
+    /// Cloudflare hostname cannot be published on port 22, so the rewrite is unambiguous.
+    nonisolated static func migrated(_ host: Host) -> Host {
+        var host = host
+        if host.transport.isCloudflare, host.port == 22 { host.port = 443 }
+        return host
+    }
+
     private func sortHosts() {
         hosts.sort { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }
@@ -141,7 +150,7 @@ final class HostStore {
         decoder.dateDecodingStrategy = .iso8601
         do {
             if FileManager.default.fileExists(atPath: hostsURL.path) {
-                hosts = try decoder.decode([Host].self, from: Data(contentsOf: hostsURL))
+                hosts = try decoder.decode([Host].self, from: Data(contentsOf: hostsURL)).map(Self.migrated)
             }
             if FileManager.default.fileExists(atPath: keysURL.path) {
                 keys = try decoder.decode([StoredKey].self, from: Data(contentsOf: keysURL))

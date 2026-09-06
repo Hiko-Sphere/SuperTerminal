@@ -41,6 +41,9 @@ final class HostConnector {
 
     /// Connects and authenticates, naming each step through `progress` as it happens.
     func connect(progress: @escaping @MainActor (String) -> Void) async throws -> SSHConnection {
+        // A connection saved without a user name is asked for one before anything is
+        // opened (D-024); the answer lives as long as this attempt.
+        let username = try await resolveUsername()
         let transport = try await makeTransport(progress: progress)
         progress(String(localized: "Exchanging keys"))
 
@@ -53,14 +56,20 @@ final class HostConnector {
             approval: approval,
             log: log
         )
-        let credentials = try await resolveCredentials()
+        let credentials = try await resolveCredentials(username: username)
 
+        let prompts = prompts
+        let hostname = host.hostname
         return try await SSHConnection.connect(
             transport: transport,
             configuration: SSHConnectionConfiguration(
-                username: host.username,
+                username: username,
                 credentials: credentials,
-                knownHostIdentity: host.knownHostIdentity
+                knownHostIdentity: host.knownHostIdentity,
+                // Nothing stored left and the server takes a password: ask the person.
+                passwordProvider: { username in
+                    await prompts.requestPasswordIfWanted(username: username, host: hostname)
+                }
             ),
             hostKeyVerifier: verifier,
             eventLoop: group.next(),
@@ -77,10 +86,23 @@ final class HostConnector {
             )
         case let .cloudflare(jumpDestination):
             progress(String(localized: "Checking Cloudflare Access"))
-            let credential = try await resolveAccessCredential(progress: progress)
+            // Every Access failure already knows how to describe itself; without this
+            // translation they all reached the user as "The connection could not be
+            // established", because `TerminalSession` only recognises `STError` and wraps
+            // anything else. "No Access application was found for this hostname" and "your
+            // session has expired" are the same generic sentence otherwise (D-026).
+            let credential: AccessCredential
+            do {
+                credential = try await resolveAccessCredential(progress: progress)
+            } catch let error as AccessError {
+                throw error.stError
+            }
+            // For a Cloudflare connection the port is the edge's: 443 unless the
+            // hostname was published on one of Cloudflare's other HTTPS ports.
             return CloudflareCarrierTransport(
                 configuration: .init(
                     host: host.hostname,
+                    port: host.port,
                     jumpDestination: jumpDestination,
                     userAgent: Self.userAgent
                 ),
@@ -96,7 +118,7 @@ final class HostConnector {
         let discovery = AccessDiscovery(http: http, jwks: jwks, log: log)
         let validator = AccessTokenValidator(jwks: jwks)
 
-        switch try await discovery.probe(host: host.hostname) {
+        switch try await discovery.probe(host: host.hostname, port: host.port) {
         case .unprotected:
             // A tunnel without an Access policy is a legitimate configuration; the
             // carrier still works, there is just nothing to authenticate.
@@ -134,7 +156,16 @@ final class HostConnector {
         }
     }
 
-    private func resolveCredentials() async throws -> [SSHCredential] {
+    private func resolveUsername() async throws -> String {
+        let saved = host.username.trimmingCharacters(in: .whitespaces)
+        if !saved.isEmpty { return saved }
+        return try await prompts.requestUsername(host: host.hostname)
+    }
+
+    private func resolveCredentials(username: String) async throws -> [SSHCredential] {
+        // Nothing saved: offer `none`, which makes the server say what it takes; the
+        // chain then asks for a password if that is among them (D-024).
+        guard !host.credentials.isEmpty else { return [.none] }
         var credentials: [SSHCredential] = []
         for reference in host.credentials {
             switch reference {
@@ -157,7 +188,7 @@ final class HostConnector {
                     credentials.append(.password(Redacted(stored, label: "ssh-password")))
                 } else {
                     let password = try await prompts.requestPassword(
-                        username: host.username,
+                        username: username,
                         host: host.hostname
                     )
                     credentials.append(.password(Redacted(password, label: "ssh-password")))

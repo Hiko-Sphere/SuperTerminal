@@ -14,6 +14,7 @@ final class ServiceTokenUITests: XCTestCase {
         app.launchEnvironment["ST_UITEST_RESET"] = "1"
         app.launch()
 
+        app.buttons["add-connection"].tap()
         app.buttons["New Connection"].tap()
         XCTAssertTrue(app.navigationBars["New Connection"].waitForExistence(timeout: 5))
         let name = "Token host"

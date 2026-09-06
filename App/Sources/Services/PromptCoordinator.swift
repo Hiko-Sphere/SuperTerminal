@@ -18,6 +18,7 @@ actor PromptCoordinator: HostKeyApprovalDelegate {
         case reject
         case password(String)
         case passphrase(String)
+        case username(String)
     }
 
     private var pending: CheckedContinuation<Decision, Never>?
@@ -85,6 +86,23 @@ actor PromptCoordinator: HostKeyApprovalDelegate {
         guard case let .passphrase(value) = decision else {
             throw STError(category: .cancelled, message: String(localized: "Passphrase entry was cancelled."))
         }
+        return value
+    }
+
+    /// The user name for a connection saved without one (D-024).
+    func requestUsername(host: String) async throws -> String {
+        let decision = await awaitDecision(raising: .username(host: host))
+        guard case let .username(value) = decision, !value.isEmpty else {
+            throw STError(category: .cancelled, message: String(localized: "User name entry was cancelled."))
+        }
+        return value
+    }
+
+    /// The server takes a password and nothing stored is left: ask, or `nil` if the
+    /// person declines. Called from the SSH event loop through the credential chain.
+    func requestPasswordIfWanted(username: String, host: String) async -> String? {
+        let decision = await awaitDecision(raising: .password(username: username, host: host))
+        guard case let .password(value) = decision else { return nil }
         return value
     }
 }

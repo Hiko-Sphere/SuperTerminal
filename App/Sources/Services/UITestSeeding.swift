@@ -18,6 +18,8 @@ enum UITestSeeding {
         let host: Host
         let privateKeyPEM: String
         let keyID: UUID
+        /// The harness's screen server, reached through the seeded connection (D-027).
+        let screen: ScreenConnection?
     }
 
     static var seedFromEnvironment: Seed? {
@@ -41,12 +43,19 @@ enum UITestSeeding {
                 port: port,
                 username: username,
                 transport: .directTCP,
-                credentials: [.privateKey(id: keyID)],
-                // The harness's screen server, reached through the SSH connection (D-022).
-                vnc: environment["ST_UITEST_VNC_PORT"].flatMap { Int($0) }.map { Host.VNCSettings(port: $0, viaSSH: true) }
+                credentials: [.privateKey(id: keyID)]
             ),
             privateKeyPEM: pem,
-            keyID: keyID
+            keyID: keyID,
+            screen: environment["ST_UITEST_VNC_PORT"].flatMap { Int($0) }.map { port in
+                ScreenConnection(
+                    id: UUID(uuidString: "00000000-0000-4000-A000-000000000003")!,
+                    name: "Test Screen",
+                    address: "127.0.0.1",
+                    port: port,
+                    route: .throughSSH(hostID: UUID(uuidString: "00000000-0000-4000-A000-000000000002")!)
+                )
+            }
         )
     }
 
@@ -72,6 +81,7 @@ enum UITestSeeding {
         }
         container.snippetStore.removeAll()
         container.hostStore.removeAll()
+        container.screenStore.removeAll()
         // Sessions left open by the previous run would otherwise be offered for reopening
         // at the top of the list. A run that tests that offer across its own relaunch
         // asks to keep it.
@@ -82,6 +92,7 @@ enum UITestSeeding {
         guard let seed = seedFromEnvironment else { return }
         try? container.vault.storePrivateKey(seed.privateKeyPEM, id: seed.keyID, requireBiometrics: false)
         container.hostStore.add(seed.host)
+        if let screen = seed.screen { container.screenStore.add(screen) }
     }
 
     /// Whether host keys should be trusted without asking, so a UI run is not blocked by

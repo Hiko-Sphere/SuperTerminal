@@ -132,7 +132,17 @@ let package = Package(
         ),
         .testTarget(name: "STCoreTests", dependencies: ["STCore"]),
         .testTarget(name: "STTerminalTests", dependencies: ["STTerminal", "STSSH", "STTestSupport"]),
-        .testTarget(name: "STSSHTests", dependencies: ["STSSH", "STTestSupport"]),
+        .testTarget(
+            name: "STSSHTests",
+            dependencies: [
+                "STSSH",
+                "STTestSupport",
+                .product(name: "NIOCore", package: "swift-nio"),
+                .product(name: "NIOPosix", package: "swift-nio"),
+                .product(name: "NIOConcurrencyHelpers", package: "swift-nio"),
+                .product(name: "NIOSSH", package: "swift-nio-ssh-rsa"),
+            ]
+        ),
         .testTarget(name: "STCloudflareTests", dependencies: ["STCloudflare", "STSSH", "STTerminal", "STTestSupport"]),
         .testTarget(
             name: "STVNCTests",

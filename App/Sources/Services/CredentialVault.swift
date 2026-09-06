@@ -102,8 +102,38 @@ struct CredentialVault: Sendable {
 
     // MARK: - Screen sharing passwords (D-022)
 
-    /// This device only, like the SSH password, and deleted with the connection.
-    func storeVNCPassword(_ password: String, hostID: UUID) throws {
+    /// This device only, like the SSH password, and deleted with the screen.
+    ///
+    /// Keyed by the screen's own id (D-027). The `hostID` variants below exist only for
+    /// the migration, which moves a password from the SSH connection that used to own it.
+    func storeVNCPassword(_ password: String, screenID: UUID) throws {
+        try store.set(
+            Data(password.utf8),
+            for: SecureStoreKey(service: Service.vncPasswords, account: screenID.uuidString),
+            protection: .whenUnlockedThisDeviceOnly,
+            prompt: nil
+        )
+    }
+
+    func loadVNCPassword(screenID: UUID) throws -> String? {
+        guard let data = try store.getIfPresent(
+            SecureStoreKey(service: Service.vncPasswords, account: screenID.uuidString)
+        ) else { return nil }
+        return String(data: data, encoding: .utf8)
+    }
+
+    func hasVNCPassword(screenID: UUID) -> Bool {
+        ((try? store.accounts(inService: Service.vncPasswords)) ?? []).contains(screenID.uuidString)
+    }
+
+    func deleteVNCPassword(screenID: UUID) throws {
+        try store.remove(SecureStoreKey(service: Service.vncPasswords, account: screenID.uuidString))
+    }
+
+    // Migration only (D-027): where a VNC password used to live, under the SSH connection.
+    // Nothing writes there any more, so the setter exists only for the migration's test.
+    #if DEBUG
+    func storeLegacyVNCPassword(_ password: String, hostID: UUID) throws {
         try store.set(
             Data(password.utf8),
             for: SecureStoreKey(service: Service.vncPasswords, account: hostID.uuidString),
@@ -111,6 +141,7 @@ struct CredentialVault: Sendable {
             prompt: nil
         )
     }
+    #endif
 
     func loadVNCPassword(hostID: UUID) throws -> String? {
         guard let data = try store.getIfPresent(

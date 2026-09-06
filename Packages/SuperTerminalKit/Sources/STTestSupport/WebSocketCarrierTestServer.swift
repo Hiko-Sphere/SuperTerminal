@@ -69,7 +69,7 @@ public final class WebSocketCarrierTestServer: @unchecked Sendable {
     private let recorded = NIOLockedValueBox<[HTTPHeaders]>([])
 
     public init(configuration: Configuration) throws {
-        group = MultiThreadedEventLoopGroup(numberOfThreads: 2)
+        group = MultiThreadedEventLoopGroup.singleton
         let recorded = self.recorded
         let group = self.group
 
@@ -117,7 +117,6 @@ public final class WebSocketCarrierTestServer: @unchecked Sendable {
 
         channel = try bootstrap.bind(host: "127.0.0.1", port: 0).wait()
         guard let boundPort = channel.localAddress?.port else {
-            try? group.syncShutdownGracefully()
             throw CarrierTestServerError.didNotBind
         }
         port = boundPort
@@ -129,7 +128,6 @@ public final class WebSocketCarrierTestServer: @unchecked Sendable {
 
     public func shutDown() {
         try? channel.close().wait()
-        try? group.syncShutdownGracefully()
     }
 
     static func shouldUpgrade(head: HTTPRequestHead, configuration: Configuration) -> Bool {
