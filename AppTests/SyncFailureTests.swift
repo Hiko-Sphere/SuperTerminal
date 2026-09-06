@@ -75,6 +75,18 @@ import Testing
         #expect(text.contains("CloudKit \(CKError.Code.internalError.rawValue)"), "the code is there to look up: \(text)")
     }
 
+    @Test("No path puts a raw error object on screen")
+    func nothingLeaksAPointer() {
+        // The account-state check throws through a different path from a sync failure, and
+        // that one used String(describing:) — which renders a CKError as its address.
+        for code in [CKError.Code.notAuthenticated, .networkUnavailable, .serverRejectedRequest,
+                     .internalError, .badContainer, .zoneBusy] {
+            let text = SyncFailure.describe(error(code))
+            #expect(!text.contains("0x"), "\(code) leaked a pointer: \(text)")
+            #expect(!text.hasPrefix("<"), "\(code) leaked an object description: \(text)")
+        }
+    }
+
     @Test("An error that is not CloudKit's is still readable")
     func notCloudKit() {
         let other = NSError(domain: NSURLErrorDomain, code: NSURLErrorTimedOut, userInfo: [NSLocalizedDescriptionKey: "The request timed out."])

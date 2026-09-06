@@ -121,7 +121,13 @@ final class SyncCoordinator {
                 @unknown default: status = .undetermined(String(localized: "Unknown iCloud account state."))
                 }
             } catch {
-                status = .undetermined(String(describing: error))
+                // Through the same translation as a sync failure (D-032). This path was
+                // missed, and it is the one that put "<CKError 0x127531e60: …>" on screen:
+                // a pointer address, in the place that is supposed to say what to do.
+                status = .undetermined(SyncFailure.describe(error))
+                #if DEBUG
+                if let directory = await self?.directory { SyncDiagnostics.record(error, in: directory) }
+                #endif
             }
             self?.account = status
         }
