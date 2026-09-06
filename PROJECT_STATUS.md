@@ -12,11 +12,19 @@ delivered. What remains needs the owner: a live Cloudflare environment (B-2), tw
 devices and a production CloudKit schema for the live iCloud checks (B-4 — archiving and
 the entitlements are now proven), and the legal placeholders with counsel review (B-5).
 
-**Last full regression (2026-09-06, after D-024 … D-031):** package 198 tests in 30 suites
-on the host (the VNC suites against LibVNCServer); `SuperTerminalTests` 191 passed, 0
-failed; `SuperTerminalUITests` 38 passed and 1 skipped (multi-window, which that device
-does not offer) on iPhone 17 Pro, and 39 passed with none skipped on iPad Pro 13-inch
-(M5). Localisation audit complete in every language.
+**Last full regression (2026-09-06, after D-024 … D-033):** package 198 tests in 30 suites
+on the host (the VNC suites against LibVNCServer); `SuperTerminalTests` 199 passed, 0
+failed; `SuperTerminalUITests` 41 passed on iPhone 17 Pro and 41 on iPad Pro 13-inch (M5).
+Localisation audit complete in every language.
+
+Two known failures, neither in this app's shipping code:
+
+* `ZZSearchProbeUITests` (2 cases, both devices) belongs to another session's uncommitted
+  work and is not part of any commit here.
+* On iPad, `BlankFieldsUITests` and `SnippetUITests` depend on the Simulator's global
+  "Connect Hardware Keyboard" preference in *opposite* directions — measured, one setting
+  each way, each test in isolation — so the iPad suite cannot be green either way until
+  both are made independent of it. Pre-existing; it surfaced while verifying D-033.
 
 This file is the resumable state of the work. It records what is *proven*, what is
 *written but unproven*, and what is *not started* — kept separate on purpose, because
