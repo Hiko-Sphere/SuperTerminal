@@ -8,9 +8,9 @@ server platform detection with a hand-set override, an assistant for commands an
 (on-device model where eligible, else a user-supplied provider), Siri and Shortcuts
 intents, remote screens over VNC — through the SSH connection, with touch, keyboard and
 pointer — and an app lock with a passcode of the app's own behind Face ID or Touch ID are
-delivered. What remains needs the owner: a live Cloudflare environment (B-2), a
-development team for iCloud and archiving (B-4), and the legal placeholders with counsel
-review (B-5).
+delivered. What remains needs the owner: a live Cloudflare environment (B-2), two signed
+devices and a production CloudKit schema for the live iCloud checks (B-4 — archiving and
+the entitlements are now proven), and the legal placeholders with counsel review (B-5).
 
 **Last full regression (2026-09-06, after D-024 … D-031):** package 198 tests in 30 suites
 on the host (the VNC suites against LibVNCServer); `SuperTerminalTests` 191 passed, 0
@@ -52,7 +52,7 @@ This file is the resumable state of the work. It records what is *proven*, what 
 | Selection, copy and scrollback search | 11 tests: soft wraps copy without an injected newline, block selection, wide characters copy once, selection reaches into history, search crosses wraps and is bounded |
 | Mouse reporting | 10 unit tests covering both encodings, modifiers, wheel, drag/motion gating and the legacy coordinate ceiling — plus a live round-trip: a remote program enables tracking, and `cat -v` on the far end shows the exact bytes a real terminal would have sent |
 | CI | `.github/workflows/ci.yml` — package build/test with a zero-warning gate, app Debug and unsigned-Release builds, both integration suites, and hygiene checks for placeholders and committed secrets |
-| iCloud sync engine — merge, tombstones, held host-key conflicts, canonical payloads | 27 tests: `SyncEngineTests` (11, in-memory transport), `CloudKitMappingTests` (5), `AppSyncStoreTests` (11), `KnownHostsRemoveAllTests` (2). CloudKit itself is **not** live-verified — B-4 |
+| iCloud sync engine — merge, tombstones, held host-key conflicts, canonical payloads | 27 tests: `SyncEngineTests` (11, in-memory transport), `CloudKitMappingTests` (5), `AppSyncStoreTests` (11), `KnownHostsRemoveAllTests` (2). The signed archive carries the iCloud entitlements and the container, verified off the archive itself; CloudKit's own behaviour is still **not** live-verified, which needs two signed devices — B-4 |
 | Legal texts bundled in en / zh-Hans / zh-Hant, parsed and rendered | `LegalDocumentBundleTests` (11) prove every file is in the bundle, comment-free and substantial; `MarkdownDocumentTests` (3); CI fails if the bundled notices drift from `THIRD_PARTY_NOTICES.md` |
 | Consent gate and Settings → Legal | `ConsentUITests` (2): a fresh install is gated, the notice renders, acceptance persists across a relaunch, licences open from Settings |
 | App Switcher snapshot protection | `PrivacyShield` covers the window whenever the scene is not active; the previously unwired toggle now does what it says |
@@ -156,15 +156,45 @@ available and then fails every request with an unexplained `GenerationError` (co
 which the app reports honestly and works around by falling back to the provider. Both are
 listed as hardware checks in `docs/RELEASE.md`.
 
-### B-4 · Archiving is blocked on a development team *(open)*
+### B-4 · Archiving works; only the live iCloud checks and distribution signing are left *(mostly closed)*
 
-`xcodebuild archive` fails with *"Signing for SuperTerminal requires a development
-team"*. The same configuration builds for a device with signing disabled, so the code is
-device-ready and signing is the only gap. Two Apple Development identities exist on the
-machine but no team is set in the project. The same gap blocks iCloud: an ad-hoc simulator
-build carries no entitlements at all (the `.xcent` is `{}`), so CloudKit sync and iCloud
-Keychain cannot be exercised. The sync engine is verified against an in-memory transport;
-the live path is not, and nothing user-facing claims it is.
+Measured 2026-09-06, not assumed. A team is now set in the project
+(`DEVELOPMENT_TEAM = 7CDDP73WJS`) and
+
+```
+xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal -configuration Release \
+  -destination 'generic/platform=iOS' -allowProvisioningUpdates archive \
+  -archivePath build/SuperTerminal.xcarchive
+```
+
+reports **ARCHIVE SUCCEEDED**. The signed product carries the entitlements this needed to
+prove, read back off the archive with
+`codesign -d --entitlements - --xml …/SuperTerminal.app`:
+
+| entitlement | value |
+| --- | --- |
+| `application-identifier` | `7CDDP73WJS.dev.superterminal.app` |
+| `com.apple.developer.icloud-container-identifiers` | `iCloud.dev.superterminal.app` |
+| `com.apple.developer.icloud-services` | `CloudKit` |
+
+So the App ID has the iCloud capability and the container registered — the profile would
+not carry them otherwise — and the earlier claim that an entitlement-free simulator build
+made iCloud unexercisable no longer holds. A first archive attempt failed on missing
+`*-linker-args.resp` files, which is stale `ArchiveIntermediates`, not signing; deleting
+that directory and re-running succeeded.
+
+What is genuinely left is not local:
+
+* **Two signed devices on one Apple Account**, for the sync and iCloud Keychain checks in
+  `docs/RELEASE.md`. One device cannot demonstrate sync.
+* **The CloudKit schema deployed to production.** The development environment creates
+  record types on first use; production does not.
+* **A distribution certificate and App Store profile.** Only two *Apple Development*
+  identities exist on this machine, so the archive is development-signed
+  (`get-task-allow` is true) and cannot be exported for the App Store yet.
+
+The sync engine remains verified against an in-memory transport; CloudKit's own behaviour
+is still not live-verified, and nothing user-facing claims it is.
 
 ### B-3 · `trycloudflare.com` quick tunnels do not route from this network *(observed)*
 
@@ -204,11 +234,12 @@ Needed later, not now:
 4. **A test identity with MFA** for the interactive SSO login. That path runs through
    `ASWebAuthenticationSession` on a device; the app exists, so this is runnable as soon
    as an identity is available.
-5. **An Apple Developer team ID**, with the iCloud capability and the container
-   `iCloud.dev.superterminal.app` enabled on the app identifier. A paired iPhone 16 Pro is
-   already visible to the build machine and two Apple Development signing identities
-   exist. *Unblocks:* archiving (B-4), and every live iCloud check in `docs/RELEASE.md` —
-   CloudKit sync between two devices, iCloud Keychain for opted-in keys, purge on delete.
+5. **A second signed device on the same Apple Account**, plus the CloudKit schema
+   deployed to the *production* environment, plus a distribution certificate for export.
+   The team, the iCloud capability and the container `iCloud.dev.superterminal.app` are
+   done — a Release archive succeeds and carries them (B-4). *Unblocks:* the remaining
+   live iCloud checks in `docs/RELEASE.md` — CloudKit sync between two devices, iCloud
+   Keychain for opted-in keys, purge on delete — and App Store export.
 6. **The legal placeholders** (B-5): effective date, developer legal name, governing law
    and venue — in all three
    languages of `App/Resources/Legal/` — and a counsel review of the three texts.

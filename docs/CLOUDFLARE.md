@@ -116,6 +116,54 @@ In the app, turn on "Through Cloudflare Tunnel" and fill in the **bastion destin
 (`internal-host:22`). The app sends it as `Cf-Access-Jump-Destination`. Host keys are
 remembered per destination, so two servers behind one bastion do not share an entry.
 
+### 6. A remote screen through a tunnel of its own
+
+A screen can ride the SSH connection — that is the default, and it needs no Cloudflare
+configuration beyond the above, because the `direct-tcpip` channel travels inside the SSH
+session. A screen can also be published as **its own** Access-protected hostname, with no
+SSH connection in the way (D-029). Add a second ingress rule pointing at the VNC port:
+
+```yaml
+ingress:
+  - hostname: ssh-test.example.com
+    service: ssh://localhost:22
+  - hostname: screen-test.example.com
+    service: tcp://localhost:5900
+  - service: http_status:404
+```
+
+```bash
+cloudflared tunnel route dns superterminal-test screen-test.example.com
+```
+
+Then add a second self-hosted Access application for `screen-test.example.com`, exactly
+as in step 4. The desktop `cloudflared access tcp --hostname screen-test.example.com --url
+localhost:5900` is the equivalent command for a laptop; the app needs no such helper — it
+opens the same WebSocket carrier itself.
+
+In the app: **New Connection → Screen**, set *How it connects* to **Cloudflare**, and put
+`screen-test.example.com` in the **Hostname** field. Leave the port empty —
+blank means the Cloudflare edge's 443 for this route, not 5900. The address is the
+hostname the tunnel publishes; where the VNC server actually is behind the tunnel is the
+tunnel's own business, exactly as for SSH.
+
+**The screen's own sign-in is separate from Access** (D-031). Getting past Access proves
+you may reach the port; the VNC server then authenticates you itself, and some of them
+want a user name as well as a password:
+
+| The server | What to put in the screen's editor |
+| --- | --- |
+| macOS Screen Sharing, signing in to an account | User name and password of a macOS account allowed in Screen Sharing settings |
+| macOS with "VNC viewers may control screen with password" | Password only; leave the user name empty |
+| x11vnc / TigerVNC with a classic VNC password | Password only; leave the user name empty |
+| A VeNCrypt server | User name and password |
+| A server with no authentication | Leave both empty |
+
+Both fields may be left empty; a blank password is asked for when the screen opens. A
+VeNCrypt server offering only its `Plain` sub-type — the user name and password with
+nothing over them — is accepted through a Cloudflare tunnel or SSH, because the carrier is
+already encrypted, and refused on a direct connection.
+
 ---
 
 ## Service tokens, for automation

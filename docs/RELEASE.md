@@ -65,7 +65,7 @@ cd ../.. && ./scripts/app-integration-e2e.sh
 - [ ] Counsel has reviewed the Terms, Privacy Policy and User Notice; the "not legal advice" sentence is removed only when that is true
 - [ ] `LegalDocument.currentVersion` is bumped if any of the three texts changed in substance, so existing users see the consent screen again
 - [ ] The App Store privacy answers still read "Data not collected"; storage in the user's own CloudKit private database is not collection
-- [ ] The iCloud container `iCloud.dev.superterminal.app` exists in the developer account and the profile carries the iCloud capability; the simulator build has no entitlements, so nothing about iCloud is proven until a signed build runs (B-4)
+- [x] The iCloud container `iCloud.dev.superterminal.app` exists in the developer account and the profile carries the iCloud capability — verified 2026-09-06 by reading the entitlements back off a Release archive with `codesign -d --entitlements - --xml`; the simulator build still has none, so the checks below need a signed build on real hardware
 - [ ] The CloudKit schema (record type `SyncRecord`: `kind`, `payload`, `modifiedAt`; zone `SuperTerminal`) is deployed to the production environment — the development environment creates it on first use, production does not
 - [ ] Two signed devices on one Apple Account sync a host, a snippet, a known host key and an opted-in private key; a held host-key disagreement appears in Settings → iCloud; "Delete all data" empties the zone and the other device stops seeing the records
 - [ ] A key marked "Store private key in iCloud Keychain" appears on the second device with its secret; a biometric key appears as "not on this device"

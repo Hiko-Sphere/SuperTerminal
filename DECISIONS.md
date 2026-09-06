@@ -767,8 +767,9 @@ the simulator cannot speak.
 
 **Scope.** A VNC session shows a remote desktop and drives it with touch, hardware
 keyboard and pointer. It is a real RFB client (RFB 3.3/3.7/3.8 handshake; security types
-None and VNC Authentication — VeNCrypt/TLS is not implemented, the SSH route is the
-encrypted path; ClientInit/
+None and VNC Authentication — *extended by D-031 to Apple's type 30 and VeNCrypt's
+non-TLS sub-types; VeNCrypt's own TLS is still not implemented, and the SSH or Cloudflare
+route is the encrypted path*; ClientInit/
 ServerInit; FramebufferUpdateRequest with incremental updates; encodings Raw, CopyRect,
 RRE, Hextile and ZRLE with the DesktopSize pseudo-encoding; PointerEvent,
 KeyEvent and ClientCutText), written in Swift on SwiftNIO in the package as `STVNC`, with
