@@ -24,5 +24,14 @@
 	<array>
 		<string>CloudKit</string>
 	</array>
+	<!--
+	  Which CloudKit environment this build talks to, decided here rather than left to
+	  whichever value happens to come first in the provisioning profile (D-035). Debug is
+	  Development, which creates record types on first use; Release is Production, which
+	  does not and needs the schema deployed. Leaving it unset is how a build meant for
+	  development ends up asking production for a record type nobody has deployed.
+	-->
+	<key>com.apple.developer.icloud-container-environment</key>
+	<string>$(ST_ICLOUD_ENVIRONMENT)</string>
 </dict>
 </plist>

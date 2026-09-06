@@ -1242,3 +1242,44 @@ offered it, every page is reachable, the last one finishes rather than continues
 works, a relaunch does not show it again, skipping does not gate anything, and Settings
 brings it back. Every page was also read on screen in both appearances — which is how the
 three defects above were found.
+
+## D-034 · A record name CloudKit will accept
+
+Sync failed on a real device with "iCloud rejected the change". CloudKit requires a record
+name to be ASCII, and the ids reaching it are not: a known host is identified by
+`host:port`, and by `host:port→jump` when it sits behind a bastion — and `→` is U+2192.
+One refused name fails the whole batch, which is every record, which is all of sync.
+
+The id is percent-encoded into the name, with `.` deliberately outside the allowed set so
+it can separate the kind from the id unambiguously — a hostname is full of dots. Names
+written before this are still read, so a device that pushed some before updating can
+still match its own deletions.
+
+This was not the failure the user was hitting (that was D-035), but it is a real one, and
+it would have been the next.
+
+## D-035 · The CloudKit environment is a decision, not a leftover
+
+With the record names fixed, sync still failed, and the message now carried the code:
+CloudKit 15, `serverRejectedRequest`. The app's signed entitlements named **no** CloudKit
+environment at all. The provisioning profile offers `["Production", "Development"]`, and
+with nothing declared the first one decides — so a build installed from Xcode onto a
+development device was asking the *production* container for a record type nobody had
+deployed. Production does not create record types on first use; development does. The
+server was right to refuse.
+
+`com.apple.developer.icloud-container-environment` is now declared explicitly and driven
+by a build setting: `ST_ICLOUD_ENVIRONMENT` is `Development` in Debug and `Production` in
+Release. Leaving it unset is how a build meant for development ends up talking to
+production, and the symptom — a rejection with no reason attached — points nowhere near
+the cause.
+
+The rejection message now also carries whatever CloudKit itself said. "This is a fault in
+the app" is true but unactionable; "record type SyncRecord not found" is the difference
+between a shrug and a fix, and this is the one branch nobody can act on without it. Three
+codes share that sentence, so it carries the code too.
+
+**What this leaves for the owner.** Once sync works in Development, the schema it created
+there has to be deployed to Production in the CloudKit Console before any TestFlight or
+App Store build can sync — the same `docs/RELEASE.md` item, now with a reason attached
+rather than a warning nobody had hit.

@@ -52,6 +52,23 @@ import Testing
         #expect(SyncFailure.describe(partial) == SyncFailure.describe(inner))
     }
 
+    @Test("A rejection carries CloudKit's own words when it gave any")
+    func serverDetail() {
+        // The generic sentence is true but unactionable; the server's reason is the
+        // difference between a shrug and a fix.
+        let withDetail = error(.serverRejectedRequest, userInfo: [
+            "ServerErrorDescription": "record type SyncRecord not found in production schema",
+        ])
+        let text = SyncFailure.describe(withDetail)
+        #expect(text.contains("CloudKit 15"), "the code is there: \(text)")
+        #expect(text.contains("record type SyncRecord not found"), "and so is the reason: \(text)")
+
+        // With nothing from the server it stays the plain sentence, not a dangling space.
+        let bare = SyncFailure.describe(error(.serverRejectedRequest))
+        #expect(!bare.hasSuffix(" "), "no trailing space when the server said nothing")
+        #expect(bare.contains("CloudKit 15"))
+    }
+
     @Test("Anything unrecognised keeps the system's wording and carries its code")
     func fallback() {
         let text = SyncFailure.describe(error(.internalError))

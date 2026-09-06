@@ -22,6 +22,18 @@ enum SyncFailure {
         return sentence(for: ck)
     }
 
+    /// CloudKit's own words for a rejection, when it gave any. The generic sentence above
+    /// is true but unactionable — "record type SyncRecord not found" is the difference
+    /// between a shrug and a fix — and this is the one branch nobody can act on without it.
+    private static func serverDetail(_ ck: CKError) -> String {
+        let candidates = [
+            ck.userInfo["ServerErrorDescription"] as? String,
+            (ck.userInfo[NSUnderlyingErrorKey] as? NSError)?.localizedDescription,
+        ]
+        guard let detail = candidates.compactMap({ $0 }).first(where: { !$0.isEmpty }) else { return "" }
+        return " " + detail.prefix(200)
+    }
+
     private static func sentence(for ck: CKError) -> String {
         switch ck.code {
         case .notAuthenticated:
@@ -55,6 +67,7 @@ enum SyncFailure {
             // them — but carry the code, because this is the branch a developer has to
             // act on and three codes share the sentence.
             String(localized: "iCloud rejected the change (CloudKit \(ck.errorCode)). This is a fault in the app, not something you did.")
+                + serverDetail(ck)
         default:
             // Everything else keeps the system's own wording, with the code so a
             // diagnostics export can be matched to Apple's documentation.
