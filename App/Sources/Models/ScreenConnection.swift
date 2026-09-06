@@ -18,6 +18,10 @@ public struct ScreenConnection: Identifiable, Sendable, Codable, Equatable {
     public var address: String
     public var port: Int
     public var route: Route
+    /// The account name, for a screen that authenticates one (D-031): macOS Screen
+    /// Sharing, or a VeNCrypt server. Blank for the classic servers, which have a single
+    /// password and no user at all — and blank is what most screens want.
+    public var username: String
     /// Whether a VNC password is in this device's Keychain for this screen. The claim
     /// syncs; the password never does.
     public var hasPassword: Bool
@@ -81,6 +85,7 @@ public struct ScreenConnection: Identifiable, Sendable, Codable, Equatable {
         /// Omitted means the route's default: the VNC port, or 443 through Cloudflare.
         port: Int? = nil,
         route: Route,
+        username: String = "",
         hasPassword: Bool = false,
         folder: String? = nil,
         tags: [String] = [],
@@ -91,6 +96,7 @@ public struct ScreenConnection: Identifiable, Sendable, Codable, Equatable {
         self.address = address
         self.port = port ?? Self.defaultPort(for: route)
         self.route = route
+        self.username = username
         self.hasPassword = hasPassword
         self.folder = folder
         self.tags = tags
@@ -100,6 +106,23 @@ public struct ScreenConnection: Identifiable, Sendable, Codable, Equatable {
     /// `127.0.0.1`, or `10.0.0.2:5901` when the port is not the route's default.
     public var endpoint: String {
         port == Self.defaultPort(for: route) ? address : "\(address):\(port)"
+    }
+
+    /// A screen saved before user names existed decodes with none, which is what a screen
+    /// that never had one means.
+    public init(from decoder: any Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        id = try values.decode(UUID.self, forKey: .id)
+        name = try values.decode(String.self, forKey: .name)
+        address = try values.decode(String.self, forKey: .address)
+        port = try values.decode(Int.self, forKey: .port)
+        route = try values.decode(Route.self, forKey: .route)
+        username = try values.decodeIfPresent(String.self, forKey: .username) ?? ""
+        hasPassword = try values.decode(Bool.self, forKey: .hasPassword)
+        folder = try values.decodeIfPresent(String.self, forKey: .folder)
+        tags = try values.decodeIfPresent([String].self, forKey: .tags) ?? []
+        lastConnected = try values.decodeIfPresent(Date.self, forKey: .lastConnected)
+        modifiedAt = try values.decodeIfPresent(Date.self, forKey: .modifiedAt)
     }
 
     /// Whether a Cloudflare Access service token is expected for this screen.

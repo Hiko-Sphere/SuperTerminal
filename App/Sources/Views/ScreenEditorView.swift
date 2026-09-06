@@ -36,6 +36,7 @@ struct ScreenEditorView: View {
     @State private var serviceTokenID = ""
     @State private var serviceTokenSecret = ""
     @State private var hasStoredServiceToken = false
+    @State private var username = ""
     @State private var password = ""
     @State private var hasStoredPassword = false
 
@@ -44,6 +45,7 @@ struct ScreenEditorView: View {
         if let screen {
             _name = State(initialValue: screen.name)
             _address = State(initialValue: screen.address)
+            _username = State(initialValue: screen.username)
             _port = State(initialValue: screen.port == ScreenConnection.defaultPort(for: screen.route) ? "" : String(screen.port))
             _sshHostID = State(initialValue: screen.route.sshHostID)
             switch screen.route {
@@ -124,6 +126,10 @@ struct ScreenEditorView: View {
                 }
 
                 Section {
+                    TextField("User name (optional)", text: $username)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .accessibilityIdentifier("screen-username")
                     SecureField(hasStoredPassword ? "VNC password (stored — enter to replace)" : "VNC password (optional)", text: $password)
                         // Opts out of iOS Password AutoFill's "Save Password?" sheet, which
                         // would store this secret in iCloud Keychain passwords.
@@ -139,7 +145,7 @@ struct ScreenEditorView: View {
                 } header: {
                     Text("Authentication")
                 } footer: {
-                    Text("Kept in this device's Keychain, never synced and never in the screen's record. Leave it empty to be asked when the screen opens.")
+                    Text("A user name is only needed for a screen that signs in to an account — a Mac sharing its screen, or a server using VeNCrypt. Leave it empty otherwise. The password is kept in this device's Keychain, never synced and never in the screen's record; leave it empty to be asked when the screen opens.")
                 }
 
                 if !problems.isEmpty {
@@ -222,6 +228,7 @@ struct ScreenEditorView: View {
             address: parsed?.host ?? address.trimmingCharacters(in: .whitespaces),
             port: resolvedPort,
             route: route,
+            username: username.trimmingCharacters(in: .whitespaces),
             hasPassword: !password.isEmpty || hasStoredPassword,
             folder: existing?.folder,
             tags: existing?.tags ?? [],

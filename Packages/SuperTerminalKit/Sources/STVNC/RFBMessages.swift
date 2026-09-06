@@ -11,6 +11,51 @@ public enum RFB {
     /// as the optional's nil — and the real one is then never chosen.
     public enum SecurityType: UInt8, Sendable {
         case invalid = 0, noAuthentication = 1, vncAuthentication = 2, veNCrypt = 19
+        /// What macOS Screen Sharing offers: a Diffie-Hellman exchange authenticating a
+        /// macOS account, so a user name as well as a password (D-031).
+        case appleRemoteDesktop = 30
+    }
+
+    /// The sub-types VeNCrypt (security type 19) multiplexes. Only the two that need no
+    /// TLS layer of their own are usable here; the rest are named so that a server
+    /// offering nothing else can say so.
+    public enum VeNCryptSubtype: UInt32, Sendable {
+        case plain = 256, vncAuthentication = 257
+        case tlsNone = 258, tlsVNC = 259, tlsPlain = 260
+        case x509None = 261, x509VNC = 262, x509Plain = 263
+
+        var needsTLS: Bool { rawValue >= 258 }
+    }
+
+    /// Which security type to answer with, given what the server offered and what the
+    /// user actually supplied. Pure, so the choice can be tested without a server.
+    ///
+    /// `None` wins whenever it is offered: the server is saying it wants no secret, and
+    /// choosing anything else would demand one the user does not have. After that the
+    /// order is by how well the password is protected — Apple's exchange encrypts it,
+    /// classic VNC authentication hashes a challenge, and VeNCrypt's usable sub-types
+    /// come last because one of them sends it in the clear.
+    public static func chooseSecurity(
+        offered: [UInt8],
+        hasUsername: Bool,
+        hasPassword: Bool
+    ) throws -> UInt8 {
+        if offered.contains(SecurityType.noAuthentication.rawValue) { return SecurityType.noAuthentication.rawValue }
+        if offered.contains(SecurityType.appleRemoteDesktop.rawValue), hasUsername, hasPassword {
+            return SecurityType.appleRemoteDesktop.rawValue
+        }
+        if offered.contains(SecurityType.vncAuthentication.rawValue), hasPassword {
+            return SecurityType.vncAuthentication.rawValue
+        }
+        if offered.contains(SecurityType.veNCrypt.rawValue) { return SecurityType.veNCrypt.rawValue }
+        // Everything the server would accept needs a credential that was not given. Which
+        // one is missing decides the error, because a missing password is asked for on the
+        // spot and a missing user name has to be edited into the screen.
+        if offered.contains(SecurityType.appleRemoteDesktop.rawValue) {
+            throw hasUsername ? VNCError.passwordRequired : VNCError.credentialsRequired
+        }
+        if offered.contains(SecurityType.vncAuthentication.rawValue) { throw VNCError.passwordRequired }
+        throw VNCError.noAcceptableSecurity(offered)
     }
 
     public enum ClientMessage: UInt8 {

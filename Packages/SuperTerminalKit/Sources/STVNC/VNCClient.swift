@@ -19,6 +19,14 @@ public enum VNCError: Error, Sendable, Equatable {
     case authenticationFailed(String)
     case protocolError(String)
     case passwordRequired
+    /// The server authenticates an account, so a user name is needed as well (D-031).
+    case credentialsRequired
+    /// The server's security is something this client will not do — VeNCrypt's own TLS,
+    /// or a password in the clear on a connection with nothing over it. Distinct from a
+    /// refused password: nothing the user types would change it.
+    case unsupportedSecurity(String)
+    /// A user name or password longer than the fixed field the format gives it.
+    case credentialsTooLong
 }
 
 /// A VNC client over any NIO channel: a TCP connection, or an SSH `direct-tcpip` channel
@@ -32,14 +40,29 @@ public final class VNCClient: @unchecked Sendable {
     private let handler: RFBClientHandler
 
     public struct Options: Sendable {
+        /// The account name, for a server that authenticates one — macOS Screen Sharing,
+        /// or a VeNCrypt server (D-031). Blank for the classic single-password servers.
+        public var username: String?
         public var password: String?
         public var shared: Bool = true
         /// Encodings to ask for, most preferred first; `nil` means the usual set.
         public var encodings: [RFB.Encoding]?
-        public init(password: String? = nil, shared: Bool = true, encodings: [RFB.Encoding]? = nil) {
+        /// Whether a password may be sent in the clear when the server offers nothing
+        /// better. True only when something else is already encrypting the connection —
+        /// an SSH channel or the Cloudflare carrier — and never on a direct one.
+        public var allowsPlaintextAuthentication: Bool
+        public init(
+            username: String? = nil,
+            password: String? = nil,
+            shared: Bool = true,
+            encodings: [RFB.Encoding]? = nil,
+            allowsPlaintextAuthentication: Bool = false
+        ) {
+            self.username = username
             self.password = password
             self.shared = shared
             self.encodings = encodings
+            self.allowsPlaintextAuthentication = allowsPlaintextAuthentication
         }
     }
 
@@ -108,6 +131,8 @@ final class RFBClientHandler: ChannelInboundHandler, @unchecked Sendable {
 
     private enum State {
         case version, securityTypes, securityResult, vncChallenge, serverInit, messages
+        case appleChallenge, appleComputing
+        case veNCryptVersion, veNCryptAck, veNCryptSubtypes
     }
 
     private let options: VNCClient.Options
@@ -193,13 +218,78 @@ final class RFBClientHandler: ChannelInboundHandler, @unchecked Sendable {
                     guard pending.readableBytes >= 1 + Int(count) else { return }
                     pending.moveReaderIndex(forwardBy: 1)
                     let offered = pending.readBytes(length: Int(count)) ?? []
-                    let chosen: UInt8
-                    if offered.contains(RFB.SecurityType.noAuthentication.rawValue) { chosen = RFB.SecurityType.noAuthentication.rawValue }
-                    else if offered.contains(RFB.SecurityType.vncAuthentication.rawValue) { chosen = RFB.SecurityType.vncAuthentication.rawValue }
-                    else { throw VNCError.noAcceptableSecurity(offered) }
+                    let chosen = try RFB.chooseSecurity(
+                        offered: offered,
+                        hasUsername: !(options.username ?? "").isEmpty,
+                        hasPassword: !(options.password ?? "").isEmpty
+                    )
                     send(context, [chosen])
                     try beginSecurity(chosen, context)
                 }
+
+            case .appleChallenge:
+                guard let challenge = try VNCAppleAuthentication.readChallenge(from: &pending) else { return }
+                let username = options.username ?? ""
+                let password = options.password ?? ""
+                try VNCAppleAuthentication.validate(username: username, password: password)
+                // The exponentiation is milliseconds of arithmetic, which is a long time to
+                // hold an event loop that also serves other connections.
+                state = .appleComputing
+                let loop = context.eventLoop
+                // The context may only be touched on its own loop; this is the type that
+                // says so, rather than capturing it and hoping.
+                let bound = NIOLoopBound(context, eventLoop: loop)
+                DispatchQueue.global(qos: .userInitiated).async { [self] in
+                    let result = Result {
+                        try VNCAppleAuthentication.response(
+                            to: challenge,
+                            username: username,
+                            password: password,
+                            privateKey: Self.randomBytes(challenge.keyLength),
+                            padding: Self.randomBytes(VNCAppleAuthentication.credentialsLength)
+                        )
+                    }
+                    loop.execute { self.finishAppleAuthentication(result, bound.value) }
+                }
+                return
+
+            case .appleComputing:
+                // Whatever the server sends next stays in `pending` until the answer is out.
+                return
+
+            case .veNCryptVersion:
+                guard pending.readableBytes >= 2, let version = pending.readBytes(length: 2) else { return }
+                guard version[0] == 0, version[1] >= 2 else {
+                    throw VNCError.protocolError("VeNCrypt \(version[0]).\(version[1]) is not supported")
+                }
+                send(context, [0, 2])
+                state = .veNCryptAck
+
+            case .veNCryptAck:
+                guard let ack: UInt8 = pending.readInteger() else { return }
+                guard ack == 0 else { throw VNCError.authenticationFailed("the server refused VeNCrypt 0.2") }
+                state = .veNCryptSubtypes
+
+            case .veNCryptSubtypes:
+                guard let count: UInt8 = pending.getInteger(at: pending.readerIndex) else { return }
+                guard count > 0 else { throw VNCError.authenticationFailed("the server offered no VeNCrypt sub-types") }
+                guard pending.readableBytes >= 1 + Int(count) * 4 else { return }
+                pending.moveReaderIndex(forwardBy: 1)
+                var subtypes: [UInt32] = []
+                for _ in 0 ..< count { subtypes.append(pending.readInteger() ?? 0) }
+                let subtype = try chooseVeNCryptSubtype(subtypes)
+                var reply = ByteBuffer()
+                reply.writeInteger(subtype.rawValue)
+                if subtype == .plain {
+                    let username = Array((options.username ?? "").utf8)
+                    let password = Array((options.password ?? "").utf8)
+                    reply.writeInteger(UInt32(username.count))
+                    reply.writeInteger(UInt32(password.count))
+                    reply.writeBytes(username)
+                    reply.writeBytes(password)
+                }
+                context.writeAndFlush(NIOAny(reply), promise: nil)
+                state = subtype == .plain ? .securityResult : .vncChallenge
 
             case .vncChallenge:
                 guard pending.readableBytes >= 16, let challenge = pending.readBytes(length: 16) else { return }
@@ -271,9 +361,51 @@ final class RFBClientHandler: ChannelInboundHandler, @unchecked Sendable {
             if serverMinor >= 8 { state = .securityResult } else { send(context, [options.shared ? 1 : 0]); state = .serverInit }
         case .vncAuthentication?:
             state = .vncChallenge
+        case .appleRemoteDesktop?:
+            state = .appleChallenge
+        case .veNCrypt?:
+            state = .veNCryptVersion
         default:
             throw VNCError.noAcceptableSecurity([type])
         }
+    }
+
+    /// The best VeNCrypt sub-type this client can actually complete.
+    private func chooseVeNCryptSubtype(_ offered: [UInt32]) throws -> RFB.VeNCryptSubtype {
+        let known = offered.compactMap(RFB.VeNCryptSubtype.init(rawValue:))
+        if known.contains(.vncAuthentication), !(options.password ?? "").isEmpty { return .vncAuthentication }
+        if known.contains(.plain), !(options.password ?? "").isEmpty {
+            // Plain is the user name and the password as they are, with nothing over them.
+            // Inside an SSH channel or the Cloudflare carrier that is someone else's
+            // encryption and fine; on a direct connection it is the password in the clear,
+            // which is worth refusing rather than doing quietly.
+            guard options.allowsPlaintextAuthentication else {
+                throw VNCError.unsupportedSecurity("VeNCrypt Plain on an unencrypted connection")
+            }
+            return .plain
+        }
+        if known.allSatisfy(\.needsTLS), !known.isEmpty {
+            throw VNCError.unsupportedSecurity("VeNCrypt TLS")
+        }
+        if !(options.password ?? "").isEmpty { throw VNCError.noAcceptableSecurity([]) }
+        throw VNCError.passwordRequired
+    }
+
+    /// Sends the answer worked out off the event loop, then picks the handshake back up.
+    private func finishAppleAuthentication(_ result: Result<[UInt8], Error>, _ context: ChannelHandlerContext) {
+        switch result {
+        case let .success(response):
+            send(context, response)
+            state = .securityResult
+            do { try drain(context: context) } catch { fail(context: context, error) }
+        case let .failure(error):
+            fail(context: context, error)
+        }
+    }
+
+    private static func randomBytes(_ count: Int) -> [UInt8] {
+        var generator = SystemRandomNumberGenerator()
+        return (0 ..< count).map { _ in UInt8.random(in: .min ... .max, using: &generator) }
     }
 
     /// Reads one rectangle if it is complete. Returns false to wait for more bytes.

@@ -112,4 +112,34 @@ final class VNCUITests: XCTestCase {
                        "the SSH editor has no screen sharing section any more")
         XCTAssertFalse(app.buttons["Open Screen"].exists)
     }
+
+    /// A screen that signs in to an account needs a user name as well as a password
+    /// (D-031), and both may be left empty — most screens have neither.
+    func testAScreenKeepsAnOptionalUserName() throws {
+        func openEditor() {
+            let row = app.buttons.matching(identifier: "screen-row").firstMatch
+            XCTAssertTrue(row.waitForExistence(timeout: 10))
+            for _ in 0 ..< 20 where !row.isHittable { usleep(150_000) }
+            row.press(forDuration: 1.0)
+            let edit = app.buttons["Edit Screen"].firstMatch
+            XCTAssertTrue(edit.waitForExistence(timeout: 5))
+            edit.tap()
+            XCTAssertTrue(app.navigationBars["Edit Screen"].waitForExistence(timeout: 5))
+        }
+
+        openEditor()
+        let field = app.textFields["screen-username"]
+        XCTAssertTrue(field.waitForExistence(timeout: 5), "the screen has a user name field")
+        XCTAssertEqual(field.value as? String, "User name (optional)",
+                       "and it starts empty, because most screens have no account")
+        field.tap()
+        field.typeText("screen-account")
+        app.buttons["Save"].firstMatch.tap()
+        XCTAssertTrue(app.navigationBars["Edit Screen"].waitForNonExistence(timeout: 5))
+
+        // It is still there when the screen is opened again, so it was actually stored.
+        openEditor()
+        XCTAssertEqual(app.textFields["screen-username"].value as? String, "screen-account")
+        app.buttons["Cancel"].firstMatch.tap()
+    }
 }

@@ -21,7 +21,7 @@ left out.
 ```bash
 cd Packages/SuperTerminalKit
 swift build          # 0 errors, 0 warnings from project code
-swift test           # 172 tests in 25 suites passed (the VNC suites run against LibVNCServer from Homebrew)
+swift test           # 198 tests in 30 suites passed (the VNC suites run against LibVNCServer from Homebrew)
 swift test -c release --filter TerminalThroughputTests   # the numbers below
 
 cd ..
@@ -43,12 +43,12 @@ xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal \
   -only-testing:SuperTerminalTests test
 # 165 passed, 8 skipped (the sshd-backed cases, run by the script below), 0 failed
 
-./scripts/app-integration-e2e.sh   # 120 app tests on iPhone 17 Pro simulator, 0 skipped, ** TEST SUCCEEDED **
+./scripts/app-integration-e2e.sh   # 191 app tests on iPhone 17 Pro simulator, 0 skipped, ** TEST SUCCEEDED **
 ./scripts/profile-emulator.sh      # real Instruments trace of the emulator hot path
 ./scripts/localization-audit.sh    # every user-visible string translated (zh-Hans, zh-Hant): green
-./scripts/ui-terminal-e2e.sh       # 33 passed, 1 skipped on iPhone (three in Chinese, two for the consent gate; the screen test needs libvncserver), ** TEST SUCCEEDED **
+./scripts/ui-terminal-e2e.sh       # 38 passed, 1 skipped on iPhone (multi-window, which that device does not offer), ** TEST SUCCEEDED **
 ./scripts/ui-terminal-e2e.sh "platform=iOS Simulator,name=iPad Pro 13-inch (M5)"
-                                   # 34 passed on iPad, ** TEST SUCCEEDED **
+                                   # 39 passed on iPad, none skipped, ** TEST SUCCEEDED **
 
 cd Packages/swift-nio-ssh-rsa
 swift test           # Executed 349 tests, with 0 failures (347 upstream + 2 for key extension)
@@ -352,6 +352,54 @@ arriving as three separate gestures add up to one step in the right direction, w
 the defect D-025 fixed in the terminal and this fixes in the other view. A live tunnelled
 screen needs the owner's Cloudflare environment (B-2); a real external keyboard and mouse
 are device checks.
+
+### A frame is copied, not walked pixel by pixel (D-030)
+
+`VNCThroughputTests` decode a full 1080p frame in each encoding and hold each to a floor
+slow enough not to be flaky and fast enough that failing it means a visibly stuttering
+screen: measured 4131 frames a second for `Raw` (was 100), 800 for a worst-case ZRLE frame
+half made of raw tiles (was 568), 4107 for Hextile, and 6819 for turning the framebuffer
+into the image the display takes. The floors are per-encoding, because a decoder that is a
+`memcpy` per row loses almost nothing to a Debug build and one that touches every pixel
+loses a factor of forty; one blanket divisor would either fail on the fast encodings or
+assert nothing about the slow ones. Each test also checks the picture it decoded, so a
+decoder cannot pass by being fast and wrong.
+
+`RFBReceiveTests` measure the receive path rather than the decoder: an update fed in 16 KB
+segments — a 1080p frame arrives in hundreds of them — against the same update delivered
+whole, and the ratio is under 1.2, so nothing done per read costs the whole buffer. This
+test exists because that path was *suspected* of being quadratic and measurement said it
+was not; it stays as the guard that would catch it becoming true. A second test proves an
+incomplete rectangle is not half-drawn and is drawn once, as soon as its last byte lands.
+
+### A screen may sign in to an account (D-031)
+
+`VNCAuthenticationTests` verify the two security types that carry a user name. The
+Diffie-Hellman arithmetic is checked against exchanges computed by Python's
+arbitrary-precision integers at 512 and 1024 bits — an implementation that owes nothing to
+this one — plus small identities (Fermat, reduction, wire round-trip) and the FIPS-197
+published answer for AES-128. Without those the end-to-end test would only prove the
+client agrees with itself. The exchange is then run end to end against a server half that
+has to undo it: it derives the same secret from the client's public key, decrypts the
+128-byte block and reads the credentials back out, and the test also asserts the user name
+does not appear in the ciphertext. An incomplete challenge is waited for rather than
+half-read, a key length no server would send is refused before anything is allocated, and
+credentials too long for their fixed 63-byte fields are refused rather than truncated —
+a truncated password is a login that fails for a reason nobody could work out.
+
+Which security type is chosen is a pure function, tested as a table: `None` whenever
+offered, then Apple's exchange when a user name and password exist, then classic VNC
+authentication, then VeNCrypt — and when nothing on offer can be completed, an error
+naming which credential is missing. VeNCrypt itself is driven through the real handler on
+an `EmbeddedChannel`: the version exchange, `Plain` carrying the credentials, `VncAuth`
+preferred to it and the challenge then answered, a TLS-only server told so rather than
+left hanging, and — the one that matters — `Plain` on an unencrypted route closing the
+connection with the password never written to it. `ScreenConnectionTests` cover the field
+itself: empty is the default and a complete screen, a user name round-trips, and a record
+saved before D-031 decodes with none and everything else intact. `VNCUITests` type a user
+name into the screen's editor, save, reopen and find it still there. A real Mac and a real
+VeNCrypt server are device checks — the bundled LibVNCServer fixture serves neither
+security type 30 nor VeNCrypt.
 
 ### App lock — 8 unit tests and 1 UI test
 

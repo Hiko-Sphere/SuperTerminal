@@ -426,6 +426,23 @@
         }
       }
     },
+    "A user name is only needed for a screen that signs in to an account — a Mac sharing its screen, or a server using VeNCrypt. Leave it empty otherwise. The password is kept in this device's Keychain, never synced and never in the screen's record; leave it empty to be asked when the screen opens.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "只有需要登录账户的屏幕才需要用户名——例如开启了屏幕共享的 Mac，或使用 VeNCrypt 的服务器。其他情况留空即可。密码保存在本设备的钥匙串中，不会同步，也不会写入屏幕的记录；留空则在打开屏幕时询问。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "只有需要登入帳號的螢幕才需要使用者名稱——例如開啟了螢幕共享的 Mac，或使用 VeNCrypt 的伺服器。其他情況留空即可。密碼儲存在本裝置的鑰匙圈中，不會同步，也不會寫入螢幕的記錄；留空則在開啟螢幕時詢問。"
+          }
+        }
+      }
+    },
     "API key": {
       "extractionState": "manual",
       "localizations": {
@@ -2993,6 +3010,23 @@
         }
       }
     },
+    "Edit the screen and enter the user name you sign in to that computer with. On a Mac, that is the account allowed in Screen Sharing settings.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请编辑此屏幕，输入你登录那台电脑所用的用户名。在 Mac 上，就是“屏幕共享”设置中被允许的那个账户。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請編輯此螢幕，輸入你登入那台電腦所用的使用者名稱。在 Mac 上，就是「螢幕共享」設定中被允許的那個帳號。"
+          }
+        }
+      }
+    },
     "End": {
       "extractionState": "manual",
       "localizations": {
@@ -5050,6 +5084,23 @@
         }
       }
     },
+    "On a Mac, turn on Screen Sharing and allow your account, or set “VNC viewers may control screen with password”. On other servers, enable VNC or VeNCrypt password authentication.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在 Mac 上，请开启“屏幕共享”并允许你的账户，或设置“VNC 显示程序可以使用密码控制屏幕”。在其他服务器上，请启用 VNC 或 VeNCrypt 密码验证。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在 Mac 上，請開啟「螢幕共享」並允許你的帳號，或設定「VNC 檢視器可以使用密碼控制螢幕」。在其他伺服器上，請啟用 VNC 或 VeNCrypt 密碼驗證。"
+          }
+        }
+      }
+    },
     "On a Mac, turn on “VNC viewers may control screen with password” in Screen Sharing settings. On other servers, enable VNC password authentication.": {
       "extractionState": "manual",
       "localizations": {
@@ -5862,6 +5913,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "服務提供者基礎 URL"
+          }
+        }
+      }
+    },
+    "Reach the screen through an SSH connection or a Cloudflare tunnel, which encrypt it, or turn on a password type the app supports on the server.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请通过 SSH 连接或 Cloudflare 隧道访问此屏幕（两者都会加密），或在服务器上启用此应用支持的密码验证方式。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請透過 SSH 連線或 Cloudflare 通道存取此螢幕（兩者都會加密），或在伺服器上啟用此 App 支援的密碼驗證方式。"
           }
         }
       }
@@ -6916,6 +6984,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "分享公開金鑰"
+          }
+        }
+      }
+    },
+    "Shorten them in the screen's settings.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请在此屏幕的设置中缩短它们。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請在此螢幕的設定中縮短它們。"
           }
         }
       }
@@ -8433,6 +8518,57 @@
         }
       }
     },
+    "This screen signs in to an account, so it needs a user name as well as a password.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此屏幕需要登录账户，因此除密码外还需要用户名。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此螢幕需要登入帳號，因此除密碼外還需要使用者名稱。"
+          }
+        }
+      }
+    },
+    "This screen's sign-in is one this app will not use over a connection with nothing protecting it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此屏幕的登录方式，此应用不会在毫无保护的连接上使用。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此螢幕的登入方式，此 App 不會在毫無保護的連線上使用。"
+          }
+        }
+      }
+    },
+    "This screen's user name and password can each be at most 63 characters.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此屏幕的用户名和密码各自最多 63 个字符。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此螢幕的使用者名稱和密碼各自最多 63 個字元。"
+          }
+        }
+      }
+    },
     "This server has not been seen before. Check that the fingerprint below matches the server.": {
       "extractionState": "manual",
       "localizations": {
@@ -9007,6 +9143,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "使用者名稱"
+          }
+        }
+      }
+    },
+    "User name (optional)": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用户名（可选）"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用者名稱（選填）"
           }
         }
       }

@@ -224,7 +224,13 @@ final class VNCSession: Identifiable {
             ).connect(on: group.next())
         }
         state = .connecting(step: String(localized: "Starting screen sharing"))
-        let client = try await VNCClient.start(on: channel, options: .init(password: password))
+        let client = try await VNCClient.start(on: channel, options: .init(
+            username: screen.username.isEmpty ? nil : screen.username,
+            password: password,
+            // A password may only go across as it is when the connection is already inside
+            // someone else's encryption — an SSH channel or the Cloudflare carrier (D-031).
+            allowsPlaintextAuthentication: screen.route.isEncrypted
+        ))
         self.client = client
         consumeEvents(from: client)
     }
@@ -374,11 +380,30 @@ final class VNCSession: Identifiable {
                 message: String(localized: "This screen needs a VNC password."),
                 recoverySuggestion: String(localized: "Edit the screen and enter its VNC password.")
             )
+        case .credentialsRequired:
+            STError(
+                category: .credential,
+                message: String(localized: "This screen signs in to an account, so it needs a user name as well as a password."),
+                recoverySuggestion: String(localized: "Edit the screen and enter the user name you sign in to that computer with. On a Mac, that is the account allowed in Screen Sharing settings.")
+            )
+        case .credentialsTooLong:
+            STError(
+                category: .credential,
+                message: String(localized: "This screen's user name and password can each be at most 63 characters."),
+                recoverySuggestion: String(localized: "Shorten them in the screen's settings.")
+            )
+        case let .unsupportedSecurity(what):
+            STError(
+                category: .configuration,
+                message: String(localized: "This screen's sign-in is one this app will not use over a connection with nothing protecting it."),
+                recoverySuggestion: String(localized: "Reach the screen through an SSH connection or a Cloudflare tunnel, which encrypt it, or turn on a password type the app supports on the server."),
+                underlyingDescription: what
+            )
         case let .noAcceptableSecurity(offered):
             STError(
                 category: .configuration,
                 message: String(localized: "The server offers only screen sharing security types this app does not support."),
-                recoverySuggestion: String(localized: "On a Mac, turn on “VNC viewers may control screen with password” in Screen Sharing settings. On other servers, enable VNC password authentication."),
+                recoverySuggestion: String(localized: "On a Mac, turn on Screen Sharing and allow your account, or set “VNC viewers may control screen with password”. On other servers, enable VNC or VeNCrypt password authentication."),
                 underlyingDescription: "offered \(offered)"
             )
         case let .unsupportedVersion(version):

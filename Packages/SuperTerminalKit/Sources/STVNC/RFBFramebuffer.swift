@@ -71,12 +71,54 @@ public final class RFBFramebuffer: @unchecked Sendable {
     }
 
     @inline(__always) func fill(x: Int, y: Int, w: Int, h: Int, b: UInt8, g: UInt8, r: UInt8) {
-        guard w > 0, h > 0 else { return }
-        for row in y ..< min(y + h, height) {
-            var i = (row * width + x) * 4
-            for _ in x ..< min(x + w, width) {
-                pixels[i] = b; pixels[i + 1] = g; pixels[i + 2] = r; pixels[i + 3] = 255
-                i += 4
+        let firstRow = max(0, y), lastRow = min(y + h, height)
+        let firstColumn = max(0, x), lastColumn = min(x + w, width)
+        guard firstRow < lastRow, firstColumn < lastColumn else { return }
+        var pattern: UInt32 = 0
+        withUnsafeMutableBytes(of: &pattern) { bytes in
+            bytes[0] = b; bytes[1] = g; bytes[2] = r; bytes[3] = 255
+        }
+        let rowBytes = (lastColumn - firstColumn) * 4
+        let width = width
+        pixels.withUnsafeMutableBytes { destination in
+            guard let base = destination.baseAddress else { return }
+            for row in firstRow ..< lastRow {
+                memset_pattern4(base + (row * width + firstColumn) * 4, &pattern, rowBytes)
+            }
+        }
+    }
+
+    /// Runs `body` with the pixels, their width and their height, for decoders that write
+    /// enough of them that going through `put` — a call and four bounds checks each —
+    /// dominates. Only ever called with the lock already held.
+    func withUnsafeMutablePixels<T>(_ body: (UnsafeMutableRawPointer, Int, Int) throws -> T) rethrows -> T? {
+        let width = width, height = height
+        return try pixels.withUnsafeMutableBytes { buffer in
+            guard let base = buffer.baseAddress else { return nil }
+            return try body(base, width, height)
+        }
+    }
+
+    /// Copies a rectangle of wire pixels straight in, clipped to the framebuffer (D-030).
+    ///
+    /// The pixel format the client negotiates is the framebuffer's own — 32 bits little
+    /// endian with blue, green and red in the low three bytes — so a row of a Raw
+    /// rectangle is a copy, not a loop. Decoding it pixel by pixel was the slowest thing
+    /// in the client by a wide margin. The fourth byte is padding on both sides and is
+    /// copied through: the image ignores it.
+    func copyPixels(from source: UnsafeRawBufferPointer, rect: RFB.Rectangle) {
+        guard let sourceBase = source.baseAddress else { return }
+        let firstRow = max(0, rect.y), lastRow = min(rect.y + rect.height, height)
+        let firstColumn = max(0, rect.x), lastColumn = min(rect.x + rect.width, width)
+        guard firstRow < lastRow, firstColumn < lastColumn else { return }
+        let rowBytes = (lastColumn - firstColumn) * 4
+        let width = width
+        pixels.withUnsafeMutableBytes { destination in
+            guard let base = destination.baseAddress else { return }
+            for row in firstRow ..< lastRow {
+                let sourceOffset = ((row - rect.y) * rect.width + (firstColumn - rect.x)) * 4
+                let targetOffset = (row * width + firstColumn) * 4
+                (base + targetOffset).copyMemory(from: sourceBase + sourceOffset, byteCount: rowBytes)
             }
         }
     }
@@ -129,12 +171,10 @@ public enum RFBDecoder {
 
     static func raw(_ rect: RFB.Rectangle, _ buffer: inout ByteBuffer, _ fb: RFBFramebuffer) -> Bool {
         let needed = rect.width * rect.height * 4
-        guard buffer.readableBytes >= needed else { return false }
-        for row in 0 ..< rect.height {
-            for column in 0 ..< rect.width {
-                guard let (b, g, r) = readPixel(&buffer) else { return false }
-                fb.put(x: rect.x + column, y: rect.y + row, b: b, g: g, r: r)
-            }
+        guard needed > 0, buffer.readableBytes >= needed else { return needed == 0 }
+        buffer.readWithUnsafeReadableBytes { source in
+            fb.copyPixels(from: UnsafeRawBufferPointer(rebasing: source.prefix(needed)), rect: rect)
+            return needed
         }
         return true
     }
@@ -204,69 +244,178 @@ public enum RFBDecoder {
         buffer.moveReaderIndex(forwardBy: 4)
         let compressed = buffer.readBytes(length: Int(length)) ?? []
         let data = try zlib.inflate(compressed)
-        var tiles = ByteBuffer(bytes: data)
-        var ty = rect.y
-        while ty < rect.y + rect.height {
-            let th = min(64, rect.y + rect.height - ty)
-            var tx = rect.x
-            while tx < rect.x + rect.width {
-                let tw = min(64, rect.x + rect.width - tx)
-                guard let subencoding: UInt8 = tiles.readInteger() else { throw Failure.malformed("zrle tile header") }
-                // CPIXEL is 3 bytes for 24-bit depth in a 32-bit format: B G R (little-endian, low three).
-                func cpixel() throws -> (UInt8, UInt8, UInt8) {
-                    guard let b: UInt8 = tiles.readInteger(), let g: UInt8 = tiles.readInteger(), let r: UInt8 = tiles.readInteger() else { throw Failure.malformed("zrle cpixel") }
-                    return (b, g, r)
+
+        // Decoded over raw memory rather than a `ByteBuffer`, and written through a
+        // pointer rather than `put` (D-030). Every byte of a ZRLE tile used to cost a
+        // `readInteger` call and every pixel a call with four bounds checks; in a build
+        // with no inlining — the one you install from Xcode — a full screen took a
+        // second. The arithmetic is the same; only the calls are gone.
+        let ok = try data.withUnsafeBufferPointer { source -> Bool in
+            try fb.withUnsafeMutablePixels { pixelBase, fbWidth, fbHeight -> Bool in
+                var cursor = 0
+                let end = source.count
+                // Plain pointers rather than buffer subscripts and `storeBytes`: both are
+                // bounds-checked calls in the configuration this ships to a device in, and
+                // this loop runs once per pixel of the screen.
+                guard let source = source.baseAddress else { return true }
+                let pixels = pixelBase.assumingMemoryBound(to: UInt8.self)
+
+                /// Writes one pixel, dropping any that falls outside the framebuffer.
+                @inline(__always) func put(_ x: Int, _ y: Int, _ b: UInt8, _ g: UInt8, _ r: UInt8) {
+                    guard x >= 0, y >= 0, x < fbWidth, y < fbHeight else { return }
+                    let target = (y * fbWidth + x) * 4
+                    pixels[target] = b
+                    pixels[target + 1] = g
+                    pixels[target + 2] = r
+                    pixels[target + 3] = 255
                 }
-                switch subencoding {
-                case 0: // raw
-                    for row in 0 ..< th { for column in 0 ..< tw { let p = try cpixel(); fb.put(x: tx + column, y: ty + row, b: p.0, g: p.1, r: p.2) } }
-                case 1: // solid
-                    let p = try cpixel(); fb.fill(x: tx, y: ty, w: tw, h: th, b: p.0, g: p.1, r: p.2)
-                case 2 ... 16: // packed palette
-                    let size = Int(subencoding)
-                    var palette: [(UInt8, UInt8, UInt8)] = []
-                    for _ in 0 ..< size { palette.append(try cpixel()) }
-                    let bits = size == 2 ? 1 : size <= 4 ? 2 : 4
-                    for row in 0 ..< th {
-                        var bitsLeft = 0; var byte: UInt8 = 0
-                        for column in 0 ..< tw {
-                            if bitsLeft == 0 { guard let b: UInt8 = tiles.readInteger() else { throw Failure.malformed("zrle packed") }; byte = b; bitsLeft = 8 }
-                            bitsLeft -= bits
-                            let index = Int((byte >> UInt8(bitsLeft)) & UInt8((1 << bits) - 1))
-                            let p = palette[min(index, palette.count - 1)]
-                            fb.put(x: tx + column, y: ty + row, b: p.0, g: p.1, r: p.2)
+
+                var ty = rect.y
+                while ty < rect.y + rect.height {
+                    let th = min(64, rect.y + rect.height - ty)
+                    var tx = rect.x
+                    while tx < rect.x + rect.width {
+                        let tw = min(64, rect.x + rect.width - tx)
+                        guard cursor < end else { throw Failure.malformed("zrle tile header") }
+                        let subencoding = source[cursor]
+                        cursor += 1
+
+                        switch subencoding {
+                        case 0:
+                            // Raw: one CPIXEL — blue, green, red — per pixel. Clamped once
+                            // per row and written straight through, because a per-pixel
+                            // call is not inlined in the configuration this ships to a
+                            // device in, and this is the tile a detailed screen is made of.
+                            let needed = tw * th * 3
+                            guard end - cursor >= needed else { throw Failure.malformed("zrle raw tile") }
+                            let firstRow = max(0, ty), lastRow = min(ty + th, fbHeight)
+                            let firstColumn = max(0, tx), lastColumn = min(tx + tw, fbWidth)
+                            if firstRow < lastRow, firstColumn < lastColumn {
+                                for row in firstRow ..< lastRow {
+                                    var target = (row * fbWidth + firstColumn) * 4
+                                    var at = cursor + ((row - ty) * tw + (firstColumn - tx)) * 3
+                                    for _ in firstColumn ..< lastColumn {
+                                        pixels[target] = source[at]
+                                        pixels[target + 1] = source[at + 1]
+                                        pixels[target + 2] = source[at + 2]
+                                        pixels[target + 3] = 255
+                                        target += 4
+                                        at += 3
+                                    }
+                                }
+                            }
+                            cursor += needed
+
+                        case 1:
+                            // Filled here rather than through `fill`, which would be a
+                            // second exclusive access to the pixels this closure holds.
+                            guard end - cursor >= 3 else { throw Failure.malformed("zrle solid tile") }
+                            var pattern: UInt32 = 0
+                            withUnsafeMutableBytes(of: &pattern) { bytes in
+                                bytes[0] = source[cursor]; bytes[1] = source[cursor + 1]
+                                bytes[2] = source[cursor + 2]; bytes[3] = 255
+                            }
+                            cursor += 3
+                            let firstRow = max(0, ty), lastRow = min(ty + th, fbHeight)
+                            let firstColumn = max(0, tx), lastColumn = min(tx + tw, fbWidth)
+                            if firstRow < lastRow, firstColumn < lastColumn {
+                                let rowBytes = (lastColumn - firstColumn) * 4
+                                for row in firstRow ..< lastRow {
+                                    memset_pattern4(pixels + (row * fbWidth + firstColumn) * 4, &pattern, rowBytes)
+                                }
+                            }
+
+                        case 2 ... 16:
+                            let size = Int(subencoding)
+                            let bits = size == 2 ? 1 : size <= 4 ? 2 : 4
+                            let rowBytes = (tw * bits + 7) / 8
+                            guard end - cursor >= size * 3 + rowBytes * th else { throw Failure.malformed("zrle packed palette") }
+                            let paletteAt = cursor
+                            cursor += size * 3
+                            let mask = UInt8((1 << bits) - 1)
+                            for row in 0 ..< th {
+                                let rowAt = cursor + row * rowBytes
+                                var bitsLeft = 0
+                                var byte: UInt8 = 0
+                                var byteAt = rowAt
+                                for column in 0 ..< tw {
+                                    if bitsLeft == 0 {
+                                        byte = source[byteAt]
+                                        byteAt += 1
+                                        bitsLeft = 8
+                                    }
+                                    bitsLeft -= bits
+                                    let index = min(Int((byte >> UInt8(bitsLeft)) & mask), size - 1)
+                                    let at = paletteAt + index * 3
+                                    put(tx + column, ty + row, source[at], source[at + 1], source[at + 2])
+                                }
+                            }
+                            cursor += rowBytes * th
+
+                        case 128:
+                            // Plain run-length: a colour, then a run written as 255s.
+                            var index = 0
+                            let count = tw * th
+                            while index < count {
+                                guard end - cursor >= 3 else { throw Failure.malformed("zrle rle") }
+                                let b = source[cursor], g = source[cursor + 1], r = source[cursor + 2]
+                                cursor += 3
+                                var run = 1
+                                while true {
+                                    guard cursor < end else { throw Failure.malformed("zrle rle run") }
+                                    let length = source[cursor]
+                                    cursor += 1
+                                    run += Int(length)
+                                    if length != 255 { break }
+                                }
+                                let last = min(index + run, count)
+                                while index < last {
+                                    put(tx + index % tw, ty + index / tw, b, g, r)
+                                    index += 1
+                                }
+                            }
+
+                        case 130 ... 255:
+                            let size = Int(subencoding) - 128
+                            guard end - cursor >= size * 3 else { throw Failure.malformed("zrle palette rle") }
+                            let paletteAt = cursor
+                            cursor += size * 3
+                            var index = 0
+                            let count = tw * th
+                            while index < count {
+                                guard cursor < end else { throw Failure.malformed("zrle prle") }
+                                let head = source[cursor]
+                                cursor += 1
+                                let at = paletteAt + min(Int(head & 127), size - 1) * 3
+                                let b = source[at], g = source[at + 1], r = source[at + 2]
+                                var run = 1
+                                if head & 128 != 0 {
+                                    while true {
+                                        guard cursor < end else { throw Failure.malformed("zrle prle run") }
+                                        let length = source[cursor]
+                                        cursor += 1
+                                        run += Int(length)
+                                        if length != 255 { break }
+                                    }
+                                }
+                                let last = min(index + run, count)
+                                while index < last {
+                                    put(tx + index % tw, ty + index / tw, b, g, r)
+                                    index += 1
+                                }
+                            }
+
+                        default:
+                            throw Failure.malformed("zrle subencoding \(subencoding)")
                         }
+                        tx += 64
                     }
-                case 128: // plain RLE
-                    var index = 0
-                    while index < tw * th {
-                        let p = try cpixel()
-                        var run = 1
-                        while true { guard let b: UInt8 = tiles.readInteger() else { throw Failure.malformed("zrle rle") }; run += Int(b); if b != 255 { break } }
-                        for _ in 0 ..< run where index < tw * th { fb.put(x: tx + index % tw, y: ty + index / tw, b: p.0, g: p.1, r: p.2); index += 1 }
-                    }
-                case 130 ... 255: // palette RLE
-                    let size = Int(subencoding - 128)
-                    var palette: [(UInt8, UInt8, UInt8)] = []
-                    for _ in 0 ..< size { palette.append(try cpixel()) }
-                    var index = 0
-                    while index < tw * th {
-                        guard let head: UInt8 = tiles.readInteger() else { throw Failure.malformed("zrle prle") }
-                        let p = palette[min(Int(head & 127), palette.count - 1)]
-                        var run = 1
-                        if head & 128 != 0 {
-                            while true { guard let b: UInt8 = tiles.readInteger() else { throw Failure.malformed("zrle prle run") }; run += Int(b); if b != 255 { break } }
-                        }
-                        for _ in 0 ..< run where index < tw * th { fb.put(x: tx + index % tw, y: ty + index / tw, b: p.0, g: p.1, r: p.2); index += 1 }
-                    }
-                default:
-                    throw Failure.malformed("zrle subencoding \(subencoding)")
+                    ty += 64
                 }
-                tx += 64
-            }
-            ty += 64
+                return true
+            } ?? false
         }
-        return true
+        return ok
     }
 
     /// The Cursor pseudo-encoding carries a cursor image and mask; the client draws the

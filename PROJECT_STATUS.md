@@ -12,12 +12,11 @@ delivered. What remains needs the owner: a live Cloudflare environment (B-2), a
 development team for iCloud and archiving (B-4), and the legal placeholders with counsel
 review (B-5).
 
-**Last full regression (2026-09-06, after D-024 … D-029):** package 180 tests in 27 suites
-on the host (the VNC suites against LibVNCServer); `SuperTerminalTests` 181 passed, 8
-skipped, 0 failed; `SuperTerminalUITests` 37 passed and 1 skipped (multi-window) on
-iPhone 17 Pro, and 38 passed with none skipped on iPad Pro 13-inch (M5) — the iPad's first
-attempt installed nothing at all (a stale runner container in the simulator, not the app)
-and passed after erasing that simulator. Localisation audit complete in every language.
+**Last full regression (2026-09-06, after D-024 … D-031):** package 198 tests in 30 suites
+on the host (the VNC suites against LibVNCServer); `SuperTerminalTests` 191 passed, 0
+failed; `SuperTerminalUITests` 38 passed and 1 skipped (multi-window, which that device
+does not offer) on iPhone 17 Pro, and 39 passed with none skipped on iPad Pro 13-inch
+(M5). Localisation audit complete in every language.
 
 This file is the resumable state of the work. It records what is *proven*, what is
 *written but unproven*, and what is *not started* — kept separate on purpose, because
@@ -77,6 +76,8 @@ This file is the resumable state of the work. It records what is *proven*, what 
 | **Blank means "ask": free port, pasted addresses, optional user name and credentials** | `HostAddressTests`, `SSHCredentialChainTests`, `HostModelTests`, `BlankFieldsUITests`: `host:port` in the hostname field, blank port taking the transport's default, blank user name asked for on opening, `none` offered so the server says what it takes, shell reached over real OpenSSH (D-024) |
 | **The terminal keeps the keyboard, follows the session on screen, and takes a wheel** | `PointerScrollTests`, `HardwareKeyboardStateUITests`: scrolling arithmetic a wheel needs, the drag interaction following the selection, typing that still reaches the shell after the find bar, the palette and a sheet have taken focus, and typing that follows the session shown (D-025). A real keyboard, mouse and the iPadOS focus engine are device checks |
 | **A screen can have its own Cloudflare Tunnel, and takes a keyboard unasked** | `ScreenConnectionTests`, `VNCTests`: the third route and its defaults, first responder held with the on-screen keyboard down, wheel notches accumulating across gestures (D-029). The live tunnel is B-2; a real keyboard and mouse are device checks |
+| **A screen decodes fast enough to keep up with a desktop** | `VNCThroughputTests`, `RFBReceiveTests`: a full 1080p frame in every encoding against a per-encoding floor — Raw 4131 fps (was 100), a worst-case ZRLE frame 800, Hextile 4107, image creation 6819 — each also checking the picture it decoded; and a frame fed in 16 KB segments costing no more than the same frame whole (D-030) |
+| **A screen may sign in to an account, never in the clear** | `VNCAuthenticationTests`, `ScreenConnectionTests`, `VNCUITests`: macOS Screen Sharing's Diffie-Hellman exchange against vectors from an arbitrary-precision implementation and end to end against a server half that decrypts it, FIPS-197 AES, the security-type choice as a table, VeNCrypt driven through the real handler — including Plain refused on an unencrypted route with the password never written (D-031). A real Mac and a real VeNCrypt server are device checks |
 | **Remote screens are their own connections** | `ScreenConnectionTests`, `VNCUITests`: the record and store, the derived id two devices agree on, migration out of the SSH connection with the password moved, and the screen opened from its own row through the SSH connection it names (D-027) |
 | **App lock: passcode, Face ID or Touch ID** | `AppLockTests` (8): PBKDF2 record and constant-time match, policy and backoff tables, grace period, five wrong guesses cost thirty seconds, biometrics pass/fail/off with a fake check, setting without record locks nothing, a showing lock is released when the record or setting goes and enabling never locks the current screen. `AppLockUITests` (1): passcode set in Settings, lock across a relaunch, wrong then right passcode, locked again after leaving (D-023). Face ID is a device check |
 | **Remote screens (VNC) with touch, keyboard and pointer** | `STVNCTests` (13 tests (18 cases)) against LibVNCServer: every encoding decodes the pattern pixel for pixel, incremental updates, VNC Authentication accepted/refused/required, input and cut text in the server's log, server loss reported; hand-built rectangles for every decoder. `VNCTests` (5): record, key table, recognisers, point mapping. `VNCUITests` (1): the seeded connection's screen through the SSH connection, name and size decoded, tap and keys in the server's log (D-022). macOS Screen Sharing and a Linux desktop are hardware checks |

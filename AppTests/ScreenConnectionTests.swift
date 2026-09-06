@@ -30,6 +30,29 @@ struct ScreenConnectionTests {
         #expect(empty.validationProblems.count == 3)
     }
 
+    @Test("A screen can carry an account name, and one saved before they existed has none")
+    func username() throws {
+        // The field is optional in the sense that matters: empty is a valid, ordinary
+        // screen, and that is the default.
+        let classic = ScreenConnection(name: "Desk", route: .direct)
+        #expect(classic.username.isEmpty)
+        #expect(classic.validationProblems.isEmpty, "a screen with no user name is complete")
+
+        let account = ScreenConnection(name: "Mac", address: "mac.local", route: .direct, username: "lihiko")
+        let back = try JSONDecoder().decode(ScreenConnection.self, from: JSONEncoder().encode(account))
+        #expect(back.username == "lihiko")
+
+        // A record written before D-031, exactly as it sits in the store today.
+        let legacy = Data("""
+        {"id":"8B2B7B4E-2C63-4E5E-9F52-2E9B5A9E4B10","name":"Old","address":"10.0.0.5",
+         "port":5900,"route":{"direct":{}},"hasPassword":true,"tags":[]}
+        """.utf8)
+        let decoded = try JSONDecoder().decode(ScreenConnection.self, from: legacy)
+        #expect(decoded.username.isEmpty, "a screen saved before user names existed has none")
+        #expect(decoded.hasPassword, "and everything else it did have survives")
+        #expect(decoded.address == "10.0.0.5")
+    }
+
     @Test("The route says how it connects, and never two ways at once")
     func route() {
         let id = UUID()

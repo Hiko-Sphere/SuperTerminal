@@ -44,6 +44,10 @@ in [`DECISIONS.md`](DECISIONS.md) (D-001).
 * **Remote screens over VNC**, configured as connections of their own and reached through
   a saved SSH connection, through a Cloudflare Tunnel of their own, or directly — touch,
   external keyboard and pointer control, proven against LibVNCServer (D-022, D-027, D-029).
+  A screen that signs in to an account — a Mac sharing its screen, or a VeNCrypt server —
+  takes an optional user name beside its optional password, and a password is never sent in
+  the clear on a connection with nothing protecting it (D-031). A full 1080p frame decodes
+  in well under a millisecond (D-030).
 * **An assistant** for "how do I…", "explain this" and "what went wrong", on the device's
   own model where it is eligible, else a provider you configure — it shows what it will
   send before it sends it, and a suggested command is inserted, never run (D-020).
@@ -143,6 +147,11 @@ These are real and are not worked around silently:
 * **Face ID and Touch ID for the app lock are proven with a stand-in.** The lock's rules
   are tested with a biometric check the test controls and the real Keychain and
   derivation; the system prompt itself is a device check on the release checklist.
+* **macOS Screen Sharing's own sign-in and VeNCrypt are implemented but not yet run
+  against a real Mac or a real VeNCrypt server.** Both are verified against vectors from an
+  independent implementation and end to end against a second implementation of the server
+  half, because the bundled LibVNCServer fixture serves neither (D-031). A real Mac and a
+  real VeNCrypt server are on the device checklist.
 * **Remote screens are proven against LibVNCServer, not yet against a Mac or a desktop
   Linux box.** Every encoding, authentication and input path is checked against the
   reference server library; macOS Screen Sharing (with "VNC viewers may control screen with

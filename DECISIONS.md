@@ -1096,3 +1096,83 @@ on-screen keyboard down (an input view of no height, not a resignation) and that
 up when asked, and that three ten-point wheel notches arriving as three separate gestures
 add up to one step in the right direction. A live tunnelled screen needs the owner's
 Cloudflare environment (B-2), and a real external keyboard and mouse remain device checks.
+
+## D-030 · A frame is copied, not walked pixel by pixel
+
+The picture was being assembled one pixel at a time. `Raw` — the encoding every server
+uses for the first frame and some use for every frame — went through a call per pixel that
+took the framebuffer's lock's word for the bounds and stored four bytes. At 1920×1080 that
+is two million calls a frame.
+
+It never had to be. The pixel format the client asks for is 32-bit little-endian with
+blue, green and red in the low three bytes, which in memory is byte-for-byte what the
+framebuffer holds, so a row of a `Raw` rectangle is a `memcpy` and a solid fill is
+`memset_pattern4`. ZRLE, which is what a real desktop actually sends, now decodes over the
+inflated bytes through a plain pointer instead of a `ByteBuffer` read per byte, and writes
+its raw and solid tiles a row at a time. Measured on a 1080p frame: `Raw` 100 → 4131
+frames a second, ZRLE 568 → 800, Hextile 4107, and turning the framebuffer into an image
+6819. The screen is no longer waiting on the decoder.
+
+Two things were measured and left alone. Inflation is 0 ms of a ZRLE frame — zlib was
+never the cost, so nothing was "optimised" there. And the receive path was *suspected* of
+being quadratic, because the buffer was compacted after every read and a 1080p frame
+arrives in hundreds of segments; `RFBReceiveTests` feeds a frame in 16 KB pieces and
+compares it against the same frame delivered whole, and the ratio is under 1.2. The
+hypothesis was wrong, and the test stays as the guard that would catch it if it ever
+became true.
+
+The solid-tile case fills inline rather than calling `RFBFramebuffer.fill`, because the
+enclosing closure already holds exclusive access to the pixels and calling back into the
+framebuffer through it is a runtime exclusivity trap, not merely slower.
+
+The throughput floors are per-encoding rather than one blanket number. A decoder that is a
+`memcpy` per row loses almost nothing to a Debug build; one that touches every pixel loses
+a factor of forty. A single divisor would either fail on the fast ones or prove nothing
+about the slow ones.
+
+## D-031 · A screen may sign in to an account, and the password is never sent in the clear
+
+Classic VNC has one password and no user at all. The two servers people actually reach
+from an iPhone often want more: macOS Screen Sharing authenticates a *macOS account*, and
+Linux servers configured for VeNCrypt authenticate a user name and password. Both were
+unreachable — the client offered only "None" and classic VNC authentication, so a Mac with
+Screen Sharing on and no separate VNC password could not be opened at all.
+
+A screen now carries an optional user name beside its optional password. Optional in the
+sense that matters: empty is the default and a complete, valid screen, because most
+screens have no account.
+
+**macOS Screen Sharing (security type 30).** A Diffie-Hellman exchange over a group the
+server chooses; the shared secret's MD5 is an AES-128 key, and the user name and password
+travel inside a 128-byte block encrypted under it. So the password is protected even on a
+connection with nothing else over it. Neither CryptoKit nor Security exposes modular
+exponentiation over an arbitrary group, so `VNCBigInteger` does it — deliberately by
+doubling and conditional subtraction, never dividing, because division is where a
+hand-written big integer goes wrong and this runs twice per connection, not per frame. It
+is 113 ms in release for four exponentiations at 512 and 1024 bits, and it runs on a
+background queue rather than on the event loop, which also serves other connections.
+
+**VeNCrypt (security type 19).** Its `VncAuth` sub-type is preferred, because it hashes a
+challenge. `Plain` sends the user name and password as they are, and is used *only* when
+something else is already encrypting the connection — an SSH channel or the Cloudflare
+carrier. On a direct connection the client closes instead and says why. That is what
+`Route.isEncrypted` is for. VeNCrypt's own TLS sub-types are refused with their own
+message rather than left to hang.
+
+Which type is chosen is a pure function of what the server offered and what the user
+supplied, so it is tested without a server. `None` wins whenever it is offered — the
+server is saying it wants no secret, and choosing anything else demands one the user does
+not have. After that the order is by how well the password is protected: Apple's exchange,
+then classic VNC authentication, then VeNCrypt's.
+
+**Verified how.** The arithmetic is checked against exchanges computed by Python's
+arbitrary-precision integers at 512 and 1024 bits — an implementation that owes nothing to
+this one — because an end-to-end test alone would only prove the client agrees with
+itself. AES-128 is checked against the FIPS-197 published answer. The exchange is then run
+end to end against a server half that has to *undo* it: it derives the same secret from
+the client's public key, decrypts the block, and reads the credentials out. VeNCrypt is
+driven through the real handler on an `EmbeddedChannel` — that Plain carries the
+credentials, that `VncAuth` is preferred to it, that Plain on an unencrypted route closes
+the connection without the password ever being written, and that a TLS-only server is
+told so. A real Mac and a real VeNCrypt server remain device checks; neither the bundled
+LibVNCServer fixture nor any other server in this repository serves security type 30.
