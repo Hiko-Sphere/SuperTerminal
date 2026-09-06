@@ -414,6 +414,38 @@ accepted version 4 sees the consent screen again. The guard was checked by inser
 address into the English Privacy Policy and confirming the suite failed, then restoring it —
 a rule nobody has watched break is not a rule.
 
+### A failed sync says what to do about it (D-032)
+
+`SyncFailureTests` are pure — six tests, no iCloud account, no network. Every code a user
+can act on produces the action: sign in, storage is full, iCloud Drive is off for this
+app, update the app. None of those messages leaks the type name or a pointer, which is
+what the status line used to show. The transient codes say they retry, so nobody goes
+looking for a fault that is fixing itself. A partial failure is asserted to describe the
+error *inside* it, because CloudKit's own message for one says only that something
+failed. The build-signed-without-the-container case is checked separately: it is the
+failure most easily mistaken for "iCloud is broken", and it is a build problem. Anything
+unrecognised keeps the system's wording and carries the CloudKit code.
+
+### The tour (D-033)
+
+`TutorialTests` hold the content to being content rather than layout: six pages, ids that
+are both the order and the `TabView` tags, a distinct illustration each, and a body long
+enough to earn a page. The preference is off on a fresh install, survives a relaunch, and
+is cleared by a reset — which is the whole contract, since "shown once" is a claim about
+what happens on the second launch.
+
+`TutorialUITests` drive the real thing on a real install: a fresh one is offered the tour,
+each of the six pages is reachable, the last offers "Get started" and not "Continue",
+going back returns to "Continue", finishing reveals the app, and a relaunch does not show
+it again. Skipping is tested as its own path — it gates nothing, it counts as having seen
+it, and Settings → Help brings it back, which is what makes skipping safe to offer.
+
+Every page was also read on screen in light and dark. That is not decoration: it is what
+found the identifier inherited by every control from its container, the entrance stagger
+that left the last two elements of the busiest page permanently half-drawn, and the card
+colour that is invisible against its own background in dark mode. None of the three would
+have failed a test.
+
 ### App lock — 8 unit tests and 1 UI test
 
 `AppLockTests` run the lock (D-023) with a fake biometric check and a movable clock, on

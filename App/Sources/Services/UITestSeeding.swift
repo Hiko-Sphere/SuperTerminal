@@ -79,6 +79,10 @@ enum UITestSeeding {
         if ProcessInfo.processInfo.environment["ST_UITEST_SHOW_CONSENT"] != "1" {
             container.settings.acceptedTermsVersion = LegalDocument.currentVersion
         }
+        // And past the tour, unless the run is the one that tests it (D-033).
+        if ProcessInfo.processInfo.environment["ST_UITEST_SHOW_TUTORIAL"] != "1" {
+            container.settings.hasSeenTutorial = true
+        }
         container.snippetStore.removeAll()
         container.hostStore.removeAll()
         container.screenStore.removeAll()

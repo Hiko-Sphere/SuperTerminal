@@ -16,6 +16,11 @@ public enum DesignTokens {
         public static let surface = SwiftUI.Color(uiColor: .systemBackground)
         public static let surfaceSecondary = SwiftUI.Color(uiColor: .secondarySystemBackground)
         public static let surfaceGrouped = SwiftUI.Color(uiColor: .systemGroupedBackground)
+        /// A card sitting *on* `surfaceGrouped`. Not the same as `surface`: in dark mode
+        /// `systemBackground` and `systemGroupedBackground` are both black, so a card
+        /// painted with `surface` there is separated from its background by nothing but a
+        /// hairline. This is the pair the system itself uses for grouped rows.
+        public static let surfaceCard = SwiftUI.Color(uiColor: .secondarySystemGroupedBackground)
         public static let separator = SwiftUI.Color(uiColor: .separator)
 
         public static let label = SwiftUI.Color(uiColor: .label)

@@ -392,6 +392,23 @@
         }
       }
     },
+    "A key that changes is refused": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密钥变更会被拒绝"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "金鑰變更會被拒絕"
+          }
+        }
+      }
+    },
     "A passcode cannot contain a line break.": {
       "extractionState": "manual",
       "localizations": {
@@ -422,6 +439,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "貼上的位址會被自動拆分：ssh.example.com:443、ssh://deploy@host:2222 和 [2001:db8::1]:22 都可以。使用者名稱留空時，每次開啟連線都會詢問。"
+          }
+        }
+      }
+    },
+    "A remote screen shows the whole desktop over VNC. Tap to click, hold to drag, two fingers to scroll, or use a keyboard and mouse. It can travel inside an SSH connection, so nothing need be exposed.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "远程屏幕通过 VNC 显示整个桌面。点按即点击，长按可拖动，双指滚动，也可以使用键盘和鼠标。它可以走在 SSH 连接内部，因此无需对外暴露任何端口。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "遠端螢幕透過 VNC 顯示整個桌面。點一下即點按，長按可拖曳，兩指捲動，也可以使用鍵盤和滑鼠。它可以走在 SSH 連線內部，因此無需對外開放任何連接埠。"
           }
         }
       }
@@ -524,6 +558,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Access"
+          }
+        }
+      }
+    },
+    "Action": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "操作"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "操作"
           }
         }
       }
@@ -1225,6 +1276,23 @@
         }
       }
     },
+    "Back": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上一步"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上一步"
+          }
+        }
+      }
+    },
     "Bastion destination (optional)": {
       "extractionState": "manual",
       "localizations": {
@@ -1884,6 +1952,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "關閉所有開啟的終端機工作階段。"
+          }
+        }
+      }
+    },
+    "Closes the tour. You can reopen it from Settings.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "关闭新手教程。你可以在“设置”中重新打开。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "關閉新手教學。你可以在「設定」中重新開啟。"
           }
         }
       }
@@ -3214,6 +3299,23 @@
         }
       }
     },
+    "Everything stays yours": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "一切都属于你"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "一切都屬於你"
+          }
+        }
+      }
+    },
     "Everything this app stored in your iCloud account is deleted. Data on this device stays. Other devices keep their copies until they sync.": {
       "extractionState": "manual",
       "localizations": {
@@ -3588,6 +3690,23 @@
         }
       }
     },
+    "Get started": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "开始使用"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "開始使用"
+          }
+        }
+      }
+    },
     "Give this connection a name.": {
       "extractionState": "manual",
       "localizations": {
@@ -3639,6 +3758,23 @@
         }
       }
     },
+    "HOST": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "主机"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "主機"
+          }
+        }
+      }
+    },
     "Haptic feedback": {
       "extractionState": "manual",
       "localizations": {
@@ -3652,6 +3788,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "觸覺回饋"
+          }
+        }
+      }
+    },
+    "Help": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "帮助"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "說明"
           }
         }
       }
@@ -3754,6 +3907,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "歷史紀錄已關閉"
+          }
+        }
+      }
+    },
+    "Hold to drag": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "长按拖动"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "長按拖曳"
           }
         }
       }
@@ -4217,6 +4387,23 @@
         }
       }
     },
+    "Keys a phone keyboard does not have": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "手机键盘没有的按键"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "手機鍵盤沒有的按鍵"
+          }
+        }
+      }
+    },
     "Kind": {
       "extractionState": "manual",
       "localizations": {
@@ -4485,6 +4672,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "跟隨系統深色/淺色"
+          }
+        }
+      }
+    },
+    "Matches — remembered": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "匹配 —— 已记住"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "相符 —— 已記住"
           }
         }
       }
@@ -4948,6 +5152,23 @@
         }
       }
     },
+    "Not only a terminal": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不只是终端"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不只是終端機"
+          }
+        }
+      }
+    },
     "Not signed in to iCloud on this device.": {
       "extractionState": "manual",
       "localizations": {
@@ -5084,6 +5305,23 @@
         }
       }
     },
+    "Off until you turn it on": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "默认关闭，由你开启"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "預設關閉，由你開啟"
+          }
+        }
+      }
+    },
     "Offer a password": {
       "extractionState": "manual",
       "localizations": {
@@ -5165,6 +5403,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "在 Mac 上，請在「螢幕共享」設定中開啟「VNC 檢視器可以使用密碼控制螢幕」。在其他伺服器上，請啟用 VNC 密碼驗證。"
+          }
+        }
+      }
+    },
+    "On a first connection only you can tell your server from an impostor. Check the fingerprint once; after that it is remembered, and a key that changes is refused until you say otherwise.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "首次连接时，只有你能分辨真正的服务器和冒充者。核对一次指纹即可，之后会被记住；密钥若发生变化，在你另行确认之前一律拒绝。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "首次連線時，只有你能分辨真正的伺服器和冒充者。核對一次指紋即可，之後會被記住；金鑰若發生變化，在你另行確認之前一律拒絕。"
           }
         }
       }
@@ -5441,6 +5696,23 @@
         }
       }
     },
+    "Optional": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "可选"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "選用"
+          }
+        }
+      }
+    },
     "Other": {
       "extractionState": "manual",
       "localizations": {
@@ -5471,6 +5743,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "其他系統"
+          }
+        }
+      }
+    },
+    "PORT": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "端口"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "連接埠"
           }
         }
       }
@@ -5658,6 +5947,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "貼上 OpenSSH 私密金鑰，以 -----BEGIN OPENSSH PRIVATE KEY----- 開頭。它儲存在 Keychain 中，絕不會離開本裝置。"
+          }
+        }
+      }
+    },
+    "Paste deploy@build.example.com:2222 into the hostname field and it is taken apart for you. A blank port means the usual one; a blank user name is asked for when you connect.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "把 deploy@build.example.com:2222 粘贴到主机名一栏，它会自动拆分。端口留空表示使用默认端口；用户名留空则在连接时询问。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "把 deploy@build.example.com:2222 貼到主機名稱一欄，它會自動拆分。連接埠留空表示使用預設連接埠；使用者名稱留空則在連線時詢問。"
+          }
+        }
+      }
+    },
+    "Paste the address": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "粘贴地址"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "貼上位址"
           }
         }
       }
@@ -5934,6 +6257,23 @@
         }
       }
     },
+    "Private keys": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "私钥"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "私密金鑰"
+          }
+        }
+      }
+    },
     "Private keys live in Apple's Keychain and are never sent to a server. iCloud sync is off until you turn it on, and even then only keys you choose go to iCloud Keychain.": {
       "extractionState": "manual",
       "localizations": {
@@ -5947,6 +6287,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "私密金鑰存放在 Apple 的 Keychain 中，絕不會傳送至伺服器。iCloud 同步在您開啟之前處於關閉狀態；即使開啟，也只有您選擇的金鑰才會進入 iCloud Keychain。"
+          }
+        }
+      }
+    },
+    "Private keys stay in this device's Keychain and never reach a server. There is no account and no analytics. Turn on iCloud sync, or a passcode and Face ID, only if you want them.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "私钥保存在本设备的钥匙串中，绝不会发送到任何服务器。没有账户，也没有任何统计分析。iCloud 同步、密码锁和 Face ID 都由你自行决定是否开启。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "私密金鑰儲存在本裝置的鑰匙圈中，絕不會傳送到任何伺服器。沒有帳號，也沒有任何統計分析。iCloud 同步、密碼鎖和 Face ID 都由你自行決定是否開啟。"
           }
         }
       }
@@ -6457,6 +6814,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "儲存金鑰"
+          }
+        }
+      }
+    },
+    "Save the commands you run often as snippets, one tap away in any session. The command palette — ⌘K — searches your connections, snippets and every action at once.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "把常用命令存为片段，在任何会话中一点即用。命令面板（⌘K）可同时搜索你的连接、片段和所有操作。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "把常用命令存為片段，在任何工作階段中一點即用。命令面板（⌘K）可同時搜尋你的連線、片段和所有操作。"
           }
         }
       }
@@ -7124,6 +7498,23 @@
         }
       }
     },
+    "Show the tour again": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新查看新手教程"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新查看新手教學"
+          }
+        }
+      }
+    },
     "Sign in to iCloud in Settings, then try again.": {
       "extractionState": "manual",
       "localizations": {
@@ -7188,6 +7579,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "正在登入 Cloudflare Access"
+          }
+        }
+      }
+    },
+    "Six things worth knowing: pasting an address, the first fingerprint, the key row, snippets and the palette, remote screens, and where your keys live.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "六件值得知道的事：粘贴地址、第一次核对指纹、按键行、片段与命令面板、远程屏幕，以及你的密钥存放在哪里。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "六件值得知道的事：貼上位址、第一次核對指紋、按鍵列、片段與命令面板、遠端螢幕，以及你的金鑰存放在哪裡。"
+          }
+        }
+      }
+    },
+    "Skip": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "跳过"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "跳過"
           }
         }
       }
@@ -7328,6 +7753,23 @@
         }
       }
     },
+    "Step %lld of %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "第 %lld 步，共 %lld 步"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "第 %lld 步，共 %lld 步"
+          }
+        }
+      }
+    },
     "Stop": {
       "extractionState": "manual",
       "localizations": {
@@ -7341,6 +7783,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "停止"
+          }
+        }
+      }
+    },
+    "Stop retyping the same command": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不必反复输入同一条命令"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不必反覆輸入同一條命令"
           }
         }
       }
@@ -7613,6 +8072,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tab 鍵"
+          }
+        }
+      }
+    },
+    "Tail the deploy log": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "跟踪部署日志"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "追蹤部署日誌"
+          }
+        }
+      }
+    },
+    "Tap": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "点按"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "點一下"
           }
         }
       }
@@ -8263,6 +8756,23 @@
         }
       }
     },
+    "The row above the keyboard has Control, Escape, Tab and the arrows. Tap Control and it latches for the next key, so Control then C sends ^C. An external keyboard works too.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "键盘上方那一行有 Control、Escape、Tab 和方向键。点一下 Control 会为下一个按键保持按住状态，所以先按 Control 再按 C 就是 ^C。外接键盘同样可用。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "鍵盤上方那一列有 Control、Escape、Tab 和方向鍵。點一下 Control 會為下一個按鍵保持按住狀態，所以先按 Control 再按 C 就是 ^C。外接鍵盤同樣可用。"
+          }
+        }
+      }
+    },
     "The screen could not be opened.": {
       "extractionState": "manual",
       "localizations": {
@@ -8531,6 +9041,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "此裝置無法執行 Apple Intelligence。"
+          }
+        }
+      }
+    },
+    "This device's Keychain": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本设备的钥匙串"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本裝置的鑰匙圈"
           }
         }
       }
@@ -9062,6 +9589,40 @@
         }
       }
     },
+    "Two fingers scroll": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "双指滚动"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "兩指捲動"
+          }
+        }
+      }
+    },
+    "USER": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用户"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用者"
+          }
+        }
+      }
+    },
     "Unknown": {
       "extractionState": "manual",
       "localizations": {
@@ -9589,6 +10150,23 @@
         }
       }
     },
+    "You verify the first fingerprint": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "第一次由你核对指纹"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "第一次由你核對指紋"
+          }
+        }
+      }
+    },
     "You verify the first fingerprint.": {
       "extractionState": "manual",
       "localizations": {
@@ -9959,6 +10537,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "iCloud 拒絕了此次變更。這是本 App 的問題，與你的操作無關。"
+          }
+        }
+      }
+    },
+    "iCloud sync": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud 同步"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud 同步"
           }
         }
       }

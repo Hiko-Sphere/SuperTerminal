@@ -26,6 +26,7 @@ final class AppSettings {
         static let hapticsEnabled = "settings.hapticsEnabled"
         static let iCloudSyncEnabled = "settings.iCloudSyncEnabled"
         static let acceptedTermsVersion = "settings.acceptedTermsVersion"
+        static let hasSeenTutorial = "settings.hasSeenTutorial"
         static let assistantPrefersOnDevice = "settings.assistantPrefersOnDevice"
         static let assistantEndpoint = "settings.assistantEndpoint"
         static let assistantModel = "settings.assistantModel"
@@ -37,7 +38,7 @@ final class AppSettings {
             themeID, lightThemeID, followSystemAppearance, fontSize, scrollbackLimit, clipboardExpirySeconds,
             keepAwakeWhileConnected, commandHistoryEnabled, confirmMultilinePaste,
             hideContentInAppSwitcher, cursorBlink, bellEnabled, keyRowVisible,
-            automaticReconnect, hapticsEnabled, iCloudSyncEnabled, acceptedTermsVersion,
+            automaticReconnect, hapticsEnabled, iCloudSyncEnabled, acceptedTermsVersion, hasSeenTutorial,
             assistantPrefersOnDevice, assistantEndpoint, assistantModel,
             appLockEnabled, appLockUsesBiometrics, appLockGraceSeconds,
         ]
@@ -70,6 +71,7 @@ final class AppSettings {
         hapticsEnabled = defaults.bool(forKey: Key.hapticsEnabled)
         iCloudSyncEnabled = defaults.bool(forKey: Key.iCloudSyncEnabled)
         acceptedTermsVersion = defaults.integer(forKey: Key.acceptedTermsVersion)
+        hasSeenTutorial = defaults.bool(forKey: Key.hasSeenTutorial)
         assistantPrefersOnDevice = defaults.bool(forKey: Key.assistantPrefersOnDevice)
         appLockEnabled = defaults.bool(forKey: Key.appLockEnabled)
         appLockUsesBiometrics = defaults.bool(forKey: Key.appLockUsesBiometrics)
@@ -120,6 +122,7 @@ final class AppSettings {
             // Zero means never accepted. Compared against the current Terms version so a
             // material change is shown again rather than assumed agreed.
             Key.acceptedTermsVersion: 0,
+            Key.hasSeenTutorial: false,
         ])
         themeID = defaults.string(forKey: Key.themeID) ?? TerminalTheme.midnight.id
         lightThemeID = defaults.string(forKey: Key.lightThemeID) ?? TerminalTheme.daylight.id
@@ -138,6 +141,7 @@ final class AppSettings {
         hapticsEnabled = defaults.bool(forKey: Key.hapticsEnabled)
         iCloudSyncEnabled = defaults.bool(forKey: Key.iCloudSyncEnabled)
         acceptedTermsVersion = defaults.integer(forKey: Key.acceptedTermsVersion)
+        hasSeenTutorial = defaults.bool(forKey: Key.hasSeenTutorial)
         assistantPrefersOnDevice = defaults.bool(forKey: Key.assistantPrefersOnDevice)
         appLockEnabled = defaults.bool(forKey: Key.appLockEnabled)
         appLockUsesBiometrics = defaults.bool(forKey: Key.appLockUsesBiometrics)
@@ -171,6 +175,12 @@ final class AppSettings {
     var iCloudSyncEnabled: Bool {
         didSet { defaults.set(iCloudSyncEnabled, forKey: Key.iCloudSyncEnabled) }
     }
+
+    /// Whether the tour has been seen — finished or skipped, which are the same thing as
+    /// far as showing it unasked is concerned. It stays on this device: a tour is about
+    /// learning the interface in front of you, so syncing it would hide it from someone
+    /// picking up their second device for the first time.
+    var hasSeenTutorial: Bool { didSet { defaults.set(hasSeenTutorial, forKey: Key.hasSeenTutorial) } }
 
     var acceptedTermsVersion: Int {
         didSet { defaults.set(acceptedTermsVersion, forKey: Key.acceptedTermsVersion) }

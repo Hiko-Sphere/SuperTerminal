@@ -1177,3 +1177,68 @@ credentials, that `VncAuth` is preferred to it, that Plain on an unencrypted rou
 the connection without the password ever being written, and that a TLS-only server is
 told so. A real Mac and a real VeNCrypt server remain device checks; neither the bundled
 LibVNCServer fixture nor any other server in this repository serves security type 30.
+
+## D-032 · A failed sync says what to do about it
+
+The iCloud status line showed `String(describing:)` of whatever was thrown. For a
+`CKError` that is `<CKError 0x…: "Not Authenticated" (9/1002)>` — a developer's string in
+a place a user reads. It names a number instead of the thing they can fix, and the two
+commonest failures, not signed in and no network, are the two most fixable.
+
+`SyncFailure.describe` turns each code into a sentence that says what to do. A partial
+failure reports the reason of the item that failed rather than its own, which says only
+that something did. Anything unrecognised keeps the system's wording and carries the
+CloudKit code, so a diagnostics export can still be matched to Apple's documentation.
+
+One case is deliberately named as neither the user's fault nor fixable on the device: a
+build signed without the app's iCloud container. That is the failure most easily mistaken
+for "iCloud is broken", and it is a build problem.
+
+It is a pure function, so all six tests run with no iCloud account and no network.
+
+## D-033 · The tour is shown once, skipped freely, and found again
+
+A terminal has affordances a person will not discover by looking: that a pasted
+`user@host:port` is taken apart for them, that Control latches for the next key, that the
+palette searches connections and snippets and actions at once, that a screen is not only a
+terminal. None of that is visible on an empty connection list.
+
+**Once, and never unasked again.** `hasSeenTutorial` is a device preference, not a synced
+one: the tour is about learning the interface in front of you, so syncing it would hide it
+from someone picking up their second device for the first time. Skipping and finishing set
+the same flag, because a tour that has to be paged through to be dismissed is a gate, and
+this is not one. "Delete all data" clears it, which is what a fresh start means.
+
+**After the documents, not instead of them.** The consent screen and the tour are one
+`fullScreenCover(item:)` over a single `FirstRun` value rather than two covers. Two
+`fullScreenCover` modifiers on one view do not reliably stack, and the ordering — accept,
+then learn — has to be a fact rather than a race.
+
+**Drawn, not screenshotted.** Each page's picture is built from the same design tokens as
+the interface it describes, so it cannot drift from it; a screenshot of the app inside the
+app is stale the first time a corner radius changes, and is six files to keep honest
+across two appearances and three scale factors.
+
+**What looking at it caught.** Three defects that no test would have found:
+
+* An accessibility identifier on the root container is inherited by every control inside
+  it, so `Skip` and `Continue` both reported themselves as `tutorial` and neither could be
+  found by its own name. Presence is now asserted through the controls themselves.
+* The entrance stagger gave element *n* a start of `n × 0.12` in a run that ends at 1.0,
+  so on the busiest page the last two elements never reached full opacity. The offset is
+  now capped so the last one still completes.
+* `.fullScreenCover` attached to a `Section` is silently dropped — a `Section` is not a
+  view. Reopening the tour from Settings did nothing until the cover moved onto the button.
+
+**A card needs its own colour.** `surface` and `surfaceGrouped` are both black in dark
+mode, so a card painted with `surface` on a grouped background was separated from it by a
+hairline and nothing else. `surfaceCard` is the pair the system uses for grouped rows.
+
+**Verified how.** `TutorialTests` pin the content as a fact rather than a layout: six
+pages, ids that are the order and the tags, a distinct picture each, and a body long
+enough to be worth a page. The preference is off on a fresh install, survives a relaunch,
+and is cleared by a reset. `TutorialUITests` drive the real thing: a fresh install is
+offered it, every page is reachable, the last one finishes rather than continues, back
+works, a relaunch does not show it again, skipping does not gate anything, and Settings
+brings it back. Every page was also read on screen in both appearances — which is how the
+three defects above were found.

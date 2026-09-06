@@ -154,6 +154,8 @@ struct SettingsView: View {
                     Text("Diagnostics contain no commands, output, hostnames or credentials.")
                 }
 
+                TutorialSettingsSection()
+
                 Section("Legal") {
                     ForEach([LegalDocument.terms, .privacy, .notice, .licences]) { document in
                         NavigationLink(document.title) { LegalView(document: document) }

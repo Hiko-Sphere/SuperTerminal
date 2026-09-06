@@ -32,12 +32,22 @@ struct RootView: View {
     /// The window scene this root ended up in, which the lock window attaches to (D-023).
     @State private var lockScene: UIWindowScene?
 
-    /// The consent screen gates everything until the current documents are accepted.
-    private var consentBinding: Binding<Bool> {
-        Binding(
-            get: { container.settings.acceptedTermsVersion < LegalDocument.currentVersion },
-            set: { _ in }
-        )
+    /// What a first run still owes the user, in order (D-033). One value rather than two
+    /// covers: `fullScreenCover` does not reliably stack, and the tour must not race the
+    /// documents it comes after.
+    private enum FirstRun: Identifiable {
+        case consent, tutorial
+        var id: Self { self }
+    }
+
+    private var firstRun: FirstRun? {
+        if container.settings.acceptedTermsVersion < LegalDocument.currentVersion { return .consent }
+        if !container.settings.hasSeenTutorial { return .tutorial }
+        return nil
+    }
+
+    private var firstRunBinding: Binding<FirstRun?> {
+        Binding(get: { firstRun }, set: { _ in })
     }
 
     var body: some View {
@@ -79,9 +89,15 @@ struct RootView: View {
                 container.sync.handleForeground()
             }
         }
-        .fullScreenCover(isPresented: consentBinding) {
-            ConsentView { container.settings.acceptedTermsVersion = LegalDocument.currentVersion }
-                .environment(container)
+        .fullScreenCover(item: firstRunBinding) { step in
+            switch step {
+            case .consent:
+                ConsentView { container.settings.acceptedTermsVersion = LegalDocument.currentVersion }
+                    .environment(container)
+            case .tutorial:
+                TutorialView { container.settings.hasSeenTutorial = true }
+                    .environment(container)
+            }
         }
         .environment(scene)
         .sheet(isPresented: paletteBinding) {
