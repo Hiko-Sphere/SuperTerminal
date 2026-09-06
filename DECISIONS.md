@@ -1051,3 +1051,48 @@ went; measured afterwards, five consecutive runs produced no shutdown error at a
 was pre-existing and unrelated to the changes above; it is recorded because an
 intermittently-crashing suite quietly weakens every claim made from it.
 
+## D-029 · A screen can have its own tunnel, and takes a keyboard without being asked
+
+**Its own tunnel.** A screen could already ride a Cloudflare-backed SSH connection — the
+`direct-tcpip` channel travels the carrier like anything else on that connection — but a
+VNC server published as *its own* Cloudflare Tunnel hostname had no route at all. That is
+an ordinary Cloudflare setup (`cloudflared access tcp --hostname vnc.example.com --url
+localhost:5900`), and on this side it needs exactly what SSH already needed: the same
+WebSocket carrier whose binary frames are a raw TCP stream, behind the same Access
+credential. `Route.cloudflare(access:)` is that third route. The address is then the
+hostname the tunnel publishes and the port is the edge's — blank means 443, and Cloudflare's
+other HTTPS ports work as they do for SSH. Where the screen actually is behind the tunnel
+is the tunnel's own business, exactly as it is for SSH.
+
+The Access machinery moved out of `HostConnector` into `AccessCredentialResolver` rather
+than being copied: discovery, a stored token while it is valid, a service token when the
+connection is set to one, otherwise a sign-in. Two copies of that would have drifted, and
+the second copy is where the token handling would have been subtly wrong. A screen's
+service token lives in the Keychain under the screen's own id, this device only, and is
+deleted with the screen. Access failures are translated the way D-026 translates them, so
+"no Access application was found for this hostname" reaches the user as itself.
+
+**A keyboard it does not have to be asked for.** The screen held first-responder status
+only while the on-screen keyboard was up, because they were the same switch: an external
+keyboard did nothing until you tapped "Keyboard", which then put the system keyboard over
+half the picture. They are now separate. The screen holds the keyboard whenever it is
+showing — connected, in front, unlocked, nothing over it — so hardware keys reach the
+remote immediately, and the on-screen keyboard is a choice, kept down by an input view of
+no height rather than by resigning. That is the only way to have both: `UIKeyInput` is what
+receives typed characters, and resigning to hide the keyboard is also resigning the keys.
+
+**A wheel, again.** The screen's wheel had the same defect the terminal's did (D-025) —
+translation read only while a gesture was `.changed`, and the remainder thrown away
+whenever one began — so a mouse wheel did nothing on a remote desktop either. It now uses
+the same `ScrollAccumulator`, one per axis. A pointer drag also pressed where the pan was
+recognised rather than where the button went down, which drags a remote window from a
+point one or two cells away from the one clicked.
+
+**Verified how.** `ScreenConnectionTests` cover the third route — that it is neither
+direct nor SSH, that it carries its Access authentication, that blank means the edge's 443
+while the other routes still mean 5900, and that it round-trips so a screen saved on one
+device opens on another. `VNCTests` pin that the screen can become first responder with the
+on-screen keyboard down (an input view of no height, not a resignation) and that it comes
+up when asked, and that three ten-point wheel notches arriving as three separate gestures
+add up to one step in the right direction. A live tunnelled screen needs the owner's
+Cloudflare environment (B-2), and a real external keyboard and mouse remain device checks.

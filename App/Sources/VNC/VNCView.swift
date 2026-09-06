@@ -7,7 +7,10 @@ struct VNCView: View {
     @Environment(AppContainer.self) private var container
     let session: VNCSession
 
-    @State private var wantsKeyboard = false
+    /// The on-screen keyboard, which is a choice. The screen holds the hardware keyboard
+    /// whenever it is showing, which is not (D-029).
+    @State private var showsSoftwareKeyboard = false
+    @Environment(\.scenePhase) private var scenePhase
     @State private var zoomResetToken = 0
 
     var body: some View {
@@ -18,6 +21,7 @@ struct VNCView: View {
                 image: session.image,
                 desktopSize: session.desktopSize,
                 desktopName: session.desktopName,
+                showsSoftwareKeyboard: showsSoftwareKeyboard,
                 wantsKeyboard: wantsKeyboard,
                 zoomResetToken: zoomResetToken,
                 onHaptic: { container.haptics.play($0) }
@@ -41,8 +45,17 @@ struct VNCView: View {
             if case .idle = session.state { await session.connect() }
         }
         .onChange(of: session.isConnected) { _, connected in
-            if !connected { wantsKeyboard = false }
+            if !connected { showsSoftwareKeyboard = false }
         }
+    }
+
+    /// Whether the screen should be holding the keyboard: it is connected, the app is in
+    /// front and unlocked, and no sheet is over it.
+    private var wantsKeyboard: Bool {
+        session.isConnected
+            && scenePhase == .active
+            && !container.appLock.isLocked
+            && promptBinding.wrappedValue == nil
     }
 
     @ViewBuilder private var stateOverlay: some View {
@@ -115,9 +128,9 @@ struct VNCView: View {
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
-            Button(wantsKeyboard ? String(localized: "Hide Keyboard") : String(localized: "Keyboard"),
-                   systemImage: wantsKeyboard ? "keyboard.chevron.compact.down" : "keyboard") {
-                wantsKeyboard.toggle()
+            Button(showsSoftwareKeyboard ? String(localized: "Hide Keyboard") : String(localized: "Keyboard"),
+                   systemImage: showsSoftwareKeyboard ? "keyboard.chevron.compact.down" : "keyboard") {
+                showsSoftwareKeyboard.toggle()
             }
             .disabled(!session.isConnected)
             .accessibilityIdentifier("vnc-keyboard")

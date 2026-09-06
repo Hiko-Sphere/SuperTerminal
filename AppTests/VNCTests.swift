@@ -68,6 +68,38 @@ struct VNCTests {
         #expect(sym(.keyboardVolumeUp, "", "") == nil, "keys with no character and no name fall through")
     }
 
+    /// The screen holds the keyboard whenever it is showing, so an external keyboard
+    /// reaches the remote without anything being tapped first; the on-screen keyboard is
+    /// a separate choice, kept down by a zero-height input view (D-029).
+    @Test @MainActor func hardwareKeyboardDoesNotDependOnTheOnScreenOne() {
+        let view = VNCScreenUIView(frame: CGRect(x: 0, y: 0, width: 400, height: 300))
+        #expect(view.canBecomeFirstResponder, "it has to be in the responder chain to see key presses")
+        #expect(view.showsSoftwareKeyboard == false, "the on-screen keyboard starts down")
+        #expect(view.inputView != nil, "and is held down by an input view of no height, not by resigning")
+        #expect(view.inputView?.frame.height == 0)
+
+        view.showsSoftwareKeyboard = true
+        #expect(view.inputView == nil, "asked for, the system keyboard comes up")
+    }
+
+    /// Same defect as the terminal's (D-025), in the other view: a wheel notch is a whole
+    /// gesture, and shorter than one step.
+    @Test @MainActor func wheelStepsSurviveBetweenGestures() {
+        let view = VNCScreenUIView(frame: CGRect(x: 0, y: 0, width: 400, height: 300))
+        view.update(framebufferSize: CGSize(width: 400, height: 300), desktopName: "desk")
+        var steps: [(Int, Int)] = []
+        view.onWheel = { _, _, vertical, horizontal in steps.append((vertical, horizontal)) }
+
+        // Two notches of ten points each: neither reaches a step of 24 on its own.
+        view.reportWheelForTesting(translation: CGPoint(x: 0, y: 10), at: CGPoint(x: 100, y: 100))
+        #expect(steps.isEmpty)
+        view.reportWheelForTesting(translation: CGPoint(x: 0, y: 10), at: CGPoint(x: 100, y: 100))
+        #expect(steps.isEmpty)
+        view.reportWheelForTesting(translation: CGPoint(x: 0, y: 10), at: CGPoint(x: 100, y: 100))
+        #expect(steps.count == 1, "thirty points of movement is one step, however it arrived")
+        #expect(steps.first?.0 == -1, "fingers moving down scrolls the wheel up")
+    }
+
     @Test("Touch and pointer recognisers are set up as the design says")
     @MainActor func recognisers() {
         let view = VNCScreenUIView(frame: CGRect(x: 0, y: 0, width: 400, height: 300))

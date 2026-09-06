@@ -30,14 +30,44 @@ struct ScreenConnectionTests {
         #expect(empty.validationProblems.count == 3)
     }
 
-    @Test("The route says how it connects, and never both ways")
+    @Test("The route says how it connects, and never two ways at once")
     func route() {
         let id = UUID()
         let through = ScreenConnection.Route.throughSSH(hostID: id)
         #expect(through.sshHostID == id)
-        #expect(!through.isDirect)
+        #expect(!through.isDirect && !through.isCloudflare)
+        #expect(through.isEncrypted)
+
         #expect(ScreenConnection.Route.direct.sshHostID == nil)
         #expect(ScreenConnection.Route.direct.isDirect)
+        #expect(!ScreenConnection.Route.direct.isEncrypted, "RFB on its own is in the clear")
+
+        // A screen published as its own Cloudflare Tunnel hostname (D-029).
+        let tunnel = ScreenConnection.Route.cloudflare(access: .serviceToken)
+        #expect(tunnel.isCloudflare)
+        #expect(!tunnel.isDirect && tunnel.sshHostID == nil)
+        #expect(tunnel.accessAuthentication == .serviceToken)
+        #expect(tunnel.isEncrypted, "the carrier is TLS to the edge")
+    }
+
+    @Test("A tunnelled screen defaults to the edge's port, and says so in its endpoint")
+    func cloudflareRoutePorts() throws {
+        let tunnelled = ScreenConnection(name: "Desk", address: "vnc.example.com", route: .cloudflare(access: .browserLogin))
+        #expect(tunnelled.port == 443, "blank means the Cloudflare edge, not the VNC port")
+        #expect(tunnelled.endpoint == "vnc.example.com", "443 is the default, so it is not worth showing")
+        #expect(!tunnelled.usesServiceToken)
+
+        let onAnAlternatePort = ScreenConnection(name: "Desk", address: "vnc.example.com", port: 8443, route: .cloudflare(access: .serviceToken))
+        #expect(onAnAlternatePort.endpoint == "vnc.example.com:8443")
+        #expect(onAnAlternatePort.usesServiceToken)
+
+        // The other routes still default to the VNC port.
+        #expect(ScreenConnection(name: "D", address: "127.0.0.1", route: .direct).port == 5900)
+        #expect(ScreenConnection(name: "D", address: "127.0.0.1", route: .throughSSH(hostID: UUID())).port == 5900)
+
+        // And the new case round-trips, so a screen saved on one device opens on another.
+        let back = try JSONDecoder().decode(ScreenConnection.self, from: JSONEncoder().encode(onAnAlternatePort))
+        #expect(back == onAnAlternatePort)
     }
 
     /// Two devices migrating the same connection must arrive at one screen, or the user

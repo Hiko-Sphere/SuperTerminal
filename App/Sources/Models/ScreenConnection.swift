@@ -10,9 +10,11 @@ import Foundation
 public struct ScreenConnection: Identifiable, Sendable, Codable, Equatable {
     public var id: UUID
     public var name: String
-    /// The VNC server's address. Through SSH it is the address as *that server* sees it —
+    /// Where the screen is. Through SSH it is the address as *that server* sees it —
     /// `127.0.0.1` for the server's own desktop — because the connection is made from
-    /// there. Direct, it is what this device dials.
+    /// there. Direct, it is what this device dials. Through a Cloudflare Tunnel it is the
+    /// Access-protected hostname the tunnel publishes; where the screen is behind that is
+    /// the tunnel's own business.
     public var address: String
     public var port: Int
     public var route: Route
@@ -35,6 +37,10 @@ public struct ScreenConnection: Identifiable, Sendable, Codable, Equatable {
     public enum Route: Sendable, Codable, Equatable {
         case throughSSH(hostID: UUID)
         case direct
+        /// Published as its own Cloudflare Tunnel hostname, with no SSH connection in the
+        /// way (D-029): `cloudflared access tcp --hostname … --url localhost:5900` on the
+        /// other side, and the same WebSocket carrier the SSH transport uses on this one.
+        case cloudflare(access: Host.AccessAuthentication)
 
         public var sshHostID: UUID? {
             if case let .throughSSH(id) = self { return id }
@@ -45,15 +51,35 @@ public struct ScreenConnection: Identifiable, Sendable, Codable, Equatable {
             if case .direct = self { return true }
             return false
         }
+
+        public var isCloudflare: Bool {
+            if case .cloudflare = self { return true }
+            return false
+        }
+
+        public var accessAuthentication: Host.AccessAuthentication? {
+            if case let .cloudflare(access) = self { return access }
+            return nil
+        }
+
+        /// Whether the picture is inside someone's encryption on the way. A direct RFB
+        /// connection is in the clear; SSH and the Cloudflare carrier are not.
+        public var isEncrypted: Bool { !isDirect }
     }
 
     public static let defaultPort = 5900
+    /// The port a route uses when the field is left blank: the VNC port for a screen this
+    /// device or an SSH server dials, the Cloudflare edge's for a tunnelled one.
+    public static func defaultPort(for route: Route) -> Int {
+        route.isCloudflare ? 443 : defaultPort
+    }
 
     public init(
         id: UUID = UUID(),
         name: String,
         address: String = "127.0.0.1",
-        port: Int = ScreenConnection.defaultPort,
+        /// Omitted means the route's default: the VNC port, or 443 through Cloudflare.
+        port: Int? = nil,
         route: Route,
         hasPassword: Bool = false,
         folder: String? = nil,
@@ -63,7 +89,7 @@ public struct ScreenConnection: Identifiable, Sendable, Codable, Equatable {
         self.id = id
         self.name = name
         self.address = address
-        self.port = port
+        self.port = port ?? Self.defaultPort(for: route)
         self.route = route
         self.hasPassword = hasPassword
         self.folder = folder
@@ -71,10 +97,13 @@ public struct ScreenConnection: Identifiable, Sendable, Codable, Equatable {
         self.lastConnected = lastConnected
     }
 
-    /// `127.0.0.1`, or `10.0.0.2:5901` when the port is not the default.
+    /// `127.0.0.1`, or `10.0.0.2:5901` when the port is not the route's default.
     public var endpoint: String {
-        port == Self.defaultPort ? address : "\(address):\(port)"
+        port == Self.defaultPort(for: route) ? address : "\(address):\(port)"
     }
+
+    /// Whether a Cloudflare Access service token is expected for this screen.
+    public var usesServiceToken: Bool { route.accessAuthentication == .serviceToken }
 
     public var validationProblems: [String] {
         var problems: [String] = []

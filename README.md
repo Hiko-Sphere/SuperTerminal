@@ -42,8 +42,8 @@ in [`DECISIONS.md`](DECISIONS.md) (D-001).
   reporting, themes, snippets and command history; a hardware keyboard and a mouse or
   trackpad on iPad work the way they do on a desktop (D-018).
 * **Remote screens over VNC**, configured as connections of their own and reached through
-  a saved SSH connection or directly — touch, keyboard and pointer control, proven against
-  LibVNCServer (D-022, D-027).
+  a saved SSH connection, through a Cloudflare Tunnel of their own, or directly — touch,
+  external keyboard and pointer control, proven against LibVNCServer (D-022, D-027, D-029).
 * **An assistant** for "how do I…", "explain this" and "what went wrong", on the device's
   own model where it is eligible, else a provider you configure — it shows what it will
   send before it sends it, and a suggested command is inserted, never run (D-020).

@@ -247,6 +247,7 @@ struct HostListView: View {
     /// nothing can use.
     private func delete(_ screen: ScreenConnection) {
         try? container.vault.deleteVNCPassword(screenID: screen.id)
+        try? container.vault.deleteServiceToken(screenID: screen.id)
         container.screenStore.remove(screen)
     }
 
@@ -553,6 +554,8 @@ private struct SavedScreenRow: View {
         switch screen.route {
         case .direct:
             return screen.endpoint
+        case .cloudflare:
+            return String(localized: "\(screen.endpoint) through Cloudflare")
         case .throughSSH:
             guard let sshHostName else { return String(localized: "SSH connection missing") }
             return String(localized: "\(screen.endpoint) through \(sshHostName)")

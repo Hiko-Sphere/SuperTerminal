@@ -113,47 +113,15 @@ final class HostConnector {
     }
 
     private func resolveAccessCredential(progress: @escaping @MainActor (String) -> Void) async throws -> AccessCredential {
-        let http = URLSessionHTTPTransport(userAgent: Self.userAgent)
-        let jwks = JWKSProvider(http: http)
-        let discovery = AccessDiscovery(http: http, jwks: jwks, log: log)
-        let validator = AccessTokenValidator(jwks: jwks)
-
-        switch try await discovery.probe(host: host.hostname, port: host.port) {
-        case .unprotected:
-            // A tunnel without an Access policy is a legitimate configuration; the
-            // carrier still works, there is just nothing to authenticate.
-            return .none
-
-        case let .protected(appInfo):
-            if host.usesServiceToken {
-                guard let token = try vault.loadServiceToken(hostID: host.id) else {
-                    throw STError(
-                        category: .credential,
-                        message: String(localized: "This connection is set to use a Cloudflare Access service token, but none is stored on this device."),
-                        recoverySuggestion: String(localized: "Edit the connection and enter the service token's client ID and secret. Service tokens stay on the device they were entered on.")
-                    )
-                }
-                return .serviceToken(token)
-            }
-            if let stored = try? vault.loadAccessToken(appIdentifier: appInfo.storageIdentifier),
-               let validated = try? await validator.validate(rawToken: stored, appInfo: appInfo),
-               !validated.isExpired() {
-                return .userToken(validated)
-            }
-            progress(String(localized: "Signing in to Cloudflare Access"))
-            let login = AccessLoginService(
-                http: http,
-                presenter: WebAuthenticationPresenter(),
-                validator: validator,
-                log: log
-            )
-            let result = try await login.login(appInfo: appInfo, originHost: host.hostname)
-            try? vault.storeAccessToken(
-                result.token.token.reveal(),
-                appIdentifier: appInfo.storageIdentifier
-            )
-            return .userToken(result.token)
-        }
+        // The same steps a remote screen takes to reach its own tunnel (D-029).
+        try await AccessCredentialResolver(
+            hostname: host.hostname,
+            port: host.port,
+            usesServiceToken: host.usesServiceToken,
+            serviceToken: { [vault, host] in try vault.loadServiceToken(hostID: host.id) },
+            vault: vault,
+            log: log
+        ).credential(progress: progress)
     }
 
     private func resolveUsername() async throws -> String {
@@ -200,7 +168,7 @@ final class HostConnector {
         return credentials
     }
 
-    static let userAgent = "SuperTerminal/\(Bundle.main.shortVersion) (iOS)"
+    static let userAgent = AccessCredentialResolver.userAgent
 
     /// Whether to accept a first-seen host key without asking.
     ///

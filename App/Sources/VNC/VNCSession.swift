@@ -2,6 +2,7 @@ import CoreGraphics
 import Foundation
 import NIOCore
 import NIOTransportServices
+import STCloudflare
 import Observation
 import STCore
 import STSSH
@@ -124,7 +125,7 @@ final class VNCSession: Identifiable {
         state = .connecting(step: String(localized: "Resolving \(screen.address)"))
         do {
             var password = screen.hasPassword ? try vault.loadVNCPassword(screenID: screen.id) : nil
-            if !screen.route.isDirect {
+            if case .throughSSH = screen.route {
                 guard let connector else {
                     state = .failed(STError(
                         category: .configuration,
@@ -178,16 +179,49 @@ final class VNCSession: Identifiable {
     /// One handshake over a fresh channel.
     private func open(password: String?) async throws {
         let channel: Channel
-        if screen.route.isDirect {
+        switch screen.route {
+        case .direct:
             state = .connecting(step: String(localized: "Connecting to the screen"))
             channel = try await DirectTCPTransport(
                 endpoint: TransportEndpoint(host: screen.address, port: screen.port),
                 log: log
             ).connect(on: group.next())
-        } else {
+        case .throughSSH:
             guard let connection else { throw VNCError.protocolError("no SSH connection") }
             state = .connecting(step: String(localized: "Opening a tunnel to the screen"))
             channel = try await connection.openDirectTCPIP(host: screen.address, port: screen.port)
+        case .cloudflare:
+            // The same carrier the SSH transport rides: an ordinary WebSocket whose binary
+            // frames are a raw TCP stream, with the tunnel's own ingress deciding where the
+            // VNC server is (D-001, D-029).
+            state = .connecting(step: String(localized: "Checking Cloudflare Access"))
+            let credential: AccessCredential
+            do {
+                credential = try await AccessCredentialResolver(
+                    hostname: screen.address,
+                    port: screen.port,
+                    usesServiceToken: screen.usesServiceToken,
+                    serviceToken: { [vault, screen] in try vault.loadServiceToken(screenID: screen.id) },
+                    vault: vault,
+                    log: log
+                ).credential { [weak self] step in
+                    self?.state = .connecting(step: step)
+                }
+            } catch let error as AccessError {
+                // Every Access failure already describes itself; without this they all
+                // arrive as "the screen could not be opened" (D-026).
+                throw error.stError
+            }
+            state = .connecting(step: String(localized: "Opening the tunnel to the screen"))
+            channel = try await CloudflareCarrierTransport(
+                configuration: .init(
+                    host: screen.address,
+                    port: screen.port,
+                    userAgent: AccessCredentialResolver.userAgent
+                ),
+                credential: credential,
+                log: log
+            ).connect(on: group.next())
         }
         state = .connecting(step: String(localized: "Starting screen sharing"))
         let client = try await VNCClient.start(on: channel, options: .init(password: password))

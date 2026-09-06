@@ -340,6 +340,19 @@ screen from its own row — checking the row names the connection it travels thr
 drive it against LibVNCServer behind the harness's OpenSSH server; a second test opens the
 screen's own editor and asserts the SSH editor has no screen sharing left in it.
 
+### A screen with its own tunnel, and a keyboard it is not asked for (D-029)
+
+`ScreenConnectionTests` cover the third route: that `cloudflare` is neither direct nor
+SSH, carries its Access authentication, defaults to the edge's 443 while the other routes
+still default to 5900, and round-trips so a screen saved on one device opens on another.
+`VNCTests` pin that the screen becomes first responder with the on-screen keyboard down —
+held down by an input view of no height rather than by resigning, which would resign the
+keys too — and that it comes up when asked; and that three ten-point wheel notches
+arriving as three separate gestures add up to one step in the right direction, which is
+the defect D-025 fixed in the terminal and this fixes in the other view. A live tunnelled
+screen needs the owner's Cloudflare environment (B-2); a real external keyboard and mouse
+are device checks.
+
 ### App lock — 8 unit tests and 1 UI test
 
 `AppLockTests` run the lock (D-023) with a fake biometric check and a movable clock, on

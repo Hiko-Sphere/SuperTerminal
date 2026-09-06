@@ -103,6 +103,23 @@
         }
       }
     },
+    "%@ through Cloudflare": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@，经由 Cloudflare"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@，經由 Cloudflare"
+          }
+        }
+      }
+    },
     "%@ · %@": {
       "extractionState": "manual",
       "localizations": {
@@ -609,6 +626,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "新增一組入門指令片段"
+          }
+        }
+      }
+    },
+    "Add an SSH connection first, or connect to the screen another way.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请先添加一个 SSH 连接，或改用其他方式连接屏幕。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請先加入一個 SSH 連線，或改用其他方式連線螢幕。"
           }
         }
       }
@@ -1799,6 +1833,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "關閉所有開啟的終端機工作階段。"
+          }
+        }
+      }
+    },
+    "Cloudflare": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cloudflare"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cloudflare"
           }
         }
       }
@@ -3333,6 +3384,23 @@
         }
       }
     },
+    "For a screen published as its own Cloudflare Tunnel hostname — the tunnel's ingress pointing at the VNC server. The picture travels inside the tunnel's TLS, and no cloudflared install is needed on this device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "适用于以自己的 Cloudflare Tunnel 主机名发布的屏幕——隧道的 ingress 指向 VNC 服务器。画面在隧道的 TLS 内部传输，本设备无需安装 cloudflared。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "適用於以自己的 Cloudflare Tunnel 主機名稱發布的螢幕——通道的 ingress 指向 VNC 伺服器。畫面在通道的 TLS 內部傳輸，本裝置無需安裝 cloudflared。"
+          }
+        }
+      }
+    },
     "Forget": {
       "extractionState": "manual",
       "localizations": {
@@ -4778,6 +4846,23 @@
         }
       }
     },
+    "Not connected — what you type is not being sent.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未连接——您输入的内容不会被发送。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未連線——您輸入的內容不會被傳送。"
+          }
+        }
+      }
+    },
     "Not signed in to iCloud on this device.": {
       "extractionState": "manual",
       "localizations": {
@@ -5153,6 +5238,23 @@
       }
     },
     "Opening a tunnel to the screen": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在打开通往屏幕的隧道"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在開啟通往螢幕的通道"
+          }
+        }
+      }
+    },
+    "Opening the tunnel to the screen": {
       "extractionState": "manual",
       "localizations": {
         "zh-Hans": {
@@ -7736,6 +7838,23 @@
         }
       }
     },
+    "The hostname the tunnel publishes, and the port the Cloudflare edge is reached on. Where the screen is behind the tunnel is the tunnel's own business.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "隧道发布的主机名，以及访问 Cloudflare 边缘所用的端口。屏幕在隧道背后的位置由隧道自己决定。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "通道發布的主機名稱，以及存取 Cloudflare 邊緣所用的連接埠。螢幕在通道背後的位置由通道自己決定。"
+          }
+        }
+      }
+    },
     "The key can only be used after a successful biometric or passcode check, and becomes unusable if the device's biometric enrolment changes.": {
       "extractionState": "manual",
       "localizations": {
@@ -8395,6 +8514,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "透過 Cloudflare Tunnel"
+          }
+        }
+      }
+    },
+    "Through SSH": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "经由 SSH"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "經由 SSH"
           }
         }
       }

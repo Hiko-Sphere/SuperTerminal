@@ -264,6 +264,20 @@ struct CredentialVault: Sendable {
         try store.remove(SecureStoreKey(service: Service.serviceTokens, account: hostID.uuidString))
     }
 
+    // A screen published through its own Cloudflare Tunnel keeps its token the same way
+    // (D-029): this device only, never synchronised, deleted with the screen.
+    func storeServiceToken(clientID: String, secret: String, screenID: UUID) throws {
+        try storeServiceToken(clientID: clientID, secret: secret, hostID: screenID)
+    }
+
+    func loadServiceToken(screenID: UUID) throws -> AccessServiceToken? {
+        try loadServiceToken(hostID: screenID)
+    }
+
+    func hasServiceToken(screenID: UUID) -> Bool { hasServiceToken(hostID: screenID) }
+
+    func deleteServiceToken(screenID: UUID) throws { try deleteServiceToken(hostID: screenID) }
+
     func deleteEverything() throws {
         for service in [Service.privateKeys, Service.passwords, Service.accessTokens, Service.serviceTokens, Service.assistant, Service.vncPasswords, Service.appLock] {
             try store.removeAll(inService: service)

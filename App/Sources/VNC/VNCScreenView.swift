@@ -28,6 +28,18 @@ final class VNCScreenUIView: UIView, UIKeyInput, UIScrollViewDelegate, UIPointer
 
     /// Whether ⌘ combinations go to the remote as Super, or stay with the app.
     var sendsCommandKey = false
+    /// Whether the on-screen keyboard should be up.
+    ///
+    /// Separate from holding first-responder status, which the screen does whenever it is
+    /// showing so that a hardware keyboard reaches the remote without anything being
+    /// tapped first. Before, the two were the same switch: an external keyboard did
+    /// nothing until you asked for the on-screen one, which then covered the screen.
+    var showsSoftwareKeyboard = false {
+        didSet {
+            guard showsSoftwareKeyboard != oldValue, isFirstResponder else { return }
+            reloadInputViews()
+        }
+    }
 
     let contentView = VNCContentView()
     private let scrollView = UIScrollView()
@@ -38,8 +50,16 @@ final class VNCScreenUIView: UIView, UIKeyInput, UIScrollViewDelegate, UIPointer
     private var buttonMask: UInt8 = 0
     /// Where the pointer last was, in framebuffer pixels; wheel events go there.
     private var lastPointer = (x: 0, y: 0)
-    private var wheelResidual = CGPoint.zero
-    /// Points of two-finger travel per wheel step.
+    /// Movement waiting to become whole wheel steps, per axis.
+    ///
+    /// It survives between gestures for the reason D-025 records: iPadOS delivers one
+    /// mouse-wheel notch as an entire gesture — `.began` then `.ended`, with no
+    /// `.changed` — and a notch is shorter than a step, so a handler that read only
+    /// `.changed`, or that threw away its remainder whenever a gesture began, could never
+    /// reach a step at all. The wheel did nothing while a trackpad worked.
+    private var wheelVertical = ScrollAccumulator()
+    private var wheelHorizontal = ScrollAccumulator()
+    /// Points of travel per wheel step.
     private static let wheelStep: CGFloat = 24
 
     private var twoFingerPan: UIPanGestureRecognizer!
@@ -161,17 +181,25 @@ final class VNCScreenUIView: UIView, UIKeyInput, UIScrollViewDelegate, UIPointer
     }
 
     private func wheel(by translation: CGPoint, at point: CGPoint) {
-        wheelResidual.x += translation.x
-        wheelResidual.y += translation.y
-        let vertical = Int(wheelResidual.y / Self.wheelStep)
-        let horizontal = Int(wheelResidual.x / Self.wheelStep)
+        let vertical = wheelVertical.consume(translation: translation.y, cellHeight: Self.wheelStep)
+        let horizontal = wheelHorizontal.consume(translation: translation.x, cellHeight: Self.wheelStep)
         guard vertical != 0 || horizontal != 0 else { return }
-        wheelResidual.y -= CGFloat(vertical) * Self.wheelStep
-        wheelResidual.x -= CGFloat(horizontal) * Self.wheelStep
         let target = framebufferPoint(for: point) ?? lastPointer
         // Fingers moving down means the content should move down, which is the wheel
         // scrolling up — the same inversion every touch surface makes.
         onWheel?(target.x, target.y, -vertical, -horizontal)
+    }
+
+    #if DEBUG
+    /// The wheel path without a gesture recogniser, which no test can drive on iOS.
+    func reportWheelForTesting(translation: CGPoint, at point: CGPoint) {
+        wheel(by: translation, at: point)
+    }
+    #endif
+
+    private func resetWheel() {
+        wheelVertical.reset()
+        wheelHorizontal.reset()
     }
 
     // MARK: - Touch
@@ -251,14 +279,13 @@ final class VNCScreenUIView: UIView, UIKeyInput, UIScrollViewDelegate, UIPointer
 
     @objc private func handleTwoFingerPan(_ recognizer: UIPanGestureRecognizer) {
         switch recognizer.state {
-        case .began:
-            wheelResidual = .zero
-        case .changed:
+        case .began, .changed, .ended:
             let translation = recognizer.translation(in: contentView)
+            guard translation != .zero else { return }
             recognizer.setTranslation(.zero, in: contentView)
             wheel(by: translation, at: recognizer.location(in: contentView))
         default:
-            break
+            resetWheel()
         }
     }
 
@@ -311,7 +338,15 @@ final class VNCScreenUIView: UIView, UIKeyInput, UIScrollViewDelegate, UIPointer
         let point = recognizer.location(in: contentView)
         switch recognizer.state {
         case .began:
-            move(to: point, mask: buttonMask | VNCSession.Button.left.rawValue)
+            // Where the button went down, not where the pan was recognised: a pan begins
+            // only once the pointer has moved past its slop, and pressing at the later
+            // point drags a window (or a selection) from the wrong place.
+            let origin = CGPoint(
+                x: point.x - recognizer.translation(in: contentView).x,
+                y: point.y - recognizer.translation(in: contentView).y
+            )
+            move(to: origin, mask: buttonMask | VNCSession.Button.left.rawValue)
+            move(to: point)
         case .changed:
             move(to: point)
         case .ended, .cancelled, .failed:
@@ -323,15 +358,14 @@ final class VNCScreenUIView: UIView, UIKeyInput, UIScrollViewDelegate, UIPointer
 
     @objc private func handleWheel(_ recognizer: UIPanGestureRecognizer) {
         switch recognizer.state {
-        case .began:
-            wheelResidual = .zero
-        case .changed:
+        case .began, .changed, .ended:
             let translation = recognizer.translation(in: contentView)
+            guard translation != .zero else { return }
             recognizer.setTranslation(.zero, in: contentView)
             // A wheel's translation already points the way the content should move.
-            wheel(by: CGPoint(x: translation.x, y: translation.y), at: recognizer.location(in: contentView))
+            wheel(by: translation, at: recognizer.location(in: contentView))
         default:
-            break
+            resetWheel()
         }
     }
 
@@ -346,6 +380,19 @@ final class VNCScreenUIView: UIView, UIKeyInput, UIScrollViewDelegate, UIPointer
     // MARK: - Keyboard
 
     override var canBecomeFirstResponder: Bool { true }
+
+    /// A zero-height input view keeps the on-screen keyboard down while the responder
+    /// chain still delivers hardware keys and `insertText`. Returning `nil` would let
+    /// UIKit put the system keyboard up over half the remote screen.
+    override var inputView: UIView? {
+        showsSoftwareKeyboard ? nil : Self.emptyKeyboard
+    }
+
+    private static let emptyKeyboard: UIView = {
+        let view = UIView(frame: .zero)
+        view.autoresizingMask = .flexibleWidth
+        return view
+    }()
 
     var hasText: Bool { true }
 
@@ -493,7 +540,10 @@ struct VNCScreenView: UIViewRepresentable {
     let image: CGImage?
     let desktopSize: CGSize
     let desktopName: String
-    /// Whether the on-screen keyboard should be up.
+    /// Whether the on-screen keyboard should be up. The screen holds the keyboard either
+    /// way, so a hardware keyboard always reaches the remote (D-029).
+    let showsSoftwareKeyboard: Bool
+    /// Whether this screen is the one on show and nothing is covering it.
     let wantsKeyboard: Bool
     /// Bumped from the menu to return to fit-to-screen.
     let zoomResetToken: Int
@@ -523,6 +573,7 @@ struct VNCScreenView: UIViewRepresentable {
         view.contentView.image = image
         view.update(framebufferSize: desktopSize, desktopName: desktopName)
         view.sendsCommandKey = session.sendsCommandKey
+        view.showsSoftwareKeyboard = showsSoftwareKeyboard
         if wantsKeyboard, !view.isFirstResponder, view.window != nil {
             _ = view.becomeFirstResponder()
         } else if !wantsKeyboard, view.isFirstResponder {
