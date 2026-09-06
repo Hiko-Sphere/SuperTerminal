@@ -87,7 +87,7 @@ With App Lock on, the app asks for its own passcode — or Face ID or Touch ID, 
 
 ## Your rights over your data
 
-Everything the app holds is on your device or in your own iCloud account, under your control. There is no copy with the developer, so there is nothing for the developer to give you, correct or delete on request. To see your data, open the app. To delete it, see below. If you believe the developer nonetheless holds something about you, write to [developer contact email].
+Everything the app holds is on your device or in your own iCloud account, under your control. There is no copy with the developer, so there is nothing for the developer to give you, correct or delete on request. To see your data, open the app. To delete it, see below. Because the developer receives nothing, there is no request to make and no address to make it to; the controls that answer these rights are in the app itself, under Settings.
 
 ## Deleting everything
 

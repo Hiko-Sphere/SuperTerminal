@@ -56,6 +56,24 @@ import Testing
         #expect(headings.count >= 10, "\(url.lastPathComponent) has \(headings.count) headings")
         #expect(!text.contains("<!--"), "editorial comments must not ship")
         #expect(text.contains("iCloud"))
+
+        // No way to contact anyone, in any language. The documents deliberately offer no
+        // address — there is nothing held to ask about — and a sentence inviting someone
+        // to write in is the kind of thing that gets added back by a well-meaning edit.
+        let email = try Regex(#"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"#)
+        #expect(text.firstMatch(of: email) == nil, "\(url.lastPathComponent) carries an address")
+        for invitation in ["write to", "contact us", "contact the developer", "写信", "寫信", "联系我们", "聯絡我們"] {
+            #expect(!text.localizedLowercase.contains(invitation), "\(url.lastPathComponent) invites contact: \(invitation)")
+        }
+
+        // The values only the owner can fill in are the three B-5 names them, and no more.
+        let placeholders = try Regex(#"\[[a-z][a-z ]+\]"#)
+        for match in text.matches(of: placeholders) {
+            #expect(
+                ["[effective date]", "[developer legal name]", "[governing law and venue]"].contains(String(match.0)),
+                "\(url.lastPathComponent) has an unexpected placeholder \(match.0)"
+            )
+        }
     }
 
     @Test func noticesAreBundledAndMatchTheRepositoryCopy() throws {

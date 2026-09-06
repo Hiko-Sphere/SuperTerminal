@@ -138,9 +138,12 @@ new test added so the truncated-key case it covered is not lost).
 
 ### B-5 · The legal documents carry the owner's placeholders *(open, owner-only)*
 
-The Terms of Use, Privacy Policy and User Notice ship in three languages with six values
+The Terms of Use, Privacy Policy and User Notice ship in three languages with three values
 in square brackets that only the project owner can supply: effective date, developer legal
-name, and governing law and venue. There is no contact channel in the texts by the owner's decision.
+name, and governing law and venue. There is no contact channel in the texts, by the owner's
+decision — the Privacy Policy used to end its rights section by asking the reader to write
+to an address, and now says instead that there is no request to make, because the developer
+receives nothing and the controls that answer those rights are in the app itself.
 The texts were drafted for review by counsel and say so in their first paragraph; they are
 not legal advice until a lawyer has read them.
 

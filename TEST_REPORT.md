@@ -401,6 +401,19 @@ name into the screen's editor, save, reopen and find it still there. A real Mac 
 VeNCrypt server are device checks — the bundled LibVNCServer fixture serves neither
 security type 30 nor VeNCrypt.
 
+### The legal texts offer no way to contact anyone (B-5)
+
+`LegalDocumentBundleTests` check all nine documents — three texts in three languages — for
+anything resembling an address and for the sentences that introduce one, in English and in
+both Chinese variants, and assert that the only bracketed values left are the three the
+owner still has to supply. The Privacy Policy's rights section used to end by asking the
+reader to write to `[developer contact email]`, which the earlier sweep missed; it now says
+there is no request to make, because the developer receives nothing and the controls that
+answer those rights are in the app. `LegalDocument.currentVersion` is 5, so anyone who
+accepted version 4 sees the consent screen again. The guard was checked by inserting an
+address into the English Privacy Policy and confirming the suite failed, then restoring it —
+a rule nobody has watched break is not a rule.
+
 ### App lock — 8 unit tests and 1 UI test
 
 `AppLockTests` run the lock (D-023) with a fake biometric check and a movable clock, on

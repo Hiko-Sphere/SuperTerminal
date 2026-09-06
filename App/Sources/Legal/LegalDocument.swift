@@ -18,8 +18,10 @@ enum LegalDocument: String, CaseIterable, Identifiable, Sendable {
     /// The consent screen shows again for anyone who accepted an older version.
     /// Bumped when the texts change in a way the user must see again: 2 removed every
     /// contact channel from all three languages; 3 added the assistant to the privacy
-    /// policy, because it can send terminal text to a provider the user configures.
-    static let currentVersion = 4
+    /// policy, because it can send terminal text to a provider the user configures; 5
+    /// removed the last address the Privacy Policy still asked people to write to, which
+    /// version 2 had missed, and says instead that there is no request to make.
+    static let currentVersion = 5
 
     var title: String {
         switch self {
