@@ -1,6 +1,6 @@
 # SuperTerminal — Privacy Policy
 
-**Effective date:** [effective date]
+**Effective date:** 6 September 2026
 
 SuperTerminal collects nothing about you. The developer runs no server, so there is nowhere for data to go. This page says concretely what the app stores, where, and what leaves your device, because "we value your privacy" is not a claim anyone can check.
 

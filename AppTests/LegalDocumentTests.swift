@@ -66,13 +66,12 @@ import Testing
             #expect(!text.localizedLowercase.contains(invitation), "\(url.lastPathComponent) invites contact: \(invitation)")
         }
 
-        // The values only the owner can fill in are the three B-5 names them, and no more.
-        let placeholders = try Regex(#"\[[a-z][a-z ]+\]"#)
+        // Nothing is left for the owner to fill in (B-5 closed). A bracketed lower-case
+        // phrase that is not a Markdown link is a placeholder that shipped unfilled —
+        // which in a legal text reads as though the developer has no name.
+        let placeholders = try Regex(#"\[[a-z][a-z ]+\](?!\()"#)
         for match in text.matches(of: placeholders) {
-            #expect(
-                ["[effective date]", "[developer legal name]", "[governing law and venue]"].contains(String(match.0)),
-                "\(url.lastPathComponent) has an unexpected placeholder \(match.0)"
-            )
+            Issue.record("\(url.lastPathComponent) still has the placeholder \(match.0)")
         }
     }
 

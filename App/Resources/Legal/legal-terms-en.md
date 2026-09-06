@@ -1,12 +1,12 @@
 # SuperTerminal — Terms of Use
 
-**Effective date:** [effective date]
+**Effective date:** 6 September 2026
 
 This document is a template the developer drafted for review by counsel; it is not legal advice and has not been reviewed by a lawyer.
 
 ## 1. What these terms cover
 
-These terms apply to the SuperTerminal app for iOS and iPadOS ("the app"), published on the App Store by [developer legal name] ("the developer"). There is no account to create. The app shows these terms, the Privacy Policy and the User Notice the first time it opens and asks you to accept them; continuing to use the app is how you accept them after that. If you do not accept them, delete the app.
+These terms apply to the SuperTerminal app for iOS and iPadOS ("the app"), published on the App Store by Li Yanpei ("the developer"). There is no account to create. The app shows these terms, the Privacy Policy and the User Notice the first time it opens and asks you to accept them; continuing to use the app is how you accept them after that. If you do not accept them, delete the app.
 
 These terms are the licence agreement for the app. They take the place of Apple's standard Licensed Application End User License Agreement and include the terms Apple requires, in section 13.
 
@@ -102,6 +102,6 @@ The app contains encryption. You are responsible for complying with the import, 
 
 A new version of these terms ships with a new version of the app, dated at the top, and the app shows the changed terms and asks you to accept them again before continuing. If you do not accept them, delete the app.
 
-## 16. Governing law
+## 16. Which law applies
 
-These terms are governed by the law of [governing law and venue], and disputes are heard in the courts there. If you are a consumer, you keep the protection of the mandatory laws of the country where you live, and you may be able to bring a claim there.
+These terms do not choose a governing law or a court. Where you live decides: if you are a consumer, the mandatory laws of your country apply, and you may bring a claim there.

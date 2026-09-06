@@ -20,8 +20,11 @@ enum LegalDocument: String, CaseIterable, Identifiable, Sendable {
     /// contact channel from all three languages; 3 added the assistant to the privacy
     /// policy, because it can send terminal text to a provider the user configures; 5
     /// removed the last address the Privacy Policy still asked people to write to, which
-    /// version 2 had missed, and says instead that there is no request to make.
-    static let currentVersion = 5
+    /// version 2 had missed, and says instead that there is no request to make; 6 filled
+    /// in the effective date and the developer's legal name, and removed the choice of
+    /// governing law and venue — the terms now name no law and no court, which is a
+    /// change to what the reader agreed to, not merely a blank being completed.
+    static let currentVersion = 6
 
     var title: String {
         switch self {
