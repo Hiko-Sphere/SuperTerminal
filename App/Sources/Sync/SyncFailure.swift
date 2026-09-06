@@ -51,8 +51,10 @@ enum SyncFailure {
         case .limitExceeded:
             String(localized: "Too much changed at once for one sync. This retries in smaller pieces.")
         case .constraintViolation, .serverRejectedRequest, .invalidArguments:
-            // Nothing the user did, and nothing they can do; say so rather than blame them.
-            String(localized: "iCloud rejected the change. This is a fault in the app, not something you did.")
+            // Nothing the user did, and nothing they can do; say so rather than blame
+            // them — but carry the code, because this is the branch a developer has to
+            // act on and three codes share the sentence.
+            String(localized: "iCloud rejected the change (CloudKit \(ck.errorCode)). This is a fault in the app, not something you did.")
         default:
             // Everything else keeps the system's own wording, with the code so a
             // diagnostics export can be matched to Apple's documentation.

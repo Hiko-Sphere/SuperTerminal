@@ -53,4 +53,38 @@ struct CloudKitMappingTests {
         let ck = CKRecord(recordType: CloudKitSyncTransport.recordType, recordID: id)
         #expect(CloudKitSyncTransport.syncRecord(from: ck) == nil)
     }
+
+    /// CloudKit refuses a record name that is not ASCII, and refusing one fails the whole
+    /// batch — which is every record, which is all of sync (D-034).
+    @Test("A record name is ASCII and safe whatever the id carries, and still round-trips")
+    func recordNamesAreSafe() throws {
+        let zone = CKRecordZone.ID(zoneName: "SuperTerminal", ownerName: CKCurrentUserDefaultName)
+        let awkward = [
+            // A known host behind a bastion: the separator really is U+2192.
+            SyncKey(kind: .knownHost, id: "build.example.com:443→internal.host:22"),
+            SyncKey(kind: .knownHost, id: "[2001:db8::1]:22"),
+            SyncKey(kind: .host, id: "8B2B7B4E-2C63-4E5E-9F52-2E9B5A9E4B10"),
+            SyncKey(kind: .snippet, id: "a name with spaces, punctuation & 中文"),
+            SyncKey(kind: .screen, id: "percent%already|pipe.dot"),
+        ]
+        let safe = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_~%.")
+        for key in awkward {
+            let name = CloudKitSyncTransport.recordID(for: key, zoneID: zone).recordName
+            let isASCII = name.unicodeScalars.allSatisfy { $0.isASCII }
+            let isSafe = name.unicodeScalars.allSatisfy { safe.contains($0) }
+            #expect(isASCII, "\(key.id) produced a non-ASCII name: \(name)")
+            #expect(isSafe, "\(name) has a character CloudKit may refuse")
+            #expect(!name.hasPrefix("_"), "a record name may not begin with an underscore")
+            #expect(name.count <= 255)
+            // And the id survives the trip, which is what deletions are matched on.
+            #expect(CloudKitSyncTransport.syncKey(from: CKRecord.ID(recordName: name, zoneID: zone)) == key)
+        }
+    }
+
+    @Test("Names written before they were encoded are still readable")
+    func legacyRecordNames() {
+        let zone = CKRecordZone.ID(zoneName: "SuperTerminal", ownerName: CKCurrentUserDefaultName)
+        let legacy = CKRecord.ID(recordName: "knownHost|build.example.com:22", zoneID: zone)
+        #expect(CloudKitSyncTransport.syncKey(from: legacy) == SyncKey(kind: .knownHost, id: "build.example.com:22"))
+    }
 }

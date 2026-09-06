@@ -10524,6 +10524,23 @@
         }
       }
     },
+    "iCloud rejected the change (CloudKit %lld). This is a fault in the app, not something you did.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud 拒绝了此次更改（CloudKit %lld）。这是本应用的问题，与你的操作无关。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud 拒絕了此次變更（CloudKit %lld）。這是本 App 的問題，與你的操作無關。"
+          }
+        }
+      }
+    },
     "iCloud rejected the change. This is a fault in the app, not something you did.": {
       "extractionState": "manual",
       "localizations": {

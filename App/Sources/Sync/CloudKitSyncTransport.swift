@@ -89,12 +89,36 @@ final class CloudKitSyncTransport: SyncTransport, @unchecked Sendable {
 
     // MARK: Mapping (unit-tested)
 
+    /// Characters a record name may carry as themselves. Everything else is
+    /// percent-encoded (D-034).
+    ///
+    /// CloudKit requires a record name to be ASCII, and the ids reaching here are not:
+    /// a known host is identified by `host:port`, and by `host:port→jump` when it is
+    /// behind a bastion — and `→` is U+2192. A name the server refuses fails the whole
+    /// batch, which is every record, which is all of sync.
+    ///
+    /// `.` is deliberately *not* allowed through: it separates the kind from the id, and
+    /// a hostname is full of them. Encoding it keeps the separator unambiguous.
+    private static let nameSafe = CharacterSet(
+        charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_~"
+    )
+
     static func recordID(for key: SyncKey, zoneID: CKRecordZone.ID) -> CKRecord.ID {
-        CKRecord.ID(recordName: "\(key.kind.rawValue)|\(key.id)", zoneID: zoneID)
+        // The kind is a Swift identifier, so it needs no encoding and contains no "."
+        let encoded = key.id.addingPercentEncoding(withAllowedCharacters: nameSafe) ?? key.id
+        return CKRecord.ID(recordName: "\(key.kind.rawValue).\(encoded)", zoneID: zoneID)
     }
 
     static func syncKey(from id: CKRecord.ID) -> SyncKey? {
-        let parts = id.recordName.split(separator: "|", maxSplits: 1).map(String.init)
+        let name = id.recordName
+        if let dot = name.firstIndex(of: "."),
+           let kind = SyncKind(rawValue: String(name[..<dot])) {
+            let encoded = String(name[name.index(after: dot)...])
+            return SyncKey(kind: kind, id: encoded.removingPercentEncoding ?? encoded)
+        }
+        // Records written before the names were encoded. Nothing shipped with them, but a
+        // device that pushed some before updating should still be able to read them back.
+        let parts = name.split(separator: "|", maxSplits: 1).map(String.init)
         guard parts.count == 2, let kind = SyncKind(rawValue: parts[0]) else { return nil }
         return SyncKey(kind: kind, id: parts[1])
     }
