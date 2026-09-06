@@ -18,6 +18,23 @@
         }
       }
     },
+    "%@ (CloudKit %lld)": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@（CloudKit %lld）"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@（CloudKit %lld）"
+          }
+        }
+      }
+    },
     "%@ Screen": {
       "extractionState": "manual",
       "localizations": {
@@ -830,6 +847,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Alt+Tab"
+          }
+        }
+      }
+    },
+    "Another device changed the same item. The newer change wins; try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "另一台设备修改了同一项内容。以较新的修改为准；请重试。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "另一台裝置修改了同一項內容。以較新的修改為準；請重試。"
           }
         }
       }
@@ -4778,6 +4812,23 @@
         }
       }
     },
+    "No network. Sync will resume when there is one.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "没有网络。恢复联网后会继续同步。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "沒有網路。恢復連線後會繼續同步。"
+          }
+        }
+      }
+    },
     "No provider is configured in Settings.": {
       "extractionState": "manual",
       "localizations": {
@@ -7073,6 +7124,23 @@
         }
       }
     },
+    "Sign in to iCloud in Settings, then try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请在“设置”中登录 iCloud，然后重试。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請在「設定」中登入 iCloud，然後重試。"
+          }
+        }
+      }
+    },
     "Sign in with": {
       "extractionState": "manual",
       "localizations": {
@@ -7804,6 +7872,40 @@
         }
       }
     },
+    "The app was out of touch with iCloud for too long. The next sync fetches everything again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本应用与 iCloud 失去联系的时间过长。下次同步会重新获取全部内容。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本 App 與 iCloud 失去聯繫的時間過長。下次同步會重新取得全部內容。"
+          }
+        }
+      }
+    },
+    "The app's iCloud data was removed. It is recreated on the next sync.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本应用在 iCloud 中的数据已被移除，将在下次同步时重新创建。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本 App 在 iCloud 中的資料已被移除，將在下次同步時重新建立。"
+          }
+        }
+      }
+    },
     "The command is typed into the terminal and waits for you to press Return.": {
       "extractionState": "manual",
       "localizations": {
@@ -8365,6 +8467,23 @@
         }
       }
     },
+    "This build cannot reach iCloud: it is signed without the app's iCloud container. Install a build signed with the right team.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此构建无法访问 iCloud：签名中不含本应用的 iCloud 容器。请安装使用正确开发团队签名的构建。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此建置無法存取 iCloud：簽章中不含本 App 的 iCloud 容器。請安裝使用正確開發團隊簽章的建置。"
+          }
+        }
+      }
+    },
     "This connection has no user name saved. Edit the connection to save one.": {
       "extractionState": "manual",
       "localizations": {
@@ -8429,6 +8548,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "此金鑰已加密。密碼短語僅用於解鎖一次，不會被儲存。"
+          }
+        }
+      }
+    },
+    "This managed Apple Account is not allowed to use iCloud.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此受管理的 Apple 账户不被允许使用 iCloud。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此受管理的 Apple 帳號不被允許使用 iCloud。"
           }
         }
       }
@@ -8620,6 +8756,23 @@
         }
       }
     },
+    "This version is too old for the data in iCloud. Update the app.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此版本过旧，无法读取 iCloud 中的数据。请更新本应用。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此版本過舊，無法讀取 iCloud 中的資料。請更新本 App。"
+          }
+        }
+      }
+    },
     "Three things worth knowing, and the documents behind them.": {
       "extractionState": "manual",
       "localizations": {
@@ -8718,6 +8871,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "嘗試次數過多。請在 %lld 秒後再試。"
+          }
+        }
+      }
+    },
+    "Too much changed at once for one sync. This retries in smaller pieces.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "一次同步的变更过多，将分批重试。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "一次同步的變更過多，將分批重試。"
           }
         }
       }
@@ -9487,6 +9657,23 @@
         }
       }
     },
+    "Your iCloud storage is full, so nothing more can be saved to it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你的 iCloud 存储空间已满，无法再保存任何内容。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你的 iCloud 儲存空間已滿，無法再儲存任何內容。"
+          }
+        }
+      }
+    },
     "Your keys stay on your device.": {
       "extractionState": "manual",
       "localizations": {
@@ -9674,6 +9861,57 @@
         }
       }
     },
+    "iCloud Drive is turned off for this app. Turn it on in Settings → your name → iCloud.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本应用的 iCloud 云盘已关闭。请在“设置” → 你的姓名 → “iCloud”中开启。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本 App 的 iCloud 雲碟已關閉。請在「設定」→ 你的名字 →「iCloud」中開啟。"
+          }
+        }
+      }
+    },
+    "iCloud is busy. This retries on its own.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud 正忙。稍后会自动重试。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud 忙碌中。稍後會自動重試。"
+          }
+        }
+      }
+    },
+    "iCloud is not available on this device right now. It usually returns on its own; try again in a few minutes.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此设备当前无法使用 iCloud。通常会自行恢复；请过几分钟再试。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此裝置目前無法使用 iCloud。通常會自行恢復；請過幾分鐘再試。"
+          }
+        }
+      }
+    },
     "iCloud is restricted on this device.": {
       "extractionState": "manual",
       "localizations": {
@@ -9704,6 +9942,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "iCloud 暫時無法使用。"
+          }
+        }
+      }
+    },
+    "iCloud rejected the change. This is a fault in the app, not something you did.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud 拒绝了此次更改。这是本应用的问题，与你的操作无关。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud 拒絕了此次變更。這是本 App 的問題，與你的操作無關。"
           }
         }
       }

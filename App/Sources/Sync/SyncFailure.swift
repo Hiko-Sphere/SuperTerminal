@@ -1,0 +1,62 @@
+import CloudKit
+import Foundation
+
+/// Turns a CloudKit error into a sentence that says what to do about it (D-032).
+///
+/// The status line used to show `String(describing:)` of the error, which for a `CKError`
+/// is `<CKError 0x…: "Not Authenticated" (9/1002)>`. That is a developer's string in a
+/// place a user reads: it names a number rather than the thing they can fix, and the two
+/// most common failures — not signed in, and no network — are the two most fixable.
+///
+/// Pure, so every case is tested without a CloudKit account.
+enum SyncFailure {
+    static func describe(_ error: Error) -> String {
+        guard let ck = error as? CKError else {
+            return (error as NSError).localizedDescription
+        }
+        // A partial failure's own message says nothing; the reason is in the item that
+        // failed, and one reason is enough to act on.
+        if ck.code == .partialFailure, let first = ck.partialErrorsByItemID?.values.first {
+            return describe(first)
+        }
+        return sentence(for: ck)
+    }
+
+    private static func sentence(for ck: CKError) -> String {
+        switch ck.code {
+        case .notAuthenticated:
+            String(localized: "Sign in to iCloud in Settings, then try again.")
+        case .accountTemporarilyUnavailable:
+            String(localized: "iCloud is not available on this device right now. It usually returns on its own; try again in a few minutes.")
+        case .managedAccountRestricted:
+            String(localized: "This managed Apple Account is not allowed to use iCloud.")
+        case .permissionFailure:
+            String(localized: "iCloud Drive is turned off for this app. Turn it on in Settings → your name → iCloud.")
+        case .networkUnavailable, .networkFailure:
+            String(localized: "No network. Sync will resume when there is one.")
+        case .serviceUnavailable, .requestRateLimited, .zoneBusy:
+            String(localized: "iCloud is busy. This retries on its own.")
+        case .quotaExceeded:
+            String(localized: "Your iCloud storage is full, so nothing more can be saved to it.")
+        case .zoneNotFound, .userDeletedZone:
+            String(localized: "The app's iCloud data was removed. It is recreated on the next sync.")
+        case .badContainer, .missingEntitlement:
+            String(localized: "This build cannot reach iCloud: it is signed without the app's iCloud container. Install a build signed with the right team.")
+        case .incompatibleVersion:
+            String(localized: "This version is too old for the data in iCloud. Update the app.")
+        case .changeTokenExpired:
+            String(localized: "The app was out of touch with iCloud for too long. The next sync fetches everything again.")
+        case .serverRecordChanged:
+            String(localized: "Another device changed the same item. The newer change wins; try again.")
+        case .limitExceeded:
+            String(localized: "Too much changed at once for one sync. This retries in smaller pieces.")
+        case .constraintViolation, .serverRejectedRequest, .invalidArguments:
+            // Nothing the user did, and nothing they can do; say so rather than blame them.
+            String(localized: "iCloud rejected the change. This is a fault in the app, not something you did.")
+        default:
+            // Everything else keeps the system's own wording, with the code so a
+            // diagnostics export can be matched to Apple's documentation.
+            String(localized: "\(ck.localizedDescription) (CloudKit \(ck.errorCode))")
+        }
+    }
+}

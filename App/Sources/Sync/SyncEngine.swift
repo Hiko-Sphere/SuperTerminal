@@ -56,7 +56,7 @@ final class SyncEngine {
             lastSynced = Date()
             status = .idle
         } catch {
-            status = .failed(String(describing: error))
+            status = .failed(SyncFailure.describe(error))
         }
     }
 
