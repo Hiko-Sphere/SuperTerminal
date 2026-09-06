@@ -90,7 +90,11 @@ final class SyncCoordinator {
     private func start() {
         guard engine == nil else { return }
         let transport = CloudKitSyncTransport(stateDirectory: directory)
-        engine = SyncEngine(transport: transport, local: local)
+        let engine = SyncEngine(transport: transport, local: local)
+        #if DEBUG
+        engine.diagnosticsDirectory = directory
+        #endif
+        self.engine = engine
         log.info("iCloud sync enabled")
         refreshAccount()
         scheduleSync()

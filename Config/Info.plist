@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  Everything else in this file is generated (GENERATE_INFOPLIST_FILE), and this
+	  partial is merged into it. It exists for one key: there is no
+	  INFOPLIST_KEY_UIBackgroundModes build setting — Xcode accepts the name and silently
+	  drops it — so the only way to declare a background mode is a file (D-036).
+
+	  remote-notification is here because iCloud sync needs it: CKSyncEngine is told about
+	  another device's changes by a silent push, and without this the app is not woken to
+	  read it. No notification is ever shown.
+	-->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
+</dict>
+</plist>

@@ -3,10 +3,18 @@
 <plist version="1.0">
 <dict>
 	<!--
-	  Deliberately minimal. The app needs no Network Extension, no VPN, no background
-	  modes and no app groups: the Cloudflare tunnel is an ordinary outbound TLS
-	  connection made in-process, which is what keeps App Review straightforward.
+	  Deliberately minimal. The app needs no Network Extension, no VPN and no app groups:
+	  the Cloudflare tunnel is an ordinary outbound TLS connection made in-process, which
+	  is what keeps App Review straightforward.
+
+	  Push is the one exception, and only because iCloud sync needs it: CKSyncEngine keeps
+	  a database subscription so a change on another device is noticed, and a container
+	  request from an app without the entitlement is refused by the server before it ever
+	  looks at the records (D-036). Nothing else in the app sends or receives a
+	  notification.
 	-->
+	<key>aps-environment</key>
+	<string>$(ST_APS_ENVIRONMENT)</string>
 	<key>keychain-access-groups</key>
 	<array>
 		<string>$(AppIdentifierPrefix)dev.superterminal.app</string>

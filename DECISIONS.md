@@ -1283,3 +1283,47 @@ codes share that sentence, so it carries the code too.
 there has to be deployed to Production in the CloudKit Console before any TestFlight or
 App Store build can sync — the same `docs/RELEASE.md` item, now with a reason attached
 rather than a warning nobody had hit.
+
+## D-036 · iCloud sync needs push, and the server checks before it looks at the records
+
+The rejection turned out not to be about the records at all. With the full error dumped
+off the device it read:
+
+```
+CKErrorDomain 15   CKHTTPStatus = 500   CKInternalErrorDomain: 2000
+ContainerID = iCloud.dev.superterminal.app
+```
+
+No `ServerErrorDescription`, no per-item errors, an HTTP 500 — the request never reached
+record validation. The app's entitlements had no `aps-environment` and the bundle no
+`remote-notification` background mode. `CKSyncEngine` keeps a database subscription so
+that a change on another device is noticed rather than waited for, and a container
+request from an app that cannot receive one is refused before the server looks at
+anything.
+
+The entitlements file said the app "needs no Network Extension, no VPN, no background
+modes and no app groups". That was true when it was written and stopped being true when
+sync was added; the comment now says which one exception exists and why, because a
+minimal entitlement list is only trustworthy if it is accurate.
+
+Push is declared per configuration, like the container environment: `ST_APS_ENVIRONMENT`
+is `development` in Debug and `production` in Release.
+
+**`INFOPLIST_KEY_UIBackgroundModes` does not exist.** Xcode accepts the build setting,
+reports it in `-showBuildSettings`, and silently drops it — the built `Info.plist` has no
+such key. Background modes can only be declared in a file, so `Config/Info.plist` is a
+partial merged into the generated one. It lives outside `App/` because that folder is
+synchronised into the target, and a plist there is also copied as a resource, which fails
+the build with "Multiple commands produce Info.plist".
+
+Verified by reading the built product rather than the intent: the signed entitlements
+carry `aps-environment=development`, the provisioning profile grants it, the merged
+`Info.plist` has `UIBackgroundModes = [remote-notification]`, and the generated keys
+survived the merge.
+
+**How this was found.** Three hypotheses were tested and discarded first — stale engine
+state replaying old record names (the state was pulled off the device and had none), the
+record names themselves (D-034, real but not this), and the container environment (D-035,
+also real, also not this). Each was checked against the device rather than reasoned
+about. The debug-only dump that ended it is compiled out of anything a user could
+install.

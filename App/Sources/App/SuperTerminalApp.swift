@@ -1,7 +1,27 @@
+import CloudKit
 import SwiftUI
+import UIKit
+
+/// Registers for the push notifications iCloud sync needs, and nothing else (D-036).
+///
+/// `CKSyncEngine` keeps a database subscription so a change made on another device is
+/// noticed rather than waited for, and the server refuses a container request from an app
+/// that cannot receive one. No notification is ever shown: these are silent, and the only
+/// thing that reads them is the sync engine.
+final class PushRegistrar: NSObject, UIApplicationDelegate {
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions options: [UIApplication.LaunchOptionsKey: Any]? = nil
+    ) -> Bool {
+        application.registerForRemoteNotifications()
+        return true
+    }
+}
 
 @main
 struct SuperTerminalApp: App {
+    @UIApplicationDelegateAdaptor(PushRegistrar.self) private var pushRegistrar
+
     /// Built once and handed down explicitly rather than reached for through a global.
     ///
     /// A terminal app holds live network connections and private keys; a shared mutable

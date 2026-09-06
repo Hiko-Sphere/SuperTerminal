@@ -32,6 +32,11 @@ final class SyncEngine {
     /// What has been pushed already, so an unchanged record is not sent every time.
     private var pushed: [SyncKey: Date] = [:]
 
+    #if DEBUG
+    /// Where a full failure dump is written, for reading off a development device.
+    var diagnosticsDirectory: URL?
+    #endif
+
     init(transport: any SyncTransport, local: any SyncLocalStore) {
         self.transport = transport
         self.local = local
@@ -57,6 +62,9 @@ final class SyncEngine {
             status = .idle
         } catch {
             status = .failed(SyncFailure.describe(error))
+            #if DEBUG
+            if let directory = diagnosticsDirectory { SyncDiagnostics.record(error, in: directory) }
+            #endif
         }
     }
 
