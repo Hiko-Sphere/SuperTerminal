@@ -1327,3 +1327,35 @@ record names themselves (D-034, real but not this), and the container environmen
 also real, also not this). Each was checked against the device rather than reasoned
 about. The debug-only dump that ended it is compiled out of anything a user could
 install.
+
+## D-037 · iCloud sync is withdrawn behind one flag, not half-removed
+
+Every push is refused by the container: `CKErrorDomain 15`, HTTP 500, no server
+description, no per-record errors — the request never reaches record validation. Pulling
+works, so the account, the entitlements and the push capability are all fine; the
+container's own state is not, and that is fixed in the CloudKit Console rather than in
+code. Four real defects were found and fixed on the way there (D-034 record names, D-035
+the container environment, D-036 push, and the account check that put a pointer on
+screen), and none of them was the last one.
+
+So the switch is not offered. A toggle that always fails is worse than an absent feature:
+it invites someone to believe their keys and connections are safe somewhere else, which
+they are not.
+
+**One flag, nothing ripped out.** `SyncAvailability.isAvailable` is the whole of it. The
+engine, the merge, the tombstones, the CloudKit mapping and their tests are all still
+compiled and still run — `SyncEngineTests` still exercises the whole reconciliation
+against an in-memory transport. Turning it back on is one line, which is the point: a
+feature deleted to hide a problem has to be rewritten, and one behind a flag does not.
+
+**Withdrawing has to be complete or it is worse than nothing.** A preference left over
+from a build where the switch existed must not start an engine that can only fail; asking
+to turn it on must not quietly set the preference either; the switch must read as off
+whatever is stored; and the two places that told people to turn it on — the consent
+summary and the last page of the tour — must stop saying so. The per-key "Store private
+key in iCloud Keychain" control needed nothing: it was already gated on `sync.isEnabled`
+and hides itself.
+
+**Shown rather than hidden.** Someone looking for sync should find out where it stands
+rather than wonder whether they missed it, so the row is still there, disabled, with the
+reason under it.

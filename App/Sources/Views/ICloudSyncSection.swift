@@ -10,6 +10,9 @@ struct ICloudSyncSection: View {
         Section {
             Toggle("Sync with iCloud", isOn: enabledBinding)
                 .accessibilityIdentifier("icloud-toggle")
+                // Shown rather than hidden: someone looking for sync should find out
+                // where it stands, not be left wondering whether they missed it (D-037).
+                .disabled(!SyncAvailability.isAvailable)
             if let engine = container.sync.engine {
                 LabeledContent("Status") { Text(statusText(engine)) }
                     .font(DesignTokens.Typography.caption)
@@ -27,7 +30,11 @@ struct ICloudSyncSection: View {
         } header: {
             Text("iCloud")
         } footer: {
-            Text("Syncs connections, key names and public keys, snippets and trusted host keys between your devices through your own iCloud account. Private keys are added to iCloud Keychain only when you choose that for a key, and keys protected by Face ID or Touch ID never leave this device. Passwords, command history and diagnostics are not synced.")
+            if SyncAvailability.isAvailable {
+                Text("Syncs connections, key names and public keys, snippets and trusted host keys between your devices through your own iCloud account. Private keys are added to iCloud Keychain only when you choose that for a key, and keys protected by Face ID or Touch ID never leave this device. Passwords, command history and diagnostics are not synced.")
+            } else {
+                Text(SyncAvailability.unavailableReason)
+            }
         }
         .confirmationDialog(
             "Remove the app's data from iCloud?",
@@ -51,7 +58,9 @@ struct ICloudSyncSection: View {
 
     private var enabledBinding: Binding<Bool> {
         Binding(
-            get: { container.settings.iCloudSyncEnabled },
+            // Off, whatever a previous build left stored: the switch must not read as on
+            // while nothing is syncing.
+            get: { SyncAvailability.isAvailable && container.settings.iCloudSyncEnabled },
             set: { container.sync.setEnabled($0) }
         )
     }

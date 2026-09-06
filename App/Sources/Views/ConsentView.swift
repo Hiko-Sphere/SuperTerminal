@@ -29,7 +29,7 @@ struct ConsentView: View {
                     }
 
                     point("lock.shield", "Your keys stay on your device.",
-                          "Private keys live in Apple's Keychain and are never sent to a server. iCloud sync is off until you turn it on, and even then only keys you choose go to iCloud Keychain.")
+                          "Private keys live in Apple's Keychain and are never sent to a server. iCloud sync is not available in this version, so nothing you save leaves this device at all.")
                     point("network", "Nothing goes to the developer.",
                           "There is no account, no server, no analytics and no crash reporter. Traffic goes only to the servers you connect to and, for tunnelled hosts, to Cloudflare on your behalf.")
                     point("checkmark.seal", "You verify the first fingerprint.",

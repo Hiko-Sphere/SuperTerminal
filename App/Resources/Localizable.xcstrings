@@ -5135,6 +5135,23 @@
         }
       }
     },
+    "Not available yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "暂未开放"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "尚未開放"
+          }
+        }
+      }
+    },
     "Not connected — what you type is not being sent.": {
       "extractionState": "manual",
       "localizations": {
@@ -6274,6 +6291,23 @@
         }
       }
     },
+    "Private keys live in Apple's Keychain and are never sent to a server. iCloud sync is not available in this version, so nothing you save leaves this device at all.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "私钥保存在 Apple 的钥匙串中，绝不会发送到任何服务器。此版本暂不开放 iCloud 同步，因此你保存的一切都不会离开本设备。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "私密金鑰儲存在 Apple 的鑰匙圈中，絕不會傳送到任何伺服器。此版本暫不開放 iCloud 同步，因此你儲存的一切都不會離開本裝置。"
+          }
+        }
+      }
+    },
     "Private keys live in Apple's Keychain and are never sent to a server. iCloud sync is off until you turn it on, and even then only keys you choose go to iCloud Keychain.": {
       "extractionState": "manual",
       "localizations": {
@@ -6287,6 +6321,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "私密金鑰存放在 Apple 的 Keychain 中，絕不會傳送至伺服器。iCloud 同步在您開啟之前處於關閉狀態；即使開啟，也只有您選擇的金鑰才會進入 iCloud Keychain。"
+          }
+        }
+      }
+    },
+    "Private keys stay in this device's Keychain and never reach a server. There is no account and no analytics. Nothing is synced anywhere yet, and a passcode or Face ID is there if you want the app itself locked.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "私钥保存在本设备的钥匙串中，绝不会发送到任何服务器。没有账户，也没有任何统计分析。目前不会同步到任何地方；如果你想锁住应用本身，可以设置密码或 Face ID。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "私密金鑰儲存在本裝置的鑰匙圈中，絕不會傳送到任何伺服器。沒有帳號，也沒有任何統計分析。目前不會同步到任何地方；若你想鎖住 App 本身，可以設定密碼或 Face ID。"
           }
         }
       }
@@ -7987,6 +8038,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "與 iCloud 同步"
+          }
+        }
+      }
+    },
+    "Syncing is not available in this version. Everything stays on this device, which is where it already was — nothing you have saved is affected.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此版本暂不开放同步。所有内容都留在本设备上——本来也在这里，你已保存的一切都不受影响。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此版本暫不開放同步。所有內容都留在本裝置上——本來也在這裡，你已儲存的一切都不受影響。"
           }
         }
       }

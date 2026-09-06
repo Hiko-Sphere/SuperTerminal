@@ -147,6 +147,12 @@ These are real and are not worked around silently:
 * **Face ID and Touch ID for the app lock are proven with a stand-in.** The lock's rules
   are tested with a biometric check the test controls and the real Keychain and
   derivation; the system prompt itself is a device check on the release checklist.
+* **iCloud sync is written and tested but not offered.** The switch is disabled and says
+  so. Every push is refused by the container with `CKErrorDomain 15` and HTTP 500 — no
+  server description, no per-record errors, the request never reaching record validation —
+  while pulling works, so the account and entitlements are fine and the container's own
+  state is not. That is fixed in the CloudKit Console, not in code. Shipping a toggle that
+  always fails would invite people to trust their keys were safe somewhere else (D-037).
 * **macOS Screen Sharing's own sign-in and VeNCrypt are implemented but not yet run
   against a real Mac or a real VeNCrypt server.** Both are verified against vectors from an
   independent implementation and end to end against a second implementation of the server

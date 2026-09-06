@@ -271,7 +271,7 @@ struct TutorialIllustration: View {
     private var keychain: some View {
         VStack(spacing: DesignTokens.Spacing.sm) {
             row("key.fill", String(localized: "Private keys"), String(localized: "This device's Keychain"), DesignTokens.Color.success, 0)
-            row("arrow.triangle.2.circlepath", String(localized: "iCloud sync"), String(localized: "Off until you turn it on"), DesignTokens.Color.info, 1)
+            row("arrow.triangle.2.circlepath", String(localized: "iCloud sync"), String(localized: "Not available yet"), DesignTokens.Color.info, 1)
             row("faceid", String(localized: "App lock"), String(localized: "Optional"), DesignTokens.Color.accent, 2)
         }
     }

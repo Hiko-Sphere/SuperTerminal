@@ -61,7 +61,7 @@ struct TutorialPage: Identifiable, Equatable {
             id: 5,
             symbol: "lock.shield",
             title: String(localized: "Everything stays yours"),
-            body: String(localized: "Private keys stay in this device's Keychain and never reach a server. There is no account and no analytics. Turn on iCloud sync, or a passcode and Face ID, only if you want them."),
+            body: String(localized: "Private keys stay in this device's Keychain and never reach a server. There is no account and no analytics. Nothing is synced anywhere yet, and a passcode or Face ID is there if you want the app itself locked."),
             illustration: .keychain
         ),
     ]

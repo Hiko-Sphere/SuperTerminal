@@ -40,12 +40,15 @@ final class SyncCoordinator {
         self.local = local
         self.tombstones = tombstones
         self.log = log
-        if settings.iCloudSyncEnabled { start() }
+        // A preference left over from a build where the switch existed must not start
+        // an engine that cannot succeed (D-037).
+        if settings.iCloudSyncEnabled, SyncAvailability.isAvailable { start() }
     }
 
     /// Turning sync off stops syncing and nothing more: data already in iCloud stays
     /// there until the user asks for it to be removed, which is a separate action.
     func setEnabled(_ enabled: Bool) {
+        guard SyncAvailability.isAvailable else { return }
         settings.iCloudSyncEnabled = enabled
         if enabled { start() } else { stop() }
     }
