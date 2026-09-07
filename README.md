@@ -1,4 +1,4 @@
-# SuperTerminal
+# Apex Terminal
 
 An SSH terminal for iPhone and iPad that connects to servers published through
 **Cloudflare Tunnel** and protected by **Cloudflare Access** — with no helper binary on
@@ -24,7 +24,7 @@ iOS cannot do that. It cannot spawn a helper process, run a background daemon of
 own, or install a CLI tool. So mobile SSH clients either cannot reach these hosts at
 all, or fall back to a browser-rendered web terminal.
 
-SuperTerminal implements the protocol instead. Cloudflare's carrier turns out to be an
+Apex Terminal implements the protocol instead. Cloudflare's carrier turns out to be an
 ordinary WebSocket whose binary frames are a raw TCP byte stream, and the login flow
 delivers its credential through a transfer service rather than through a browser cookie
 — both of which a native app can do directly. The result is a genuine SSH session:
@@ -51,7 +51,7 @@ in [`DECISIONS.md`](DECISIONS.md) (D-001).
 * **An assistant** for "how do I…", "explain this" and "what went wrong", on the device's
   own model where it is eligible, else a provider you configure — it shows what it will
   send before it sends it, and a suggested command is inserted, never run (D-020).
-* **Siri and Shortcuts** — "Connect to <server> in SuperTerminal" (D-021) — and the
+* **Siri and Shortcuts** — "Connect to <server> in Apex Terminal" (D-021) — and the
   server's platform (macOS, Linux, Windows…) detected or set by hand (D-019).
 * **iCloud sync** of connections, keys' public halves, known hosts and snippets, opt-in
   and conflict-checked (D-015); **an app lock** with a passcode of its own behind Face ID
@@ -71,7 +71,7 @@ in [`DECISIONS.md`](DECISIONS.md) (D-001).
 ## Building and testing
 
 ```bash
-cd Packages/SuperTerminalKit
+cd Packages/ApexTerminalKit
 swift build
 swift test
 ```
@@ -91,7 +91,7 @@ swift test --filter CarrierIntegrationTests
 ## Repository layout
 
 ```
-Packages/SuperTerminalKit/     all logic, testable on macOS without a simulator
+Packages/ApexTerminalKit/     all logic, testable on macOS without a simulator
   Sources/
     STCore/                    transport protocol, error taxonomy, redacting logger
     STSecureStore/             Keychain with explicit protection classes
@@ -172,5 +172,5 @@ These are real and are not worked around silently:
 ## Licence and trademarks
 
 Cloudflare, Cloudflare Tunnel and Cloudflare Access are trademarks of Cloudflare, Inc.
-SuperTerminal is not affiliated with or endorsed by Cloudflare. See
+Apex Terminal is not affiliated with or endorsed by Cloudflare. See
 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).

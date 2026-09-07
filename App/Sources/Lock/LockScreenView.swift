@@ -19,13 +19,13 @@ struct LockScreenView: View {
             DesignTokens.Color.surface.opacity(0.85).ignoresSafeArea()
             VStack(spacing: DesignTokens.Spacing.xl) {
                 Spacer(minLength: 0)
-                Image("SuperTerminalLogo")
+                Image("Logo")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 88, height: 88)
                     .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
                     .stCardShadow(DesignTokens.Elevation.sheet)
-                Text("SuperTerminal is locked")
+                Text("Apex Terminal is locked")
                     .font(DesignTokens.Typography.title)
                     .foregroundStyle(DesignTokens.Color.label)
                     // The screen's identifier lives on one element: put on the root stack it

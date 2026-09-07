@@ -16,11 +16,11 @@ synchronised groups, so adding a source file needs no project edit.
 ## Layout
 
 ```
-SuperTerminal.xcodeproj        app, unit test and UI test targets
+ApexTerminal.xcodeproj        app, unit test and UI test targets
 App/                           the SwiftUI application
 AppTests/                      app-hosted tests, including ones that connect to a real sshd
 AppUITests/                    XCUITests that drive the real interface
-Packages/SuperTerminalKit/     all the logic, testable on macOS without a simulator
+Packages/ApexTerminalKit/     all the logic, testable on macOS without a simulator
 Packages/swift-nio-ssh-rsa/    vendored swift-nio-ssh with RSA added (see DECISIONS.md D-007)
 patches/niossh-rsa.patch       the entire difference from upstream
 scripts/                       test harnesses and maintenance scripts
@@ -34,7 +34,7 @@ simulator in the loop.
 
 ```bash
 # The package: fastest feedback, no simulator
-cd Packages/SuperTerminalKit
+cd Packages/ApexTerminalKit
 swift build
 swift test
 swift test -c release --filter TerminalThroughputTests   # the performance numbers
@@ -44,7 +44,7 @@ cd ../swift-nio-ssh-rsa && swift test
 
 # The app
 cd ../..
-xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal \
+xcodebuild -project ApexTerminal.xcodeproj -scheme ApexTerminal \
   -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
 
 # App-hosted tests against a real sshd (starts and stops one for you)
@@ -67,10 +67,10 @@ CI enforces what the project claims, and the same checks run locally:
 
 ```bash
 # Zero warnings from our own code (third-party warnings are not counted, and not hidden)
-cd Packages/SuperTerminalKit && swift build 2>&1 | grep -cE "Sources/.*warning:"   # must be 0
+cd Packages/ApexTerminalKit && swift build 2>&1 | grep -cE "Sources/.*warning:"   # must be 0
 
 # No placeholder implementations
-grep -rnE "\b(TODO|FIXME)\b|fatalError\(\"not implemented" App/Sources Packages/SuperTerminalKit/Sources --include="*.swift"
+grep -rnE "\b(TODO|FIXME)\b|fatalError\(\"not implemented" App/Sources Packages/ApexTerminalKit/Sources --include="*.swift"
 
 # No committed key material
 git grep -nE '^-{5}BEGIN [A-Z ]*PRIVATE KEY-{5}$'
@@ -81,20 +81,20 @@ git grep -nE '^-{5}BEGIN [A-Z ]*PRIVATE KEY-{5}$'
 The project uses automatic signing and **no development team is set**, so a fresh clone
 builds for the simulator without any account. To run on a device:
 
-1. Open `SuperTerminal.xcodeproj`.
-2. Select the `SuperTerminal` target → Signing & Capabilities.
-3. Choose your team. Xcode will register the bundle identifier `dev.superterminal.app`,
+1. Open `ApexTerminal.xcodeproj`.
+2. Select the `ApexTerminal` target → Signing & Capabilities.
+3. Choose your team. Xcode will register the bundle identifier `dev.apexterminal.app`,
    or you can change it to one of your own.
 
 The entitlements file asks for nothing unusual — a Keychain access group and nothing else.
 There is no Network Extension, no VPN and no background mode, because the Cloudflare
 tunnel is an ordinary outbound TLS connection made in-process.
 
-Archiving without a team fails with *"Signing for SuperTerminal requires a development
+Archiving without a team fails with *"Signing for ApexTerminal requires a development
 team"*. To check that the device build compiles without one:
 
 ```bash
-xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal \
+xcodebuild -project ApexTerminal.xcodeproj -scheme ApexTerminal \
   -configuration Release -destination 'generic/platform=iOS' \
   CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
 ```
@@ -118,7 +118,7 @@ upstream adds RSA, delete this package and depend on upstream directly.**
 
 ## Regenerating the Unicode width tables
 
-`Packages/SuperTerminalKit/Sources/STTerminal/CharacterWidthTables.swift` is generated
+`Packages/ApexTerminalKit/Sources/STTerminal/CharacterWidthTables.swift` is generated
 from the Unicode Character Database and records which version it came from:
 
 ```bash

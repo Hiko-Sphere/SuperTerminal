@@ -201,8 +201,8 @@ final class DiagnosticsCentre {
 
     init() {
         logger = STLogger(
-            subsystem: "SuperTerminal",
-            sinks: [buffer, OSLogSink(subsystem: "dev.superterminal", category: "app")],
+            subsystem: "ApexTerminal",
+            sinks: [buffer, OSLogSink(subsystem: "dev.apexterminal", category: "app")],
             minimumLevel: .info
         )
     }
@@ -215,7 +215,7 @@ final class DiagnosticsCentre {
     func exportReport() -> String {
         let formatter = ISO8601DateFormatter()
         var lines = [
-            String(localized: "SuperTerminal diagnostics"),
+            String(localized: "Apex Terminal diagnostics"),
             String(localized: "Generated: \(formatter.string(from: Date()))"),
             "",
             String(localized: "Records are redacted at the point they are written: no commands, terminal output, hostnames, passwords, keys or tokens are captured."),

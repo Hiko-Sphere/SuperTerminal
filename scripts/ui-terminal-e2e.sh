@@ -12,10 +12,10 @@ set -euo pipefail
 ROOT="${ST_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 DESTINATION="${1:-platform=iOS Simulator,name=iPhone 17 Pro}"
 # A single test or class can be repeated on its own — the way an intermittent crash is
-# measured — without editing this file: ST_ONLY_TESTING=SuperTerminalUITests/SomeClass/testX
+# measured — without editing this file: ST_ONLY_TESTING=ApexTerminalUITests/SomeClass/testX
 # Several, comma-separated, become several flags: xcodebuild takes one identifier per
 # -only-testing, and passing a comma-separated list to one flag silently runs nothing.
-ONLY_TESTING="${ST_ONLY_TESTING:-SuperTerminalUITests}"
+ONLY_TESTING="${ST_ONLY_TESTING:-ApexTerminalUITests}"
 ONLY_TESTING_FLAGS=()
 IFS=',' read -ra ONLY_TESTING_PARTS <<< "$ONLY_TESTING"
 for part in "${ONLY_TESTING_PARTS[@]}"; do
@@ -64,7 +64,7 @@ echo "Test sshd listening on 127.0.0.1:$PORT"
 # screen tests skip, and say so.
 VNC_PORT=""
 VNC_LOG="$WORK/vnc-events.log"
-VNC_SRC="$ROOT/Packages/SuperTerminalKit/Sources/STTestSupport/Fixtures/vnc-test-server.c"
+VNC_SRC="$ROOT/Packages/ApexTerminalKit/Sources/STTestSupport/Fixtures/vnc-test-server.c"
 for prefix in /opt/homebrew/opt/libvncserver /usr/local/opt/libvncserver; do
   [[ -f "$prefix/include/rfb/rfb.h" ]] || continue
   if cc -O2 -o "$WORK/vnc-test-server" "$VNC_SRC" -I"$prefix/include" -L"$prefix/lib" -lvncserver -Wl,-rpath,"$prefix/lib" 2> "$WORK/vnc-cc.log"; then
@@ -99,8 +99,8 @@ env \
   TEST_RUNNER_ST_UITEST_VNC_PORT="$VNC_PORT" \
   TEST_RUNNER_ST_UITEST_VNC_LOG="$VNC_LOG" \
   xcodebuild test \
-    -project SuperTerminal.xcodeproj \
-    -scheme SuperTerminal \
+    -project ApexTerminal.xcodeproj \
+    -scheme ApexTerminal \
     -destination "$DESTINATION" \
     -resultBundlePath "$BUNDLE" \
     -parallel-testing-enabled NO \

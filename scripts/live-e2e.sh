@@ -7,7 +7,7 @@
 # Nothing here is stored in the repository. Export the variables in your shell, or keep
 # them in a file outside the working tree and source it:
 #
-#   set -a; source ~/.superterminal-live.env; set +a
+#   set -a; source ~/.apexterminal-live.env; set +a
 #   ./scripts/live-e2e.sh
 #
 # Required
@@ -37,5 +37,5 @@ if [[ -z "${ST_LIVE_CF_HOSTNAME:-}" ]]; then
   exit 2
 fi
 
-cd "$(dirname "${BASH_SOURCE[0]}")/../Packages/SuperTerminalKit"
+cd "$(dirname "${BASH_SOURCE[0]}")/../Packages/ApexTerminalKit"
 exec swift test --filter LiveCloudflareE2ETests

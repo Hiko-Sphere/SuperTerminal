@@ -32,7 +32,7 @@ IPHONE_NAME="${ST_SHOT_IPHONE:-iPhone 17 Pro Max}"
 # mid-test. Both produce an accepted iPad 13" size natively.
 IPAD_NAME="${ST_SHOT_IPAD:-iPad Air 13-inch (M4)}"
 LOCALES=(${ST_SHOT_LOCALES:-en-US zh-Hans})
-IMAGE=superterminal-shots-fixture:1
+IMAGE=apexterminal-shots-fixture:1
 
 say() { printf '\n\033[1m▸ %s\033[0m\n' "$*"; }
 
@@ -51,7 +51,7 @@ start_fixtures() {
   say "Starting three OpenSSH servers"
   cleanup_containers
   rm -f "$WORK/shots_key" "$WORK/shots_key.pub"
-  ssh-keygen -t ed25519 -f "$WORK/shots_key" -N '' -q -C superterminal-capture
+  ssh-keygen -t ed25519 -f "$WORK/shots_key" -N '' -q -C apexterminal-capture
   local key; key="$(cat "$WORK/shots_key.pub")"
 
   # `edge-01` takes port 22 so its address reads the way a server's address normally
@@ -106,7 +106,7 @@ for items in json.load(sys.stdin)['devices'].values():
   done
   # A previous install would already trust the fixtures' host keys, and the sheet that
   # asks about them is one of the screenshots.
-  xcrun simctl uninstall "$udid" dev.superterminal.app >/dev/null 2>&1 || true
+  xcrun simctl uninstall "$udid" dev.apexterminal.app >/dev/null 2>&1 || true
   # Light interface, so the app's own chrome is the pale one the store canvas is built
   # around; the terminal itself is set to the dark theme through the app's own setting.
   xcrun simctl ui "$udid" appearance light >/dev/null 2>&1 || true
@@ -128,8 +128,8 @@ for items in json.load(sys.stdin)['devices'].values():
 HOSTS_JSON='[{"name":"db-primary","hostname":"db-primary.localhost","port":2201,"username":"deploy"},{"name":"build-runner","hostname":"build-runner.localhost","port":2202,"username":"deploy"}]'
 
 ONLY=()
-for name in "$@"; do ONLY+=("-only-testing:SuperTerminalUITests/MarketingCaptureTests/$name"); done
-[[ ${#ONLY[@]} -eq 0 ]] && ONLY=("-only-testing:SuperTerminalUITests/MarketingCaptureTests")
+for name in "$@"; do ONLY+=("-only-testing:ApexTerminalUITests/MarketingCaptureTests/$name"); done
+[[ ${#ONLY[@]} -eq 0 ]] && ONLY=("-only-testing:ApexTerminalUITests/MarketingCaptureTests")
 
 # One pass, with a single retry: a busy machine occasionally loses the simulator's
 # accessibility server mid-test, which fails a run that has nothing wrong with it.
@@ -161,8 +161,8 @@ run_pass_once() {
     TEST_RUNNER_ST_UITEST_HOSTS="$HOSTS_JSON" \
     TEST_RUNNER_ST_UITEST_TERMINAL_THEME="${ST_SHOT_THEME:-midnight}" \
     xcodebuild test-without-building \
-      -project "$ROOT/SuperTerminal.xcodeproj" \
-      -scheme SuperTerminal \
+      -project "$ROOT/ApexTerminal.xcodeproj" \
+      -scheme ApexTerminal \
       -destination "platform=iOS Simulator,id=$udid" \
       -derivedDataPath "$ROOT/build/dd" \
       -resultBundlePath "$bundle" \
@@ -193,8 +193,8 @@ trap 'cleanup_containers' EXIT
 
 say "Building the app"
 xcodebuild build-for-testing \
-  -project "$ROOT/SuperTerminal.xcodeproj" \
-  -scheme SuperTerminal \
+  -project "$ROOT/ApexTerminal.xcodeproj" \
+  -scheme ApexTerminal \
   -configuration Debug \
   -destination "platform=iOS Simulator,name=$IPHONE_NAME" \
   -derivedDataPath "$ROOT/build/dd" > "$WORK/build.log" 2>&1 || {

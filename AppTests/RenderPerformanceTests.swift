@@ -1,7 +1,7 @@
 import STTerminal
 import UIKit
 import XCTest
-@testable import SuperTerminal
+@testable import ApexTerminal
 
 /// Measures the cost of actually drawing a terminal.
 ///

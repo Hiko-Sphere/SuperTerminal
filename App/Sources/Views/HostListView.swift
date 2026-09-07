@@ -133,7 +133,7 @@ struct HostListView: View {
                     } description: {
                         Text(
                             container.hostStore.hosts.isEmpty
-                                ? "Add a server to get started. SuperTerminal supports plain SSH and servers published through Cloudflare Tunnel, and remote screens over VNC."
+                                ? "Add a server to get started. Apex Terminal supports plain SSH and servers published through Cloudflare Tunnel, and remote screens over VNC."
                                 : "Try a different search."
                         )
                     } actions: {
@@ -150,7 +150,7 @@ struct HostListView: View {
         }
         .listStyle(.sidebar)
         .searchable(text: $searchText, prompt: "Search connections")
-        .navigationTitle("SuperTerminal")
+        .navigationTitle("Apex Terminal")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 // Two kinds of connection, so the button asks which (D-027). A menu rather

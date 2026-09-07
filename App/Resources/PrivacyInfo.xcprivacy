@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<!--
-	  SuperTerminal collects nothing. Connection details, keys and terminal contents stay
+	  ApexTerminal collects nothing. Connection details, keys and terminal contents stay
 	  on the device; the only network traffic is to the servers the user chooses and, for
 	  Cloudflare-tunnelled hosts, to Cloudflare's own endpoints on the user's behalf.
 	-->

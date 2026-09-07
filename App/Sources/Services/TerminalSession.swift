@@ -289,7 +289,7 @@ final class TerminalSession: Identifiable {
     private func annotate(_ message: String) {
         let time = Date().formatted(date: .omitted, time: .standard)
         // Dim, and prefixed with the app's name, so it is never read as server output.
-        let line = "\r\n\u{1B}[2m── SuperTerminal: \(message) \(time) ──\u{1B}[0m\r\n"
+        let line = "\r\n\u{1B}[2m── Apex Terminal: \(message) \(time) ──\u{1B}[0m\r\n"
         for event in emulator.feed(Data(line.utf8)) {
             if case let .title(newTitle) = event { title = newTitle }
         }

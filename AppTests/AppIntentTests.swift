@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperTerminal
+@testable import ApexTerminal
 
 /// Siri and Shortcuts go through the same container as a tap (D-021). These tests run
 /// the intents against a container built on temporary stores: the session an intent

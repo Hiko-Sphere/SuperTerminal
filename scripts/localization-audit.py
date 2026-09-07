@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Checks that every localizable string in SuperTerminal is actually translated.
+"""Checks that every localizable string in ApexTerminal is actually translated.
 
 Localization rots silently. A new `Text("Add server")` compiles, ships, and shows English
 to a Chinese user with nothing failing anywhere — no warning, no test, no crash. This is
@@ -23,10 +23,10 @@ LANGUAGES = ("zh-Hans", "zh-Hant")
 
 # Which catalog owns the strings of which module.
 CATALOGS = {
-    "SuperTerminal": "App/Resources/Localizable.xcstrings",
-    "STCore": "Packages/SuperTerminalKit/Sources/STCore/Localizable.xcstrings",
-    "STSSH": "Packages/SuperTerminalKit/Sources/STSSH/Localizable.xcstrings",
-    "STCloudflare": "Packages/SuperTerminalKit/Sources/STCloudflare/Localizable.xcstrings",
+    "ApexTerminal": "App/Resources/Localizable.xcstrings",
+    "STCore": "Packages/ApexTerminalKit/Sources/STCore/Localizable.xcstrings",
+    "STSSH": "Packages/ApexTerminalKit/Sources/STSSH/Localizable.xcstrings",
+    "STCloudflare": "Packages/ApexTerminalKit/Sources/STCloudflare/Localizable.xcstrings",
 }
 
 
@@ -34,8 +34,8 @@ def extracted_keys(derived_data: str) -> dict[str, set[str]]:
     """Keys the compiler emitted, per module."""
     found: dict[str, set[str]] = defaultdict(set)
     for root, _dirs, files in os.walk(os.path.join(derived_data, "Build", "Intermediates.noindex")):
-        # Require the Objects-normal segment: "SuperTerminal.build" is also an ancestor of
-        # "SuperTerminalUITests.build", and the test target's strings are not the app's.
+        # Require the Objects-normal segment: "ApexTerminal.build" is also an ancestor of
+        # "ApexTerminalUITests.build", and the test target's strings are not the app's.
         module = next((m for m in CATALOGS
                        if f"{os.sep}{m}.build{os.sep}Objects-normal{os.sep}" in root + os.sep), None)
         if module is None:

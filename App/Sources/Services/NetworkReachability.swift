@@ -53,7 +53,7 @@ final class NetworkReachability {
         monitor.pathUpdateHandler = { [weak self] path in
             Task { @MainActor in self?.apply(path) }
         }
-        monitor.start(queue: DispatchQueue(label: "dev.superterminal.path"))
+        monitor.start(queue: DispatchQueue(label: "dev.apexterminal.path"))
     }
 
     deinit { monitor.cancel() }

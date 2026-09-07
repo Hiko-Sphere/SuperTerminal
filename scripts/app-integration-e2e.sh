@@ -73,7 +73,7 @@ exec env \
   TEST_RUNNER_ST_APP_TEST_SSH_KEY="$(cat "$WORK/client")" \
   TEST_RUNNER_ST_APP_TEST_SSH_HOST_FINGERPRINT="$FINGERPRINT" \
   xcodebuild test \
-    -project SuperTerminal.xcodeproj \
-    -scheme SuperTerminal \
+    -project ApexTerminal.xcodeproj \
+    -scheme ApexTerminal \
     -destination "$DESTINATION" \
-    -only-testing:SuperTerminalTests
+    -only-testing:ApexTerminalTests

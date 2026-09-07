@@ -1,8 +1,8 @@
 //===----------------------------------------------------------------------===//
 //
-// Added by SuperTerminal. Not part of upstream swift-nio-ssh.
+// Added by ApexTerminal. Not part of upstream swift-nio-ssh.
 //
-// See patches/niossh-rsa.patch and DECISIONS.md D-007 in the SuperTerminal
+// See patches/niossh-rsa.patch and DECISIONS.md D-007 in the ApexTerminal
 // repository for why this exists and what maintaining it obliges.
 //
 //===----------------------------------------------------------------------===//

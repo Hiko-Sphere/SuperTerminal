@@ -8,7 +8,7 @@ it. A checklist of intentions is not a checklist.
 ### Gates that must be green
 
 ```bash
-cd Packages/SuperTerminalKit && swift test
+cd Packages/ApexTerminalKit && swift test
 cd ../swift-nio-ssh-rsa && swift test
 cd ../.. && ./scripts/app-integration-e2e.sh
 ./scripts/ui-terminal-e2e.sh
@@ -39,7 +39,7 @@ cd ../.. && ./scripts/app-integration-e2e.sh
 - [ ] Remote screen, a Mac signing in to its account (D-031): Screen Sharing on with *no* separate VNC password, the screen's user name and password set to a macOS account allowed in Screen Sharing settings — it connects, and a wrong password is refused with the reason. Then a Linux server offering VeNCrypt: through SSH or a Cloudflare tunnel it signs in, and configured as a direct connection the app refuses to send the password in the clear and says so
 - [ ] Remote screen: a Mac with Screen Sharing on and "VNC viewers may control screen with password" enabled, through the SSH connection — the desktop appears, a tap clicks, touch-and-hold drags a window, two fingers scroll, the key row's Ctrl+Tab and ⌘ (Super) reach the Mac, a hardware keyboard types, an iPad mouse moves the Mac's cursor with no second pointer drawn; then a Linux desktop (x11vnc or TigerVNC) the same way, and a direct connection with the SSH option off
 - [ ] Assistant: on a device eligible for Apple Intelligence the sheet says it answers on the device and does; with a provider key pasted in Settings it answers from the provider and a suggested command inserts on the prompt without running
-- [ ] Siri: "Connect to <name> in SuperTerminal" opens the session; "Disconnect all sessions in SuperTerminal" closes them and says how many; both appear in the Shortcuts app
+- [ ] Siri: "Connect to <name> in ApexTerminal" opens the session; "Disconnect all sessions in ApexTerminal" closes them and says how many; both appear in the Shortcuts app
 - [ ] Server platform: connect to a Linux machine and a Windows OpenSSH machine; each row comes to say Linux / Windows without anything typed into the session (macOS is proven by the UI tests against this Mac)
 - [ ] With a mouse or trackpad: the wheel scrolls the scrollback and reaches `less` when it is running; a secondary click shows Copy / Paste / Select All, and reaches `tmux` when it is tracking; a middle click pastes; click-drag selects; the pointer is a beam over the terminal
 - [ ] Rotation, Split View and Stage Manager resize the terminal correctly
@@ -65,22 +65,22 @@ cd ../.. && ./scripts/app-integration-e2e.sh
 - [ ] Counsel has reviewed the Terms, Privacy Policy and User Notice; the "not legal advice" sentence is removed only when that is true
 - [ ] `LegalDocument.currentVersion` is bumped if any of the three texts changed in substance, so existing users see the consent screen again
 - [ ] The App Store privacy answers still read "Data not collected"; storage in the user's own CloudKit private database is not collection
-- [x] The iCloud container `iCloud.dev.superterminal.app` exists in the developer account and the profile carries the iCloud capability — verified 2026-09-06 by reading the entitlements back off a Release archive with `codesign -d --entitlements - --xml`; the simulator build still has none, so the checks below need a signed build on real hardware
-- [ ] The CloudKit schema (record type `SyncRecord`: `kind`, `payload`, `modifiedAt`; zone `SuperTerminal`) is deployed to the production environment — the development environment creates it on first use, production does not
+- [x] The iCloud container `iCloud.dev.apexterminal.app` exists in the developer account and the profile carries the iCloud capability — verified 2026-09-06 by reading the entitlements back off a Release archive with `codesign -d --entitlements - --xml`; the simulator build still has none, so the checks below need a signed build on real hardware
+- [ ] The CloudKit schema (record type `SyncRecord`: `kind`, `payload`, `modifiedAt`; zone `ApexTerminal`) is deployed to the production environment — the development environment creates it on first use, production does not
 - [ ] Two signed devices on one Apple Account sync a host, a snippet, a known host key and an opted-in private key; a held host-key disagreement appears in Settings → iCloud; "Delete all data" empties the zone and the other device stops seeing the records
 - [ ] A key marked "Store private key in iCloud Keychain" appears on the second device with its secret; a biometric key appears as "not on this device"
 
 ## Signing and identifiers
 
-- [ ] Development team set on the `SuperTerminal` target
-- [ ] Bundle identifier registered (`dev.superterminal.app`, or your own)
+- [ ] Development team set on the `ApexTerminal` target
+- [ ] Bundle identifier registered (`dev.apexterminal.app`, or your own)
 - [ ] `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` bumped
 - [ ] Distribution certificate and provisioning profile valid
 
 ```bash
-xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal \
+xcodebuild -project ApexTerminal.xcodeproj -scheme ApexTerminal \
   -configuration Release -destination 'generic/platform=iOS' \
-  -archivePath build/SuperTerminal.xcarchive archive
+  -archivePath build/ApexTerminal.xcarchive archive
 ```
 
 ## App Store Connect

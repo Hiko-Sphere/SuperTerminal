@@ -17,7 +17,7 @@ final class LaunchUITests: XCTestCase {
         app.launch()
 
         XCTAssertTrue(
-            app.navigationBars["SuperTerminal"].waitForExistence(timeout: 10),
+            app.navigationBars["Apex Terminal"].waitForExistence(timeout: 10),
             "the host list should be the first thing shown"
         )
         // The + button is a menu: there are two kinds of connection to add (D-027).

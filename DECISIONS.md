@@ -742,7 +742,7 @@ the framework's own explanation; nothing is reduced to "an error occurred".
 
 ## D-021 · Siri and Shortcuts go through the same door as a tap
 
-**App Intents, not a URL scheme.** "Connect to <server> in SuperTerminal" is an App Intent
+**App Intents, not a URL scheme.** "Connect to <server> in ApexTerminal" is an App Intent
 with a connection entity whose query reads the host store, so Siri offers the user's own
 connection names and nothing else about them (the entity carries the name and the row's
 subtitle, never a credential). Performing it opens the app and a session through
@@ -1291,7 +1291,7 @@ off the device it read:
 
 ```
 CKErrorDomain 15   CKHTTPStatus = 500   CKInternalErrorDomain: 2000
-ContainerID = iCloud.dev.superterminal.app
+ContainerID = iCloud.dev.apexterminal.app
 ```
 
 No `ServerErrorDescription`, no per-item errors, an HTTP 500 — the request never reached

@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperTerminal
+@testable import ApexTerminal
 
 /// The assistant's words are testable because they are pure: what leaves the device is
 /// built by one function, and what comes back is read by another. The provider client is

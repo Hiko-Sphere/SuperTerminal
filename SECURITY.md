@@ -1,6 +1,6 @@
 # Security design and threat model
 
-This document states what SuperTerminal defends against, how, and — as importantly —
+This document states what ApexTerminal defends against, how, and — as importantly —
 what it does not defend against.
 
 ## Assets

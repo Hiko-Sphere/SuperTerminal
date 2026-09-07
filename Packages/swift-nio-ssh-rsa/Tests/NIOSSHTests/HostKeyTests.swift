@@ -254,7 +254,7 @@ final class HostKeyTests: XCTestCase {
 
     func testUnrecognisedKey() throws {
         var buffer = ByteBufferAllocator().buffer(capacity: 1024)
-        // Modified by SuperTerminal: this used "ssh-rsa", which is now a key type this
+        // Modified by ApexTerminal: this used "ssh-rsa", which is now a key type this
         // library understands. The behaviour under test — an unknown algorithm is
         // rejected — is unchanged; only the example had to move to an algorithm that is
         // still genuinely unknown. `ssh-dss` qualifies: OpenSSH removed DSA entirely in
@@ -266,7 +266,7 @@ final class HostKeyTests: XCTestCase {
         }
     }
 
-    /// Added by SuperTerminal, so the case the test above used to cover is not lost: a
+    /// Added by ApexTerminal, so the case the test above used to cover is not lost: a
     /// recognised algorithm with a truncated body must not yield a key.
     func testTruncatedRSAKeyIsRejected() throws {
         var buffer = ByteBufferAllocator().buffer(capacity: 1024)

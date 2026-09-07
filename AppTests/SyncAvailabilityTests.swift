@@ -2,7 +2,7 @@ import Foundation
 import STCore
 import STSSH
 import Testing
-@testable import SuperTerminal
+@testable import ApexTerminal
 
 /// What "not available" has to mean, so that turning it back on is one line and turning
 /// it off is not a half-measure (D-037).

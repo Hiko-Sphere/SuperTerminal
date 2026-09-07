@@ -3,7 +3,7 @@
 This is the guide for the administrator who publishes an SSH server, and for anyone
 setting up the test environment the app's live end-to-end run needs.
 
-SuperTerminal speaks Cloudflare's carrier protocol directly. Nothing needs to be
+ApexTerminal speaks Cloudflare's carrier protocol directly. Nothing needs to be
 installed on the iPhone or iPad — no `cloudflared`, no VPN profile, no Network Extension.
 What has to exist is on the *server* side, and that is what this page covers.
 
@@ -59,7 +59,7 @@ Install `cloudflared` on the origin host and authenticate it:
 
 ```bash
 cloudflared tunnel login
-cloudflared tunnel create superterminal-test
+cloudflared tunnel create apexterminal-test
 ```
 
 ### 3. Route a hostname to the SSH service
@@ -67,7 +67,7 @@ cloudflared tunnel create superterminal-test
 Create `~/.cloudflared/config.yml` on the origin:
 
 ```yaml
-tunnel: superterminal-test
+tunnel: apexterminal-test
 credentials-file: /root/.cloudflared/<tunnel-uuid>.json
 
 ingress:
@@ -79,12 +79,12 @@ ingress:
 Then publish the hostname and run the tunnel:
 
 ```bash
-cloudflared tunnel route dns superterminal-test ssh-test.example.com
-cloudflared tunnel run superterminal-test
+cloudflared tunnel route dns apexterminal-test ssh-test.example.com
+cloudflared tunnel run apexterminal-test
 ```
 
 At this point the hostname works **without** authentication. That is a legitimate
-configuration and SuperTerminal supports it — the app detects the absence of an Access
+configuration and ApexTerminal supports it — the app detects the absence of an Access
 application and connects straight through. It is also, for most people, not what you
 want, so continue.
 
@@ -98,7 +98,7 @@ In the Zero Trust dashboard, add a **self-hosted** application:
 | Session duration | Whatever suits you; the app handles expiry and re-authentication |
 | Policy | Allow, with whatever identity rule you use — an email list is fine for testing |
 
-Leave "Browser rendering" **off**. SuperTerminal opens a native SSH session; the
+Leave "Browser rendering" **off**. ApexTerminal opens a native SSH session; the
 browser-rendered terminal is a different product and the app does not use it.
 
 ### 5. Optional: bastion mode
@@ -133,7 +133,7 @@ ingress:
 ```
 
 ```bash
-cloudflared tunnel route dns superterminal-test screen-test.example.com
+cloudflared tunnel route dns apexterminal-test screen-test.example.com
 ```
 
 Then add a second self-hosted Access application for `screen-test.example.com`, exactly
@@ -193,7 +193,7 @@ verified". Everything else in the test suite runs without an account; this canno
 outside the repository:
 
 ```bash
-# ~/.superterminal-live.env  — chmod 600
+# ~/.apexterminal-live.env  — chmod 600
 export ST_LIVE_CF_HOSTNAME=ssh-test.example.com
 export ST_LIVE_CF_SERVICE_TOKEN_ID=<id>.access
 export ST_LIVE_CF_SERVICE_TOKEN_SECRET=<secret>
@@ -207,7 +207,7 @@ export ST_LIVE_SSH_HOST_FINGERPRINT=SHA256:...
 Then:
 
 ```bash
-set -a; source ~/.superterminal-live.env; set +a
+set -a; source ~/.apexterminal-live.env; set +a
 ./scripts/live-e2e.sh
 ```
 

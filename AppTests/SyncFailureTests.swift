@@ -1,7 +1,7 @@
 import CloudKit
 import Foundation
 import Testing
-@testable import SuperTerminal
+@testable import ApexTerminal
 
 /// What a failed sync tells the user (D-032).
 ///
@@ -47,7 +47,7 @@ import Testing
     func partialFailure() {
         // CloudKit's own message for a partial failure says only that something failed.
         let inner = error(.quotaExceeded)
-        let id = CKRecord.ID(recordName: "host|A", zoneID: CKRecordZone.ID(zoneName: "SuperTerminal", ownerName: CKCurrentUserDefaultName))
+        let id = CKRecord.ID(recordName: "host|A", zoneID: CKRecordZone.ID(zoneName: "ApexTerminal", ownerName: CKCurrentUserDefaultName))
         let partial = error(.partialFailure, userInfo: [CKPartialErrorsByItemIDKey: [id: inner]])
         #expect(SyncFailure.describe(partial) == SyncFailure.describe(inner))
     }

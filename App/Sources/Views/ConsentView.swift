@@ -14,7 +14,7 @@ struct ConsentView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: DesignTokens.Spacing.lg) {
                     HStack(spacing: DesignTokens.Spacing.md) {
-                        Image("SuperTerminalLogo")
+                        Image("Logo")
                             .resizable()
                             .scaledToFit()
                             .frame(width: 64, height: 64)

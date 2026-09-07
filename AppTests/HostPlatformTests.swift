@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperTerminal
+@testable import ApexTerminal
 
 /// Platform detection is a pure reading of what a server prints (D-019). The strings here
 /// are what real systems print: `uname -s` on macOS, Linux and the BSDs, `cmd /c ver` on

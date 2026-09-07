@@ -2,7 +2,7 @@ import Foundation
 import STCore
 import STSSH
 import Testing
-@testable import SuperTerminal
+@testable import ApexTerminal
 
 /// Snippets are ordinary data; command history is not. These tests are mostly about the
 /// history rule, because getting it wrong means silently recording something the user

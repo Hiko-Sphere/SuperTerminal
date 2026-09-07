@@ -230,7 +230,7 @@ struct GenerateKeySheet: View {
 
     private func generate() {
         do {
-            let comment = "\(name.replacingOccurrences(of: " ", with: "-"))@superterminal"
+            let comment = "\(name.replacingOccurrences(of: " ", with: "-"))@apexterminal"
             let key = try SSHKeyGenerator.generate(algorithm: algorithm, comment: comment)
             let record = StoredKey(
                 name: name,

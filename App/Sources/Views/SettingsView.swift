@@ -84,7 +84,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Connection")
                 } footer: {
-                    Text("When a connection drops, SuperTerminal retries on its own and as soon as the network comes back. Your scrollback is kept, and the new shell is marked in the terminal — it starts fresh, in the home directory, with nothing running.")
+                    Text("When a connection drops, Apex Terminal retries on its own and as soon as the network comes back. Your scrollback is kept, and the new shell is marked in the terminal — it starts fresh, in the home directory, with nothing running.")
                 }
 
                 Section {
@@ -113,7 +113,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Language")
                 } footer: {
-                    Text("SuperTerminal is available in English, Simplified Chinese and Traditional Chinese. Terminal output is never translated — it comes from the remote machine exactly as it was sent.")
+                    Text("Apex Terminal is available in English, Simplified Chinese and Traditional Chinese. Terminal output is never translated — it comes from the remote machine exactly as it was sent.")
                 }
 
                 Section("Commands") {
@@ -302,7 +302,7 @@ private struct AboutRow: View {
                 .scaledToFit()
                 .frame(width: 56, height: 56)
                 .foregroundStyle(DesignTokens.Color.labelSecondary)
-            Text("SuperTerminal")
+            Text("Apex Terminal")
                 .font(DesignTokens.Typography.headline)
                 .foregroundStyle(DesignTokens.Color.label)
             Text(versionSummary)
@@ -313,7 +313,7 @@ private struct AboutRow: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, DesignTokens.Spacing.lg)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("SuperTerminal, \(versionSummary)")
+        .accessibilityLabel("Apex Terminal, \(versionSummary)")
     }
 
     private var versionSummary: String {

@@ -230,7 +230,7 @@ def field_values(text: str) -> dict[str, str]:
 
         ### App Name
         ```
-        SuperTerminal
+        ApexTerminal
         ```
     """
     values = {}
@@ -275,7 +275,7 @@ def check_copy(root: Path) -> None:
             keywords = values.get("Keywords", "")
             if keywords:
                 terms = [t.strip() for t in keywords.split(",")]
-                if any(t.lower() == "superterminal" for t in terms):
+                if any(t.lower() == "apexterminal" for t in terms):
                     fail(f"{name}: the app's own name is repeated in the keywords")
                 if len(terms) != len(set(t.lower() for t in terms)):
                     fail(f"{name}: a keyword is repeated")

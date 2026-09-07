@@ -1,7 +1,7 @@
 import Foundation
 import STSSH
 import Testing
-@testable import SuperTerminal
+@testable import ApexTerminal
 
 /// The adapter between the app's stores and the sync engine — and, first, the migration it
 /// depends on: files written before sync existed must still load.

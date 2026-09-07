@@ -8,7 +8,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "SuperTerminal"
+            "value" : "Apex Terminal"
           }
         }
       }
@@ -20,7 +20,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "SuperTerminal"
+            "value" : "ApexTerminal"
           }
         }
       }
@@ -32,13 +32,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "SuperTerminal 会在使用你选择用 Face ID 保护的 SSH 密钥前请求验证。"
+            "value" : "ApexTerminal 会在使用你选择用 Face ID 保护的 SSH 密钥前请求验证。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "SuperTerminal 會在使用你選擇以 Face ID 保護的 SSH 金鑰前請求驗證。"
+            "value" : "ApexTerminal 會在使用你選擇以 Face ID 保護的 SSH 金鑰前請求驗證。"
           }
         }
       }

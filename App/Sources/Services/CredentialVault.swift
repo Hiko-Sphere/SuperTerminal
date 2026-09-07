@@ -13,13 +13,13 @@ struct CredentialVault: Sendable {
     /// Keychain services. Separate services rather than one, so "forget all Cloudflare
     /// sessions" and "delete all keys" are each a single scoped delete.
     enum Service {
-        static let privateKeys = "dev.superterminal.keys"
-        static let passwords = "dev.superterminal.passwords"
-        static let accessTokens = "dev.superterminal.cloudflare.tokens"
-        static let serviceTokens = "dev.superterminal.cloudflare.servicetokens"
-        static let assistant = "dev.superterminal.assistant"
-        static let vncPasswords = "dev.superterminal.vnc"
-        static let appLock = "dev.superterminal.applock"
+        static let privateKeys = "dev.apexterminal.keys"
+        static let passwords = "dev.apexterminal.passwords"
+        static let accessTokens = "dev.apexterminal.cloudflare.tokens"
+        static let serviceTokens = "dev.apexterminal.cloudflare.servicetokens"
+        static let assistant = "dev.apexterminal.assistant"
+        static let vncPasswords = "dev.apexterminal.vnc"
+        static let appLock = "dev.apexterminal.applock"
     }
 
     private let store: any SecureStore

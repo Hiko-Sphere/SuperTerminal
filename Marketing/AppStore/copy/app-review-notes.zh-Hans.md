@@ -9,7 +9,7 @@ App Store Connect 的 **App Review Information → Notes** 只接受一份文本
 ## 提交给审核的内容（对应英文方框，逐段对照）
 
 **这是什么应用。**
-SuperTerminal 是一个 SSH 客户端。它在用户自己已有的服务器上打开交互式 SSH 会话，分配 PTY，
+ApexTerminal 是一个 SSH 客户端。它在用户自己已有的服务器上打开交互式 SSH 会话，分配 PTY，
 并用内置的终端模拟器渲染输出。用户在会话里看到的一切，都来自他们自己的远程主机；应用本身
 不执行任何命令，也不通过我们的任何服务器中转。
 

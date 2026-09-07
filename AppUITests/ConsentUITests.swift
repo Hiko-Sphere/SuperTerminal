@@ -19,7 +19,7 @@ final class ConsentUITests: XCTestCase {
 
         // The documents are one tap away and actually render.
         app.buttons["consent-notice"].tap()
-        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS[c] %@", "SuperTerminal")).firstMatch.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS[c] %@", "Apex Terminal")).firstMatch.waitForExistence(timeout: 10))
         app.navigationBars.buttons.element(boundBy: 0).tap()
 
         XCTAssertTrue(accept.waitForExistence(timeout: 5))

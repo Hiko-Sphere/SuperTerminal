@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperTerminal
+@testable import ApexTerminal
 
 @Suite("Host model")
 struct HostModelTests {

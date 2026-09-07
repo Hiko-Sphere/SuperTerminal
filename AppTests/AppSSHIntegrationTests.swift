@@ -2,7 +2,7 @@ import Foundation
 import STCore
 import STSSH
 import Testing
-@testable import SuperTerminal
+@testable import ApexTerminal
 
 /// Exercises the whole app stack — vault, session, emulator — against a real SSH server,
 /// running inside the app on a simulator or device.

@@ -6,7 +6,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-OUT="$ROOT/Packages/SuperTerminalKit/Sources/STTerminal/CharacterWidthTables.swift"
+OUT="$ROOT/Packages/ApexTerminalKit/Sources/STTerminal/CharacterWidthTables.swift"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 

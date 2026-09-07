@@ -1,6 +1,6 @@
 # The shell the screenshots show.
 #
-# Read twice on purpose: as /etc/profile.d/superterminal.sh by the login shell OpenSSH
+# Read twice on purpose: as /etc/profile.d/apexterminal.sh by the login shell OpenSSH
 # starts, and as ~/.bashrc by anything that starts a non-login interactive shell. The
 # colours in the prompt are real SGR sequences — rendering them is the app's job, and
 # showing that it does is part of the point.

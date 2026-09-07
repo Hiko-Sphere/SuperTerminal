@@ -1,4 +1,4 @@
-# Using SuperTerminal with a plain SSH server
+# Using ApexTerminal with a plain SSH server
 
 Everything here applies whether the server is reached directly or through a Cloudflare
 Tunnel — the SSH layer is the same code either way.
@@ -29,7 +29,7 @@ choice unless a policy demands otherwise. The app shows the public key as an
 
 ```bash
 # On the server
-echo 'ssh-ed25519 AAAA... phone@superterminal' >> ~/.ssh/authorized_keys
+echo 'ssh-ed25519 AAAA... phone@apexterminal' >> ~/.ssh/authorized_keys
 chmod 600 ~/.ssh/authorized_keys
 ```
 

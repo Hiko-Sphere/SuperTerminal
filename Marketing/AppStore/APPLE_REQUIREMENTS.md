@@ -81,7 +81,7 @@ nothing that implies an affiliation that does not exist.
 | --- | --- |
 | 2.3 / 2.3.1 | Every claim is traced to running code and a passing test in [`FEATURE_AUDIT.md`](FEATURE_AUDIT.md). Anything not proven end to end is marked *not advertisable* and appears nowhere in the copy, the keywords or the screenshots. |
 | 2.3.3 | Every screenshot is a real capture of the running app, mid-session, against a real OpenSSH server. No mock-ups, no redrawn interfaces, no composited fake output. The capture script is in `scripts/capture.sh` and is repeatable. |
-| 2.3.7 | Name 25 characters (`SuperTerminal: SSH Client`), subtitle 25; keywords carry no competitor names, no trademarks, no prices. Claims in the subtitle are ones a reviewer can reproduce in the app. |
+| 2.3.7 | Name 25 characters (`ApexTerminal: SSH Client`), subtitle 25; keywords carry no competitor names, no trademarks, no prices. Claims in the subtitle are ones a reviewer can reproduce in the app. |
 | 2.3.8 | Nothing beyond a terminal, a connection list and a settings form appears in any image. |
 | 5.2.1 | No Cloudflare logo, no third-party marks, no Apple hardware imagery, no App Store badges. The word "Cloudflare" is absent from the shipped copy — see [`FEATURE_AUDIT.md`](FEATURE_AUDIT.md) for why. |
 

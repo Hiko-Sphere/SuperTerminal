@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SuperTerminal
+@testable import ApexTerminal
 
 /// What the tour is, independently of how it is laid out (D-033).
 @Suite struct TutorialTests {

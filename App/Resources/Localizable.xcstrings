@@ -664,36 +664,36 @@
         }
       }
     },
-    "Add a server to get started. SuperTerminal supports plain SSH and servers published through Cloudflare Tunnel, and remote screens over VNC.": {
+    "Add a server to get started. Apex Terminal supports plain SSH and servers published through Cloudflare Tunnel, and remote screens over VNC.": {
       "extractionState": "manual",
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "添加一台服务器即可开始。SuperTerminal 支持普通 SSH、通过 Cloudflare Tunnel 发布的服务器，以及基于 VNC 的远程屏幕。"
+            "value": "添加一台服务器即可开始。Apex Terminal 支持普通 SSH、通过 Cloudflare Tunnel 发布的服务器，以及基于 VNC 的远程屏幕。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "加入一台伺服器即可開始。SuperTerminal 支援一般 SSH、透過 Cloudflare Tunnel 發布的伺服器，以及基於 VNC 的遠端螢幕。"
+            "value": "加入一台伺服器即可開始。Apex Terminal 支援一般 SSH、透過 Cloudflare Tunnel 發布的伺服器，以及基於 VNC 的遠端螢幕。"
           }
         }
       }
     },
-    "Add a server to get started. SuperTerminal supports plain SSH and servers published through Cloudflare Tunnel.": {
+    "Add a server to get started. Apex Terminal supports plain SSH and servers published through Cloudflare Tunnel.": {
       "extractionState": "manual",
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "添加一台服务器即可开始。SuperTerminal 支持普通 SSH，也支持通过 Cloudflare Tunnel 发布的服务器。"
+            "value": "添加一台服务器即可开始。Apex Terminal 支持普通 SSH，也支持通过 Cloudflare Tunnel 发布的服务器。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "新增一台伺服器即可開始。SuperTerminal 支援一般 SSH，也支援透過 Cloudflare Tunnel 發布的伺服器。"
+            "value": "新增一台伺服器即可開始。Apex Terminal 支援一般 SSH，也支援透過 Cloudflare Tunnel 發布的伺服器。"
           }
         }
       }
@@ -7889,121 +7889,121 @@
         }
       }
     },
-    "SuperTerminal": {
+    "Apex Terminal": {
       "extractionState": "manual",
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "SuperTerminal"
+            "value": "Apex Terminal"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "SuperTerminal"
+            "value": "Apex Terminal"
           }
         }
       }
     },
-    "SuperTerminal diagnostics": {
+    "Apex Terminal diagnostics": {
       "extractionState": "manual",
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "SuperTerminal 诊断信息"
+            "value": "Apex Terminal 诊断信息"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "SuperTerminal 診斷資訊"
+            "value": "Apex Terminal 診斷資訊"
           }
         }
       }
     },
-    "SuperTerminal is available in English, Simplified Chinese and Traditional Chinese. Terminal output is never translated — it comes from the remote machine exactly as it was sent.": {
+    "Apex Terminal is available in English, Simplified Chinese and Traditional Chinese. Terminal output is never translated — it comes from the remote machine exactly as it was sent.": {
       "extractionState": "manual",
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "SuperTerminal 提供英文、简体中文和繁体中文。终端输出永远不会被翻译——它原样来自远程主机。"
+            "value": "Apex Terminal 提供英文、简体中文和繁体中文。终端输出永远不会被翻译——它原样来自远程主机。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "SuperTerminal 提供英文、簡體中文和繁體中文。終端機輸出永遠不會被翻譯——它原樣來自遠端主機。"
+            "value": "Apex Terminal 提供英文、簡體中文和繁體中文。終端機輸出永遠不會被翻譯——它原樣來自遠端主機。"
           }
         }
       }
     },
-    "SuperTerminal is locked": {
+    "Apex Terminal is locked": {
       "extractionState": "manual",
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "SuperTerminal 已锁定"
+            "value": "Apex Terminal 已锁定"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "SuperTerminal 已鎖定"
+            "value": "Apex Terminal 已鎖定"
           }
         }
       }
     },
-    "SuperTerminal is still starting. Try again in a moment.": {
+    "Apex Terminal is still starting. Try again in a moment.": {
       "extractionState": "manual",
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "SuperTerminal 仍在启动，请稍后再试。"
+            "value": "Apex Terminal 仍在启动，请稍后再试。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "SuperTerminal 仍在啟動，請稍後再試。"
+            "value": "Apex Terminal 仍在啟動，請稍後再試。"
           }
         }
       }
     },
-    "SuperTerminal signs in to Cloudflare Access in a system browser, then opens the tunnel itself. No cloudflared install is needed on this device.": {
+    "Apex Terminal signs in to Cloudflare Access in a system browser, then opens the tunnel itself. No cloudflared install is needed on this device.": {
       "extractionState": "manual",
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "SuperTerminal 会在系统浏览器中登录 Cloudflare Access，然后自行打开 Tunnel。本设备无需安装 cloudflared。"
+            "value": "Apex Terminal 会在系统浏览器中登录 Cloudflare Access，然后自行打开 Tunnel。本设备无需安装 cloudflared。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "SuperTerminal 會在系統瀏覽器中登入 Cloudflare Access，然後自行開啟 Tunnel。本裝置無需安裝 cloudflared。"
+            "value": "Apex Terminal 會在系統瀏覽器中登入 Cloudflare Access，然後自行開啟 Tunnel。本裝置無需安裝 cloudflared。"
           }
         }
       }
     },
-    "SuperTerminal, %@": {
+    "Apex Terminal, %@": {
       "extractionState": "manual",
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "SuperTerminal，%@"
+            "value": "Apex Terminal，%@"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "SuperTerminal，%@"
+            "value": "Apex Terminal，%@"
           }
         }
       }
@@ -9759,19 +9759,19 @@
         }
       }
     },
-    "Unlock SuperTerminal": {
+    "Unlock Apex Terminal": {
       "extractionState": "manual",
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "解锁 SuperTerminal"
+            "value": "解锁 Apex Terminal"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "解鎖 SuperTerminal"
+            "value": "解鎖 Apex Terminal"
           }
         }
       }
@@ -10150,19 +10150,19 @@
         }
       }
     },
-    "When a connection drops, SuperTerminal retries on its own and as soon as the network comes back. Your scrollback is kept, and the new shell is marked in the terminal — it starts fresh, in the home directory, with nothing running.": {
+    "When a connection drops, Apex Terminal retries on its own and as soon as the network comes back. Your scrollback is kept, and the new shell is marked in the terminal — it starts fresh, in the home directory, with nothing running.": {
       "extractionState": "manual",
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "连接断开时，SuperTerminal 会自行重试，并在网络恢复后立即重试。回滚记录会保留，新的 shell 会在终端中标出——它是全新的，位于主目录，没有任何程序在运行。"
+            "value": "连接断开时，Apex Terminal 会自行重试，并在网络恢复后立即重试。回滚记录会保留，新的 shell 会在终端中标出——它是全新的，位于主目录，没有任何程序在运行。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "連線中斷時，SuperTerminal 會自行重試，並在網路恢復後立即重試。回捲紀錄會保留，新的 shell 會在終端機中標示出來——它是全新的，位於主目錄，沒有任何程式在執行。"
+            "value": "連線中斷時，Apex Terminal 會自行重試，並在網路恢復後立即重試。回捲紀錄會保留，新的 shell 會在終端機中標示出來——它是全新的，位於主目錄，沒有任何程式在執行。"
           }
         }
       }

@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 import UIKit
-@testable import SuperTerminal
+@testable import ApexTerminal
 
 /// The app side of remote screens (D-022): the record, the key table, the recognisers
 /// and the point mapping. The protocol itself is proven against LibVNCServer in the

@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 import UIKit
-@testable import SuperTerminal
+@testable import ApexTerminal
 
 /// Pointer support is UIKit configuration that XCUITest cannot drive on iOS, so the
 /// configuration itself is asserted: the recognisers exist with the masks that make a

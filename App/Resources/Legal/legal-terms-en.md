@@ -1,4 +1,4 @@
-# SuperTerminal — Terms of Use
+# Apex Terminal — Terms of Use
 
 **Effective date:** 6 September 2026
 
@@ -6,13 +6,13 @@ This document is a template the developer drafted for review by counsel; it is n
 
 ## 1. What these terms cover
 
-These terms apply to the SuperTerminal app for iOS and iPadOS ("the app"), published on the App Store by Li Yanpei ("the developer"). There is no account to create. The app shows these terms, the Privacy Policy and the User Notice the first time it opens and asks you to accept them; continuing to use the app is how you accept them after that. If you do not accept them, delete the app.
+These terms apply to the Apex Terminal app for iOS and iPadOS ("the app"), published on the App Store by Li Yanpei ("the developer"). There is no account to create. The app shows these terms, the Privacy Policy and the User Notice the first time it opens and asks you to accept them; continuing to use the app is how you accept them after that. If you do not accept them, delete the app.
 
 These terms are the licence agreement for the app. They take the place of Apple's standard Licensed Application End User License Agreement and include the terms Apple requires, in section 13.
 
 ## 2. What the app is
 
-SuperTerminal is an SSH terminal. It connects to servers you choose, either directly or through Cloudflare Tunnel with a Cloudflare Access sign-in performed in a system browser, and shows you a shell on that server. That is the whole product.
+Apex Terminal is an SSH terminal. It connects to servers you choose, either directly or through Cloudflare Tunnel with a Cloudflare Access sign-in performed in a system browser, and shows you a shell on that server. That is the whole product.
 
 There is no account with the developer, no server operated by the developer, and no content hosted by the developer. The app works entirely between your device, the servers you connect to and, when you use a tunnelled host, Cloudflare acting on your behalf. The Privacy Policy says exactly what the app stores and where.
 
@@ -34,7 +34,7 @@ On the first connection to a server the app shows you the server's key fingerpri
 
 ## 6. Cloudflare
 
-Cloudflare Tunnel and Cloudflare Access are services of Cloudflare, Inc., used under your own Cloudflare account and Cloudflare's own terms, not these. SuperTerminal is not affiliated with, endorsed by or sponsored by Cloudflare. Cloudflare, Cloudflare Tunnel and Cloudflare Access are trademarks of Cloudflare, Inc.
+Cloudflare Tunnel and Cloudflare Access are services of Cloudflare, Inc., used under your own Cloudflare account and Cloudflare's own terms, not these. Apex Terminal is not affiliated with, endorsed by or sponsored by Cloudflare. Cloudflare, Cloudflare Tunnel and Cloudflare Access are trademarks of Cloudflare, Inc.
 
 The app speaks to Cloudflare the way Cloudflare's own command-line tool does. If Cloudflare changes that behaviour, tunnelled connections may stop working until the app is updated. The developer will try to keep up but does not promise to. Cloudflare's FedRAMP endpoints are not supported.
 

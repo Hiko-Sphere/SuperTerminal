@@ -1,7 +1,7 @@
 import Foundation
 import STCloudflare
 import Testing
-@testable import SuperTerminal
+@testable import ApexTerminal
 
 @Suite struct ServiceTokenTests {
     @Test func hostsWrittenBeforeTheFieldExistedStillDecode() throws {

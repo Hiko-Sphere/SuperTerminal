@@ -7,12 +7,12 @@ struct PrivacyShield: View {
         ZStack {
             Rectangle().fill(.regularMaterial)
             VStack(spacing: DesignTokens.Spacing.md) {
-                Image("SuperTerminalLogo")
+                Image("Logo")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 88, height: 88)
                     .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                Text("SuperTerminal")
+                Text("Apex Terminal")
                     .font(DesignTokens.Typography.title)
                     .foregroundStyle(DesignTokens.Color.label)
             }

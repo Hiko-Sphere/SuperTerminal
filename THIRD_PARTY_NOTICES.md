@@ -1,7 +1,7 @@
 # Third-party components
 
 Every dependency, why it is here, its licence, and — for anything vendored — exactly
-what was changed. Versions are pinned in `Packages/SuperTerminalKit/Package.resolved`.
+what was changed. Versions are pinned in `Packages/ApexTerminalKit/Package.resolved`.
 
 ## Swift package dependencies
 
@@ -32,7 +32,7 @@ is pinned to an exact version.
 
 ### OpenBSD `bcrypt_pbkdf` and Blowfish
 
-**Location:** `Packages/SuperTerminalKit/Sources/CBcryptPBKDF/`
+**Location:** `Packages/ApexTerminalKit/Sources/CBcryptPBKDF/`
 **Upstream:** [openssh-portable](https://github.com/openssh/openssh-portable) `openbsd-compat/`
 **Files:** `bcrypt_pbkdf.c` (ISC, © 2013 Ted Unangst), `blowfish.c` and `blf.h`
 (BSD-3-Clause, © 1997 Niels Provos)
@@ -73,7 +73,7 @@ against a future release.
 ## Trademarks
 
 Cloudflare, Cloudflare Tunnel, Cloudflare Access and WARP are trademarks of Cloudflare,
-Inc. SuperTerminal is not affiliated with, endorsed by, or sponsored by Cloudflare.
+Inc. ApexTerminal is not affiliated with, endorsed by, or sponsored by Cloudflare.
 Product names such as iTerm2, Warp, Blink Shell and Termius belong to their respective
 owners and are referenced only to describe categories of prior art; no code, visual
 asset or protected design from any of them is used here.

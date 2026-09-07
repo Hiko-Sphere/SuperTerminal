@@ -18,14 +18,14 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUTPUT="${1:-$ROOT/.build/emulator.trace}"
-PACKAGE="$ROOT/Packages/SuperTerminalKit"
+PACKAGE="$ROOT/Packages/ApexTerminalKit"
 FRAMEWORKS="$(xcode-select -p)/Platforms/MacOSX.platform/Developer/Library/Frameworks"
 HELPER="$(xcode-select -p)/Toolchains/XcodeDefault.xctoolchain/usr/libexec/swift/pm/swiftpm-testing-helper"
 
 # `-enable-testing` on top of Release so `@testable` imports resolve; the emulator itself
 # is still optimised, which is the code being measured.
 ( cd "$PACKAGE" && swift build -c release --build-tests -Xswiftc -enable-testing >/dev/null )
-BINARY="$PACKAGE/.build/arm64-apple-macosx/release/SuperTerminalKitPackageTests.xctest/Contents/MacOS/SuperTerminalKitPackageTests"
+BINARY="$PACKAGE/.build/arm64-apple-macosx/release/ApexTerminalKitPackageTests.xctest/Contents/MacOS/ApexTerminalKitPackageTests"
 [[ -x "$BINARY" ]] || { echo "test binary not found at $BINARY"; exit 1; }
 
 rm -rf "$OUTPUT"

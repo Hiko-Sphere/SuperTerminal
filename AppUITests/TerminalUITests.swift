@@ -406,7 +406,7 @@ final class TerminalUITests: XCTestCase {
         app.launch()
 
         XCTAssertTrue(
-            app.navigationBars["SuperTerminal"].waitForExistence(timeout: 10),
+            app.navigationBars["Apex Terminal"].waitForExistence(timeout: 10),
             "the host list should still render at an accessibility text size"
         )
         let byName = app.buttons.containing(NSPredicate(format: "label CONTAINS %@", "Local Test Server")).firstMatch
@@ -513,7 +513,7 @@ final class AccessibilityUITests: XCTestCase {
         ] {
             let app = launch(with: ["-UIPreferredContentSizeCategoryName", category])
             XCTAssertTrue(
-                app.navigationBars["SuperTerminal"].waitForExistence(timeout: 10),
+                app.navigationBars["Apex Terminal"].waitForExistence(timeout: 10),
                 "the host list should render at \(category)"
             )
             XCTAssertTrue(
@@ -563,7 +563,7 @@ final class AccessibilityUITests: XCTestCase {
 
     func testEveryControlOnTheHostListIsLabelledForVoiceOver() throws {
         let app = launch(with: [])
-        XCTAssertTrue(app.navigationBars["SuperTerminal"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.navigationBars["Apex Terminal"].waitForExistence(timeout: 10))
 
         // An unlabelled button is read out as "button" and is unusable without sight.
         for index in 0 ..< app.buttons.count {
@@ -994,7 +994,7 @@ final class LocalizationUITests: XCTestCase {
 
     func testSimplifiedChineseReachesTheInterface() throws {
         let app = launch(inLanguage: "zh-Hans")
-        XCTAssertTrue(app.navigationBars["SuperTerminal"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.navigationBars["Apex Terminal"].waitForExistence(timeout: 15))
 
         // The section header over the connection list, and the search field's prompt.
         XCTAssertTrue(app.staticTexts["连接"].waitForExistence(timeout: 5), "the Connections header should be Simplified Chinese")
@@ -1045,7 +1045,7 @@ final class LocalizationUITests: XCTestCase {
 
     func testTraditionalChineseIsTranslatedIndependently() throws {
         let app = launch(inLanguage: "zh-Hant")
-        XCTAssertTrue(app.navigationBars["SuperTerminal"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.navigationBars["Apex Terminal"].waitForExistence(timeout: 15))
 
         // 連線, not 连接. This is the assertion that catches the usual failure: Traditional
         // produced by running a character converter over Simplified, which leaves mainland

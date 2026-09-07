@@ -1,6 +1,6 @@
 # App Store assets
 
-Everything needed to put SuperTerminal on the App Store: the screenshots, the copy in two
+Everything needed to put ApexTerminal on the App Store: the screenshots, the copy in two
 languages, the audit that decides what may be claimed, and the scripts that regenerate all
 of it from scratch.
 

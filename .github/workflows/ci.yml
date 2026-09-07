@@ -30,16 +30,16 @@ jobs:
       - name: Cache SwiftPM
         uses: actions/cache@v4
         with:
-          path: Packages/SuperTerminalKit/.build
-          key: spm-${{ runner.os }}-${{ hashFiles('Packages/SuperTerminalKit/Package.resolved') }}
+          path: Packages/ApexTerminalKit/.build
+          key: spm-${{ runner.os }}-${{ hashFiles('Packages/ApexTerminalKit/Package.resolved') }}
           restore-keys: spm-${{ runner.os }}-
 
       - name: Build
-        working-directory: Packages/SuperTerminalKit
+        working-directory: Packages/ApexTerminalKit
         run: swift build
 
       - name: Fail on any warning from project code
-        working-directory: Packages/SuperTerminalKit
+        working-directory: Packages/ApexTerminalKit
         run: |
           # Third-party warnings are out of our hands; ours are not. Counting only
           # Sources/ keeps the gate honest instead of green-by-exclusion.
@@ -48,7 +48,7 @@ jobs:
           test "$count" -eq 0
 
       - name: Test
-        working-directory: Packages/SuperTerminalKit
+        working-directory: Packages/ApexTerminalKit
         run: swift test
 
       - name: The bundled third-party notices match the repository copy
@@ -78,14 +78,14 @@ jobs:
 
       - name: Build (Debug, simulator)
         run: |
-          xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal \
+          xcodebuild -project ApexTerminal.xcodeproj -scheme ApexTerminal \
             -configuration Debug -destination "$SIMULATOR" build
 
       - name: Build (Release, unsigned device)
         run: |
           # Proves the arm64 device build compiles. Signing needs a team, which CI does
           # not have, so it is disabled rather than pretended.
-          xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal \
+          xcodebuild -project ApexTerminal.xcodeproj -scheme ApexTerminal \
             -configuration Release -destination 'generic/platform=iOS' \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
 
@@ -130,7 +130,7 @@ jobs:
           # The project's own rule: nothing ships with a placeholder standing in for real
           # work. Scoped to our source so a dependency's TODO cannot fail the build.
           if grep -rnE "\b(TODO|FIXME)\b|fatalError\(\"not implemented" \
-               App/Sources Packages/SuperTerminalKit/Sources \
+               App/Sources Packages/ApexTerminalKit/Sources \
                --include="*.swift" \
                | grep -v "CBcryptPBKDF"; then
             echo "::error::placeholder implementations found"

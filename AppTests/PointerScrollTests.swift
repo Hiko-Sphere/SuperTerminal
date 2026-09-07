@@ -2,7 +2,7 @@ import Foundation
 import STTerminal
 import Testing
 import UIKit
-@testable import SuperTerminal
+@testable import ApexTerminal
 
 /// Scrolling arithmetic and the interactions that decide whether a pointer can select
 /// (D-025). The gestures themselves cannot be driven from XCUITest on iOS, so what a

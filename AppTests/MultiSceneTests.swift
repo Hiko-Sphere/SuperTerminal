@@ -2,7 +2,7 @@ import Foundation
 import STCore
 import STSSH
 import Testing
-@testable import SuperTerminal
+@testable import ApexTerminal
 
 /// Windows on iPad.
 ///

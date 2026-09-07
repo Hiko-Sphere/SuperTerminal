@@ -51,7 +51,7 @@ final class VNCUITests: XCTestCase {
         while Date() < deadline, !((screen.value as? String) ?? "").contains("320 × 200") {
             RunLoop.current.run(until: Date().addingTimeInterval(0.5))
         }
-        XCTAssertEqual(screen.value as? String, "SuperTerminal test desktop, 320 × 200",
+        XCTAssertEqual(screen.value as? String, "ApexTerminal test desktop, 320 × 200",
                        "the desktop's own name and size, decoded from a real server over SSH")
         XCTAssertTrue(serverLog().contains("client connected"), "the server saw the client")
 

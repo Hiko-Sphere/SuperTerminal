@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  Deliberately minimal. The app needs no Network Extension, no VPN and no app groups:
+	  the Cloudflare tunnel is an ordinary outbound TLS connection made in-process, which
+	  is what keeps App Review straightforward.
+
+	  Push is the one exception, and only because iCloud sync needs it: CKSyncEngine keeps
+	  a database subscription so a change on another device is noticed, and a container
+	  request from an app without the entitlement is refused by the server before it ever
+	  looks at the records (D-036). Nothing else in the app sends or receives a
+	  notification.
+	-->
+	<key>aps-environment</key>
+	<string>$(ST_APS_ENVIRONMENT)</string>
+	<key>keychain-access-groups</key>
+	<array>
+		<string>$(AppIdentifierPrefix)dev.apexterminal.app</string>
+	</array>
+	<!--
+	  iCloud, for the opt-in sync of connections, snippets, known hosts and — through
+	  iCloud Keychain — keys the user has chosen not to protect with Face ID. The
+	  container is the app's own private database; nothing is shared or public.
+	-->
+	<key>com.apple.developer.icloud-container-identifiers</key>
+	<array>
+		<string>iCloud.dev.apexterminal.app</string>
+	</array>
+	<key>com.apple.developer.icloud-services</key>
+	<array>
+		<string>CloudKit</string>
+	</array>
+	<!--
+	  Which CloudKit environment this build talks to, decided here rather than left to
+	  whichever value happens to come first in the provisioning profile (D-035). Debug is
+	  Development, which creates record types on first use; Release is Production, which
+	  does not and needs the schema deployed. Leaving it unset is how a build meant for
+	  development ends up asking production for a record type nobody has deployed.
+	-->
+	<key>com.apple.developer.icloud-container-environment</key>
+	<string>$(ST_ICLOUD_ENVIRONMENT)</string>
+</dict>
+</plist>

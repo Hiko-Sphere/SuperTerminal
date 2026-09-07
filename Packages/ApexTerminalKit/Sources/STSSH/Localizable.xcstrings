@@ -1,0 +1,839 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "Check that the port really is an SSH server, and that the server's log does not show a rejected connection.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请检查该端口上运行的确实是 SSH 服务器，并确认服务器日志中没有被拒绝的连接。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請檢查該連接埠上執行的確實是 SSH 伺服器，並確認伺服器日誌中沒有被拒絕的連線。"
+          }
+        }
+      }
+    },
+    "Check that the server is reachable and really is an SSH server, then try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请确认该服务器可以连接，并且确实是 SSH 服务器，然后重试。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請確認該伺服器可以連線，並且確實是 SSH 伺服器，然後重試。"
+          }
+        }
+      }
+    },
+    "Check the hostname, the port, and that the server is reachable from this network.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请核对主机名和端口，并确认从此网络可以访问该服务器。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請核對主機名稱與連接埠，並確認從此網路可以連線到該伺服器。"
+          }
+        }
+      }
+    },
+    "Check the passphrase and try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请核对密码短语后重试。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請核對密碼短語後重試。"
+          }
+        }
+      }
+    },
+    "Check the server's sshd configuration, then try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请检查服务器的 sshd 配置，然后重试。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請檢查伺服器的 sshd 設定，然後重試。"
+          }
+        }
+      }
+    },
+    "Check the username, and that the key is in the server's authorized_keys or that the password is correct.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请检查用户名，并确认密钥已在服务器的 authorized_keys 中，或密码正确。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請檢查使用者名稱，並確認金鑰已在伺服器的 authorized_keys 中，或密碼正確。"
+          }
+        }
+      }
+    },
+    "Connection cancelled because the host key was not accepted.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "由于 host key 未被接受，连接已取消。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "由於 host key 未被接受，連線已取消。"
+          }
+        }
+      }
+    },
+    "Could not connect to %@ on port %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法通过端口 %2$@ 连接到 %1$@。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法透過連接埠 %2$@ 連線到 %1$@。"
+          }
+        }
+      }
+    },
+    "Could not start the SSH session.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法启动 SSH 会话。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法啟動 SSH 工作階段。"
+          }
+        }
+      }
+    },
+    "Do not continue unless you know the server was rebuilt or rekeyed. If you did not expect this, someone may be intercepting the connection.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请勿继续，除非你确知该服务器已被重建或更换了密钥。如果这并非你预期的情况，可能有人正在拦截此连接。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請勿繼續，除非你確知該伺服器已被重建或更換了金鑰。如果這並非你預期的情況，可能有人正在攔截此連線。"
+          }
+        }
+      }
+    },
+    "Enter the key's passphrase to import it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请输入该密钥的密码短语以导入。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請輸入該金鑰的密碼短語以匯入。"
+          }
+        }
+      }
+    },
+    "Export the key with `ssh-keygen -p -f <key>` or generate a new one in ApexTerminal.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用 `ssh-keygen -p -f <key>` 导出该密钥，或在 ApexTerminal 中生成一个新密钥。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用 `ssh-keygen -p -f <key>` 匯出該金鑰，或在 ApexTerminal 中產生一個新金鑰。"
+          }
+        }
+      }
+    },
+    "For environments whose policy requires a NIST curve.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "适用于策略要求使用 NIST 曲线的环境。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "適用於政策要求使用 NIST 曲線的環境。"
+          }
+        }
+      }
+    },
+    "No credential was accepted for an attempt.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本次尝试没有任何凭据被接受。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本次嘗試沒有任何憑據被接受。"
+          }
+        }
+      }
+    },
+    "Re-encrypt the key with `ssh-keygen -p -Z aes256-ctr -f <key>`, or import it without a passphrase.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用 `ssh-keygen -p -Z aes256-ctr -f <key>` 重新加密该密钥，或在不设置密码短语的情况下导入。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用 `ssh-keygen -p -Z aes256-ctr -f <key>` 重新加密該金鑰，或在不設定密碼短語的情況下匯入。"
+          }
+        }
+      }
+    },
+    "Re-encrypt the key with a current version of `ssh-keygen`.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请使用较新版本的 `ssh-keygen` 重新加密该密钥。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請使用較新版本的 `ssh-keygen` 重新加密該金鑰。"
+          }
+        }
+      }
+    },
+    "Recommended. Short, fast, and supported by every current server.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "推荐。简短、快速，当前所有服务器都支持。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "推薦。簡短、快速，目前所有伺服器都支援。"
+          }
+        }
+      }
+    },
+    "Reconnect to continue.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新连接以继续。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新連線以繼續。"
+          }
+        }
+      }
+    },
+    "ApexTerminal does not support %@ keys yet.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ApexTerminal 尚不支持 %@ 密钥。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ApexTerminal 尚不支援 %@ 金鑰。"
+          }
+        }
+      }
+    },
+    "That file is not an OpenSSH private key.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "该文件不是 OpenSSH 私钥。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "該檔案不是 OpenSSH 私密金鑰。"
+          }
+        }
+      }
+    },
+    "That is not a valid OpenSSH public key line.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这不是一行有效的 OpenSSH 公钥。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這不是一行有效的 OpenSSH 公開金鑰。"
+          }
+        }
+      }
+    },
+    "That passphrase does not unlock this key.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "该密码短语无法解锁此密钥。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "該密碼短語無法解鎖此金鑰。"
+          }
+        }
+      }
+    },
+    "The SSH handshake did not complete in time.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SSH 握手未在规定时间内完成。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SSH 交握未在時限內完成。"
+          }
+        }
+      }
+    },
+    "The SSH handshake failed.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SSH 握手失败。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SSH 交握失敗。"
+          }
+        }
+      }
+    },
+    "The SSH session could not be established.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法建立 SSH 会话。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法建立 SSH 工作階段。"
+          }
+        }
+      }
+    },
+    "The generated key did not round-trip; it has not been saved.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "生成的密钥未通过往返验证（无法重新解析），因此没有保存。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "產生的金鑰未通過往返驗證（無法重新解析），因此沒有儲存。"
+          }
+        }
+      }
+    },
+    "The host key for %@ has changed.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 的 host key 已变更。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 的 host key 已變更。"
+          }
+        }
+      }
+    },
+    "The last credential tried was a %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最后尝试的凭据是 %@。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最後嘗試的憑據是 %@。"
+          }
+        }
+      }
+    },
+    "The private key file is damaged or incomplete.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "该私钥文件已损坏或不完整。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "該私密金鑰檔案已損毀或不完整。"
+          }
+        }
+      }
+    },
+    "The server closed the connection before the SSH session was established.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器在 SSH 会话建立前关闭了连接。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "伺服器在 SSH 工作階段建立前關閉了連線。"
+          }
+        }
+      }
+    },
+    "The server may only offer RSA host keys. See the algorithm compatibility notes in the documentation.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器可能只提供 RSA host key。请参阅文档中的算法兼容性说明。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "伺服器可能只提供 RSA host key。請參閱說明文件中的演算法相容性說明。"
+          }
+        }
+      }
+    },
+    "The server may require an algorithm this app does not support. See the compatibility notes in the documentation.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器可能要求使用本应用不支持的算法。请参阅文档中的兼容性说明。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "伺服器可能要求使用本 App 不支援的演算法。請參閱說明文件中的相容性說明。"
+          }
+        }
+      }
+    },
+    "The server refused an environment variable.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器拒绝了一个环境变量。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "伺服器拒絕了一個環境變數。"
+          }
+        }
+      }
+    },
+    "The server refused to allocate a terminal.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器拒绝分配终端。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "伺服器拒絕分配終端機。"
+          }
+        }
+      }
+    },
+    "The server refused to run the command.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器拒绝运行该命令。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "伺服器拒絕執行該指令。"
+          }
+        }
+      }
+    },
+    "The server refused to start a shell.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器拒绝启动 shell。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "伺服器拒絕啟動 shell。"
+          }
+        }
+      }
+    },
+    "The server rejected every credential offered.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器拒绝了所提供的每一个凭据。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "伺服器拒絕了所提供的每一個憑據。"
+          }
+        }
+      }
+    },
+    "The server sent a host key this app could not decode.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器发送了本应用无法解码的 host key。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "伺服器傳送了本 App 無法解碼的 host key。"
+          }
+        }
+      }
+    },
+    "The session is no longer connected.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "该会话已断开连接。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "該工作階段已中斷連線。"
+          }
+        }
+      }
+    },
+    "This key uses an encryption method ApexTerminal cannot read (%@).": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此密钥使用了 ApexTerminal 无法读取的加密方式（%@）。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此金鑰使用了 ApexTerminal 無法讀取的加密方式（%@）。"
+          }
+        }
+      }
+    },
+    "This key uses an unsupported key-derivation function (%@).": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此密钥使用了不受支持的密钥派生函数（%@）。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此金鑰使用了不支援的金鑰衍生函式（%@）。"
+          }
+        }
+      }
+    },
+    "This private key is protected by a passphrase.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此私钥受密码短语保护。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此私密金鑰受密碼短語保護。"
+          }
+        }
+      }
+    },
+    "This server and ApexTerminal share no supported key exchange or host key algorithm.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此服务器与 ApexTerminal 没有共同支持的密钥交换算法或 host key 算法。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此伺服器與 ApexTerminal 沒有共同支援的金鑰交換演算法或 host key 演算法。"
+          }
+        }
+      }
+    },
+    "Tried: %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已尝试：%@。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已嘗試：%@。"
+          }
+        }
+      }
+    },
+    "Use an Ed25519 or ECDSA P-256 key. See the compatibility matrix in the app's documentation.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请使用 Ed25519 或 ECDSA P-256 密钥。请参阅应用文档中的兼容性对照表。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請使用 Ed25519 或 ECDSA P-256 金鑰。請參閱 App 說明文件中的相容性對照表。"
+          }
+        }
+      }
+    },
+    "Verify the fingerprint on the server with `%@`, then connect again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在服务器上用 `%@` 核对 fingerprint，然后重新连接。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在伺服器上用 `%@` 核對 fingerprint，然後重新連線。"
+          }
+        }
+      }
+    },
+    "key (%@)": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密钥（%@）"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "金鑰（%@）"
+          }
+        }
+      }
+    },
+    "none": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無"
+          }
+        }
+      }
+    },
+    "password": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密码"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密碼"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

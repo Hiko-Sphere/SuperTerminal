@@ -25,7 +25,7 @@ COPY sshd_config /etc/ssh/sshd_config
 COPY bashrc /home/deploy/.bashrc
 # OpenSSH starts the account's shell as a *login* shell, which reads /etc/profile
 # and not ~/.bashrc — so the prompt the screenshots show has to live here too.
-COPY bashrc /etc/profile.d/superterminal.sh
+COPY bashrc /etc/profile.d/apexterminal.sh
 COPY seed-home.sh /usr/local/bin/seed-home.sh
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/seed-home.sh /usr/local/bin/entrypoint.sh \

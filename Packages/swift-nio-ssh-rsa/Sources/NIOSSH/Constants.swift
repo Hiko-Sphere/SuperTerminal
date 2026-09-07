@@ -39,7 +39,7 @@ public enum Constants: Sendable {
             AES256GCMOpenSSHTransportProtection.self, AES128GCMOpenSSHTransportProtection.self,
         ]
 
-    /// Added by SuperTerminal: the bundled schemes as the plain protocol type.
+    /// Added by ApexTerminal: the bundled schemes as the plain protocol type.
     ///
     /// `NIOSSHTransportProtection` is public and `transportProtectionSchemes` accepts
     /// additions, so a cipher can be supplied from outside this module — but the array

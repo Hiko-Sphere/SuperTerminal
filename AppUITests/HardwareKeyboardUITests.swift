@@ -20,7 +20,7 @@ final class HardwareKeyboardUITests: XCTestCase {
         app.launchEnvironment["ST_UITEST_RESET"] = "1"
         app.launchEnvironment["ST_UITEST_KEY_PROBE"] = "1"
         app.launch()
-        XCTAssertTrue(app.navigationBars["SuperTerminal"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.navigationBars["Apex Terminal"].waitForExistence(timeout: 10))
         return app
     }
 

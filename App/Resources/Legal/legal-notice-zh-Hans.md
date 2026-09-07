@@ -1,4 +1,4 @@
-# SuperTerminal — 用户须知
+# Apex Terminal — 用户须知
 
 这是本应用如何处理您密钥的通俗说明。它不是隐私政策，也不是使用条款；它是在您把任何东西托付给本应用之前应当阅读的页面。
 
@@ -85,4 +85,4 @@
 
 ## 开源
 
-本应用包含以 Apache-2.0（swift-nio 系列、swift-crypto）、ISC（swift-sodium、bcrypt_pbkdf）和 BSD-3-Clause（Blowfish）授权的代码。其声明包含在本应用的“设置 → 法律 → 开源许可”中。Cloudflare、Cloudflare Tunnel 和 Cloudflare Access 是 Cloudflare, Inc. 的商标；SuperTerminal 与 Cloudflare 无关联关系。
+本应用包含以 Apache-2.0（swift-nio 系列、swift-crypto）、ISC（swift-sodium、bcrypt_pbkdf）和 BSD-3-Clause（Blowfish）授权的代码。其声明包含在本应用的“设置 → 法律 → 开源许可”中。Cloudflare、Cloudflare Tunnel 和 Cloudflare Access 是 Cloudflare, Inc. 的商标；Apex Terminal 与 Cloudflare 无关联关系。

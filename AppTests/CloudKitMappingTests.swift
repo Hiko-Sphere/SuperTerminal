@@ -1,14 +1,14 @@
 import CloudKit
 import Foundation
 import Testing
-@testable import SuperTerminal
+@testable import ApexTerminal
 
 /// The one part of the CloudKit transport that can be proved without an iCloud account:
 /// that a record survives the round trip through `CKRecord` intact, and that identities
 /// cannot collide across kinds. Everything past this needs signing (B-4).
 @Suite("CloudKit record mapping")
 struct CloudKitMappingTests {
-    private let zone = CKRecordZone.ID(zoneName: "SuperTerminal", ownerName: CKCurrentUserDefaultName)
+    private let zone = CKRecordZone.ID(zoneName: "ApexTerminal", ownerName: CKCurrentUserDefaultName)
 
     @Test("A record round-trips through CKRecord unchanged")
     func roundTrip() {
@@ -58,7 +58,7 @@ struct CloudKitMappingTests {
     /// batch — which is every record, which is all of sync (D-034).
     @Test("A record name is ASCII and safe whatever the id carries, and still round-trips")
     func recordNamesAreSafe() throws {
-        let zone = CKRecordZone.ID(zoneName: "SuperTerminal", ownerName: CKCurrentUserDefaultName)
+        let zone = CKRecordZone.ID(zoneName: "ApexTerminal", ownerName: CKCurrentUserDefaultName)
         let awkward = [
             // A known host behind a bastion: the separator really is U+2192.
             SyncKey(kind: .knownHost, id: "build.example.com:443→internal.host:22"),
@@ -83,7 +83,7 @@ struct CloudKitMappingTests {
 
     @Test("Names written before they were encoded are still readable")
     func legacyRecordNames() {
-        let zone = CKRecordZone.ID(zoneName: "SuperTerminal", ownerName: CKCurrentUserDefaultName)
+        let zone = CKRecordZone.ID(zoneName: "ApexTerminal", ownerName: CKCurrentUserDefaultName)
         let legacy = CKRecord.ID(recordName: "knownHost|build.example.com:22", zoneID: zone)
         #expect(CloudKitSyncTransport.syncKey(from: legacy) == SyncKey(kind: .knownHost, id: "build.example.com:22"))
     }

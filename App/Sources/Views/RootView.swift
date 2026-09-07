@@ -330,7 +330,7 @@ struct EmptyStateView: View {
 /// dispatches itself. Every other shortcut is a `UIKeyCommand` on `AppDelegate`, where a
 /// hardware keyboard reaches it whatever has focus — SwiftUI `Commands` never received a
 /// hardware ⌘N or ⌘K in the UI tests, on either device.
-struct SuperTerminalCommands: Commands {
+struct ApexTerminalCommands: Commands {
     let container: AppContainer
     @FocusedValue(\.sceneState) private var focusedScene
     /// The focused scene when there is one, else the active scene — see `AppContainer.activeScene`.

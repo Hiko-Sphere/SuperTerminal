@@ -4,7 +4,7 @@ import NIOTransportServices
 import STSSH
 import STTerminal
 import Testing
-@testable import SuperTerminal
+@testable import ApexTerminal
 
 /// The paste rule protects the user from their own pasteboard: a newline in pasted text
 /// executes whatever precedes it the moment it arrives.

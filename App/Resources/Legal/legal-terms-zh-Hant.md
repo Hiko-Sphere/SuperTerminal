@@ -1,4 +1,4 @@
-# SuperTerminal — 使用條款
+# Apex Terminal — 使用條款
 
 **生效日期：** 2026年9月6日
 
@@ -6,13 +6,13 @@
 
 ## 1. 本條款涵蓋的範圍
 
-本條款適用於由 Li Yanpei（「開發者」）在 App Store 上發布的 iOS 與 iPadOS 版 SuperTerminal 應用程式（「本應用程式」）。無須建立帳號。本應用程式首次開啟時會顯示本條款、隱私權政策與使用者須知，並請您接受；此後繼續使用本應用程式即表示您接受本條款。若您不接受本條款，請刪除本應用程式。
+本條款適用於由 Li Yanpei（「開發者」）在 App Store 上發布的 iOS 與 iPadOS 版 Apex Terminal 應用程式（「本應用程式」）。無須建立帳號。本應用程式首次開啟時會顯示本條款、隱私權政策與使用者須知，並請您接受；此後繼續使用本應用程式即表示您接受本條款。若您不接受本條款，請刪除本應用程式。
 
 本條款即本應用程式的授權合約。本條款取代 Apple 的標準「授權應用程式終端使用者授權合約」（Licensed Application End User License Agreement），並於第 13 節納入 Apple 所要求的條款。
 
 ## 2. 本應用程式是什麼
 
-SuperTerminal 是一款 SSH 終端機。它會連線至您選擇的伺服器——直接連線，或透過 Cloudflare Tunnel 並在系統瀏覽器中完成 Cloudflare Access 登入——然後向您顯示該伺服器上的 shell。這就是整個產品。
+Apex Terminal 是一款 SSH 終端機。它會連線至您選擇的伺服器——直接連線，或透過 Cloudflare Tunnel 並在系統瀏覽器中完成 Cloudflare Access 登入——然後向您顯示該伺服器上的 shell。這就是整個產品。
 
 沒有開發者的帳號、沒有開發者營運的伺服器，也沒有開發者代管的內容。本應用程式完全在您的裝置、您所連線的伺服器，以及（當您使用經隧道連線的主機時）代表您行事的 Cloudflare 之間運作。隱私權政策明確說明本應用程式儲存哪些內容以及儲存於何處。
 
@@ -34,7 +34,7 @@ SuperTerminal 是一款 SSH 終端機。它會連線至您選擇的伺服器—�
 
 ## 6. Cloudflare
 
-Cloudflare Tunnel 與 Cloudflare Access 是 Cloudflare, Inc. 的服務，依您自己的 Cloudflare 帳號及 Cloudflare 自身的條款使用，而非依本條款。SuperTerminal 與 Cloudflare 並無關聯，亦未獲其背書或贊助。Cloudflare、Cloudflare Tunnel 與 Cloudflare Access 為 Cloudflare, Inc. 的商標。
+Cloudflare Tunnel 與 Cloudflare Access 是 Cloudflare, Inc. 的服務，依您自己的 Cloudflare 帳號及 Cloudflare 自身的條款使用，而非依本條款。Apex Terminal 與 Cloudflare 並無關聯，亦未獲其背書或贊助。Cloudflare、Cloudflare Tunnel 與 Cloudflare Access 為 Cloudflare, Inc. 的商標。
 
 本應用程式與 Cloudflare 溝通的方式，和 Cloudflare 自家的指令列工具相同。若 Cloudflare 變更該行為，經隧道的連線可能會停止運作，直到本應用程式更新為止。開發者會盡力跟上，但不承諾一定能做到。不支援 Cloudflare 的 FedRAMP 端點。
 

@@ -1,7 +1,7 @@
 import Foundation
 import STCore
 import Testing
-@testable import SuperTerminal
+@testable import ApexTerminal
 
 /// A screen as its own connection (D-027): the record, the migration out of the SSH
 /// connection that used to hold it, and the store that keeps them.

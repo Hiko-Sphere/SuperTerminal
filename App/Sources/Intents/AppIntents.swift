@@ -130,13 +130,13 @@ enum IntentError: Error, CustomLocalizedStringResourceConvertible {
     var localizedStringResource: LocalizedStringResource {
         switch self {
         case .connectionMissing: "That connection no longer exists."
-        case .appNotReady: "SuperTerminal is still starting. Try again in a moment."
+        case .appNotReady: "Apex Terminal is still starting. Try again in a moment."
         }
     }
 }
 
 /// What Siri offers without setup. Phrases must name the app.
-struct SuperTerminalShortcuts: AppShortcutsProvider {
+struct ApexTerminalShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppIntents.AppShortcut] {
         AppIntents.AppShortcut(
             intent: OpenConnectionIntent(),

@@ -2,7 +2,7 @@ import Foundation
 import STCore
 import SwiftUI
 import Testing
-@testable import SuperTerminal
+@testable import ApexTerminal
 
 /// The app lock's rules (D-023) with a biometric check that answers what the test says
 /// and a clock the test moves. The Keychain and the passcode derivation are real.

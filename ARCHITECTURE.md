@@ -1,6 +1,6 @@
 # Architecture
 
-SuperTerminal is an iOS/iPadOS SSH client whose distinguishing capability is
+ApexTerminal is an iOS/iPadOS SSH client whose distinguishing capability is
 connecting to SSH servers published through Cloudflare Tunnel and protected by
 Cloudflare Access — without any helper binary on the device.
 
@@ -54,7 +54,7 @@ plain one.
 
 ## Modules
 
-Everything except the SwiftUI app lives in a Swift package, `Packages/SuperTerminalKit`.
+Everything except the SwiftUI app lives in a Swift package, `Packages/ApexTerminalKit`.
 That is a testing decision as much as a structural one: the package builds and tests on
 macOS with `swift test`, so the SSH stack can be exercised against a real `sshd` in
 seconds, with no simulator in the loop.

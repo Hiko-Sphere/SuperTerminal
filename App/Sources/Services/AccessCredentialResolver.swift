@@ -22,7 +22,7 @@ struct AccessCredentialResolver {
     let vault: CredentialVault
     let log: STLogger
 
-    static let userAgent = "SuperTerminal/\(Bundle.main.shortVersion) (iOS)"
+    static let userAgent = "ApexTerminal/\(Bundle.main.shortVersion) (iOS)"
 
     func credential(progress: @escaping @MainActor (String) -> Void) async throws -> AccessCredential {
         let http = URLSessionHTTPTransport(userAgent: Self.userAgent)

@@ -14,13 +14,13 @@ DESTINATION="${1:-platform=iOS Simulator,name=iPhone 17 Pro}"
 cd "$ROOT"
 # The project's usual derived data, not a private one: a second location makes Xcode
 # re-resolve the package graph, which is both slow and a source of spurious failures.
-DERIVED="$(xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal \
+DERIVED="$(xcodebuild -project ApexTerminal.xcodeproj -scheme ApexTerminal \
   -configuration Debug -destination "$DESTINATION" -showBuildSettings 2>/dev/null \
   | awk -F' = ' '/[[:space:]]BUILD_DIR = /{print $2; exit}')"
 DERIVED="${DERIVED%/Build/Products}"
 [[ -n "$DERIVED" ]] || { echo "could not locate DerivedData"; exit 2; }
 
-xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal \
+xcodebuild -project ApexTerminal.xcodeproj -scheme ApexTerminal \
   -configuration Debug -destination "$DESTINATION" \
   SWIFT_EMIT_LOC_STRINGS=YES build > /dev/null
 

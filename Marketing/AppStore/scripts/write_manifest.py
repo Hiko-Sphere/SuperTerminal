@@ -25,7 +25,7 @@ def run(*args: str) -> str:
 
 def app_version() -> tuple[str, str]:
     """Reads the version out of the built app rather than the project file."""
-    for candidate in sorted((ROOT / "build" / "dd" / "Build" / "Products").glob("*/SuperTerminal.app/Info.plist")):
+    for candidate in sorted((ROOT / "build" / "dd" / "Build" / "Products").glob("*/ApexTerminal.app/Info.plist")):
         data = plistlib.loads(candidate.read_bytes())
         return data.get("CFBundleShortVersionString", "?"), data.get("CFBundleVersion", "?")
     return "?", "?"
@@ -86,8 +86,8 @@ def main() -> int:
     manifest = {
         "generatedAt": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
         "app": {
-            "name": "SuperTerminal",
-            "bundleIdentifier": "dev.superterminal.app",
+            "name": "ApexTerminal",
+            "bundleIdentifier": "dev.apexterminal.app",
             "marketingVersion": short,
             "buildNumber": build,
         },

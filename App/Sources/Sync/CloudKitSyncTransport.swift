@@ -15,8 +15,8 @@ import Foundation
 /// against the SDK's own interface and awaits signing. TEST_REPORT states this; nothing
 /// here claims otherwise.
 final class CloudKitSyncTransport: SyncTransport, @unchecked Sendable {
-    static let containerIdentifier = "iCloud.dev.superterminal.app"
-    static let zoneName = "SuperTerminal"
+    static let containerIdentifier = "iCloud.dev.apexterminal.app"
+    static let zoneName = "ApexTerminal"
     static let recordType = "SyncRecord"
 
     private let database: CKDatabase

@@ -235,7 +235,7 @@ final class AppLock {
         guard isLocked, usesBiometrics, !isAuthenticating else { return false }
         isAuthenticating = true
         defer { isAuthenticating = false }
-        let passed = await biometrics.authenticate(reason: String(localized: "Unlock SuperTerminal"))
+        let passed = await biometrics.authenticate(reason: String(localized: "Unlock Apex Terminal"))
         if passed { unlocked() }
         return passed
     }

@@ -2,7 +2,7 @@ import Foundation
 import STCore
 import STSSH
 import Testing
-@testable import SuperTerminal
+@testable import ApexTerminal
 
 /// Automatic reconnection, against a real server and a connection that really dies.
 ///

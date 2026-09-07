@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 import UIKit
-@testable import SuperTerminal
+@testable import ApexTerminal
 
 @Suite struct ClipboardTests {
     @Test func zeroMeansNoExpiry() {

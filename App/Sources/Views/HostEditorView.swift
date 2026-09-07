@@ -116,7 +116,7 @@ struct HostEditorView: View {
                     } else if accessAuthentication == .serviceToken {
                         Text("A service token signs in without a browser. Create one in Cloudflare Zero Trust → Access → Service Auth and allow it in the application's policy. It is kept in this device's Keychain, never synced, and deleted with the connection.")
                     } else {
-                        Text("SuperTerminal signs in to Cloudflare Access in a system browser, then opens the tunnel itself. No cloudflared install is needed on this device.")
+                        Text("Apex Terminal signs in to Cloudflare Access in a system browser, then opens the tunnel itself. No cloudflared install is needed on this device.")
                     }
                 }
 

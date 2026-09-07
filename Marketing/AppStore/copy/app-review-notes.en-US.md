@@ -8,7 +8,7 @@ commentary after it is for whoever is submitting, not for the reviewer.
 ```
 WHAT THE APP IS
 
-SuperTerminal is an SSH client. It opens an interactive SSH session on a server the user
+ApexTerminal is an SSH client. It opens an interactive SSH session on a server the user
 already owns, allocates a PTY, and renders the output with a terminal emulator built into
 the app. Everything a user sees in a session comes from their own remote machine; the app
 runs nothing itself and relays nothing through any server of ours.

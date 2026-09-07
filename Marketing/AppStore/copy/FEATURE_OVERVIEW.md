@@ -1,4 +1,4 @@
-# SuperTerminal — what it is and what it does
+# ApexTerminal — what it is and what it does
 
 A product introduction for a website, a product page or a release post. Everything here is
 traced to running code and a passing test in [`FEATURE_AUDIT.md`](../FEATURE_AUDIT.md);
@@ -8,11 +8,11 @@ nothing that has not been seen to work appears in it.
 
 ## The short version
 
-SuperTerminal is an SSH client for iPhone and iPad. It opens a real interactive session on
+ApexTerminal is an SSH client for iPhone and iPad. It opens a real interactive session on
 a server you already have, allocates a real PTY, and draws what comes back with a terminal
 emulator written for this app. There is no account, no relay, and nothing to buy.
 
-Commands run on your machines. SuperTerminal is the terminal.
+Commands run on your machines. ApexTerminal is the terminal.
 
 ---
 
@@ -171,15 +171,15 @@ Said plainly, because a feature list that only lists features is not honest:
 
 ---
 
-# SuperTerminal — 中文介绍
+# ApexTerminal — 中文介绍
 
 给官网、产品页或发布贴用的版本。内容与上文一致，同样只写经过验证的部分。
 
 ## 一句话
 
-SuperTerminal 是 iPhone 和 iPad 上的 SSH 客户端。它在你自己已有的服务器上打开真正的交互式
+ApexTerminal 是 iPhone 和 iPad 上的 SSH 客户端。它在你自己已有的服务器上打开真正的交互式
 会话，分配真实的 PTY，并用为这个应用写的终端模拟器把远端送来的内容画出来。没有账号，没有
-中转，也没有任何需要额外付费的东西。命令跑在你的机器上，SuperTerminal 只是那台终端。
+中转，也没有任何需要额外付费的东西。命令跑在你的机器上，ApexTerminal 只是那台终端。
 
 ## 一个真正的终端
 

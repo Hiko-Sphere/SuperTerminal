@@ -3,7 +3,7 @@
 What this app can actually be said to do, and what it cannot — decided by reading the
 code and by looking at what the tests execute, not by reading the README.
 
-**Audited:** 2026-09-06 · **Against:** `SuperTerminal.xcodeproj`, scheme `SuperTerminal`,
+**Audited:** 2026-09-06 · **Against:** `ApexTerminal.xcodeproj`, scheme `ApexTerminal`,
 Debug and Release both building clean for the iOS Simulator with zero warnings from
 project code.
 
@@ -18,8 +18,8 @@ keeps them apart too, and throws away everything on the wrong side of the line.
 
 | | |
 | --- | --- |
-| Product name | SuperTerminal |
-| Bundle identifier | `dev.superterminal.app` |
+| Product name | ApexTerminal |
+| Bundle identifier | `dev.apexterminal.app` |
 | Marketing version / build | `0.1.0` / `1` |
 | Platforms | iOS, iPadOS — `TARGETED_DEVICE_FAMILY = "1,2"` |
 | Minimum system | iOS / iPadOS **17.0** (`IPHONEOS_DEPLOYMENT_TARGET = 17.0`) |
@@ -27,12 +27,12 @@ keeps them apart too, and throws away everything on the wrong side of the line.
 | Team | `7CDDP73WJS`; a Release archive succeeds and carries the iCloud entitlements |
 | Languages in the app | **English, Simplified Chinese, Traditional Chinese** — 601 keys in `App/Resources/Localizable.xcstrings`, plus the Shortcuts and Info.plist catalogs; `scripts/localization-audit.sh` fails CI on an untranslated string |
 | Assets | `App/Resources/Assets.xcassets` — `AppIcon.appiconset`, `Logo.imageset`, `AccentColor.colorset`. No temporary or placeholder mark was introduced for this work |
-| **Money** | **None.** `grep -riE "storekit|in-?app ?purchase|subscription|paywall|SKProduct"` over `App/Sources` and `Packages/SuperTerminalKit/Sources` returns nothing. There is no paywall, no tier, no trial, and no purchase of any kind — so the listing must not imply one, and the review notes say so explicitly |
+| **Money** | **None.** `grep -riE "storekit|in-?app ?purchase|subscription|paywall|SKProduct"` over `App/Sources` and `Packages/ApexTerminalKit/Sources` returns nothing. There is no paywall, no tier, no trial, and no purchase of any kind — so the listing must not imply one, and the review notes say so explicitly |
 
 ### Build, run and test, on the day of the audit
 
 ```
-xcodebuild build-for-testing -scheme SuperTerminal -configuration Debug \
+xcodebuild build-for-testing -scheme ApexTerminal -configuration Debug \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max'      → TEST BUILD SUCCEEDED, 0 warnings
 ```
 

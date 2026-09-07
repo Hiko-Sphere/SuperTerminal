@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 import UIKit
-@testable import SuperTerminal
+@testable import ApexTerminal
 
 /// The hardware-key mapping, as xterm defines it. Pure, so every rule is a one-line case.
 @Suite struct HardwareKeyMapTests {

@@ -47,7 +47,7 @@ let package = Package(
             dependencies: [
                 .product(name: "NIOCore", package: "swift-nio"),
                 .product(name: "NIOConcurrencyHelpers", package: "swift-nio"),
-                // Added by SuperTerminal for RSA; see DECISIONS.md D-007.
+                // Added by ApexTerminal for RSA; see DECISIONS.md D-007.
                 .product(name: "_CryptoExtras", package: "swift-crypto"),
                 .product(name: "NIOFoundationCompat", package: "swift-nio"),
                 .product(name: "Crypto", package: "swift-crypto"),

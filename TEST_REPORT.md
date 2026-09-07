@@ -19,28 +19,28 @@ left out.
 ## Commands run
 
 ```bash
-cd Packages/SuperTerminalKit
+cd Packages/ApexTerminalKit
 swift build          # 0 errors, 0 warnings from project code
 swift test           # 198 tests in 30 suites passed (the VNC suites run against LibVNCServer from Homebrew)
 swift test -c release --filter TerminalThroughputTests   # the numbers below
 
 cd ..
-xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal \
+xcodebuild -project ApexTerminal.xcodeproj -scheme ApexTerminal \
   -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
 # ** BUILD SUCCEEDED **, 0 warnings from App/
 
-xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal \
+xcodebuild -project ApexTerminal.xcodeproj -scheme ApexTerminal \
   -configuration Release -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
 # ** BUILD SUCCEEDED **
 
-xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal \
+xcodebuild -project ApexTerminal.xcodeproj -scheme ApexTerminal \
   -configuration Release -destination 'generic/platform=iOS' \
   CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
 # ** BUILD SUCCEEDED ** — arm64 device build compiles
 
-xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal \
+xcodebuild -project ApexTerminal.xcodeproj -scheme ApexTerminal \
   -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
-  -only-testing:SuperTerminalTests test
+  -only-testing:ApexTerminalTests test
 # 165 passed, 8 skipped (the sshd-backed cases, run by the script below), 0 failed
 
 ./scripts/app-integration-e2e.sh   # 191 app tests on iPhone 17 Pro simulator, 0 skipped, ** TEST SUCCEEDED **
@@ -56,10 +56,10 @@ swift test           # Executed 349 tests, with 0 failures (347 upstream + 2 for
 
 Warning counts were measured, not assumed:
 `swift build 2>&1 | grep -cE "Sources/.*warning:"` → **0**, and
-`xcodebuild ... build 2>&1 | grep -cE "warning:.*repo/superterminal/App"` → **0**.
+`xcodebuild ... build 2>&1 | grep -cE "warning:.*repo/apexterminal/App"` → **0**.
 The test targets are held to the same bar, on a clean build so incremental compilation
 cannot hide a file that was not recompiled:
-`xcodebuild ... clean build-for-testing 2>&1 | grep -c "warning:.*repo/superterminal/App"` → **0**
+`xcodebuild ... clean build-for-testing 2>&1 | grep -c "warning:.*repo/apexterminal/App"` → **0**
 across `App/`, `AppTests/` and `AppUITests/`.
 
 ## What the suite covers
@@ -1007,7 +1007,7 @@ Stated plainly, because a test report that omits these would be misleading:
 | **Cloudflare Access authentication (live)** | No local harness can authenticate a real identity. Needs a Cloudflare account with a tunnel, an Access application and a test identity. The local carrier server deliberately does **not** pretend to be Access. |
 | **Access token expiry and re-authentication** | Same dependency. |
 | **On-device runs** | Needs a development team. The unsigned `generic/platform=iOS` Release build succeeds, so the code is device-ready; a paired iPhone 16 Pro and two Apple Development identities are already on the machine. |
-| **Archive and TestFlight** | `xcodebuild archive` fails with *"Signing for SuperTerminal requires a development team"*. Recorded as `PROJECT_STATUS.md` B-4. |
+| **Archive and TestFlight** | `xcodebuild archive` fails with *"Signing for ApexTerminal requires a development team"*. Recorded as `PROJECT_STATUS.md` B-4. |
 | **External keyboard and pointer** | The key mapping is implemented and unit-testable, but has not been exercised against real hardware. |
 | **Accessibility** | VoiceOver, Dynamic Type and high-contrast passes have not been run. |
 | **Double-tap to select a line** | Implemented and unit-tested at the model level; not driven by a UI test. Long-press-and-drag selection and find both are. |

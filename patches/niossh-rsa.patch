@@ -6,7 +6,7 @@ index d558d9b..062b088 100644
              dependencies: [
                  .product(name: "NIOCore", package: "swift-nio"),
                  .product(name: "NIOConcurrencyHelpers", package: "swift-nio"),
-+                // Added by SuperTerminal for RSA; see DECISIONS.md D-007.
++                // Added by ApexTerminal for RSA; see DECISIONS.md D-007.
 +                .product(name: "_CryptoExtras", package: "swift-crypto"),
                  .product(name: "NIOFoundationCompat", package: "swift-nio"),
                  .product(name: "Crypto", package: "swift-crypto"),
@@ -38,7 +38,7 @@ index 51b43b8..d46c518 100644
              AES256GCMOpenSSHTransportProtection.self, AES128GCMOpenSSHTransportProtection.self,
          ]
  
-+    /// Added by SuperTerminal: the bundled schemes as the plain protocol type.
++    /// Added by ApexTerminal: the bundled schemes as the plain protocol type.
 +    ///
 +    /// `NIOSSHTransportProtection` is public and `transportProtectionSchemes` accepts
 +    /// additions, so a cipher can be supplied from outside this module — but the array
@@ -742,9 +742,9 @@ index 0000000..fbe9ebc
 @@ -0,0 +1,110 @@
 +//===----------------------------------------------------------------------===//
 +//
-+// Added by SuperTerminal. Not part of upstream swift-nio-ssh.
++// Added by ApexTerminal. Not part of upstream swift-nio-ssh.
 +//
-+// See patches/niossh-rsa.patch and DECISIONS.md D-007 in the SuperTerminal
++// See patches/niossh-rsa.patch and DECISIONS.md D-007 in the ApexTerminal
 +// repository for why this exists and what maintaining it obliges.
 +//
 +//===----------------------------------------------------------------------===//
@@ -1133,7 +1133,7 @@ index 15260a8..0ae6592 100644
      func testUnrecognisedKey() throws {
          var buffer = ByteBufferAllocator().buffer(capacity: 1024)
 -        buffer.writeSSHString("ssh-rsa".utf8)
-+        // Modified by SuperTerminal: this used "ssh-rsa", which is now a key type this
++        // Modified by ApexTerminal: this used "ssh-rsa", which is now a key type this
 +        // library understands. The behaviour under test — an unknown algorithm is
 +        // rejected — is unchanged; only the example had to move to an algorithm that is
 +        // still genuinely unknown. `ssh-dss` qualifies: OpenSSH removed DSA entirely in
@@ -1145,7 +1145,7 @@ index 15260a8..0ae6592 100644
          }
      }
  
-+    /// Added by SuperTerminal, so the case the test above used to cover is not lost: a
++    /// Added by ApexTerminal, so the case the test above used to cover is not lost: a
 +    /// recognised algorithm with a truncated body must not yield a key.
 +    func testTruncatedRSAKeyIsRejected() throws {
 +        var buffer = ByteBufferAllocator().buffer(capacity: 1024)

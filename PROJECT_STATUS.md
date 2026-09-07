@@ -13,8 +13,8 @@ devices and a production CloudKit schema for the live iCloud checks (B-4 — arc
 the entitlements are now proven), and the legal placeholders with counsel review (B-5).
 
 **Last full regression (2026-09-06, after D-024 … D-033):** package 198 tests in 30 suites
-on the host (the VNC suites against LibVNCServer); `SuperTerminalTests` 199 passed, 0
-failed; `SuperTerminalUITests` 41 passed on iPhone 17 Pro and 41 on iPad Pro 13-inch (M5).
+on the host (the VNC suites against LibVNCServer); `ApexTerminalTests` 199 passed, 0
+failed; `ApexTerminalUITests` 41 passed on iPhone 17 Pro and 41 on iPad Pro 13-inch (M5).
 Localisation audit complete in every language.
 
 Two known failures, neither in this app's shipping code:
@@ -173,19 +173,19 @@ Measured 2026-09-06, not assumed. A team is now set in the project
 (`DEVELOPMENT_TEAM = 7CDDP73WJS`) and
 
 ```
-xcodebuild -project SuperTerminal.xcodeproj -scheme SuperTerminal -configuration Release \
+xcodebuild -project ApexTerminal.xcodeproj -scheme ApexTerminal -configuration Release \
   -destination 'generic/platform=iOS' -allowProvisioningUpdates archive \
-  -archivePath build/SuperTerminal.xcarchive
+  -archivePath build/ApexTerminal.xcarchive
 ```
 
 reports **ARCHIVE SUCCEEDED**. The signed product carries the entitlements this needed to
 prove, read back off the archive with
-`codesign -d --entitlements - --xml …/SuperTerminal.app`:
+`codesign -d --entitlements - --xml …/ApexTerminal.app`:
 
 | entitlement | value |
 | --- | --- |
-| `application-identifier` | `7CDDP73WJS.dev.superterminal.app` |
-| `com.apple.developer.icloud-container-identifiers` | `iCloud.dev.superterminal.app` |
+| `application-identifier` | `7CDDP73WJS.dev.apexterminal.app` |
+| `com.apple.developer.icloud-container-identifiers` | `iCloud.dev.apexterminal.app` |
 | `com.apple.developer.icloud-services` | `CloudKit` |
 
 So the App ID has the iCloud capability and the container registered — the profile would
@@ -247,7 +247,7 @@ Needed later, not now:
    as an identity is available.
 5. **A second signed device on the same Apple Account**, plus the CloudKit schema
    deployed to the *production* environment, plus a distribution certificate for export.
-   The team, the iCloud capability and the container `iCloud.dev.superterminal.app` are
+   The team, the iCloud capability and the container `iCloud.dev.apexterminal.app` are
    done — a Release archive succeeds and carries them (B-4). *Unblocks:* the remaining
    live iCloud checks in `docs/RELEASE.md` — CloudKit sync between two devices, iCloud
    Keychain for opted-in keys, purge on delete — and App Store export.

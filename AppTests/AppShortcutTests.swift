@@ -2,7 +2,7 @@ import Foundation
 import SwiftUI
 import Testing
 import UIKit
-@testable import SuperTerminal
+@testable import ApexTerminal
 
 /// The shortcut table is the contract with the ⌘-hold overlay: one declaration per key,
 /// a title for each, and the same table wherever it is exposed — as SwiftUI shortcuts in
