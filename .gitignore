@@ -26,3 +26,8 @@ E2E.local.json
 .DS_Store
 .build/emulator.trace
 __pycache__/
+
+# The App Store capture run's scratch: xcresult bundles, logs, and the throwaway SSH key
+# it authorises inside the fixture containers. The key is regenerated on every run and
+# must never be committed.
+Marketing/AppStore/build/

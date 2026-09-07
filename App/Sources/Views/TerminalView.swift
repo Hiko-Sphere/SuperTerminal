@@ -161,6 +161,9 @@ struct TerminalView: View {
                     wantsKeyboard: wantsKeyboard
                 )
                 .accessibilityElement(children: .ignore)
+                // An identifier as well as a label: the label is translated, and an
+                // automated run has to find the grid in every language the app ships in.
+                .accessibilityIdentifier("terminal-grid")
                 .accessibilityLabel(String(localized: "Terminal for \(session.host.name)"))
                 // VoiceOver reads the screen contents, which is the only way the terminal
                 // is usable without sight — the grid itself is a drawing, not a view
@@ -388,21 +391,28 @@ struct TerminalView: View {
                 Button(String(localized: "Command Palette…"), systemImage: "command") {
                     scene.isShowingPalette = true
                 }
+                .accessibilityIdentifier("terminal-menu-palette")
                 Button(String(localized: "Snippets…"), systemImage: "text.badge.plus") {
                     showsSnippets = true
                 }
+                .accessibilityIdentifier("terminal-menu-snippets")
                 Button(String(localized: "Assistant…"), systemImage: "sparkles") {
                     scene.isShowingAssistant = true
                 }
                 Button(String(localized: "Find…"), systemImage: "magnifyingglass") {
                     isSearching = true
                 }
+                // The shortcut stays attached directly to the button, ahead of anything
+                // that wraps it: this is the modifier order the ⌘F test was written
+                // against, and there is no reason to make it prove itself again.
                 .keyboardShortcut("f", modifiers: .command)
+                .accessibilityIdentifier("terminal-menu-find")
                 Divider()
                 Toggle(String(localized: "Show Key Row"), isOn: keyRowBinding)
             } label: {
                 Label(String(localized: "Session"), systemImage: "ellipsis.circle")
             }
+            .accessibilityIdentifier("terminal-menu")
         }
     }
 }

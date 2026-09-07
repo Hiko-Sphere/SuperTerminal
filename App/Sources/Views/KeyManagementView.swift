@@ -43,10 +43,13 @@ struct KeyManagementView: View {
             ToolbarItem(placement: .primaryAction) {
                 Menu {
                     Button("Generate…", systemImage: "sparkles") { isGenerating = true }
+                        .accessibilityIdentifier("generate-key")
                     Button("Import…", systemImage: "square.and.arrow.down") { isImporting = true }
+                        .accessibilityIdentifier("import-key")
                 } label: {
                     Label("Add key", systemImage: "plus")
                 }
+                .accessibilityIdentifier("add-key")
             }
         }
         .sheet(isPresented: $isGenerating) {
@@ -180,6 +183,7 @@ struct GenerateKeySheet: View {
                     Section("Key") {
                         TextField("Name", text: $name)
                             .textInputAutocapitalization(.words)
+                            .accessibilityIdentifier("key-name")
                         Picker("Algorithm", selection: $algorithm) {
                             ForEach(SSHKeyAlgorithm.allCases) { option in
                                 Text(option.displayName).tag(option)
@@ -211,11 +215,13 @@ struct GenerateKeySheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(generated == nil ? "Cancel" : "Done") { dismiss() }
+                        .accessibilityIdentifier("key-dismiss")
                 }
                 if generated == nil {
                     ToolbarItem(placement: .confirmationAction) {
                         Button("Generate") { generate() }
                             .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
+                            .accessibilityIdentifier("key-generate")
                     }
                 }
             }

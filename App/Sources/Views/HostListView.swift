@@ -165,6 +165,7 @@ struct HostListView: View {
             }
             ToolbarItem(placement: .topBarLeading) {
                 Button("Settings", systemImage: "gearshape") { scene.isShowingSettings = true }
+                    .accessibilityIdentifier("settings-open")
             }
         }
         .sheet(isPresented: creatingBinding) {
@@ -376,6 +377,7 @@ private struct HostRow: View {
                 Button("Open Screen", systemImage: "display", action: onOpenScreen)
             }
             Button("Edit Connection", systemImage: "pencil", action: onEdit)
+                .accessibilityIdentifier("host-edit")
             Button("Delete Connection", systemImage: "trash", role: .destructive, action: onDelete)
         }
         // `.combine`, not `.ignore`: with children ignored the button underneath is no

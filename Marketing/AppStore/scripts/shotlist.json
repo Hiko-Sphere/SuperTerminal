@@ -1,0 +1,102 @@
+{
+  "en-US": [
+    {
+      "name": "terminal",
+      "index": "01",
+      "title": "A genuine SSH session",
+      "subtitle": "A real PTY, true colour and scrollback, drawn by the app's own emulator.",
+      "titleIpad": "A genuine SSH session",
+      "subtitleIpad": "A real PTY, true colour and scrollback, drawn by the app's own emulator."
+    },
+    {
+      "name": "sessions",
+      "index": "02",
+      "title": "Several servers, at once",
+      "subtitle": "Independent sessions, switched between at any time. Each server says what it runs.",
+      "titleIpad": "Several servers, at once",
+      "subtitleIpad": "The sidebar keeps every session in reach while the terminal keeps the screen."
+    },
+    {
+      "name": "host-key",
+      "index": "03",
+      "title": "The fingerprint comes first",
+      "subtitle": "A host you have not met is shown its key and waits for your answer. A changed key is never accepted quietly.",
+      "titleIpad": "The fingerprint comes first",
+      "subtitleIpad": "A host you have not met is shown its key and waits for your answer. A changed key is never accepted quietly."
+    },
+    {
+      "name": "keys",
+      "index": "04",
+      "title": "Your keys stay here",
+      "subtitle": "Generated on the device, held in the Keychain, and — if you ask — behind Face ID.",
+      "titleIpad": "Your keys stay here",
+      "subtitleIpad": "Generated on the device, held in the Keychain, and — if you ask — behind Face ID."
+    },
+    {
+      "name": "vim",
+      "index": "05",
+      "title": "Full-screen programs run",
+      "subtitle": "Alternate screen, syntax colour, a cursor the remote program places. Editors and pagers behave.",
+      "titleIpad": "Full-screen programs run",
+      "subtitleIpad": "Alternate screen, syntax colour, a cursor the remote program places. Editors and pagers behave."
+    },
+    {
+      "name": "find",
+      "index": "06",
+      "title": "Search the scrollback",
+      "subtitle": "Matches found across wrapped lines and stepped through while the session keeps running.",
+      "titleIpad": "Search the scrollback",
+      "subtitleIpad": "Matches found across wrapped lines and stepped through while the session keeps running."
+    }
+  ],
+  "zh-Hans": [
+    {
+      "name": "terminal",
+      "index": "01",
+      "title": "真实的 SSH 会话",
+      "subtitle": "完整的 PTY、真彩色与回滚缓冲，全部由应用自带的终端模拟器绘制。",
+      "titleIpad": "真实的 SSH 会话",
+      "subtitleIpad": "完整的 PTY、真彩色与回滚缓冲，全部由应用自带的终端模拟器绘制。"
+    },
+    {
+      "name": "sessions",
+      "index": "02",
+      "title": "多台服务器，同时在线",
+      "subtitle": "每个会话彼此独立，随时切换；服务器是什么系统，连上就会告诉你。",
+      "titleIpad": "多台服务器，同时在线",
+      "subtitleIpad": "侧边栏始终留着所有会话，终端仍然占满整个屏幕。"
+    },
+    {
+      "name": "host-key",
+      "index": "03",
+      "title": "先看指纹，再谈连接",
+      "subtitle": "没见过的主机会先把密钥指纹摆出来等你确认；密钥变了，绝不静默通过。",
+      "titleIpad": "先看指纹，再谈连接",
+      "subtitleIpad": "没见过的主机会先把密钥指纹摆出来等你确认；密钥变了，绝不静默通过。"
+    },
+    {
+      "name": "keys",
+      "index": "04",
+      "title": "密钥留在这台设备",
+      "subtitle": "在设备上生成，私钥存进钥匙串；愿意的话，还能加一道 Face ID。",
+      "titleIpad": "密钥留在这台设备",
+      "subtitleIpad": "在设备上生成，私钥存进钥匙串；愿意的话，还能加一道 Face ID。"
+    },
+    {
+      "name": "vim",
+      "index": "05",
+      "title": "全屏程序，照常运行",
+      "subtitle": "备用屏幕、语法着色、光标位置，全部按远端程序画的来。编辑器和分页器都正常。",
+      "titleIpad": "全屏程序，照常运行",
+      "subtitleIpad": "备用屏幕、语法着色、光标位置，全部按远端程序画的来。编辑器和分页器都正常。"
+    },
+    {
+      "name": "find",
+      "index": "06",
+      "title": "回滚缓冲，随手可搜",
+      "subtitle": "匹配可以跨越自动换行，逐个跳转，会话照常运行。",
+      "titleIpad": "回滚缓冲，随手可搜",
+      "subtitleIpad": "匹配可以跨越自动换行，逐个跳转，会话照常运行。"
+    }
+  ]
+}

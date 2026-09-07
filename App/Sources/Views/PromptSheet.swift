@@ -82,11 +82,13 @@ struct PromptSheet: View {
                         .background(DesignTokens.Color.surfaceSecondary, in: RoundedRectangle(cornerRadius: DesignTokens.Radius.sm))
                 }
                 .font(DesignTokens.Typography.callout)
+                .accessibilityIdentifier("prompt-howto")
 
                 Button(String(localized: "Trust and Connect")) {
                     resolve(.approve)
                     dismiss()
                 }
+                .accessibilityIdentifier("prompt-trust")
                 .buttonStyle(.borderedProminent)
                 .frame(maxWidth: .infinity)
             }

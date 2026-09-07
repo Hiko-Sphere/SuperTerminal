@@ -1,0 +1,371 @@
+{
+  "generatedAt": "2026-09-06T14:27:50+00:00",
+  "app": {
+    "name": "SuperTerminal",
+    "bundleIdentifier": "dev.superterminal.app",
+    "marketingVersion": "0.1.0",
+    "buildNumber": "1"
+  },
+  "source": {
+    "gitCommit": "cb165215ca5cd5db789690dfd673014c2a0f2f6d",
+    "gitBranch": "main",
+    "gitDirty": true
+  },
+  "toolchain": {
+    "xcode": "Xcode 26.6 Build version 17F113",
+    "macOS": "26.5.2",
+    "simulatorRuntime": "iOS 26.5"
+  },
+  "devices": {
+    "iphone": {
+      "model": "iPhone 17 Pro Max",
+      "size": "iPhone 6.9\"",
+      "pixels": "1320x2868",
+      "orientation": "portrait"
+    },
+    "ipad": {
+      "model": "iPad Air 13-inch (M4)",
+      "size": "iPad 13\"",
+      "pixels": "2732x2048",
+      "orientation": "landscape"
+    }
+  },
+  "fixture": {
+    "kind": "Three isolated OpenSSH servers in containers, built by scripts/fixture/",
+    "account": "deploy (fictional, created by the fixture image)",
+    "hosts": [
+      "edge-01.localhost:22",
+      "db-primary.localhost:2201",
+      "build-runner.localhost:2202"
+    ],
+    "note": "Every session in these images is a real key exchange with a real sshd. No output is replayed or drawn."
+  },
+  "screenshots": [
+    {
+      "order": 1,
+      "locale": "en-US",
+      "device": "iphone",
+      "shot": "terminal",
+      "feature": "Interactive SSH session over a real PTY, with colour, scrollback and the accessory key row",
+      "evidence": "SSHIntegrationTests.interactivePTYSession; TUIIntegrationTests; captured against a real OpenSSH server",
+      "rawPath": "Marketing/AppStore/raw/iphone/en-US/terminal.png",
+      "finalPath": "Marketing/AppStore/final/en-US/iphone-6.9/01-terminal.png",
+      "capturedFromRunningApp": true,
+      "sensitiveDataCheck": "passed",
+      "authenticityCheck": "passed"
+    },
+    {
+      "order": 2,
+      "locale": "en-US",
+      "device": "iphone",
+      "shot": "sessions",
+      "feature": "Several concurrent SSH sessions, with the server platform detected over a second channel",
+      "evidence": "AppTests/HostPlatformTests; TerminalUITests.testConnectingDetectsTheServerPlatform",
+      "rawPath": "Marketing/AppStore/raw/iphone/en-US/sessions.png",
+      "finalPath": "Marketing/AppStore/final/en-US/iphone-6.9/02-sessions.png",
+      "capturedFromRunningApp": true,
+      "sensitiveDataCheck": "passed",
+      "authenticityCheck": "passed"
+    },
+    {
+      "order": 3,
+      "locale": "en-US",
+      "device": "iphone",
+      "shot": "host-key",
+      "feature": "Host-key verification: the fingerprint the server really presented, shown before the connection is made",
+      "evidence": "SSHIntegrationTests.trustOnFirstUseRecordsKey; app-integration-e2e.sh host-key prompt gate",
+      "rawPath": "Marketing/AppStore/raw/iphone/en-US/host-key.png",
+      "finalPath": "Marketing/AppStore/final/en-US/iphone-6.9/03-host-key.png",
+      "capturedFromRunningApp": true,
+      "sensitiveDataCheck": "passed",
+      "authenticityCheck": "passed"
+    },
+    {
+      "order": 4,
+      "locale": "en-US",
+      "device": "iphone",
+      "shot": "keys",
+      "feature": "Keys generated on the device; the private half stays in the Keychain",
+      "evidence": "SSHKeyGenerationTests; TerminalUITests.testGeneratingAKeyShowsSomethingTheUserCanPasteIntoAServer",
+      "rawPath": "Marketing/AppStore/raw/iphone/en-US/keys.png",
+      "finalPath": "Marketing/AppStore/final/en-US/iphone-6.9/04-keys.png",
+      "capturedFromRunningApp": true,
+      "sensitiveDataCheck": "passed",
+      "authenticityCheck": "passed"
+    },
+    {
+      "order": 5,
+      "locale": "en-US",
+      "device": "iphone",
+      "shot": "vim",
+      "feature": "A full-screen program over the PTY: alternate screen, syntax colour, a cursor the remote program places",
+      "evidence": "TUIIntegrationTests (vim and less over a real SSH PTY)",
+      "rawPath": "Marketing/AppStore/raw/iphone/en-US/vim.png",
+      "finalPath": "Marketing/AppStore/final/en-US/iphone-6.9/05-vim.png",
+      "capturedFromRunningApp": true,
+      "sensitiveDataCheck": "passed",
+      "authenticityCheck": "passed"
+    },
+    {
+      "order": 6,
+      "locale": "en-US",
+      "device": "iphone",
+      "shot": "find",
+      "feature": "Search across the live session's scrollback, with a match count",
+      "evidence": "TerminalTextAccessTests (11); TerminalUITests find-bar test",
+      "rawPath": "Marketing/AppStore/raw/iphone/en-US/find.png",
+      "finalPath": "Marketing/AppStore/final/en-US/iphone-6.9/06-find.png",
+      "capturedFromRunningApp": true,
+      "sensitiveDataCheck": "passed",
+      "authenticityCheck": "passed"
+    },
+    {
+      "order": 1,
+      "locale": "en-US",
+      "device": "ipad",
+      "shot": "terminal",
+      "feature": "Interactive SSH session over a real PTY, with colour, scrollback and the accessory key row",
+      "evidence": "SSHIntegrationTests.interactivePTYSession; TUIIntegrationTests; captured against a real OpenSSH server",
+      "rawPath": "Marketing/AppStore/raw/ipad/en-US/terminal.png",
+      "finalPath": "Marketing/AppStore/final/en-US/ipad-13/01-terminal.png",
+      "capturedFromRunningApp": true,
+      "sensitiveDataCheck": "passed",
+      "authenticityCheck": "passed"
+    },
+    {
+      "order": 2,
+      "locale": "en-US",
+      "device": "ipad",
+      "shot": "sessions",
+      "feature": "Several concurrent SSH sessions, with the server platform detected over a second channel",
+      "evidence": "AppTests/HostPlatformTests; TerminalUITests.testConnectingDetectsTheServerPlatform",
+      "rawPath": "Marketing/AppStore/raw/ipad/en-US/sessions.png",
+      "finalPath": "Marketing/AppStore/final/en-US/ipad-13/02-sessions.png",
+      "capturedFromRunningApp": true,
+      "sensitiveDataCheck": "passed",
+      "authenticityCheck": "passed"
+    },
+    {
+      "order": 3,
+      "locale": "en-US",
+      "device": "ipad",
+      "shot": "host-key",
+      "feature": "Host-key verification: the fingerprint the server really presented, shown before the connection is made",
+      "evidence": "SSHIntegrationTests.trustOnFirstUseRecordsKey; app-integration-e2e.sh host-key prompt gate",
+      "rawPath": "Marketing/AppStore/raw/ipad/en-US/host-key.png",
+      "finalPath": "Marketing/AppStore/final/en-US/ipad-13/03-host-key.png",
+      "capturedFromRunningApp": true,
+      "sensitiveDataCheck": "passed",
+      "authenticityCheck": "passed"
+    },
+    {
+      "order": 4,
+      "locale": "en-US",
+      "device": "ipad",
+      "shot": "keys",
+      "feature": "Keys generated on the device; the private half stays in the Keychain",
+      "evidence": "SSHKeyGenerationTests; TerminalUITests.testGeneratingAKeyShowsSomethingTheUserCanPasteIntoAServer",
+      "rawPath": "Marketing/AppStore/raw/ipad/en-US/keys.png",
+      "finalPath": "Marketing/AppStore/final/en-US/ipad-13/04-keys.png",
+      "capturedFromRunningApp": true,
+      "sensitiveDataCheck": "passed",
+      "authenticityCheck": "passed"
+    },
+    {
+      "order": 5,
+      "locale": "en-US",
+      "device": "ipad",
+      "shot": "vim",
+      "feature": "A full-screen program over the PTY: alternate screen, syntax colour, a cursor the remote program places",
+      "evidence": "TUIIntegrationTests (vim and less over a real SSH PTY)",
+      "rawPath": "Marketing/AppStore/raw/ipad/en-US/vim.png",
+      "finalPath": "Marketing/AppStore/final/en-US/ipad-13/05-vim.png",
+      "capturedFromRunningApp": true,
+      "sensitiveDataCheck": "passed",
+      "authenticityCheck": "passed"
+    },
+    {
+      "order": 6,
+      "locale": "en-US",
+      "device": "ipad",
+      "shot": "find",
+      "feature": "Search across the live session's scrollback, with a match count",
+      "evidence": "TerminalTextAccessTests (11); TerminalUITests find-bar test",
+      "rawPath": "Marketing/AppStore/raw/ipad/en-US/find.png",
+      "finalPath": "Marketing/AppStore/final/en-US/ipad-13/06-find.png",
+      "capturedFromRunningApp": true,
+      "sensitiveDataCheck": "passed",
+      "authenticityCheck": "passed"
+    },
+    {
+      "order": 1,
+      "locale": "zh-Hans",
+      "device": "iphone",
+      "shot": "terminal",
+      "feature": "Interactive SSH session over a real PTY, with colour, scrollback and the accessory key row",
+      "evidence": "SSHIntegrationTests.interactivePTYSession; TUIIntegrationTests; captured against a real OpenSSH server",
+      "rawPath": "Marketing/AppStore/raw/iphone/zh-Hans/terminal.png",
+      "finalPath": "Marketing/AppStore/final/zh-Hans/iphone-6.9/01-terminal.png",
+      "capturedFromRunningApp": true,
+      "sensitiveDataCheck": "passed",
+      "authenticityCheck": "passed"
+    },
+    {
+      "order": 2,
+      "locale": "zh-Hans",
+      "device": "iphone",
+      "shot": "sessions",
+      "feature": "Several concurrent SSH sessions, with the server platform detected over a second channel",
+      "evidence": "AppTests/HostPlatformTests; TerminalUITests.testConnectingDetectsTheServerPlatform",
+      "rawPath": "Marketing/AppStore/raw/iphone/zh-Hans/sessions.png",
+      "finalPath": "Marketing/AppStore/final/zh-Hans/iphone-6.9/02-sessions.png",
+      "capturedFromRunningApp": true,
+      "sensitiveDataCheck": "passed",
+      "authenticityCheck": "passed"
+    },
+    {
+      "order": 3,
+      "locale": "zh-Hans",
+      "device": "iphone",
+      "shot": "host-key",
+      "feature": "Host-key verification: the fingerprint the server really presented, shown before the connection is made",
+      "evidence": "SSHIntegrationTests.trustOnFirstUseRecordsKey; app-integration-e2e.sh host-key prompt gate",
+      "rawPath": "Marketing/AppStore/raw/iphone/zh-Hans/host-key.png",
+      "finalPath": "Marketing/AppStore/final/zh-Hans/iphone-6.9/03-host-key.png",
+      "capturedFromRunningApp": true,
+      "sensitiveDataCheck": "passed",
+      "authenticityCheck": "passed"
+    },
+    {
+      "order": 4,
+      "locale": "zh-Hans",
+      "device": "iphone",
+      "shot": "keys",
+      "feature": "Keys generated on the device; the private half stays in the Keychain",
+      "evidence": "SSHKeyGenerationTests; TerminalUITests.testGeneratingAKeyShowsSomethingTheUserCanPasteIntoAServer",
+      "rawPath": "Marketing/AppStore/raw/iphone/zh-Hans/keys.png",
+      "finalPath": "Marketing/AppStore/final/zh-Hans/iphone-6.9/04-keys.png",
+      "capturedFromRunningApp": true,
+      "sensitiveDataCheck": "passed",
+      "authenticityCheck": "passed"
+    },
+    {
+      "order": 5,
+      "locale": "zh-Hans",
+      "device": "iphone",
+      "shot": "vim",
+      "feature": "A full-screen program over the PTY: alternate screen, syntax colour, a cursor the remote program places",
+      "evidence": "TUIIntegrationTests (vim and less over a real SSH PTY)",
+      "rawPath": "Marketing/AppStore/raw/iphone/zh-Hans/vim.png",
+      "finalPath": "Marketing/AppStore/final/zh-Hans/iphone-6.9/05-vim.png",
+      "capturedFromRunningApp": true,
+      "sensitiveDataCheck": "passed",
+      "authenticityCheck": "passed"
+    },
+    {
+      "order": 6,
+      "locale": "zh-Hans",
+      "device": "iphone",
+      "shot": "find",
+      "feature": "Search across the live session's scrollback, with a match count",
+      "evidence": "TerminalTextAccessTests (11); TerminalUITests find-bar test",
+      "rawPath": "Marketing/AppStore/raw/iphone/zh-Hans/find.png",
+      "finalPath": "Marketing/AppStore/final/zh-Hans/iphone-6.9/06-find.png",
+      "capturedFromRunningApp": true,
+      "sensitiveDataCheck": "passed",
+      "authenticityCheck": "passed"
+    },
+    {
+      "order": 1,
+      "locale": "zh-Hans",
+      "device": "ipad",
+      "shot": "terminal",
+      "feature": "Interactive SSH session over a real PTY, with colour, scrollback and the accessory key row",
+      "evidence": "SSHIntegrationTests.interactivePTYSession; TUIIntegrationTests; captured against a real OpenSSH server",
+      "rawPath": "Marketing/AppStore/raw/ipad/zh-Hans/terminal.png",
+      "finalPath": "Marketing/AppStore/final/zh-Hans/ipad-13/01-terminal.png",
+      "capturedFromRunningApp": true,
+      "sensitiveDataCheck": "passed",
+      "authenticityCheck": "passed"
+    },
+    {
+      "order": 2,
+      "locale": "zh-Hans",
+      "device": "ipad",
+      "shot": "sessions",
+      "feature": "Several concurrent SSH sessions, with the server platform detected over a second channel",
+      "evidence": "AppTests/HostPlatformTests; TerminalUITests.testConnectingDetectsTheServerPlatform",
+      "rawPath": "Marketing/AppStore/raw/ipad/zh-Hans/sessions.png",
+      "finalPath": "Marketing/AppStore/final/zh-Hans/ipad-13/02-sessions.png",
+      "capturedFromRunningApp": true,
+      "sensitiveDataCheck": "passed",
+      "authenticityCheck": "passed"
+    },
+    {
+      "order": 3,
+      "locale": "zh-Hans",
+      "device": "ipad",
+      "shot": "host-key",
+      "feature": "Host-key verification: the fingerprint the server really presented, shown before the connection is made",
+      "evidence": "SSHIntegrationTests.trustOnFirstUseRecordsKey; app-integration-e2e.sh host-key prompt gate",
+      "rawPath": "Marketing/AppStore/raw/ipad/zh-Hans/host-key.png",
+      "finalPath": "Marketing/AppStore/final/zh-Hans/ipad-13/03-host-key.png",
+      "capturedFromRunningApp": true,
+      "sensitiveDataCheck": "passed",
+      "authenticityCheck": "passed"
+    },
+    {
+      "order": 4,
+      "locale": "zh-Hans",
+      "device": "ipad",
+      "shot": "keys",
+      "feature": "Keys generated on the device; the private half stays in the Keychain",
+      "evidence": "SSHKeyGenerationTests; TerminalUITests.testGeneratingAKeyShowsSomethingTheUserCanPasteIntoAServer",
+      "rawPath": "Marketing/AppStore/raw/ipad/zh-Hans/keys.png",
+      "finalPath": "Marketing/AppStore/final/zh-Hans/ipad-13/04-keys.png",
+      "capturedFromRunningApp": true,
+      "sensitiveDataCheck": "passed",
+      "authenticityCheck": "passed"
+    },
+    {
+      "order": 5,
+      "locale": "zh-Hans",
+      "device": "ipad",
+      "shot": "vim",
+      "feature": "A full-screen program over the PTY: alternate screen, syntax colour, a cursor the remote program places",
+      "evidence": "TUIIntegrationTests (vim and less over a real SSH PTY)",
+      "rawPath": "Marketing/AppStore/raw/ipad/zh-Hans/vim.png",
+      "finalPath": "Marketing/AppStore/final/zh-Hans/ipad-13/05-vim.png",
+      "capturedFromRunningApp": true,
+      "sensitiveDataCheck": "passed",
+      "authenticityCheck": "passed"
+    },
+    {
+      "order": 6,
+      "locale": "zh-Hans",
+      "device": "ipad",
+      "shot": "find",
+      "feature": "Search across the live session's scrollback, with a match count",
+      "evidence": "TerminalTextAccessTests (11); TerminalUITests find-bar test",
+      "rawPath": "Marketing/AppStore/raw/ipad/zh-Hans/find.png",
+      "finalPath": "Marketing/AppStore/final/zh-Hans/ipad-13/06-find.png",
+      "capturedFromRunningApp": true,
+      "sensitiveDataCheck": "passed",
+      "authenticityCheck": "passed"
+    }
+  ],
+  "validation": {
+    "outcome": "passed",
+    "ranAt": "2026-09-07T00:02:28+00:00",
+    "checks": [
+      "pixel size against Apple's accepted list",
+      "PNG, 8-bit, no alpha channel",
+      "the capture inside each canvas keeps its own aspect ratio",
+      "both localizations carry the same images in the same order",
+      "metadata field lengths",
+      "no competitor named, no unverifiable absolute claim",
+      "no capability the audit marked not advertisable",
+      "no private key, token, JWT or email address in the copy"
+    ]
+  }
+}

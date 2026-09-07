@@ -118,13 +118,16 @@ struct SettingsView: View {
 
                 Section("Commands") {
                     NavigationLink("Snippets") { SnippetLibraryView() }
+                        .accessibilityIdentifier("settings-snippets")
                 }
 
                 AssistantSettingsSection()
 
                 Section {
                     NavigationLink("Keys") { KeyManagementView() }
+                        .accessibilityIdentifier("settings-keys")
                     NavigationLink("Known hosts") { KnownHostsView() }
+                        .accessibilityIdentifier("settings-known-hosts")
                     Picker("Clear copied text after", selection: $settings.clipboardExpirySeconds) {
                         Text("Never").tag(0)
                         Text("30 seconds").tag(30)

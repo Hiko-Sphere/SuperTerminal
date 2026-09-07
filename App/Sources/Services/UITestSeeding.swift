@@ -59,6 +59,41 @@ enum UITestSeeding {
         )
     }
 
+    /// Extra connections for a run that needs a populated list rather than one row —
+    /// the App Store capture run (`Marketing/AppStore/scripts/capture.sh`).
+    ///
+    /// Each entry must name a server the harness actually started, because every one of
+    /// them is opened for real during that run. The value is a JSON array of
+    /// `{"name", "hostname", "port", "username"}`; they share the seeded key, since the
+    /// harness authorises the same public key on every fixture.
+    static var extraHostsFromEnvironment: [Host] {
+        guard let json = ProcessInfo.processInfo.environment["ST_UITEST_HOSTS"],
+              let data = json.data(using: .utf8),
+              let entries = try? JSONDecoder().decode([ExtraHost].self, from: data)
+        else { return [] }
+        let keyID = UUID(uuidString: "00000000-0000-4000-A000-000000000001")!
+        return entries.enumerated().map { index, entry in
+            Host(
+                // Deterministic, so a relaunch finds the same connections rather than
+                // duplicates of them.
+                id: UUID(uuidString: String(format: "00000000-0000-4000-A000-0000000001%02X", index))!,
+                name: entry.name,
+                hostname: entry.hostname,
+                port: entry.port,
+                username: entry.username,
+                transport: .directTCP,
+                credentials: [.privateKey(id: keyID)]
+            )
+        }
+    }
+
+    private struct ExtraHost: Decodable {
+        let name: String
+        let hostname: String
+        let port: Int
+        let username: String
+    }
+
     /// Applies the seed, replacing anything already stored so runs are repeatable.
     /// A run that asks for a reset, with or without an SSH seed. Preferences, snippets,
     /// hosts and the accepted-terms version all outlive the app, so a run that changes
@@ -92,10 +127,18 @@ enum UITestSeeding {
         if ProcessInfo.processInfo.environment["ST_UITEST_KEEP_RESTORATION"] != "1" {
             container.restoration.clear()
         }
+        // The terminal theme a capture run asks for. Nothing more than the preference the
+        // Appearance settings write, set before the first screen is drawn so a run does
+        // not photograph the change happening.
+        if let theme = ProcessInfo.processInfo.environment["ST_UITEST_TERMINAL_THEME"] {
+            container.settings.followSystemAppearance = false
+            container.settings.themeID = theme
+        }
         try? container.vault.deleteEverything()
         guard let seed = seedFromEnvironment else { return }
         try? container.vault.storePrivateKey(seed.privateKeyPEM, id: seed.keyID, requireBiometrics: false)
         container.hostStore.add(seed.host)
+        for host in extraHostsFromEnvironment { container.hostStore.add(host) }
         if let screen = seed.screen { container.screenStore.add(screen) }
     }
 
