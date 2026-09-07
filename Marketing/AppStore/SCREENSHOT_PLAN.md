@@ -153,6 +153,6 @@ badge, no logo other than the app's own — which appears only where the app its
 it. Everything the app rendered keeps the colour the app gave it; the black-and-white rule
 is for the canvas around it, never for the screenshot inside it.
 
-Layout is identical in structure across all twenty-four images — index, title, subtitle,
+Layout is identical in structure across all thirty-six images — index, title, subtitle,
 rule, screenshot — but the type is set to the caption, not poured into a fixed box, so a
 short title and a long one both sit right.

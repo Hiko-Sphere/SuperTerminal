@@ -1,6 +1,6 @@
 # App Store assets
 
-Everything needed to put ApexTerminal on the App Store: the screenshots, the copy in two
+Everything needed to put Apex Terminal on the App Store: the screenshots, the copy in two
 languages, the audit that decides what may be claimed, and the scripts that regenerate all
 of it from scratch.
 
@@ -18,7 +18,7 @@ Marketing/AppStore/scripts/validate.sh
 ```
 
 That builds the app, starts three containerised OpenSSH servers, boots the two simulators,
-captures 10 raw screens on each of four passes (two devices × two languages), lays the
+captures 10 raw screens on each of six passes (three device sizes × two languages), lays the
 published six out on the store canvas, records what came from which build, and then checks
 the result against Apple's rules and this project's own.
 
@@ -27,6 +27,7 @@ Prerequisites: Xcode 26.6 with the iOS 26.5 simulator runtime, and Docker runnin
 | Variable | Default | What it changes |
 | --- | --- | --- |
 | `ST_SHOT_IPHONE` | `iPhone 17 Pro Max` | The 6.9" device. Must produce an accepted size natively |
+| `ST_SHOT_IPHONE65` | `iPhone 14 Plus` | The device for App Store Connect's 6.5" slot — 1284 × 2778 natively. Created by the script if it is not installed |
 | `ST_SHOT_IPAD` | `iPad Air 13-inch (M4)` | The 13" device. The Air rather than the Pro so a second `xcodebuild test` on this machine does not fight it for the accessibility server |
 | `ST_SHOT_LOCALES` | `en-US zh-Hans` | Which localizations to capture |
 | `ST_SHOT_THEME` | `midnight` | The terminal theme the app is set to for the run |
@@ -52,8 +53,8 @@ Marketing/AppStore/
 │   ├── FEATURE_OVERVIEW.md      a product introduction for a site or a release post
 │   ├── app-review-notes.en-US.md   the block to paste into App Review Information
 │   └── app-review-notes.zh-Hans.md the same content for the project's own review
-├── raw/{iphone,ipad}/{en-US,zh-Hans}/    untouched captures, 10 per pass
-├── final/{en-US,zh-Hans}/{iphone-6.9,ipad-13}/   the 6 images to upload, in order
+├── raw/{iphone,iphone65,ipad}/{en-US,zh-Hans}/   untouched captures, 10 per pass
+├── final/{en-US,zh-Hans}/{iphone-6.9,iphone-6.5,ipad-13}/   the 6 images per slot, in order
 ├── preview/                     contact sheets, for looking at the set as a set
 ├── build/                       logs, result bundles, the run's throwaway SSH key
 └── scripts/
@@ -69,7 +70,8 @@ Marketing/AppStore/
 ```
 
 `build/` and `raw/` are inputs to the final files, not deliverables; the files to upload
-are the twenty-four PNGs under `final/`.
+are the thirty-six PNGs under `final/` — six images for each of three device sizes in each
+of two languages.
 
 ## How the screenshots are real
 

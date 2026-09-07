@@ -31,6 +31,12 @@ IPHONE_NAME="${ST_SHOT_IPHONE:-iPhone 17 Pro Max}"
 # two `xcodebuild test` runs on one device make the accessibility server drop out
 # mid-test. Both produce an accepted iPad 13" size natively.
 IPAD_NAME="${ST_SHOT_IPAD:-iPad Air 13-inch (M4)}"
+# App Store Connect's iPhone 6.5" slot takes 1242×2688 or 1284×2778. An iPhone 14 Plus
+# produces 1284×2778 natively, which is the sharper of the two and needs no resampling —
+# the 6.9" captures cannot be scaled into it, because the two are not the same shape.
+IPHONE65_NAME="${ST_SHOT_IPHONE65:-iPhone 14 Plus}"
+IPHONE65_TYPE=com.apple.CoreSimulator.SimDeviceType.iPhone-14-Plus
+IPHONE65_RUNTIME="${ST_SHOT_IPHONE65_RUNTIME:-com.apple.CoreSimulator.SimRuntime.iOS-26-5}"
 LOCALES=(${ST_SHOT_LOCALES:-en-US zh-Hans})
 IMAGE=apexterminal-shots-fixture:1
 
@@ -202,9 +208,18 @@ xcodebuild build-for-testing \
 
 start_fixtures
 
+# The 6.5" device is not part of a default Xcode install, so it is made if it is missing
+# rather than assumed. Nothing else about the run differs: same app, same servers, same
+# captures — only the panel it is photographed on.
+if ! xcrun simctl list devices available | grep -q "^ *$IPHONE65_NAME "; then
+  say "Creating the $IPHONE65_NAME simulator"
+  xcrun simctl create "$IPHONE65_NAME" "$IPHONE65_TYPE" "$IPHONE65_RUNTIME" >/dev/null
+fi
+
 for locale in "${LOCALES[@]}"; do
-  run_pass iphone "$IPHONE_NAME" portrait  "$locale"
-  run_pass ipad   "$IPAD_NAME"   landscape "$locale"
+  run_pass iphone   "$IPHONE_NAME"   portrait  "$locale"
+  run_pass iphone65 "$IPHONE65_NAME" portrait  "$locale"
+  run_pass ipad     "$IPAD_NAME"     landscape "$locale"
 done
 
 say "Recording what was captured"

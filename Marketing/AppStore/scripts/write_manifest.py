@@ -103,6 +103,7 @@ def main() -> int:
         },
         "devices": {
             "iphone": {"model": "iPhone 17 Pro Max", "size": "iPhone 6.9\"", "pixels": "1320x2868", "orientation": "portrait"},
+            "iphone65": {"model": "iPhone 14 Plus", "size": "iPhone 6.5\" slot", "pixels": "1284x2778", "orientation": "portrait"},
             "ipad": {"model": "iPad Air 13-inch (M4)", "size": "iPad 13\"", "pixels": "2732x2048", "orientation": "landscape"},
         },
         "fixture": {
@@ -115,7 +116,7 @@ def main() -> int:
     }
 
     for locale in ("en-US", "zh-Hans"):
-        for device, folder in (("iphone", "iphone-6.9"), ("ipad", "ipad-13")):
+        for device, folder in (("iphone", "iphone-6.9"), ("iphone65", "iphone-6.5"), ("ipad", "ipad-13")):
             for index, name in enumerate(order[locale], start=1):
                 raw = OUT / "raw" / device / locale / f"{name}.png"
                 final = OUT / "final" / locale / folder / f"{index:02d}-{name}.png"

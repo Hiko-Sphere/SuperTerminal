@@ -46,6 +46,16 @@ struct Layout {
         ruleGap: 56, shotWidth: 1040
     )
 
+    /// App Store Connect's iPhone 6.5" slot. The same proportions as the 6.9" canvas,
+    /// scaled to the shorter panel rather than re-tuned, so the two sets read as one.
+    static let iphone65 = Layout(
+        width: 1284, height: 2778, margin: 136,
+        indexTop: 145, indexSize: 33,
+        titleTop: 219, titleSize: 82, titleLeading: 97,
+        subtitleGap: 29, subtitleSize: 37, subtitleLeading: 50,
+        ruleGap: 54, shotWidth: 1012
+    )
+
     static let ipad = Layout(
         width: 2732, height: 2048, margin: 188,
         indexTop: 120, indexSize: 34,
@@ -324,6 +334,7 @@ let shotlist = try JSONDecoder().decode(
 
 let devices: [(key: String, folder: String, layout: Layout, isPad: Bool)] = [
     ("iphone", "iphone-6.9", .iphone, false),
+    ("iphone65", "iphone-6.5", .iphone65, false),
     ("ipad", "ipad-13", .ipad, true),
 ]
 
@@ -380,10 +391,11 @@ for (locale, shots) in shotlist.sorted(by: { $0.key < $1.key }) {
         ))?.filter { $0.pathExtension == "png" }.sorted { $0.lastPathComponent < $1.lastPathComponent } ?? []
     }
     let phone = finals("iphone-6.9")
+    let phone65 = finals("iphone-6.5")
     let pad = finals("ipad-13")
     if !phone.isEmpty {
         contactSheet(
-            images: phone + pad, columns: phone.count, cellWidth: 440,
+            images: phone + phone65 + pad, columns: phone.count, cellWidth: 440,
             to: root.appendingPathComponent("preview/\(locale)-contact-sheet.png")
         )
     }

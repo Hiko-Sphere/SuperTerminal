@@ -24,6 +24,20 @@ these without notice, and a stale number here is a rejection there.
 | Portrait | 1260 × 2736 · 1290 × 2796 · **1320 × 2868** |
 | Landscape | 2736 × 1260 · 2796 × 1290 · 2868 × 1320 |
 
+**iPhone 6.5-inch display.** App Store Connect still presents this slot, and it accepts a
+6.7-inch image in it. When the slot is the one being filled, its own error message names
+the sizes it will take:
+
+| Orientation | Accepted pixel sizes |
+| --- | --- |
+| Portrait | 1242 × 2688 · **1284 × 2778** |
+| Landscape | 2688 × 1242 · 2778 × 1284 |
+
+A 6.9-inch capture cannot be resized into this slot: 1320 × 2868 is 0.4603 : 1 and
+1284 × 2778 is 0.4622 : 1, so reaching one from the other means stretching one axis more
+than the other. The set is captured again on a device that produces 1284 × 2778 natively
+instead.
+
 **iPad 13-inch display** — required for iPad apps.
 
 | Orientation | Accepted pixel sizes |
@@ -45,6 +59,7 @@ no resampling:
 | Device | `xcrun simctl io … screenshot` output | Apple size it matches |
 | --- | --- | --- |
 | iPhone 17 Pro Max (iOS 26.5) | 1320 × 2868 | iPhone 6.9" portrait |
+| iPhone 14 Plus (iOS 26.5) | 1284 × 2778 | iPhone 6.5" slot, portrait |
 | iPad Air 13-inch (M4) (iOS 26.5) | 2048 × 2732 | iPad 13" portrait |
 | iPad Air 13-inch (M4), landscape | 2732 × 2048 | iPad 13" landscape |
 
@@ -81,7 +96,7 @@ nothing that implies an affiliation that does not exist.
 | --- | --- |
 | 2.3 / 2.3.1 | Every claim is traced to running code and a passing test in [`FEATURE_AUDIT.md`](FEATURE_AUDIT.md). Anything not proven end to end is marked *not advertisable* and appears nowhere in the copy, the keywords or the screenshots. |
 | 2.3.3 | Every screenshot is a real capture of the running app, mid-session, against a real OpenSSH server. No mock-ups, no redrawn interfaces, no composited fake output. The capture script is in `scripts/capture.sh` and is repeatable. |
-| 2.3.7 | Name 25 characters (`ApexTerminal: SSH Client`), subtitle 25; keywords carry no competitor names, no trademarks, no prices. Claims in the subtitle are ones a reviewer can reproduce in the app. |
+| 2.3.7 | Name 25 characters (`Apex Terminal: SSH Client`), subtitle 25; keywords carry no competitor names, no trademarks, no prices. Claims in the subtitle are ones a reviewer can reproduce in the app. |
 | 2.3.8 | Nothing beyond a terminal, a connection list and a settings form appears in any image. |
 | 5.2.1 | No Cloudflare logo, no third-party marks, no Apple hardware imagery, no App Store badges. The word "Cloudflare" is absent from the shipped copy — see [`FEATURE_AUDIT.md`](FEATURE_AUDIT.md) for why. |
 

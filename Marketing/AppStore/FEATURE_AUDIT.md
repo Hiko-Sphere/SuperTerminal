@@ -18,7 +18,7 @@ keeps them apart too, and throws away everything on the wrong side of the line.
 
 | | |
 | --- | --- |
-| Product name | ApexTerminal |
+| Product name | Apex Terminal |
 | Bundle identifier | `dev.apexterminal.app` |
 | Marketing version / build | `0.1.0` / `1` |
 | Platforms | iOS, iPadOS — `TARGETED_DEVICE_FAMILY = "1,2"` |

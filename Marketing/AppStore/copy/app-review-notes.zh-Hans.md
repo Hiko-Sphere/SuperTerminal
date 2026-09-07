@@ -9,7 +9,7 @@ App Store Connect 的 **App Review Information → Notes** 只接受一份文本
 ## 提交给审核的内容（对应英文方框，逐段对照）
 
 **这是什么应用。**
-ApexTerminal 是一个 SSH 客户端。它在用户自己已有的服务器上打开交互式 SSH 会话，分配 PTY，
+Apex Terminal 是一个 SSH 客户端。它在用户自己已有的服务器上打开交互式 SSH 会话，分配 PTY，
 并用内置的终端模拟器渲染输出。用户在会话里看到的一切，都来自他们自己的远程主机；应用本身
 不执行任何命令，也不通过我们的任何服务器中转。
 
@@ -65,7 +65,7 @@ Face ID / Touch ID（`NSFaceIDUsageDescription`）只用于两件由用户自己
 
 ## 给提交者的备注（不提交给审核）
 
-* **截图来源。** 24 张最终图全部来自这个构建在模拟器中的运行，由应用自身界面驱动，连接的是
+* **截图来源。** 36 张最终图全部来自这个构建在模拟器中的运行，由应用自身界面驱动，连接的是
   容器里三台隔离的真实 OpenSSH 服务器。画面上的账号与主机名（`deploy`、`edge-01`、
   `db-primary`、`build-runner`）都是虚构的，地址位于 RFC 6761 保留的 `*.localhost` 之下。
   详见 [`FEATURE_AUDIT.md`](../FEATURE_AUDIT.md) 第 7 节。

@@ -29,6 +29,8 @@ from pathlib import Path
 # on 2026-09-06. See APPLE_REQUIREMENTS.md.
 ACCEPTED = {
     "iphone-6.9": {(1260, 2736), (1290, 2796), (1320, 2868), (2736, 1260), (2796, 1290), (2868, 1320)},
+    # App Store Connect's 6.5" slot, which takes a 6.7" image too.
+    "iphone-6.5": {(1242, 2688), (2688, 1242), (1284, 2778), (2778, 1284)},
     "ipad-13": {(2064, 2752), (2048, 2732), (2752, 2064), (2732, 2048)},
 }
 
@@ -140,7 +142,7 @@ def decodes(path: Path) -> bool:
 
 def check_images(root: Path, shotlist: dict) -> None:
     for locale, shots in shotlist.items():
-        for folder, key in (("iphone-6.9", "iphone"), ("ipad-13", "ipad")):
+        for folder, key in (("iphone-6.9", "iphone"), ("iphone-6.5", "iphone65"), ("ipad-13", "ipad")):
             directory = root / "final" / locale / folder
             if not directory.is_dir():
                 fail(f"{locale}/{folder}: no final images at all")
@@ -176,9 +178,9 @@ def check_images(root: Path, shotlist: dict) -> None:
     # The two listings have to tell the same story in the same order.
     counts = {}
     for locale in shotlist:
-        for folder in ("iphone-6.9", "ipad-13"):
+        for folder in ("iphone-6.9", "iphone-6.5", "ipad-13"):
             counts[(locale, folder)] = len(list((root / "final" / locale / folder).glob("*.png")))
-    for folder in ("iphone-6.9", "ipad-13"):
+    for folder in ("iphone-6.9", "iphone-6.5", "ipad-13"):
         sizes = {locale: counts[(locale, folder)] for locale in shotlist}
         if len(set(sizes.values())) > 1:
             fail(f"{folder}: localizations have different numbers of screenshots: {sizes}")
@@ -275,7 +277,10 @@ def check_copy(root: Path) -> None:
             keywords = values.get("Keywords", "")
             if keywords:
                 terms = [t.strip() for t in keywords.split(",")]
-                if any(t.lower() == "apexterminal" for t in terms):
+                # Spaces removed before comparing: the name is displayed as two words,
+                # and "apex terminal" in the keyword list is the same wasted field as
+                # "apexterminal" would be.
+                if any(t.lower().replace(" ", "") == "apexterminal" for t in terms):
                     fail(f"{name}: the app's own name is repeated in the keywords")
                 if len(terms) != len(set(t.lower() for t in terms)):
                     fail(f"{name}: a keyword is repeated")

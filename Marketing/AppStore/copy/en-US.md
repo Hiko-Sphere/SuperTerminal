@@ -11,7 +11,7 @@ Character counts are measured by the validator against the fenced blocks, not es
 ### App Name
 
 ```
-ApexTerminal: SSH Client
+Apex Terminal: SSH Client
 ```
 
 ### Subtitle
@@ -35,9 +35,9 @@ ssh,terminal,shell,server,sysadmin,devops,console,ed25519,keychain,xterm,vt100,s
 ### Description
 
 ```
-ApexTerminal is an SSH client for iPhone and iPad. It opens a real interactive session on a server you already have, allocates a real PTY, and draws what the far end sends with its own terminal emulator — no web view, no relay of ours in the middle, and no account to create.
+Apex Terminal is an SSH client for iPhone and iPad. It opens a real interactive session on a server you already have, allocates a real PTY, and draws what the far end sends with its own terminal emulator — no web view, no relay of ours in the middle, and no account to create.
 
-Commands you type run on your own remote machines. ApexTerminal is the terminal; the work happens on the servers you connect to.
+Commands you type run on your own remote machines. Apex Terminal is the terminal; the work happens on the servers you connect to.
 
 A REAL TERMINAL
 Its own VT/ANSI emulator, written for this app. 256 colours, alternate screen, mouse reporting, and correct cell widths for CJK, emoji, combining marks and flags — checked against the Unicode 17.0.0 tables. Editors and pagers behave: vim and less are run over a real SSH connection by the test suite on every change, including a resize in the middle of an edit.
@@ -46,7 +46,7 @@ MORE THAN ONE MACHINE
 Open several servers at once. Sessions are independent and switching between them costs nothing. Each connection reports what the server is running — macOS, Linux, one of the BSDs, Windows — detected over a channel of its own, and overridable by hand when you know better.
 
 HOST KEYS YOU ARE ASKED ABOUT
-The first time you reach a server, ApexTerminal shows you the key it presented and waits. If a key later changes, you are told plainly and the connection stops until you decide — it is never accepted quietly. Known hosts are yours to inspect and to remove.
+The first time you reach a server, Apex Terminal shows you the key it presented and waits. If a key later changes, you are told plainly and the connection stops until you decide — it is never accepted quietly. Known hosts are yours to inspect and to remove.
 
 KEYS THAT STAY ON THE DEVICE
 Generate Ed25519 or ECDSA P-256 keys in the app, copy the public half to your server, and leave the private half in the Keychain, where the app never displays it and never sends it anywhere. A key can be put behind Face ID or Touch ID when you create it. Existing OpenSSH keys import, including passphrase-protected ones. RSA keys you already have keep working (rsa-sha2-256 and rsa-sha2-512; SHA-1 is refused on purpose).
@@ -65,7 +65,7 @@ There is no account, no telemetry and no analytics. Your connections, keys and s
 
 English, Simplified Chinese and Traditional Chinese throughout. Terminal output is never translated.
 
-Requires iOS or iPadOS 17.0 or later. You supply the servers; ApexTerminal connects to them.
+Requires iOS or iPadOS 17.0 or later. You supply the servers; Apex Terminal connects to them.
 ```
 
 ---
@@ -113,7 +113,7 @@ the app does. The project's threat model is in `SECURITY.md`.
 
 ## Short description, for a support page
 
-> ApexTerminal is a native SSH client for iPhone and iPad. It opens a real interactive
+> Apex Terminal is a native SSH client for iPhone and iPad. It opens a real interactive
 > session on your own servers — a genuine PTY, its own terminal emulator, searchable
 > scrollback — and keeps your private keys in the device's Keychain. There is no account
 > and no telemetry.
@@ -124,7 +124,7 @@ the app does. The project's threat model is in `SECURITY.md`.
 > summary for a release post or a support page. The What's New field should be left empty
 > for version 1, or filled with Apple's own suggested first-release text.
 
-ApexTerminal 0.1.0 is the first release. It includes:
+Apex Terminal 0.1.0 is the first release. It includes:
 
 * SSH over direct TCP with Ed25519, ECDSA P-256 and RSA (SHA-2) key authentication,
   passphrase-protected keys, and passwords;
