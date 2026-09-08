@@ -71,6 +71,26 @@ final class TerminalRenderView: UIView {
         didSet { if focusedMatch != oldValue { setNeedsDisplay() } }
     }
 
+    /// Text an input method is still assembling, drawn under the cursor with the
+    /// underline that marks it as uncommitted (D-039). Empty in every language that does
+    /// not compose.
+    var composition: String = "" {
+        didSet { if composition != oldValue { setNeedsDisplay() } }
+    }
+
+    /// Where the cursor is, for positioning an input method's candidate list.
+    func cursorOriginForComposition() -> (origin: CGPoint, width: CGFloat, height: CGFloat)? {
+        guard let screen else { return nil }
+        return (
+            CGPoint(
+                x: CGFloat(screen.cursor.column) * metrics.cellWidth,
+                y: CGFloat(screen.cursor.row) * metrics.cellHeight
+            ),
+            metrics.cellWidth,
+            metrics.cellHeight
+        )
+    }
+
     private(set) var metrics = Metrics(
         cellWidth: 8,
         cellHeight: 16,
@@ -242,6 +262,41 @@ final class TerminalRenderView: UIView {
         if showsCursor, scrollbackOffset == 0 {
             drawCursor(screen: screen, in: context)
         }
+        if !composition.isEmpty, scrollbackOffset == 0 {
+            drawComposition(screen: screen, in: context)
+        }
+    }
+
+    /// Draws what an input method is still assembling, over the cells the cursor sits on
+    /// and underlined (D-039). Without this a Chinese user types blind: the syllables have
+    /// not been sent to the shell, so the shell cannot echo them, so nothing appears.
+    private func drawComposition(screen: TerminalScreen, in context: CGContext) {
+        let x = CGFloat(screen.cursor.column) * metrics.cellWidth
+        let top = CGFloat(screen.cursor.row) * metrics.cellHeight
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: regularFont,
+            .foregroundColor: theme.foreground,
+        ]
+        let line = CTLineCreateWithAttributedString(
+            NSAttributedString(string: composition, attributes: attributes)
+        )
+        let width = max(CGFloat(CTLineGetTypographicBounds(line, nil, nil, nil)), metrics.cellWidth)
+
+        // The composition covers whatever the shell last drew there; painting the
+        // background first stops the two overlapping into an unreadable smear.
+        context.setFillColor(theme.background.cgColor)
+        context.fill(CGRect(x: x, y: top, width: width, height: metrics.cellHeight))
+
+        context.textPosition = CGPoint(x: x, y: bounds.height - top - metrics.baselineOffset)
+        CTLineDraw(line, context)
+
+        // The underline is the platform convention for text that has not been committed.
+        context.setStrokeColor(theme.foreground.cgColor)
+        context.setLineWidth(1)
+        let underline = bounds.height - top - metrics.cellHeight + 1
+        context.move(to: CGPoint(x: x, y: underline))
+        context.addLine(to: CGPoint(x: x + width, y: underline))
+        context.strokePath()
     }
 
     /// The rows to draw, taking the scrollback offset into account.

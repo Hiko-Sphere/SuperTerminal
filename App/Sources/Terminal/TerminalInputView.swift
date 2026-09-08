@@ -8,6 +8,7 @@ import UIKit
 /// and each has to be mapped onto the right escape sequence — including the ones that
 /// change meaning depending on the mode the remote program has set.
 final class TerminalInputView: UIView, UIKeyInput {
+
     /// Called with bytes destined for the remote host.
     var onInput: ((Data) -> Void)?
     /// Called when the user scrolls the scrollback.
@@ -133,12 +134,59 @@ final class TerminalInputView: UIView, UIKeyInput {
         onGridSizeChange?(grid.columns, grid.rows)
     }
 
+    // MARK: - Input method composition (D-039)
+
+    /// What an input method is still assembling. Empty whenever nothing is being composed,
+    /// which is every keystroke in English.
+    var composition = TerminalComposition()
+    /// Held weakly by UIKit's contract; it is the system's object, not ours.
+    weak var textInputDelegate: UITextInputDelegate?
+    lazy var compositionTokenizer: UITextInputTokenizer = UITextInputStringTokenizer(textInput: self)
+
+    /// Sends whatever the input method has committed and clears the buffer.
+    func commitComposition() {
+        let committed = composition.take()
+        refreshComposition()
+        guard !committed.isEmpty else { return }
+        send(Data(committed.utf8))
+    }
+
+    /// Tells the renderer what to draw under the cursor, and the system that the document
+    /// changed so the candidate list can follow the caret.
+    func refreshComposition() {
+        renderView.composition = composition.text
+    }
+
+    /// Where the caret sits, in this view's coordinates, `offset` characters into the
+    /// composition. The candidate list positions itself against this.
+    func compositionCaretRect(atCharacterOffset offset: Int) -> CGRect {
+        guard let cell = compositionOriginAndCellWidth() else { return .zero }
+        return CGRect(
+            x: cell.origin.x + CGFloat(offset) * cell.width,
+            y: cell.origin.y,
+            width: 2,
+            height: cell.height
+        )
+    }
+
+    /// The cursor cell's origin and the cell size, or nil before the first frame arrives.
+    func compositionOriginAndCellWidth() -> (origin: CGPoint, width: CGFloat, height: CGFloat)? {
+        renderView.cursorOriginForComposition()
+    }
+
     // MARK: - UIKeyInput
 
-    var hasText: Bool { true }
+    var hasText: Bool { !composition.isEmpty }
 
-    /// The software keyboard sends text through here, one insertion at a time.
+    /// The software keyboard sends text through here, one insertion at a time. An input
+    /// method that has finished composing also arrives here, so anything still marked is
+    /// committed first — otherwise the composition would be sent after the text that
+    /// replaced it.
     func insertText(_ text: String) {
+        if !composition.isEmpty {
+            composition = TerminalComposition()
+            refreshComposition()
+        }
         if controlLatched, let scalar = text.unicodeScalars.first,
            let control = Self.controlByte(for: scalar)
         {
@@ -162,6 +210,13 @@ final class TerminalInputView: UIView, UIKeyInput {
     }
 
     func deleteBackward() {
+        // While an input method is composing, backspace belongs to the composition: it
+        // removes a syllable from the buffer rather than a character from the shell, which
+        // is not looking at the buffer at all.
+        if composition.deleteBackward() {
+            refreshComposition()
+            return
+        }
         // Terminals overwhelmingly expect DEL rather than BS for the backspace key; this
         // matches the `erase = ^?` default that OpenSSH negotiates.
         send(Data([0x7F]))
