@@ -99,3 +99,27 @@ struct SFTPEntry: Identifiable, Equatable {
         return slash == trimmed.startIndex ? "/" : String(trimmed[trimmed.startIndex ..< slash])
     }
 }
+
+import CoreTransferable
+import UniformTypeIdentifiers
+
+/// A remote file being dragged out (D-043).
+///
+/// The bytes are on the server, so the drag carries a promise rather than data: the system
+/// asks for the file only when something accepts the drop, and the download starts then.
+/// Exporting eagerly would fetch every file a person merely began to drag.
+struct FileDragItem: Transferable {
+    let entry: SFTPEntry
+    let session: SFTPSession
+
+    static var transferRepresentation: some TransferRepresentation {
+        FileRepresentation(exportedContentType: .data) { item in
+            let destination = FileManager.default.temporaryDirectory
+                .appendingPathComponent(UUID().uuidString, isDirectory: true)
+            try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: true)
+            let url = destination.appendingPathComponent(item.entry.name)
+            try await item.session.fetch(item.entry, to: url)
+            return SentTransferredFile(url)
+        }
+    }
+}

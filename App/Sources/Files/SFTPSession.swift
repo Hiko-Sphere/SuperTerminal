@@ -24,6 +24,10 @@ final class SFTPSession {
     private(set) var isLoading = false
     private(set) var transfers: [FileTransfer] = []
     private(set) var operationError: STError?
+    /// A decision only the user can make — an unknown host key, a password, a key
+    /// passphrase — raised while the connection waits (D-043). Until this existed, a
+    /// connection needing one was refused outright rather than asked.
+    private(set) var pendingPrompt: TerminalSession.PendingPrompt?
 
     var showsHiddenFiles = false { didSet { rebuild() } }
     var sort: SFTPEntry.Sort = .name { didSet { rebuild() } }
@@ -35,15 +39,33 @@ final class SFTPSession {
     private var client: SFTPClient?
     private var connection: SSHConnection?
     private let connector: HostConnector
+    private let prompts: PromptCoordinator
     private let log: STLogger
     private var transferTask: Task<Void, Never>?
 
     let hostName: String
 
-    init(hostName: String, connector: HostConnector, log: STLogger) {
+    init(hostName: String, connector: HostConnector, prompts: PromptCoordinator, log: STLogger) {
         self.hostName = hostName
         self.connector = connector
+        self.prompts = prompts
         self.log = log.child(subsystem: "files")
+        // Prompts are raised from the connection's own task, which is not on the main
+        // actor; routing them through here is what lets a sheet appear while the
+        // connection stays suspended waiting for the answer.
+        Task { [weak self, prompts] in
+            await prompts.setPromptHandler { prompt in
+                Task { @MainActor in self?.pendingPrompt = prompt }
+            }
+        }
+    }
+
+    /// Hands the answer back to the waiting connection.
+    func resolvePrompt(_ decision: PromptCoordinator.Decision) {
+        let prompts = self.prompts
+        Task { await prompts.resolve(decision) }
+        pendingPrompt = nil
+        phase = .connecting(step: String(localized: "Continuing"))
     }
 
     // MARK: - Lifecycle
@@ -217,6 +239,22 @@ final class SFTPSession {
         )
         transfers.append(transfer)
         runQueue()
+    }
+
+    /// Downloads one file to an exact URL and waits for it — what a drag needs, since the
+    /// system asks for the bytes and expects them, not a queue entry to watch.
+    func fetch(_ entry: SFTPEntry, to url: URL) async throws {
+        guard let client else { throw SFTPError.channelClosed }
+        let handle = try await client.open(entry.path, flags: [.read])
+        defer { Task { try? await client.closeHandle(handle) } }
+        FileManager.default.createFile(atPath: url.path, contents: nil)
+        let file = try FileHandle(forWritingTo: url)
+        defer { try? file.close() }
+        var offset: UInt64 = 0
+        while let chunk = try await client.read(handle: handle, offset: offset, length: SFTPClient.readChunk) {
+            try file.write(contentsOf: Data(chunk))
+            offset += UInt64(chunk.count)
+        }
     }
 
     func retry(_ transfer: FileTransfer) {

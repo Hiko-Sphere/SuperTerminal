@@ -135,6 +135,32 @@ import Testing
         #expect(transfer.secondsRemaining == nil)
     }
 
+    // MARK: - Permissions
+
+    @Test("The mode editor keeps the file type and shows the same string a listing does")
+    func permissionEditing() {
+        // Only the low twelve bits are the user's; the type bits above them say what the
+        // file *is*, and writing those back as a mode would be asking the server to turn
+        // a directory into something else.
+        let directory = entry("d", directory: true)
+        #expect((directory.attributes.permissions ?? 0) & 0o7777 == 0o755)
+        #expect(FilePermissionsView.symbolic(0o755, isDirectory: true) == "drwxr-xr-x")
+        #expect(FilePermissionsView.symbolic(0o644, isDirectory: false) == "-rw-r--r--")
+        #expect(FilePermissionsView.symbolic(0o600, isDirectory: false) == "-rw-------")
+        #expect(FilePermissionsView.symbolic(0o777, isDirectory: false) == "-rwxrwxrwx")
+        #expect(FilePermissionsView.symbolic(0, isDirectory: false) == "----------")
+
+        // The two ways in agree: the octal a person types and the string the list shows
+        // are the same number seen twice.
+        for mode in [UInt32(0o644), 0o600, 0o755, 0o700, 0o444] {
+            let shown = FilePermissionsView.symbolic(mode, isDirectory: false)
+            let fromEntry = SFTPEntry(
+                name: "f", attributes: SFTP.Attributes(permissions: 0o100_000 | mode), path: "/f"
+            ).formattedPermissions
+            #expect(shown == fromEntry, "\(String(mode, radix: 8)) reads differently in two places")
+        }
+    }
+
     // MARK: - Errors
 
     @Test("A refusal names what failed and what to do about it")

@@ -102,16 +102,16 @@ final class SessionManager {
     ///
     /// The prompt coordinator is its own: a browsing session is not a terminal session,
     /// and sharing one would let a password sheet raised by a file transfer land on the
-    /// wrong screen. Prompts are not yet *presented* from the browser, so a connection
-    /// that needs one is refused with a sentence saying which, rather than hanging on a
-    /// sheet nobody can see — see D-042 and the plan.
+    /// wrong screen (D-043).
     func makeFileSession(for host: Host) -> SFTPSession {
-        SFTPSession(
+        let prompts = PromptCoordinator()
+        return SFTPSession(
             hostName: host.name,
             connector: HostConnector(
                 host: host, group: group, vault: vault, knownHosts: knownHosts,
-                log: diagnostics.logger, prompts: PromptCoordinator()
+                log: diagnostics.logger, prompts: prompts
             ),
+            prompts: prompts,
             log: diagnostics.logger
         )
     }

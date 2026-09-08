@@ -20,12 +20,34 @@ struct FileBrowserView: View {
     @State private var isImporting = false
     @State private var quickLookURL: URL?
     @State private var showsTransfers = false
+    @State private var editingPermissions: SFTPEntry?
+    @State private var sharing: URL?
 
     init(session: SFTPSession) {
         _session = State(initialValue: session)
     }
 
     var body: some View {
+        // Split into three: one expression carrying the screen, the file pickers and the
+        // dialogs together took the type checker past its budget and failed to compile.
+        content
+            .modifier(FilePresentations(session: session, quickLookURL: $quickLookURL,
+                                        isImporting: $isImporting, showsTransfers: $showsTransfers))
+            .modifier(FileDialogs(session: session, renaming: $renaming, renameText: $renameText,
+                                  deleting: $deleting, isCreatingFolder: $isCreatingFolder,
+                                  newFolderName: $newFolderName))
+            .sheet(item: $editingPermissions) { entry in
+                FilePermissionsView(entry: entry) { mode in
+                    Task { await session.setPermissions(mode, on: entry) }
+                }
+            }
+            .sheet(item: Binding(get: { sharing.map(ShareItem.init) }, set: { if $0 == nil { sharing = nil } })) { item in
+                ShareLink(item: item.url) { Label("Share", systemImage: "square.and.arrow.up") }
+                    .presentationDetents([.medium])
+            }
+    }
+
+    private var content: some View {
         NavigationStack {
             Group {
                 switch session.phase {
@@ -47,47 +69,6 @@ struct FileBrowserView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbar }
             .task { await session.connect() }
-        }
-        .quickLookPreview($quickLookURL)
-        .fileImporter(isPresented: $isImporting, allowedContentTypes: [.item], allowsMultipleSelection: true) { result in
-            guard case let .success(urls) = result else { return }
-            for url in urls {
-                let scoped = url.startAccessingSecurityScopedResource()
-                defer { if scoped { url.stopAccessingSecurityScopedResource() } }
-                session.upload(url)
-            }
-        }
-        .sheet(isPresented: $showsTransfers) { TransferQueueView(session: session) }
-        .alert("New Folder", isPresented: $isCreatingFolder) {
-            TextField("Name", text: $newFolderName)
-            Button("Cancel", role: .cancel) { newFolderName = "" }
-            Button("Create") {
-                let name = newFolderName
-                newFolderName = ""
-                Task { await session.makeDirectory(named: name) }
-            }
-        }
-        .alert("Rename", isPresented: .init(get: { renaming != nil }, set: { if !$0 { renaming = nil } })) {
-            TextField("Name", text: $renameText)
-            Button("Cancel", role: .cancel) { renaming = nil }
-            Button("Rename") {
-                if let entry = renaming { Task { await session.rename(entry, to: renameText) } }
-                renaming = nil
-            }
-        }
-        .confirmationDialog(
-            deleting.map { String(localized: "Delete \($0.name)?") } ?? "",
-            isPresented: .init(get: { deleting != nil }, set: { if !$0 { deleting = nil } }),
-            titleVisibility: .visible
-        ) {
-            Button("Delete", role: .destructive) {
-                if let entry = deleting { Task { await session.delete(entry) } }
-                deleting = nil
-            }
-        } message: {
-            Text(deleting?.isDirectory == true
-                 ? "A folder must be empty before it can be deleted."
-                 : "This cannot be undone.")
         }
     }
 
@@ -120,6 +101,17 @@ struct FileBrowserView: View {
             }
             .listStyle(.plain)
             .refreshable { await session.reload() }
+            // Dropping onto the list uploads into the folder on screen. `.item` rather
+            // than a narrower type: a file manager that accepts only images is not one.
+            .dropDestination(for: URL.self) { urls, _ in
+                for url in urls {
+                    let scoped = url.startAccessingSecurityScopedResource()
+                    defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+                    session.upload(url)
+                }
+                showsTransfers = !urls.isEmpty
+                return !urls.isEmpty
+            }
             .overlay {
                 if session.entries.isEmpty, !session.isLoading {
                     ContentUnavailableView(
@@ -165,6 +157,12 @@ struct FileBrowserView: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("file-row")
+        // Dragging a remote file out has to hand over bytes this device does not have,
+        // so the item is a promise: the system asks for the file when something accepts
+        // the drop, and that is when it is fetched.
+        .draggable(FileDragItem(entry: entry, session: session)) {
+            Label(entry.name, systemImage: entry.symbol)
+        }
         // One element, so VoiceOver reads "name, 4 KB, yesterday" rather than making the
         // reader swipe through three fragments of one row.
         .accessibilityElement(children: .combine)
@@ -179,6 +177,10 @@ struct FileBrowserView: View {
                 Button("Quick Look", systemImage: "eye") { preview(entry) }
             }
             Button("Rename", systemImage: "pencil") { renaming = entry; renameText = entry.name }
+            Button("Permissions…", systemImage: "lock") { editingPermissions = entry }
+            if !entry.isDirectory {
+                Button("Share…", systemImage: "square.and.arrow.up") { share(entry) }
+            }
             Button("Delete", systemImage: "trash", role: .destructive) { deleting = entry }
         }
     }
@@ -253,6 +255,20 @@ struct FileBrowserView: View {
         showsTransfers = true
     }
 
+    /// Sharing needs the bytes locally, so it is a download that opens the share sheet
+    /// when it lands rather than a link to something the system cannot reach.
+    private func share(_ entry: SFTPEntry) {
+        let destination = FileManager.default.temporaryDirectory
+        session.download(entry, to: destination)
+        let url = destination.appendingPathComponent(entry.name)
+        Task {
+            while let transfer = session.transfers.last, !transfer.state.isTerminal {
+                try? await Task.sleep(for: .milliseconds(120))
+            }
+            if FileManager.default.fileExists(atPath: url.path) { sharing = url }
+        }
+    }
+
     /// Quick Look needs a local file, so previewing is a download that opens when it
     /// lands. Shown through the transfer list so a large file does not look like nothing
     /// happening.
@@ -267,4 +283,91 @@ struct FileBrowserView: View {
             if FileManager.default.fileExists(atPath: url.path) { quickLookURL = url }
         }
     }
+}
+
+/// The pickers and sheets, kept out of the browser's body so one expression does not
+/// carry the whole screen (D-043).
+private struct FilePresentations: ViewModifier {
+    let session: SFTPSession
+    @Binding var quickLookURL: URL?
+    @Binding var isImporting: Bool
+    @Binding var showsTransfers: Bool
+
+    func body(content: Content) -> some View {
+        content
+            .quickLookPreview($quickLookURL)
+            .fileImporter(isPresented: $isImporting, allowedContentTypes: [.item], allowsMultipleSelection: true) { result in
+                guard case let .success(urls) = result else { return }
+                for url in urls {
+                    // A file chosen in Files.app lives outside the sandbox and is reachable
+                    // only inside a security scope, which the picker grants for this read.
+                    let scoped = url.startAccessingSecurityScopedResource()
+                    defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+                    session.upload(url)
+                }
+            }
+            .sheet(isPresented: $showsTransfers) { TransferQueueView(session: session) }
+            // The same sheet the terminal raises, for the same decisions: an unknown host
+            // key, a password, a key passphrase. Browsing a server is not a lesser act
+            // than opening a shell on it and must not skip the checks.
+            .sheet(item: Binding(
+                get: { session.pendingPrompt },
+                set: { if $0 == nil { session.resolvePrompt(.reject) } }
+            )) { prompt in
+                PromptSheet(prompt: prompt) { session.resolvePrompt($0) }
+            }
+    }
+}
+
+/// The alerts and confirmations.
+private struct FileDialogs: ViewModifier {
+    let session: SFTPSession
+    @Binding var renaming: SFTPEntry?
+    @Binding var renameText: String
+    @Binding var deleting: SFTPEntry?
+    @Binding var isCreatingFolder: Bool
+    @Binding var newFolderName: String
+
+    func body(content: Content) -> some View {
+        content
+            .alert("New Folder", isPresented: $isCreatingFolder) {
+                TextField("Name", text: $newFolderName)
+                Button("Cancel", role: .cancel) { newFolderName = "" }
+                Button("Create") {
+                    let name = newFolderName
+                    newFolderName = ""
+                    Task { await session.makeDirectory(named: name) }
+                }
+            }
+            .alert("Rename", isPresented: Binding(
+                get: { renaming != nil }, set: { if !$0 { renaming = nil } }
+            )) {
+                TextField("Name", text: $renameText)
+                Button("Cancel", role: .cancel) { renaming = nil }
+                Button("Rename") {
+                    if let entry = renaming { Task { await session.rename(entry, to: renameText) } }
+                    renaming = nil
+                }
+            }
+            .confirmationDialog(
+                deleting.map { String(localized: "Delete \($0.name)?") } ?? "",
+                isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }),
+                titleVisibility: .visible
+            ) {
+                Button("Delete", role: .destructive) {
+                    if let entry = deleting { Task { await session.delete(entry) } }
+                    deleting = nil
+                }
+            } message: {
+                Text(deleting?.isDirectory == true
+                     ? "A folder must be empty before it can be deleted."
+                     : "This cannot be undone.")
+            }
+    }
+}
+
+/// A URL made presentable as a sheet item.
+private struct ShareItem: Identifiable {
+    let url: URL
+    var id: String { url.path }
 }

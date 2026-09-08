@@ -392,6 +392,23 @@
         }
       }
     },
+    "644": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "644"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "644"
+          }
+        }
+      }
+    },
     "A backup can always be read by the version that wrote it or a later one, never an earlier one.": {
       "extractionState": "manual",
       "localizations": {
@@ -1306,6 +1323,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "此裝置上的 Apple Intelligence"
+          }
+        }
+      }
+    },
+    "Apply": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "应用"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "套用"
+          }
+        }
+      }
+    },
+    "As shown in a listing": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "列表中的显示"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "列表中的顯示"
           }
         }
       }
@@ -3809,6 +3860,23 @@
         }
       }
     },
+    "Everyone": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "所有人"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "所有人"
+          }
+        }
+      }
+    },
     "Everything stays yours": {
       "extractionState": "manual",
       "localizations": {
@@ -4298,6 +4366,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "請為此指令片段填寫名稱。"
+          }
+        }
+      }
+    },
+    "Group": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "群组"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "群組"
           }
         }
       }
@@ -5985,6 +6070,23 @@
         }
       }
     },
+    "Octal": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "八进制"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "八進位"
+          }
+        }
+      }
+    },
     "Off": {
       "extractionState": "manual",
       "localizations": {
@@ -6427,6 +6529,23 @@
         }
       }
     },
+    "Or type it": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "或直接输入"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "或直接輸入"
+          }
+        }
+      }
+    },
     "Other": {
       "extractionState": "manual",
       "localizations": {
@@ -6457,6 +6576,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "其他系統"
+          }
+        }
+      }
+    },
+    "Owner": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "所有者"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "擁有者"
           }
         }
       }
@@ -6763,6 +6899,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "已暫停 —— %@"
+          }
+        }
+      }
+    },
+    "Permissions": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "权限"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "權限"
+          }
+        }
+      }
+    },
+    "Permissions…": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "权限…"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "權限…"
           }
         }
       }
@@ -7188,6 +7358,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "請透過 SSH 連線或 Cloudflare 通道存取此螢幕（兩者都會加密），或在伺服器上啟用此 App 支援的密碼驗證方式。"
+          }
+        }
+      }
+    },
+    "Read, write and execute. On a folder, execute is what allows its contents to be listed at all.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "读取、写入和执行。对文件夹而言，执行权限决定了它的内容能否被列出。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "讀取、寫入和執行。對資料夾而言，執行權限決定了它的內容能否被列出。"
           }
         }
       }
@@ -8429,6 +8616,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "分享公開金鑰"
+          }
+        }
+      }
+    },
+    "Share…": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "共享…"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "分享…"
           }
         }
       }

@@ -3,6 +3,16 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-08 — after D-043 (prompts, permissions, sharing, drag-and-drop)
+
+| Command | Result |
+| --- | --- |
+| `cd Packages/ApexTerminalKit && swift test` | **211 tests in 32 suites passed** |
+| `bash scripts/app-integration-e2e.sh` | **237 passed, 0 failed** |
+| `bash scripts/ui-terminal-e2e.sh` (FileBrowserUITests) | **2 passed** against the harness's own sshd — a real listing, and a real file's real mode filled into the editor |
+| `bash scripts/localization-audit.sh` | **green**, 12 new strings in both Chinese variants |
+| Release archive | **ARCHIVE SUCCEEDED** |
+
 ## 2026-09-08 — after D-042 (SFTP file browser)
 
 | Command | Result |

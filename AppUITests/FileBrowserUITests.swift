@@ -47,4 +47,35 @@ final class FileBrowserUITests: XCTestCase {
         XCTAssertTrue(app.buttons["Upload…"].exists)
         XCTAssertTrue(app.buttons["Transfers"].exists)
     }
+
+    func testPermissionsAreEditableOnARealFile() throws {
+        let row = app.buttons.matching(identifier: "host-row").firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 10))
+        for _ in 0 ..< 20 where !row.isHittable { usleep(150_000) }
+        row.press(forDuration: 1.0)
+        let browse = app.buttons["host-files"].firstMatch
+        XCTAssertTrue(browse.waitForExistence(timeout: 5))
+        browse.tap()
+
+        let path = app.descendants(matching: .any).matching(identifier: "files-path").firstMatch
+        XCTAssertTrue(path.waitForExistence(timeout: 30))
+        let entry = app.buttons.matching(identifier: "file-row").firstMatch
+        guard entry.waitForExistence(timeout: 20) else {
+            throw XCTSkip("the home directory is empty, so there is nothing to inspect")
+        }
+
+        entry.press(forDuration: 1.0)
+        let permissions = app.buttons["Permissions…"].firstMatch
+        XCTAssertTrue(permissions.waitForExistence(timeout: 5), "a row offers to edit its mode")
+        permissions.tap()
+
+        // Both ways in are present: the octal for people who think in chmod, and the
+        // symbolic string a listing shows for people who do not.
+        let octal = app.textFields["permissions-octal"]
+        XCTAssertTrue(octal.waitForExistence(timeout: 5))
+        let shown = (octal.value as? String) ?? ""
+        XCTAssertFalse(shown.isEmpty, "the file's real mode is filled in, not a default")
+        XCTAssertTrue(app.buttons["permissions-apply"].exists)
+        app.buttons["Cancel"].firstMatch.tap()
+    }
 }
