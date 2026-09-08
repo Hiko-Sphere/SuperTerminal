@@ -127,6 +127,8 @@ struct SettingsView: View {
                     NavigationLink("Keys") { KeyManagementView() }
                         .accessibilityIdentifier("settings-keys")
                     NavigationLink("Known hosts") { KnownHostsView() }
+                    NavigationLink("Trusted authorities") { CertificateAuthoritiesView() }
+                        .accessibilityIdentifier("settings-authorities")
                         .accessibilityIdentifier("settings-known-hosts")
                     Picker("Clear copied text after", selection: $settings.clipboardExpirySeconds) {
                         Text("Never").tag(0)

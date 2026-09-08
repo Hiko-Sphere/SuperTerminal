@@ -7,6 +7,10 @@ import STCore
 public enum SSHCredential: Sendable {
     case password(Redacted<String>)
     case privateKey(SSHPrivateKeyMaterial)
+    /// A private key offered together with the certificate an authority issued for it
+    /// (D-046). The server checks the certificate against its own CA rather than looking
+    /// the key up in an `authorized_keys` file.
+    case certifiedKey(SSHPrivateKeyMaterial, SSHCertificate)
     /// Offered when a server allows unauthenticated access; almost never useful, but
     /// required to interoperate with servers that gate on `none` to advertise methods.
     case none
@@ -14,7 +18,7 @@ public enum SSHCredential: Sendable {
     var requiredMethod: NIOSSHAvailableUserAuthenticationMethods? {
         switch self {
         case .password: .password
-        case .privateKey: .publicKey
+        case .privateKey, .certifiedKey: .publicKey
         case .none: nil
         }
     }
@@ -25,6 +29,7 @@ public enum SSHCredential: Sendable {
         switch self {
         case .password: "password"
         case let .privateKey(material): "key (\(material.algorithm))"
+        case let .certifiedKey(material, _): "certificate (\(material.algorithm))"
         case .none: "none"
         }
     }
@@ -35,6 +40,7 @@ public enum SSHCredential: Sendable {
         switch self {
         case .password: String(localized: "password", bundle: .module)
         case let .privateKey(material): String(localized: "key (\(material.algorithm))", bundle: .module)
+        case let .certifiedKey(material, _): String(localized: "certificate (\(material.algorithm))", bundle: .module)
         case .none: String(localized: "none", bundle: .module)
         }
     }
@@ -176,6 +182,15 @@ extension SSHCredential {
             .password(.init(password: secret.reveal()))
         case let .privateKey(material):
             .privateKey(.init(privateKey: material.key))
+        case let .certifiedKey(material, certificate):
+            // A certificate that cannot be parsed here has already been refused when it
+            // was entered, so falling back to the bare key is the honest thing to do
+            // rather than failing the whole attempt: the server may well accept it.
+            if let certified = try? certificate.certifiedKey() {
+                .privateKey(.init(privateKey: material.key, certifiedKey: certified))
+            } else {
+                .privateKey(.init(privateKey: material.key))
+            }
         case .none:
             .none
         }

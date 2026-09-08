@@ -124,6 +124,53 @@ wrapped across lines.
 cannot fight. When a program has enabled mouse reporting, two-finger scrolling becomes
 wheel events for that program instead.
 
+## Certificates
+
+OpenSSH certificates are supported in both directions (D-046).
+
+**Your key, certified.** Settings → Keys → a key → *Add a certificate*, and paste the file
+`ssh-keygen -s` produced for it — the one ending in `-cert.pub`. The app checks it was
+issued for that key and refuses it otherwise, because a certificate for a different key
+authenticates nothing and the server's refusal would not say so. From then on the key is
+offered together with its certificate, and a server that trusts the issuing authority lets
+it in without the key appearing in any `authorized_keys` file.
+
+A certificate that is outside its validity window is not offered at all — the bare key
+still is. Being told "your certificate expired on Tuesday" beats being told "permission
+denied".
+
+**The server's key, certified.** Settings → Trusted authorities. Give the authority's own
+public key and the host patterns it may vouch for, in OpenSSH's style: `*.example.com`
+matches anything under it, `?` matches one character. A server whose host key carries a
+certificate from a trusted authority connects with no fingerprint to compare — which is a
+security improvement rather than a shortcut, because comparing fingerprints is the step
+people skip.
+
+Three rules worth knowing:
+
+* An authority is trusted only for the hosts its patterns match. `*` trusts it for every
+  server in the world, and the interface colours that pattern as a warning.
+* A certificate that fails validation — expired, wrong host name, unknown authority — is
+  refused outright. It never becomes a fingerprint prompt, because a prompt is something
+  people tap through.
+* When a server presents a certificate and no trusted authority applies, the ordinary
+  fingerprint prompt appears — and what gets remembered is the key *inside* the
+  certificate. Certificates are reissued routinely, and remembering one would turn every
+  renewal into "the host key has changed", which is the warning that has to mean something.
+
+Set up on the server side, briefly:
+
+```bash
+# On the machine holding the authority
+ssh-keygen -t ed25519 -f ca -C "example-ca"
+ssh-keygen -s ca -I alice -n alice -V +52w alice_key.pub   # a user certificate
+ssh-keygen -s ca -h -I web1 -n web1.example.com -V +52w /etc/ssh/ssh_host_ed25519_key.pub
+
+# On the server
+TrustedUserCAKeys /etc/ssh/ca.pub                          # trust the CA for logins
+HostCertificate /etc/ssh/ssh_host_ed25519_key-cert.pub     # present its own certificate
+```
+
 ## Port forwarding
 
 Session menu → **Port Forwards**. Three kinds, the same three `ssh` offers:

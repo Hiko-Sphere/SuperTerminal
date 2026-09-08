@@ -32,6 +32,14 @@ ssh-keygen -t ed25519 -f "$WORK/client" -N '' -q -C st-app-test-client
 cp "$WORK/client.pub" "$WORK/authorized_keys"
 chmod 600 "$WORK/authorized_keys" "$WORK/host_ed25519" "$WORK/client"
 
+# A certificate authority, and a key it vouches for that is deliberately absent from
+# authorized_keys (D-046). A login with that key proves the server checked the
+# certificate, because there is nothing else that could have let it in.
+ssh-keygen -t ed25519 -f "$WORK/ca" -N '' -q -C st-app-test-ca
+ssh-keygen -t ed25519 -f "$WORK/certified" -N '' -q -C st-app-test-certified
+ssh-keygen -s "$WORK/ca" -I st-app-test -n "$(whoami)" -V -5m:+60m "$WORK/certified.pub" >/dev/null
+chmod 600 "$WORK/ca" "$WORK/certified"
+
 PORT="$(python3 -c 'import socket; s=socket.socket(); s.bind(("127.0.0.1",0)); print(s.getsockname()[1]); s.close()')"
 
 cat > "$WORK/sshd_config" <<CONFIG
@@ -44,6 +52,7 @@ PasswordAuthentication no
 KbdInteractiveAuthentication no
 UsePAM no
 StrictModes no
+TrustedUserCAKeys $WORK/ca.pub
 # Without this the sftp subsystem request is refused and the Files integration cannot be
 # tested at all — the failure looks like a broken client rather than a server missing a
 # line of configuration.
@@ -88,6 +97,8 @@ env \
   TEST_RUNNER_ST_APP_TEST_SSH_KEY="$(cat "$WORK/client")" \
   TEST_RUNNER_ST_APP_TEST_SSH_HOST_FINGERPRINT="$FINGERPRINT" \
   TEST_RUNNER_ST_APP_TEST_SSH_HOME="$HOME" \
+  TEST_RUNNER_ST_APP_TEST_SSH_CERT_KEY="$(cat "$WORK/certified")" \
+  TEST_RUNNER_ST_APP_TEST_SSH_CERT="$(cat "$WORK/certified-cert.pub")" \
   xcodebuild test \
     -project ApexTerminal.xcodeproj \
     -scheme ApexTerminal \

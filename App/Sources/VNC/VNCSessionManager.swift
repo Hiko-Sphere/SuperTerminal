@@ -17,6 +17,10 @@ final class VNCSessionManager {
     private let knownHosts: any KnownHostsStore
     private let diagnostics: DiagnosticsCentre
     private let haptics: Haptics?
+    /// The same two providers every other kind of session gets (D-046): a screen behind a
+    /// certificate-authenticated host must connect the same way its terminal does.
+    var certificateForKey: @Sendable (UUID) -> SSHCertificate? = { _ in nil }
+    var certificateAuthorities: @Sendable () -> [SSHCertificateAuthority] = { [] }
 
     init(
         vault: CredentialVault,
@@ -41,7 +45,9 @@ final class VNCSessionManager {
             vault: vault,
             knownHosts: knownHosts,
             log: diagnostics.logger,
-            haptics: haptics
+            haptics: haptics,
+            certificateForKey: certificateForKey,
+            certificateAuthorities: certificateAuthorities()
         )
         sessions.append(session)
         Task { await session.connect() }

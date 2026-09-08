@@ -3,6 +3,46 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-08 — after D-046 (OpenSSH certificates)
+
+| Command | Result |
+| --- | --- |
+| `cd Packages/ApexTerminalKit && swift test --no-parallel` | **261 tests in 37 suites passed** |
+| `cd Packages/swift-nio-ssh-rsa && swift test` | **349 tests, 0 failures** — the vendored fork's own suite, run because this change touches its host-key negotiation |
+| `bash scripts/app-integration-e2e.sh` | **246 tests in 45 suites passed** |
+| `bash scripts/ui-terminal-e2e.sh` | **46 passed, 3 failed** — the same 3 as the previous two commits |
+| `bash scripts/localization-audit.sh` | **green**, 34 new strings in both Chinese variants |
+| Release archive | **ARCHIVE SUCCEEDED** |
+
+**What the certificate tests prove.** The key they authenticate with is deliberately not in
+the server's `authorized_keys`. A login with it succeeded because sshd checked a
+certificate against the authority named in its own `TrustedUserCAKeys`, and there is no
+other path available — which the neighbouring test confirms by offering the same key
+without its certificate and being refused. The suite also covers a certificate signed by an
+authority the server does not trust, one issued for another user, and one that expired two
+hours ago; each is refused, and the expired one is recognised by the app before the server
+is even asked.
+
+Host certificates are proved the same way: a server configured with `HostCertificate`
+connects with an approval delegate that fails the test if it is consulted at all, and the
+same server with no trusted authority configured falls back to asking. A certificate issued
+for a different host name is refused outright, and the test asserts the user was *not*
+asked — a certificate that fails validation must never become a prompt someone taps through.
+
+**One line in the vendored fork.** NIOSSH understood certified keys but never advertised
+them, so no server ever offered one: `supportedServerHostKeyAlgorithms` now lists the four
+`*-cert-v01@openssh.com` names ahead of the bare ones, exactly as OpenSSH orders them. That
+is the whole change; everything else — parsing, signature verification, validation — was
+already there. The fork's own 349 tests were run because this alters what every connection
+negotiates.
+
+**A defect this found in the fallback.** With certificates now negotiated, a server that
+presents one to a client with no trusted authority would have had its *certificate*
+remembered in known-hosts. Certificates are reissued routinely, so every renewal would have
+raised "the host key has changed" — the one warning that has to mean something. The
+fallback now records the key inside the certificate, and a test reads the stored entry back
+and compares it with the server's own `host_ed25519.pub`.
+
 ## 2026-09-08 — after D-045 (port forwarding)
 
 | Command | Result |

@@ -36,6 +36,11 @@ final class SessionManager {
     private let reachability: NetworkReachability?
     private let restoration: SessionRestorationStore?
     private let haptics: Haptics?
+    /// The certificate issued for a stored key, and the authorities trusted to vouch for
+    /// servers (D-046). Set by the container from the host store, so a session does not
+    /// have to know where either lives.
+    var certificateForKey: @Sendable (UUID) -> SSHCertificate? = { _ in nil }
+    var certificateAuthorities: @Sendable () -> [SSHCertificateAuthority] = { [] }
 
     init(
         vault: CredentialVault,
@@ -109,7 +114,9 @@ final class SessionManager {
             hostName: host.name,
             connector: HostConnector(
                 host: host, group: group, vault: vault, knownHosts: knownHosts,
-                log: diagnostics.logger, prompts: prompts
+                log: diagnostics.logger, prompts: prompts,
+                certificateForKey: certificateForKey,
+                certificateAuthorities: certificateAuthorities()
             ),
             prompts: prompts,
             log: diagnostics.logger
@@ -126,7 +133,9 @@ final class SessionManager {
             settings: settings,
             log: diagnostics.logger,
             reachability: reachability,
-            haptics: haptics
+            haptics: haptics,
+            certificateForKey: certificateForKey,
+            certificateAuthorities: certificateAuthorities()
         )
         session.onConnected = { [weak self] in self?.didConnect?() }
         session.onPlatformDetected = { [weak self] platform in self?.didDetectPlatform?(host.id, platform) }

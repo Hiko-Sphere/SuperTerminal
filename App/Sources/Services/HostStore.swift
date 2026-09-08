@@ -1,6 +1,7 @@
 import Foundation
 import Observation
 import STCore
+import STSSH
 
 /// Stores the host list and the key catalogue.
 ///
@@ -17,13 +18,39 @@ final class HostStore {
     private(set) var keys: [StoredKey] = []
     private(set) var loadError: STError?
 
+    /// Certificate authorities trusted to vouch for servers (D-046). Public keys and
+    /// host patterns, nothing secret — the same class of data as the host list.
+    private(set) var authorities: [SSHCertificateAuthority] = []
+
     private let hostsURL: URL
     private let keysURL: URL
+    private let authoritiesURL: URL
 
     init(directory: URL) {
         hostsURL = directory.appendingPathComponent("hosts.json")
         keysURL = directory.appendingPathComponent("keys.json")
+        authoritiesURL = directory.appendingPathComponent("authorities.json")
         load()
+    }
+
+    // MARK: - Certificate authorities
+
+    func add(_ authority: SSHCertificateAuthority) {
+        authorities.append(authority)
+        authorities.sort { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+        persistAuthorities()
+    }
+
+    func update(_ authority: SSHCertificateAuthority) {
+        guard let index = authorities.firstIndex(where: { $0.id == authority.id }) else { return }
+        authorities[index] = authority
+        authorities.sort { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+        persistAuthorities()
+    }
+
+    func removeAuthority(id: UUID) {
+        authorities.removeAll { $0.id == id }
+        persistAuthorities()
     }
 
     static func defaultDirectory() -> URL {
@@ -155,6 +182,9 @@ final class HostStore {
             if FileManager.default.fileExists(atPath: keysURL.path) {
                 keys = try decoder.decode([StoredKey].self, from: Data(contentsOf: keysURL))
             }
+            if FileManager.default.fileExists(atPath: authoritiesURL.path) {
+                authorities = try decoder.decode([SSHCertificateAuthority].self, from: Data(contentsOf: authoritiesURL))
+            }
         } catch {
             // A corrupt file must not silently wipe the user's hosts, so the existing
             // file is left alone and the problem is surfaced instead.
@@ -172,6 +202,7 @@ final class HostStore {
 
     private func persistHosts() { persist(hosts, to: hostsURL); didChange?() }
     private func persistKeys() { persist(keys, to: keysURL); didChange?() }
+    private func persistAuthorities() { persist(authorities, to: authoritiesURL) }
 
     private func persist(_ value: some Encodable, to url: URL) {
         let encoder = JSONEncoder()

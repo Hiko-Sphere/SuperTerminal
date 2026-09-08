@@ -36,6 +36,7 @@ public final class HostKeyVerifier: NIOSSHClientServerAuthenticationDelegate, Se
     private let identity: KnownHostIdentity
     private let store: any KnownHostsStore
     private let approval: any HostKeyApprovalDelegate
+    private let authorities: [SSHCertificateAuthority]
     private let log: STLogger
     private let now: @Sendable () -> Date
 
@@ -43,14 +44,70 @@ public final class HostKeyVerifier: NIOSSHClientServerAuthenticationDelegate, Se
         identity: KnownHostIdentity,
         store: any KnownHostsStore,
         approval: any HostKeyApprovalDelegate,
+        certificateAuthorities: [SSHCertificateAuthority] = [],
         log: STLogger = .disabled,
         now: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.identity = identity
         self.store = store
         self.approval = approval
+        authorities = certificateAuthorities
         self.log = log.child(subsystem: "ssh.hostkey")
         self.now = now
+    }
+
+    /// Decides a certified host key against the trusted authorities (D-046).
+    ///
+    /// A server whose key carries a certificate from an authority this device trusts for
+    /// that host name is accepted without anyone comparing a fingerprint — which is the
+    /// whole point of host certificates, and a security improvement rather than a
+    /// shortcut: comparing fingerprints is the step people skip.
+    ///
+    /// The certificate is not remembered. It has its own expiry, and storing it would
+    /// mean a certificate that has been revoked or has run out keeps working because the
+    /// device once saw it.
+    ///
+    /// Returns `nil` when the key is not certified, or is certified by nobody this device
+    /// trusts for this host — in which case the ordinary fingerprint policy applies, and
+    /// the user is asked as they always were.
+    func certificateVerdict(for key: NIOSSHPublicKey) -> CertificateVerdict? {
+        guard let certified = NIOSSHCertifiedPublicKey(key) else { return nil }
+        let candidates = authorities.filter { $0.vouchesFor(host: identity.host) }
+        guard !candidates.isEmpty else {
+            log.info("the server presented a certificate but no authority is trusted for this host", [
+                "host": Redactor.hostname(identity.host),
+            ])
+            return nil
+        }
+        let signingKeys = candidates.compactMap { try? $0.publicKey() }
+        do {
+            // NIOSSH checks the signature first, then the principal, the type, the
+            // validity window and any critical option it does not understand. Critical
+            // options are deliberately not accepted: an option this app does not
+            // implement is a restriction the certificate's issuer meant to apply, and
+            // ignoring it would be silently widening what the certificate allows.
+            _ = try certified.validate(
+                principal: identity.host,
+                type: .host,
+                allowedAuthoritySigningKeys: signingKeys
+            )
+            log.info("host certificate accepted", [
+                "host": Redactor.hostname(identity.host),
+                "keyID": certified.keyID,
+            ])
+            return .trusted
+        } catch {
+            log.error("host certificate refused", [
+                "host": Redactor.hostname(identity.host),
+                "error": String(describing: error),
+            ])
+            return .refused(error)
+        }
+    }
+
+    enum CertificateVerdict {
+        case trusted
+        case refused(Error)
     }
 
     /// Classifies a presented key without applying any side effects. Exposed so the
@@ -120,9 +177,39 @@ public final class HostKeyVerifier: NIOSSHClientServerAuthenticationDelegate, Se
     // MARK: - NIOSSHClientServerAuthenticationDelegate
 
     public func validateHostKey(hostKey: NIOSSHPublicKey, validationCompletePromise: EventLoopPromise<Void>) {
+        // A certificate is decided before anything else: it either settles the question
+        // or it is refused outright. Falling back to "ask the user about the fingerprint"
+        // after a certificate has failed to validate would turn a definite answer — this
+        // certificate is expired, or for another host, or signed by nobody we trust —
+        // into a prompt someone will tap through.
+        switch certificateVerdict(for: hostKey) {
+        case .trusted:
+            validationCompletePromise.succeed(())
+            return
+        case let .refused(error):
+            validationCompletePromise.fail(STError(
+                category: .hostKey,
+                message: String(localized: "The server's certificate was refused.", bundle: .module),
+                recoverySuggestion: String(localized: "It may have expired, be issued for another host name, or be signed by an authority this device does not trust.", bundle: .module),
+                underlyingDescription: String(describing: error)
+            ))
+            return
+        case nil:
+            break
+        }
+
+        // No certificate, or one from an authority this device does not trust: fall back
+        // to the fingerprint policy — but on the key *inside* the certificate.
+        //
+        // A certificate is reissued routinely, and every reissue produces a different
+        // certified key while the server's actual host key stays put. Remembering the
+        // certificate would turn every renewal into "the host key has changed", which is
+        // the warning that must mean something. Remembering the key it certifies means
+        // the record survives renewals and still changes if the server really is rekeyed.
+        let bareKey = NIOSSHCertifiedPublicKey(hostKey).map { $0.key } ?? hostKey
         let presented: SSHHostKey
         do {
-            presented = try SSHHostKey(hostKey)
+            presented = try SSHHostKey(bareKey)
         } catch {
             validationCompletePromise.fail(error)
             return

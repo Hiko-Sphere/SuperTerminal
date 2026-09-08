@@ -121,6 +121,24 @@ private struct KeyRow: View {
             .font(DesignTokens.Typography.caption)
             .buttonStyle(.plain)
             .foregroundStyle(DesignTokens.Color.accent)
+            NavigationLink {
+                KeyCertificateView(key: key)
+            } label: {
+                if let certificate = key.certificate {
+                    Label(
+                        certificate.isValid()
+                            ? String(localized: "Certificate · \(certificate.keyID)")
+                            : String(localized: "Certificate expired"),
+                        systemImage: certificate.isValid() ? "checkmark.seal" : "exclamationmark.triangle"
+                    )
+                    .foregroundStyle(certificate.isValid() ? DesignTokens.Color.accent : DesignTokens.Color.warning)
+                } else {
+                    Label(String(localized: "Add a certificate"), systemImage: "seal")
+                }
+            }
+            .font(DesignTokens.Typography.caption)
+            .accessibilityIdentifier("key-certificate")
+
             if key.requiresBiometrics {
                 Label("Unlocks with Face ID or Touch ID", systemImage: "faceid")
                     .font(DesignTokens.Typography.caption)

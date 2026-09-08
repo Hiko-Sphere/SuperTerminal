@@ -95,7 +95,9 @@ final class VNCSession: Identifiable {
         vault: CredentialVault,
         knownHosts: any KnownHostsStore,
         log: STLogger,
-        haptics: Haptics? = nil
+        haptics: Haptics? = nil,
+        certificateForKey: @escaping @Sendable (UUID) -> SSHCertificate? = { _ in nil },
+        certificateAuthorities: [SSHCertificateAuthority] = []
     ) {
         self.screen = screen
         self.sshHost = sshHost
@@ -109,7 +111,12 @@ final class VNCSession: Identifiable {
         // Built only when there is an SSH connection to make; a direct screen never
         // touches SSH at all.
         connector = sshHost.map {
-            HostConnector(host: $0, group: group, vault: vault, knownHosts: knownHosts, log: sessionLog, prompts: prompts)
+            HostConnector(
+                host: $0, group: group, vault: vault, knownHosts: knownHosts,
+                log: sessionLog, prompts: prompts,
+                certificateForKey: certificateForKey,
+                certificateAuthorities: certificateAuthorities
+            )
         }
         Task { [weak self, prompts] in
             await prompts.setPromptHandler { prompt in

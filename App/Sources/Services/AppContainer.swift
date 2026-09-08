@@ -167,6 +167,20 @@ final class AppContainer {
         // Assigned after the container exists, because a change to the host list has to
         // reach the Files domains as well as sync: a connection deleted here must leave
         // the Files sidebar, not linger there pointing at nothing.
+        // A key's certificate and the trusted authorities both live in the host store,
+        // and every kind of session reaches them the same way (D-046).
+        sessionManager.certificateForKey = { [weak hostStore] id in
+            MainActor.assumeIsolated { hostStore?.key(withID: id)?.certificate }
+        }
+        sessionManager.certificateAuthorities = { [weak hostStore] in
+            MainActor.assumeIsolated { hostStore?.authorities ?? [] }
+        }
+        screens.certificateAuthorities = { [weak hostStore] in
+            MainActor.assumeIsolated { hostStore?.authorities ?? [] }
+        }
+        screens.certificateForKey = { [weak hostStore] id in
+            MainActor.assumeIsolated { hostStore?.key(withID: id)?.certificate }
+        }
         hostStore.didChange = { [weak sync, weak container] in
             sync?.scheduleSync()
             Task { await container?.files.refresh() }

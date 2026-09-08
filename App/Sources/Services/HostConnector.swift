@@ -22,6 +22,11 @@ final class HostConnector {
     private let vault: CredentialVault
     private let knownHosts: any KnownHostsStore
     private let log: STLogger
+    /// The certificate issued for a stored key, when there is one (D-046).
+    private let certificateForKey: @Sendable (UUID) -> SSHCertificate?
+    /// Authorities trusted to vouch for servers, so a certified host key needs no
+    /// fingerprint comparison.
+    private let authorities: [SSHCertificateAuthority]
 
     init(
         host: Host,
@@ -29,7 +34,9 @@ final class HostConnector {
         vault: CredentialVault,
         knownHosts: any KnownHostsStore,
         log: STLogger,
-        prompts: PromptCoordinator
+        prompts: PromptCoordinator,
+        certificateForKey: @escaping @Sendable (UUID) -> SSHCertificate? = { _ in nil },
+        certificateAuthorities: [SSHCertificateAuthority] = []
     ) {
         self.host = host
         self.group = group
@@ -37,6 +44,8 @@ final class HostConnector {
         self.knownHosts = knownHosts
         self.log = log
         self.prompts = prompts
+        self.certificateForKey = certificateForKey
+        authorities = certificateAuthorities
     }
 
     /// Connects and authenticates, naming each step through `progress` as it happens.
@@ -54,6 +63,7 @@ final class HostConnector {
             identity: host.knownHostIdentity,
             store: knownHosts,
             approval: approval,
+            certificateAuthorities: authorities,
             log: log
         )
         let credentials = try await resolveCredentials(username: username)
@@ -143,13 +153,21 @@ final class HostConnector {
                     prompt: String(localized: "Unlock the key for \(host.name)")
                 )
                 let inspection = try OpenSSHPrivateKeyParser.inspect(pem: pem)
+                let material: SSHPrivateKeyMaterial
                 if inspection.isEncrypted {
                     let passphrase = try await prompts.requestPassphrase(keyName: host.name)
-                    credentials.append(.privateKey(
-                        try OpenSSHPrivateKeyParser.parse(pem: pem, passphrase: passphrase)
-                    ))
+                    material = try OpenSSHPrivateKeyParser.parse(pem: pem, passphrase: passphrase)
                 } else {
-                    credentials.append(.privateKey(try OpenSSHPrivateKeyParser.parse(pem: pem)))
+                    material = try OpenSSHPrivateKeyParser.parse(pem: pem)
+                }
+                // A key with a certificate is offered with it. An expired certificate is
+                // left off rather than offered: the server would refuse it, and burning
+                // an attempt against `MaxAuthTries` to be told so helps nobody. The bare
+                // key still goes, because a server may know it directly.
+                if let certificate = certificateForKey(id), certificate.isValid() {
+                    credentials.append(.certifiedKey(material, certificate))
+                } else {
+                    credentials.append(.privateKey(material))
                 }
             case .password:
                 if let stored = try vault.loadPassword(hostID: host.id) {

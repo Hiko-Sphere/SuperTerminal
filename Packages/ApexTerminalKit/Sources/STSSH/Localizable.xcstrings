@@ -1,6 +1,23 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "A certificate looks like a public key but its type ends in `-cert-v01@openssh.com`. It is the file `ssh-keygen -s` writes, usually named `…-cert.pub`.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "证书看起来像公钥，但类型以 `-cert-v01@openssh.com` 结尾。它是 `ssh-keygen -s` 写出的文件，通常叫 `…-cert.pub`。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "憑證看起來像公鑰，但類型以 `-cert-v01@openssh.com` 結尾。它是 `ssh-keygen -s` 寫出的檔案，通常叫 `…-cert.pub`。"
+          }
+        }
+      }
+    },
     "ApexTerminal does not support %@ keys yet.": {
       "extractionState": "manual",
       "localizations": {
@@ -239,6 +256,23 @@
         }
       }
     },
+    "It may have expired, be issued for another host name, or be signed by an authority this device does not trust.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "它可能已过期、是为另一个主机名签发的，或者签发它的机构不在本设备的信任列表中。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "它可能已過期、是為另一個主機名稱簽發的，或者簽發它的機構不在本裝置的信任清單中。"
+          }
+        }
+      }
+    },
     "No credential was accepted for an attempt.": {
       "extractionState": "manual",
       "localizations": {
@@ -375,6 +409,23 @@
         }
       }
     },
+    "That is not an OpenSSH certificate.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这不是一张 OpenSSH 证书。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這不是一張 OpenSSH 憑證。"
+          }
+        }
+      }
+    },
     "That passphrase does not unlock this key.": {
       "extractionState": "manual",
       "localizations": {
@@ -439,6 +490,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "無法建立 SSH 工作階段。"
+          }
+        }
+      }
+    },
+    "The certificate could not be read.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法读取该证书。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法讀取該憑證。"
           }
         }
       }
@@ -732,6 +800,23 @@
         }
       }
     },
+    "The server's certificate was refused.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器的证书被拒绝。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "伺服器的憑證被拒絕。"
+          }
+        }
+      }
+    },
     "The session is no longer connected.": {
       "extractionState": "manual",
       "localizations": {
@@ -864,6 +949,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "在伺服器上用 `%@` 核對 fingerprint，然後重新連線。"
+          }
+        }
+      }
+    },
+    "certificate (%@)": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "证书（%@）"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "憑證（%@）"
           }
         }
       }

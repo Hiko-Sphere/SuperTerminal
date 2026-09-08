@@ -39,11 +39,56 @@ public final class OpenSSHTestServer: @unchecked Sendable {
         public let clientECDSAPrivateKeyPEM: String
         /// PEM text of an unencrypted RSA client key in `authorized_keys`.
         public let clientRSAPrivateKeyPEM: String
+        /// A key that is deliberately **not** in `authorized_keys`, together with the
+        /// certificate an authority issued for it (D-046). A connection that succeeds
+        /// with this key succeeded because of the certificate and for no other reason.
+        public let certifiedClientPrivateKeyPEM: String
+        public let clientCertificateOpenSSH: String
+        /// The authority's own public key, for a client that wants to trust it.
+        public let certificateAuthorityPublicKey: String
+        /// The certificate the server presents for its own host key, when it was asked
+        /// to. Empty when the server offers a bare host key.
+        public let hostCertificateOpenSSH: String
         /// The server's Ed25519 host key in `authorized_keys` one-line form.
         public let hostKeyOpenSSH: String
     }
 
     /// Host key types the test server can be configured to offer.
+    /// How the server treats OpenSSH certificates (D-046).
+    public struct CertificateOptions: Sendable {
+        /// Whether sshd trusts the authority for user certificates (`TrustedUserCAKeys`).
+        public var trustsAuthority: Bool
+        /// Whether sshd presents a certificate for its own host key.
+        public var presentsHostCertificate: Bool
+        /// The principal the client's certificate is issued for. `nil` means the user the
+        /// tests log in as, which is what makes a certificate usable.
+        public var userPrincipal: String?
+        public var keyID: String
+        /// `ssh-keygen -V`, so a test can issue one that has already expired.
+        public var validity: String
+        /// The host name the host certificate is issued for.
+        public var hostPrincipal: String
+        public var hostValidity: String
+
+        public init(
+            trustsAuthority: Bool = false,
+            presentsHostCertificate: Bool = false,
+            userPrincipal: String? = nil,
+            keyID: String = "st-test-user-cert",
+            validity: String = "-5m:+60m",
+            hostPrincipal: String = "127.0.0.1",
+            hostValidity: String = "-5m:+60m"
+        ) {
+            self.trustsAuthority = trustsAuthority
+            self.presentsHostCertificate = presentsHostCertificate
+            self.userPrincipal = userPrincipal
+            self.keyID = keyID
+            self.validity = validity
+            self.hostPrincipal = hostPrincipal
+            self.hostValidity = hostValidity
+        }
+    }
+
     public enum HostKeyAlgorithm: String, Sendable, Hashable {
         case ed25519
         case ecdsa
@@ -81,10 +126,16 @@ public final class OpenSSHTestServer: @unchecked Sendable {
     ///   - ciphers: when set, restricts the server's `Ciphers` and `MACs` lists. Narrowing
     ///     this to the CTR family is how a client's non-GCM support is proved: with AES-GCM
     ///     unavailable, a connection can only succeed through the other scheme.
+    /// - Parameters:
+    ///   - certificateOptions: how the server treats OpenSSH certificates (D-046). The
+    ///     authority and the client's certificate are always created, because they cost a
+    ///     key generation and make the fixtures useful; what these change is whether the
+    ///     *server* trusts the authority and whether it presents a certificate of its own.
     public init(
         extraAuthorizedKeys: [String] = [],
         hostKeyAlgorithms: Set<HostKeyAlgorithm> = [.ed25519, .ecdsa],
-        ciphers: (ciphers: String, macs: String)? = nil
+        ciphers: (ciphers: String, macs: String)? = nil,
+        certificateOptions: CertificateOptions = .init()
     ) throws {
         guard FileManager.default.isExecutableFile(atPath: Self.sshdPath) else {
             throw StartupError.sshdMissing(Self.sshdPath)
@@ -106,6 +157,18 @@ public final class OpenSSHTestServer: @unchecked Sendable {
             try Self.keygen(["-t", "rsa", "-b", "3072", "-f", root.appendingPathComponent("host_rsa").path, "-N", "", "-q", "-C", "st-test-host"])
         }
         try Self.keygen(["-t", "ed25519", "-f", root.appendingPathComponent("client_ed25519").path, "-N", "", "-q", "-C", "st-test-client"])
+        // The authority, the key it vouches for, and the certificate itself. The key is
+        // never added to `authorized_keys`; that is what makes a successful login with it
+        // evidence about certificates rather than about key files.
+        try Self.keygen(["-t", "ed25519", "-f", root.appendingPathComponent("ca").path, "-N", "", "-q", "-C", "st-test-ca"])
+        try Self.keygen(["-t", "ed25519", "-f", root.appendingPathComponent("client_certified").path, "-N", "", "-q", "-C", "st-test-certified"])
+        try Self.keygen([
+            "-s", root.appendingPathComponent("ca").path,
+            "-I", certificateOptions.keyID,
+            "-n", certificateOptions.userPrincipal ?? NSUserName(),
+            "-V", certificateOptions.validity,
+            root.appendingPathComponent("client_certified.pub").path,
+        ])
         try Self.keygen(["-t", "ecdsa", "-b", "256", "-f", root.appendingPathComponent("client_ecdsa").path, "-N", "", "-q", "-C", "st-test-client-ecdsa"])
         try Self.keygen(["-t", "rsa", "-b", "3072", "-f", root.appendingPathComponent("client_rsa").path, "-N", "", "-q", "-C", "st-test-client-rsa"])
 
@@ -126,6 +189,21 @@ public final class OpenSSHTestServer: @unchecked Sendable {
         let authorizedKeysURL = root.appendingPathComponent("authorized_keys")
         try authorizedKeys.write(to: authorizedKeysURL, atomically: true, encoding: .utf8)
         try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: authorizedKeysURL.path)
+
+        // The server's own certificate, when asked for. `-h` marks it a host certificate;
+        // the principal is the name a client will connect to.
+        var hostCertificateLine = ""
+        if certificateOptions.presentsHostCertificate, hostKeyAlgorithms.contains(.ed25519) {
+            try Self.keygen([
+                "-s", root.appendingPathComponent("ca").path,
+                "-h",
+                "-I", "st-test-host-cert",
+                "-n", certificateOptions.hostPrincipal,
+                "-V", certificateOptions.hostValidity,
+                root.appendingPathComponent("host_ed25519.pub").path,
+            ])
+            hostCertificateLine = "HostCertificate \(root.appendingPathComponent("host_ed25519-cert.pub").path)"
+        }
 
         let hostKeyLines = hostKeyAlgorithms
             .sorted { $0.rawValue < $1.rawValue }
@@ -164,6 +242,8 @@ public final class OpenSSHTestServer: @unchecked Sendable {
         StrictModes no
         PermitUserEnvironment no
         AcceptEnv ST_TEST_*
+        \(certificateOptions.trustsAuthority ? "TrustedUserCAKeys \(root.appendingPathComponent("ca.pub").path)" : "")
+        \(hostCertificateLine)
         Subsystem sftp internal-sftp
         \(ciphers.map { "Ciphers \($0.ciphers)\nMACs \($0.macs)" } ?? "")
         LogLevel DEBUG1
@@ -203,6 +283,13 @@ public final class OpenSSHTestServer: @unchecked Sendable {
             clientKeyPassphrase: passphrase,
             clientECDSAPrivateKeyPEM: try String(contentsOf: root.appendingPathComponent("client_ecdsa"), encoding: .utf8),
             clientRSAPrivateKeyPEM: try String(contentsOf: root.appendingPathComponent("client_rsa"), encoding: .utf8),
+            certifiedClientPrivateKeyPEM: try String(contentsOf: root.appendingPathComponent("client_certified"), encoding: .utf8),
+            clientCertificateOpenSSH: try String(contentsOf: root.appendingPathComponent("client_certified-cert.pub"), encoding: .utf8)
+                .trimmingCharacters(in: .whitespacesAndNewlines),
+            certificateAuthorityPublicKey: try String(contentsOf: root.appendingPathComponent("ca.pub"), encoding: .utf8)
+                .trimmingCharacters(in: .whitespacesAndNewlines),
+            hostCertificateOpenSSH: (try? String(contentsOf: root.appendingPathComponent("host_ed25519-cert.pub"), encoding: .utf8))?
+                .trimmingCharacters(in: .whitespacesAndNewlines) ?? "",
             hostKeyOpenSSH: try String(
                 contentsOf: root.appendingPathComponent(
                     hostKeyAlgorithms.contains(.ed25519) ? "host_ed25519.pub" : "host_rsa.pub"

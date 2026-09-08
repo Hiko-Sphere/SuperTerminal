@@ -218,6 +218,10 @@ public struct StoredKey: Identifiable, Sendable, Codable, Equatable {
     /// secret, or only know the key exists. Optional so records written before sync
     /// existed still decode.
     public var secretInICloud: Bool?
+    /// The certificate an authority issued for this key (D-046). Public material, so it
+    /// lives here with the rest of the metadata rather than in the Keychain. Optional so
+    /// that records written before certificates existed still decode.
+    public var certificate: SSHCertificate?
 
     public init(
         id: UUID = UUID(),
@@ -228,7 +232,8 @@ public struct StoredKey: Identifiable, Sendable, Codable, Equatable {
         createdAt: Date = Date(),
         requiresBiometrics: Bool,
         isPassphraseProtected: Bool,
-        secretInICloud: Bool? = nil
+        secretInICloud: Bool? = nil,
+        certificate: SSHCertificate? = nil
     ) {
         self.id = id
         self.name = name
@@ -238,6 +243,7 @@ public struct StoredKey: Identifiable, Sendable, Codable, Equatable {
         self.createdAt = createdAt
         self.requiresBiometrics = requiresBiometrics
         self.isPassphraseProtected = isPassphraseProtected
+        self.certificate = certificate
         self.secretInICloud = secretInICloud
     }
 }

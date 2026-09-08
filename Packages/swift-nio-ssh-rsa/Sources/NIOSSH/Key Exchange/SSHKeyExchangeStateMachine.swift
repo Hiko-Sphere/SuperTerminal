@@ -608,7 +608,15 @@ extension SSHKeyExchangeStateMachine {
     ///
     /// `ssh-rsa` is deliberately absent: it names SHA-1, which OpenSSH disabled by default
     /// in 8.8. Only the SHA-2 variants from RFC 8332 are offered.
+    /// Certificate names come first, as OpenSSH orders them: a server that has a
+    /// certificate for its host key should get the chance to present it, and a client
+    /// that never asks will never be offered one. The bare names follow, so a server
+    /// without a certificate is unaffected.
     static let supportedServerHostKeyAlgorithms: [Substring] = [
+        "ssh-ed25519-cert-v01@openssh.com",
+        "ecdsa-sha2-nistp256-cert-v01@openssh.com",
+        "ecdsa-sha2-nistp384-cert-v01@openssh.com",
+        "ecdsa-sha2-nistp521-cert-v01@openssh.com",
         "ssh-ed25519", "ecdsa-sha2-nistp384", "ecdsa-sha2-nistp256", "ecdsa-sha2-nistp521",
         "rsa-sha2-512", "rsa-sha2-256",
     ]
