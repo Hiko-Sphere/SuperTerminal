@@ -182,4 +182,24 @@ struct RFBDecoderTests {
         #expect(VNCDES.encryptChallenge(challenge, password: "s3cret!!x") == VNCDES.encryptChallenge(challenge, password: "s3cret!!"), "only the first eight bytes of a password count")
         #expect(VNCDES.encryptChallenge(challenge, password: "other") != response)
     }
+
+    @Test("DES matches the published answers, which self-consistency cannot show")
+    func desKnownAnswers() {
+        // Every test above this one would pass against a wrong cipher: they check that the
+        // output is deterministic and that it changes with the key, which any permutation
+        // does. These are the vectors that actually pin FIPS 46-3 DES.
+        func hex(_ bytes: [UInt8]) -> String { bytes.map { String(format: "%02x", $0) }.joined() }
+        func bytes(_ text: String) -> [UInt8] {
+            stride(from: 0, to: text.count, by: 2).map { offset in
+                let start = text.index(text.startIndex, offsetBy: offset)
+                return UInt8(text[start ... text.index(after: start)], radix: 16)!
+            }
+        }
+        // The all-zero key and block, whose answer appears in every DES test suite.
+        #expect(hex(VNCDES.encryptBlock(bytes("0000000000000000"), key: bytes("0000000000000000")))
+                == "8ca64de9c1b123a7")
+        // Tuchman's worked example, the one the FIPS walkthroughs use.
+        #expect(hex(VNCDES.encryptBlock(bytes("0123456789abcdef"), key: bytes("133457799bbcdff1")))
+                == "85e813540f0ab405")
+    }
 }

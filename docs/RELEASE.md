@@ -96,11 +96,14 @@ See [PRIVACY.md](PRIVACY.md) for the reasoning behind each answer.
 
 ### Export compliance
 
-The app uses encryption: SSH, TLS, and the cryptographic primitives underneath. It uses
-only standard algorithms provided by the platform and by audited libraries, and implements
-none of its own — which is the ordinary case for the exemption most apps claim. Confirm
-the current wording of the questions in App Store Connect rather than relying on this
-paragraph, and take advice if the app will be distributed somewhere with its own rules.
+The app uses encryption: SSH, TLS, and the cryptographic primitives underneath. Almost
+all of it comes from Apple's platform or from published open-source implementations, and
+one piece — modular exponentiation for macOS Screen Sharing's key agreement — is written
+here because no Apple API performs it. `docs/EXPORT_COMPLIANCE.md` is the inventory, with
+every algorithm, its use, its origin and its licence; answer App Store Connect from that
+table rather than from this paragraph. `ITSAppUsesNonExemptEncryption` is deliberately
+unset: whether the exemption applies is the owner's decision with advice, not something a
+build setting should assert for them.
 
 ### Review notes
 

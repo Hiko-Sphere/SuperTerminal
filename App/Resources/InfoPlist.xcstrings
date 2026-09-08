@@ -1,48 +1,48 @@
 {
-  "sourceLanguage" : "en",
-  "strings" : {
-    "CFBundleDisplayName" : {
-      "comment" : "Bundle display name",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Apex Terminal"
+  "sourceLanguage": "en",
+  "strings": {
+    "CFBundleDisplayName": {
+      "comment": "Bundle display name",
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Apex Terminal"
           }
         }
       }
     },
-    "CFBundleName" : {
-      "comment" : "Bundle name",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "ApexTerminal"
+    "CFBundleName": {
+      "comment": "Bundle name",
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "ApexTerminal"
           }
         }
       }
     },
-    "NSFaceIDUsageDescription" : {
-      "comment" : "Shown in the system Face ID sheet when unlocking a biometric-protected SSH key.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ApexTerminal 会在使用你选择用 Face ID 保护的 SSH 密钥前请求验证。"
+    "NSFaceIDUsageDescription": {
+      "comment": "Shown in the system Face ID sheet when unlocking a biometric-protected SSH key.",
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apex Terminal 会在使用你选择用 Face ID 保护的 SSH 密钥前请求验证。"
           }
         },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ApexTerminal 會在使用你選擇以 Face ID 保護的 SSH 金鑰前請求驗證。"
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apex Terminal 會在使用你選擇以 Face ID 保護的 SSH 金鑰前請求驗證。"
           }
         }
       }
     }
   },
-  "version" : "1.0"
+  "version": "1.0"
 }

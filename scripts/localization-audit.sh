@@ -24,4 +24,24 @@ xcodebuild -project ApexTerminal.xcodeproj -scheme ApexTerminal \
   -configuration Debug -destination "$DESTINATION" \
   SWIFT_EMIT_LOC_STRINGS=YES build > /dev/null
 
+# The product name, wherever a person reads it, is spelled with a space. The compact form
+# is the identifier — the module, the target, the log subsystem — and belongs nowhere in a
+# sentence. The rename missed the Face ID prompt because it lives in a build setting and in
+# InfoPlist.xcstrings, neither of which the catalog walk below covers.
+name_problems=0
+while IFS= read -r line; do
+  echo "  $line"
+  name_problems=1
+done < <(grep -nE 'INFOPLIST_KEY_[A-Za-z]*UsageDescription = "[^"]*ApexTerminal' \
+           "$ROOT/ApexTerminal.xcodeproj/project.pbxproj" || true)
+while IFS= read -r line; do
+  echo "  $line"
+  name_problems=1
+done < <(grep -n '"value" : "[^"]*ApexTerminal' \
+           "$ROOT/App/Resources/InfoPlist.xcstrings" "$ROOT/App/Resources/AppShortcuts.xcstrings" 2>/dev/null || true)
+if [[ "$name_problems" == "1" ]]; then
+  echo "a user-facing string spells the product without its space (see above)" >&2
+  exit 1
+fi
+
 exec python3 "$ROOT/scripts/localization-audit.py" "$DERIVED"
