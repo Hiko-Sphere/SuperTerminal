@@ -47,6 +47,9 @@ HostKey $WORK/host_ed25519
 PidFile $WORK/sshd.pid
 AuthorizedKeysFile $WORK/authorized_keys
 PasswordAuthentication no
+# The file browser talks to this server's own sftp subsystem (D-042); without this
+# line there is nothing on the other end of the channel.
+Subsystem sftp internal-sftp
 KbdInteractiveAuthentication no
 UsePAM no
 StrictModes no

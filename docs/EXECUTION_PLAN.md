@@ -19,7 +19,7 @@ from the first unfinished item rather than starting over.
 
 | # | Item | State |
 | --- | --- | --- |
-| 1.1 | SFTP | **Protocol done, interface next** — D-041: `STSFTP` version 3 over an SSH subsystem channel, 7 tests against OpenSSH `internal-sftp`. The browser, transfer queue and Files.app import/export are the next slice |
+| 1.1 | SFTP | **Browsing, transfers and file operations done** — D-041 protocol, D-042 interface. Still to do in this item: multiple tabs, drag and drop, Share Sheet, permission editing UI, and presenting a password prompt from the browser (a connection needing one is refused with a sentence rather than hanging) |
 | 1.2 | Files.app File Provider extension | Not started |
 | 1.3 | Port forwarding as a first-class object | Not started — the `direct-tcpip` plumbing exists (D-022) but is not a user feature |
 | 1.4 | keyboard-interactive, Secure Enclave keys, certificates, ProxyJump, agent, FIDO2, PQ KEX | Not started |

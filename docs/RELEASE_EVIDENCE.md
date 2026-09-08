@@ -3,6 +3,21 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-08 — after D-042 (SFTP file browser)
+
+| Command | Result |
+| --- | --- |
+| `cd Packages/ApexTerminalKit && swift test` | **211 tests in 32 suites passed** |
+| `bash scripts/app-integration-e2e.sh` | **236 passed, 0 failed** |
+| `bash scripts/ui-terminal-e2e.sh` (FileBrowserUITests) | **1 passed** — a real listing from the harness's own sshd |
+| `bash scripts/localization-audit.sh` | **green**, 53 new strings in both Chinese variants |
+| Release archive | **ARCHIVE SUCCEEDED** |
+
+The UI test was read on screen before it was trusted: the browser showed the real home
+directory over the real server, with real modification dates and real permission strings
+(`drwxr-xr-x`, `drwx------`), folders sorted first, and a working path bar. The first two
+runs failed on the test's own locator, not on the feature.
+
 ## 2026-09-08 — after D-041 (SFTP protocol)
 
 | Command | Result |

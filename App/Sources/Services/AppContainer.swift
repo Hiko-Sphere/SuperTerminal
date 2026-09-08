@@ -27,6 +27,11 @@ final class AppContainer {
     let knownHosts: any KnownHostsStore
     /// Export and restore (D-040). Built on first use — most launches never open
     /// Settings — and ignored by observation because it holds no state a view watches.
+    /// A file-browsing session for one connection (D-042).
+    func makeFileSession(for host: Host) -> SFTPSession {
+        sessionManager.makeFileSession(for: host)
+    }
+
     @ObservationIgnored lazy var backup: BackupService = BackupService(
         hosts: hostStore, screens: screenStore, snippets: snippetStore,
         knownHosts: knownHosts, settings: settings, vault: vault, log: diagnostics.logger

@@ -154,6 +154,23 @@
         }
       }
     },
+    "%@ · %@ · %@ left": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ · %2$@ · 剩余 %3$@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ · %2$@ · 剩餘 %3$@"
+          }
+        }
+      }
+    },
     "%@, %@": {
       "extractionState": "manual",
       "localizations": {
@@ -422,6 +439,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "直接連線到 VNC 連接埠。VNC 本身不加密，其密碼驗證也很弱：請只在您信任的網路上使用。"
+          }
+        }
+      }
+    },
+    "A folder must be empty before it can be deleted, and a name must not already be taken.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "文件夹必须为空才能删除，且名称不能已被占用。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "資料夾必須為空才能刪除，且名稱不能已被占用。"
+          }
+        }
+      }
+    },
+    "A folder must be empty before it can be deleted.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "文件夹必须为空才能删除。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "資料夾必須為空才能刪除。"
           }
         }
       }
@@ -1259,6 +1310,23 @@
         }
       }
     },
+    "Ascending": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "升序"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "遞增"
+          }
+        }
+      }
+    },
     "Ask": {
       "extractionState": "manual",
       "localizations": {
@@ -1599,6 +1667,23 @@
         }
       }
     },
+    "Browse Files": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "浏览文件"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "瀏覽檔案"
+          }
+        }
+      }
+    },
     "Browser login": {
       "extractionState": "manual",
       "localizations": {
@@ -1646,6 +1731,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "取消"
+          }
+        }
+      }
+    },
+    "Cancelled": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已取消"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已取消"
           }
         }
       }
@@ -1735,6 +1837,23 @@
         }
       }
     },
+    "Check that the server allows SFTP, then try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请确认服务器已启用 SFTP，然后重试。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請確認伺服器已啟用 SFTP，然後重試。"
+          }
+        }
+      }
+    },
     "Check the VNC password in this connection's settings. It is separate from the SSH password.": {
       "extractionState": "manual",
       "localizations": {
@@ -1765,6 +1884,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "請檢查此螢幕設定中的 VNC 密碼。它與 SSH 密碼是分開的。"
+          }
+        }
+      }
+    },
+    "Check the connection and try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请检查连接后重试。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請檢查連線後重試。"
+          }
+        }
+      }
+    },
+    "Check the file's owner and permissions, or connect as a user who may.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请检查该文件的属主和权限，或改用有权限的用户连接。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請檢查該檔案的擁有者和權限，或改用有權限的使用者連線。"
           }
         }
       }
@@ -1952,6 +2105,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "複製的文字保留時間"
+          }
+        }
+      }
+    },
+    "Clear finished": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清除已完成"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清除已完成"
           }
         }
       }
@@ -2449,6 +2619,23 @@
         }
       }
     },
+    "Connecting": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在连接"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在連線"
+          }
+        }
+      }
+    },
     "Connecting to the screen": {
       "extractionState": "manual",
       "localizations": {
@@ -2653,6 +2840,23 @@
         }
       }
     },
+    "Could not %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法%@。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法%@。"
+          }
+        }
+      }
+    },
     "Could not determine the iCloud account state.": {
       "extractionState": "manual",
       "localizations": {
@@ -2683,6 +2887,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "無法重新連線"
+          }
+        }
+      }
+    },
+    "Create": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "创建"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "建立"
           }
         }
       }
@@ -2823,6 +3044,23 @@
         }
       }
     },
+    "Date": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "日期"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "日期"
+          }
+        }
+      }
+    },
     "Daylight": {
       "extractionState": "manual",
       "localizations": {
@@ -2870,6 +3108,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "刪除"
+          }
+        }
+      }
+    },
+    "Delete %@?": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除 %@？"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "刪除 %@？"
           }
         }
       }
@@ -3227,6 +3482,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "下方向鍵"
+          }
+        }
+      }
+    },
+    "Download": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下载"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下載"
           }
         }
       }
@@ -3686,6 +3958,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "尋找…"
+          }
+        }
+      }
+    },
+    "Finished — %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已完成 —— %@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已完成 —— %@"
           }
         }
       }
@@ -5135,6 +5424,23 @@
         }
       }
     },
+    "New Folder": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新建文件夹"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新增資料夾"
+          }
+        }
+      }
+    },
     "New Key": {
       "extractionState": "manual",
       "localizations": {
@@ -5441,6 +5747,23 @@
         }
       }
     },
+    "No transfers": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "没有传输任务"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "沒有傳輸任務"
+          }
+        }
+      }
+    },
     "None": {
       "extractionState": "manual",
       "localizations": {
@@ -5488,6 +5811,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "未連線——您輸入的內容不會被傳送。"
+          }
+        }
+      }
+    },
+    "Not connected.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未连接。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未連線。"
           }
         }
       }
@@ -5968,6 +6308,23 @@
         }
       }
     },
+    "Opening files": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在打开文件"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在開啟檔案"
+          }
+        }
+      }
+    },
     "Opening the tunnel to the screen": {
       "extractionState": "manual",
       "localizations": {
@@ -6376,6 +6733,40 @@
         }
       }
     },
+    "Pause": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "暂停"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "暫停"
+          }
+        }
+      }
+    },
+    "Paused — %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已暂停 —— %@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已暫停 —— %@"
+          }
+        }
+      }
+    },
     "Port": {
       "extractionState": "manual",
       "localizations": {
@@ -6767,6 +7158,23 @@
         }
       }
     },
+    "Quick Look": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "快速查看"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "快速查看"
+          }
+        }
+      }
+    },
     "Reach the screen through an SSH connection or a Cloudflare tunnel, which encrypt it, or turn on a password type the app supports on the server.": {
       "extractionState": "manual",
       "localizations": {
@@ -6937,6 +7345,23 @@
         }
       }
     },
+    "Refresh the folder to see what is.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请刷新文件夹查看当前内容。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請重新整理資料夾查看目前內容。"
+          }
+        }
+      }
+    },
     "Remote screen": {
       "extractionState": "manual",
       "localizations": {
@@ -7035,6 +7460,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "要從 iCloud 移除本應用程式的資料嗎？"
+          }
+        }
+      }
+    },
+    "Rename": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重命名"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新命名"
           }
         }
       }
@@ -7209,6 +7651,40 @@
         }
       }
     },
+    "Resume": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "继续"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "繼續"
+          }
+        }
+      }
+    },
+    "Retry": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重试"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重試"
+          }
+        }
+      }
+    },
     "Retry now": {
       "extractionState": "manual",
       "localizations": {
@@ -7239,6 +7715,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "右方向鍵"
+          }
+        }
+      }
+    },
+    "Root": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "根目录"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "根目錄"
           }
         }
       }
@@ -7617,6 +8110,23 @@
         }
       }
     },
+    "Search this folder": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "搜索此文件夹"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "搜尋此資料夾"
+          }
+        }
+      }
+    },
     "Security": {
       "extractionState": "manual",
       "localizations": {
@@ -7974,6 +8484,23 @@
         }
       }
     },
+    "Show hidden files": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "显示隐藏文件"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "顯示隱藏檔案"
+          }
+        }
+      }
+    },
     "Show it here": {
       "extractionState": "manual",
       "localizations": {
@@ -8110,6 +8637,23 @@
         }
       }
     },
+    "Size": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "大小"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "大小"
+          }
+        }
+      }
+    },
     "Skip": {
       "extractionState": "manual",
       "localizations": {
@@ -8174,6 +8718,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "指令片段…"
+          }
+        }
+      }
+    },
+    "Sort by": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "排序方式"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "排序方式"
           }
         }
       }
@@ -8705,6 +9266,23 @@
         }
       }
     },
+    "That file or folder is no longer there.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "该文件或文件夹已不存在。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "該檔案或資料夾已不存在。"
+          }
+        }
+      }
+    },
     "That passcode is not right.": {
       "extractionState": "manual",
       "localizations": {
@@ -8973,6 +9551,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "檔案會用你在這裡輸入的密碼加密。該密碼不會儲存在任何地方，沒有它就打不開這份備份——任何人都不行，包括你自己。"
+          }
+        }
+      }
+    },
+    "The files on this server could not be opened.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法打开此服务器上的文件。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法開啟此伺服器上的檔案。"
           }
         }
       }
@@ -9385,6 +9980,23 @@
         }
       }
     },
+    "The server could not %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器无法%@。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "伺服器無法%@。"
+          }
+        }
+      }
+    },
     "The server offers only screen sharing security types this app does not support.": {
       "extractionState": "manual",
       "localizations": {
@@ -9398,6 +10010,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "伺服器只提供此 App 不支援的螢幕共享安全類型。"
+          }
+        }
+      }
+    },
+    "The server refused: you do not have permission to %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器拒绝：你没有权限%@。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "伺服器拒絕：你沒有權限%@。"
           }
         }
       }
@@ -9572,6 +10201,23 @@
         }
       }
     },
+    "This cannot be undone.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此操作无法撤销。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此操作無法復原。"
+          }
+        }
+      }
+    },
     "This connection has no user name saved. Edit the connection to save one.": {
       "extractionState": "manual",
       "localizations": {
@@ -9636,6 +10282,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "本裝置的鑰匙圈"
+          }
+        }
+      }
+    },
+    "This folder is empty": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此文件夹为空"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此資料夾為空"
           }
         }
       }
@@ -10014,6 +10677,23 @@
         }
       }
     },
+    "Transfers": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "传输"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "傳輸"
+          }
+        }
+      }
+    },
     "Transport": {
       "extractionState": "manual",
       "localizations": {
@@ -10371,6 +11051,40 @@
         }
       }
     },
+    "Up one level": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "返回上一级"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "返回上一層"
+          }
+        }
+      }
+    },
+    "Upload…": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上传…"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上傳…"
+          }
+        }
+      }
+    },
     "Uptime and load": {
       "extractionState": "manual",
       "localizations": {
@@ -10605,6 +11319,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "顯示"
+          }
+        }
+      }
+    },
+    "Waiting": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "等待中"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "等待中"
           }
         }
       }
@@ -10983,6 +11714,40 @@
         }
       }
     },
+    "change those permissions": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "修改这些权限"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "修改這些權限"
+          }
+        }
+      }
+    },
+    "create that folder": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "创建该文件夹"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "建立該資料夾"
+          }
+        }
+      }
+    },
     "ctrl": {
       "extractionState": "manual",
       "localizations": {
@@ -10996,6 +11761,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "ctrl"
+          }
+        }
+      }
+    },
+    "delete that": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除该项目"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "刪除該項目"
           }
         }
       }
@@ -11204,6 +11986,23 @@
         }
       }
     },
+    "list this folder": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "列出此文件夹"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "列出此資料夾"
+          }
+        }
+      }
+    },
     "macOS": {
       "extractionState": "manual",
       "localizations": {
@@ -11221,6 +12020,23 @@
         }
       }
     },
+    "move that": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "移动该项目"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "移動該項目"
+          }
+        }
+      }
+    },
     "no details": {
       "extractionState": "manual",
       "localizations": {
@@ -11234,6 +12050,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "無詳細資訊"
+          }
+        }
+      }
+    },
+    "rename that": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重命名该项目"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新命名該項目"
           }
         }
       }
@@ -11404,6 +12237,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "用於解鎖 %@"
+          }
+        }
+      }
+    },
+    "transfer that file": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "传输该文件"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "傳輸該檔案"
           }
         }
       }

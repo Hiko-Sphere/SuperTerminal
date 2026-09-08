@@ -256,6 +256,23 @@
         }
       }
     },
+    "Open the files again to reconnect.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请重新打开文件以重新连接。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請重新開啟檔案以重新連線。"
+          }
+        }
+      }
+    },
     "Re-encrypt the key with `ssh-keygen -p -Z aes256-ctr -f <key>`, or import it without a passphrase.": {
       "extractionState": "manual",
       "localizations": {
@@ -422,6 +439,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "無法建立 SSH 工作階段。"
+          }
+        }
+      }
+    },
+    "The file connection was closed.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "文件连接已关闭。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "檔案連線已關閉。"
           }
         }
       }
@@ -609,6 +643,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "伺服器拒絕啟動 shell。"
+          }
+        }
+      }
+    },
+    "The server refused to start file transfer. It may not have the SFTP subsystem enabled.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器拒绝启动文件传输。它可能没有启用 SFTP 子系统。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "伺服器拒絕啟動檔案傳輸。它可能沒有啟用 SFTP 子系統。"
           }
         }
       }

@@ -15,6 +15,8 @@ struct HostListView: View {
 
     @State private var searchText = ""
     @State private var editingHost: Host?
+    /// The connection whose files are open (D-042).
+    @State private var browsingHost: Host?
     @State private var editingScreen: ScreenConnection?
 
 
@@ -174,6 +176,10 @@ struct HostListView: View {
         .sheet(isPresented: creatingScreenBinding) {
             ScreenEditorView(screen: nil)
         }
+        .sheet(item: $browsingHost) { host in
+            FileBrowserView(session: container.makeFileSession(for: host))
+                .environment(container)
+        }
         .sheet(item: $editingHost) { host in
             HostEditorView(host: host)
         }
@@ -192,7 +198,8 @@ struct HostListView: View {
             host: host,
             onEdit: { editingHost = host },
             onDelete: { delete(host) },
-            onOpenScreen: nil
+            onOpenScreen: nil,
+            onOpenFiles: { browsingHost = host }
         ) {
             let session = container.sessionManager.open(host)
             container.hostStore.markConnected(host)
@@ -341,6 +348,8 @@ private struct HostRow: View {
     let onDelete: () -> Void
     /// Present when the connection has screen sharing set up (D-022).
     let onOpenScreen: (() -> Void)?
+    /// Opens this connection's files (D-042).
+    let onOpenFiles: (() -> Void)?
     /// Last, so the call site can pass it as the trailing closure.
     let open: () -> Void
 
@@ -373,6 +382,10 @@ private struct HostRow: View {
         // On the button itself, as the session rows do: attached outside, the button's own
         // press handling swallowed the long press and the menu never appeared.
         .contextMenu {
+            if let onOpenFiles {
+                Button("Browse Files", systemImage: "folder", action: onOpenFiles)
+                    .accessibilityIdentifier("host-files")
+            }
             if let onOpenScreen {
                 Button("Open Screen", systemImage: "display", action: onOpenScreen)
             }
