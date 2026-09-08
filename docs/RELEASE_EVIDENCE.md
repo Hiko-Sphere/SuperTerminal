@@ -3,6 +3,23 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-08 — after D-041 (SFTP protocol)
+
+| Command | Result |
+| --- | --- |
+| `cd Packages/ApexTerminalKit && swift test` | **211 tests in 32 suites passed** |
+| `swift test --filter SFTPIntegrationTests` | **7 passed** against OpenSSH `internal-sftp` |
+| `bash scripts/app-integration-e2e.sh` | **229 passed, 0 failed** |
+
+What the integration tests actually prove, since a hand-written server would have agreed
+with whatever the client did: a file written through the protocol is on the real
+filesystem byte for byte and readable without the client; a 100,000-byte payload survives
+being split across 32 KiB chunks with a partial last write and read; a 400-entry directory
+is listed in full, which needs more than one READDIR page; version 3's RENAME refuses to
+clobber, which is what makes it usable as the commit step of an atomic upload; `lstat` and
+`stat` disagree about a symlink in the way they must; and a missing path comes back as
+`noSuchFile` rather than a generic failure.
+
 ## 2026-09-08 — after D-040 (backup, restore and recovery)
 
 | Command | Result |

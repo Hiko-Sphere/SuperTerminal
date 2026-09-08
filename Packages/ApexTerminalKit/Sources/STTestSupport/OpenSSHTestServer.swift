@@ -142,6 +142,7 @@ public final class OpenSSHTestServer: @unchecked Sendable {
         StrictModes no
         PermitUserEnvironment no
         AcceptEnv ST_TEST_*
+        Subsystem sftp internal-sftp
         \(ciphers.map { "Ciphers \($0.ciphers)\nMACs \($0.macs)" } ?? "")
         LogLevel DEBUG1
         """

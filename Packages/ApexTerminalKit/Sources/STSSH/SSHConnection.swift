@@ -64,7 +64,7 @@ public actor SSHConnection {
     private let channel: Channel
     private let handler: EventLoopIsolated<NIOSSHHandler>
     private let credentialChain: SSHCredentialChain
-    private let log: STLogger
+    internal let log: STLogger
     private var closed = false
 
     private init(
@@ -336,7 +336,7 @@ public actor SSHConnection {
 
     // MARK: - Internals
 
-    private func createSessionChannel() async throws -> Channel {
+    internal func createSessionChannel() async throws -> Channel {
         let promise = channel.eventLoop.makePromise(of: Channel.self)
         let handler = handler
         channel.eventLoop.execute {
@@ -353,14 +353,14 @@ public actor SSHConnection {
         }
     }
 
-    private static func attachStream(to child: Channel) async throws -> AsyncStream<SSHChannelEvent> {
+    internal static func attachStream(to child: Channel) async throws -> AsyncStream<SSHChannelEvent> {
         let (stream, continuation) = AsyncStream<SSHChannelEvent>.makeStream(bufferingPolicy: .unbounded)
         let handler = SSHChannelDataHandler(continuation: continuation)
         try await child.pipeline.addHandler(handler).get()
         return stream
     }
 
-    private static func request(
+    internal static func request(
         on child: Channel,
         event: some Sendable,
         failureCategory: STErrorCategory,

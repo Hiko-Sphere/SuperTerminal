@@ -18,6 +18,7 @@ let package = Package(
         .library(name: "STSSH", targets: ["STSSH"]),
         .library(name: "STTerminal", targets: ["STTerminal"]),
         .library(name: "STVNC", targets: ["STVNC"]),
+        .library(name: "STSFTP", targets: ["STSFTP"]),
         .library(name: "STTestSupport", targets: ["STTestSupport"]),
     ],
     dependencies: [
@@ -77,6 +78,7 @@ let package = Package(
             name: "STSSH",
             dependencies: [
                 "STCore",
+                "STSFTP",
                 "STSecureStore",
                 "STCloudflare",
                 "CBcryptPBKDF",
@@ -120,6 +122,15 @@ let package = Package(
             exclude: ["Fixtures"]
         ),
         .target(name: "STTerminal", dependencies: ["STCore"]),
+        // SFTP version 3, over any ordered byte channel (D-041).
+        .target(
+            name: "STSFTP",
+            dependencies: [
+                "STCore",
+                .product(name: "NIOCore", package: "swift-nio"),
+            ]
+        ),
+        .testTarget(name: "STSFTPTests", dependencies: ["STSFTP", "STSSH", "STTestSupport"]),
         // The RFB client (D-022). No dependency on the SSH module: it speaks over any
         // channel, and the app hands it a `direct-tcpip` one.
         .target(
