@@ -8,6 +8,15 @@ import Foundation
 
 /// Runs a real OpenSSH `sshd` on an ephemeral port for integration tests.
 ///
+/// **Run the package's tests with `--no-parallel`.** Starting a server blocks the thread it
+/// is constructed on while it polls for sshd to answer, and in an `async` test that thread
+/// belongs to Swift Concurrency's cooperative pool. One or two at a time is harmless;
+/// enough suites doing it at once starves the pool, and the tasks waiting on an SSH
+/// handshake elsewhere never get a thread to resume on — reported, thirty seconds later,
+/// as a transport failure in whichever suite drew the short straw. Measured on 2026-09-08:
+/// six parallel runs of the full package, four with one such failure, never the same test
+/// twice; the same suite with `--no-parallel` passes and takes 113 seconds instead of 35.
+///
 /// This is a genuine SSH server — the same binary the user's servers run — not a
 /// simulation. Testing the client against a hand-written stand-in would prove only
 /// that the client agrees with the stand-in; the point of these tests is to prove it
@@ -85,7 +94,6 @@ public final class OpenSSHTestServer: @unchecked Sendable {
             .appendingPathComponent("st-sshd-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
 
-        let port = try Self.reserveEphemeralPort()
         let username = NSUserName()
 
         if hostKeyAlgorithms.contains(.ed25519) {
@@ -130,7 +138,21 @@ public final class OpenSSHTestServer: @unchecked Sendable {
             }
             .joined(separator: "\n")
 
-        let config = """
+        logURL = root.appendingPathComponent("sshd.log")
+
+        // Start on a port, and make sure the thing now answering on it is really this
+        // sshd. The port is chosen by binding zero and letting go, so there is a window in
+        // which something else can take it — and when it does, the old check ("can I
+        // connect?") was satisfied by the thief. The test then handshook with whatever was
+        // there, timed out thirty seconds later, and reported a transport failure in a
+        // suite that had done nothing wrong. Reading the greeting removes the ambiguity,
+        // and a stolen port simply costs another attempt.
+        var startedProcess: Process?
+        var startedPort = 0
+        var lastFailure = "sshd did not start"
+        for _ in 0 ..< 5 {
+            let port = try Self.reserveEphemeralPort()
+            let config = """
         Port \(port)
         ListenAddress 127.0.0.1
         \(hostKeyLines)
@@ -146,20 +168,31 @@ public final class OpenSSHTestServer: @unchecked Sendable {
         \(ciphers.map { "Ciphers \($0.ciphers)\nMACs \($0.macs)" } ?? "")
         LogLevel DEBUG1
         """
-        let configURL = root.appendingPathComponent("sshd_config")
-        try config.write(to: configURL, atomically: true, encoding: .utf8)
+            let configURL = root.appendingPathComponent("sshd_config")
+            try config.write(to: configURL, atomically: true, encoding: .utf8)
 
-        logURL = root.appendingPathComponent("sshd.log")
-        FileManager.default.createFile(atPath: logURL.path, contents: nil)
-        let logHandle = try FileHandle(forWritingTo: logURL)
+            FileManager.default.createFile(atPath: logURL.path, contents: nil)
+            let logHandle = try FileHandle(forWritingTo: logURL)
 
-        process = Process()
-        process.executableURL = URL(fileURLWithPath: Self.sshdPath)
-        process.arguments = ["-f", configURL.path, "-D", "-e"]
-        process.standardError = logHandle
-        process.standardOutput = logHandle
-        try process.run()
-        Self.watch(sshd: process.processIdentifier, root: root)
+            let candidate = Process()
+            candidate.executableURL = URL(fileURLWithPath: Self.sshdPath)
+            candidate.arguments = ["-f", configURL.path, "-D", "-e"]
+            candidate.standardError = logHandle
+            candidate.standardOutput = logHandle
+            try candidate.run()
+            Self.watch(sshd: candidate.processIdentifier, root: root)
+
+            if Self.waitUntilSSHAnswers(port: port, process: candidate) {
+                startedProcess = candidate
+                startedPort = port
+                break
+            }
+            lastFailure = (try? String(contentsOf: logURL, encoding: .utf8)) ?? lastFailure
+            if candidate.isRunning { kill(candidate.processIdentifier, SIGKILL) }
+        }
+        guard let started = startedProcess else { throw StartupError.didNotListen(lastFailure) }
+        process = started
+        let port = startedPort
 
         fixtures = Fixtures(
             root: root,
@@ -177,8 +210,6 @@ public final class OpenSSHTestServer: @unchecked Sendable {
                 encoding: .utf8
             ).trimmingCharacters(in: .whitespacesAndNewlines)
         )
-
-        try waitUntilListening(port: port)
     }
 
     /// The server's Ed25519 host key fingerprint, for pinning assertions.
@@ -235,17 +266,23 @@ public final class OpenSSHTestServer: @unchecked Sendable {
         try? watchdog.run()
     }
 
-    private func waitUntilListening(port: Int, timeout: TimeInterval = 15) throws {
+    /// Whether an SSH server — this one — is answering on the port.
+    private static func waitUntilSSHAnswers(port: Int, process: Process, timeout: TimeInterval = 15) -> Bool {
         let deadline = Date().addingTimeInterval(timeout)
         while Date() < deadline {
-            if Self.canConnect(port: port) { return }
-            guard process.isRunning else { break }
+            if greetsAsSSH(port: port) { return true }
+            guard process.isRunning else { return false }
             Thread.sleep(forTimeInterval: 0.05)
         }
-        throw StartupError.didNotListen(log())
+        return false
     }
 
-    private static func canConnect(port: Int) -> Bool {
+    /// Connects and reads the first few bytes, which an SSH server sends unprompted.
+    ///
+    /// Anything else on the port — a forwarding listener from another test, a stray
+    /// process — either says something different or says nothing, and both answer the
+    /// question this is really asking: is the server we just started the one here?
+    private static func greetsAsSSH(port: Int) -> Bool {
         let socketFD = socket(AF_INET, SOCK_STREAM, 0)
         guard socketFD >= 0 else { return false }
         defer { close(socketFD) }
@@ -253,12 +290,19 @@ public final class OpenSSHTestServer: @unchecked Sendable {
         address.sin_family = sa_family_t(AF_INET)
         address.sin_port = UInt16(port).bigEndian
         address.sin_addr.s_addr = inet_addr("127.0.0.1")
-        let result = withUnsafePointer(to: &address) { pointer in
+        let connected = withUnsafePointer(to: &address) { pointer in
             pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) { sockaddrPointer in
                 Darwin.connect(socketFD, sockaddrPointer, socklen_t(MemoryLayout<sockaddr_in>.size))
             }
         }
-        return result == 0
+        guard connected == 0 else { return false }
+
+        var timeout = timeval(tv_sec: 1, tv_usec: 0)
+        setsockopt(socketFD, SOL_SOCKET, SO_RCVTIMEO, &timeout, socklen_t(MemoryLayout<timeval>.size))
+        var buffer = [UInt8](repeating: 0, count: 4)
+        let read = recv(socketFD, &buffer, buffer.count, 0)
+        guard read == 4 else { return false }
+        return buffer == Array("SSH-".utf8)
     }
 
     /// Binds port 0, reads back the assigned port, then releases it.

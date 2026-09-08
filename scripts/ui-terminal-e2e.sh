@@ -40,6 +40,7 @@ cp "$WORK/client.pub" "$WORK/authorized_keys"
 chmod 600 "$WORK/authorized_keys" "$WORK/host_ed25519" "$WORK/client"
 
 PORT="$(python3 -c 'import socket; s=socket.socket(); s.bind(("127.0.0.1",0)); print(s.getsockname()[1]); s.close()')"
+FORWARD_PORT="$(python3 -c 'import socket; s=socket.socket(); s.bind(("127.0.0.1",0)); print(s.getsockname()[1]); s.close()')"
 cat > "$WORK/sshd_config" <<CONFIG
 Port $PORT
 ListenAddress 127.0.0.1
@@ -99,6 +100,7 @@ env \
   TEST_RUNNER_ST_UITEST_KEY="$(cat "$WORK/client")" \
   TEST_RUNNER_ST_UITEST_TRUST_HOST_KEYS=1 \
   TEST_RUNNER_ST_UITEST_NAME="Local Test Server" \
+  TEST_RUNNER_ST_UITEST_FORWARD_PORT="$FORWARD_PORT" \
   TEST_RUNNER_ST_UITEST_VNC_PORT="$VNC_PORT" \
   TEST_RUNNER_ST_UITEST_VNC_LOG="$VNC_LOG" \
   xcodebuild test \

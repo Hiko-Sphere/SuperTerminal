@@ -34,9 +34,14 @@ simulator in the loop.
 
 ```bash
 # The package: fastest feedback, no simulator
+#
+# `--no-parallel` is not optional. Several suites each start a real sshd, and starting one
+# blocks the thread it happens to be on; run enough of them at once and Swift Concurrency's
+# cooperative pool has nothing left to resume the tasks waiting on an SSH handshake, which
+# then times out and blames a suite that did nothing wrong. See `OpenSSHTestServer`.
 cd Packages/ApexTerminalKit
 swift build
-swift test
+swift test --no-parallel
 swift test -c release --filter TerminalThroughputTests   # the performance numbers
 
 # Upstream's own suite against the vendored fork

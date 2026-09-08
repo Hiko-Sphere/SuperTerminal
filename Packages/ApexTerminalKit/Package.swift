@@ -20,6 +20,7 @@ let package = Package(
         .library(name: "STVNC", targets: ["STVNC"]),
         .library(name: "STSFTP", targets: ["STSFTP"]),
         .library(name: "STFileProvider", targets: ["STFileProvider"]),
+        .library(name: "STForwarding", targets: ["STForwarding"]),
         .library(name: "STTestSupport", targets: ["STTestSupport"]),
     ],
     dependencies: [
@@ -103,6 +104,20 @@ let package = Package(
             resources: [.process("Localizable.xcstrings")]
         ),
         .target(
+            name: "STForwarding",
+            dependencies: [
+                "STCore",
+                "STSSH",
+                .product(name: "NIOCore", package: "swift-nio"),
+                .product(name: "NIOConcurrencyHelpers", package: "swift-nio"),
+                .product(name: "NIOTransportServices", package: "swift-nio-transport-services"),
+                .product(name: "NIOSSH", package: "swift-nio-ssh-rsa"),
+            ],
+            // A refused port and a refused forward are both things the user reads, and
+            // there is no app around this module to reword them.
+            resources: [.process("Localizable.xcstrings")]
+        ),
+        .target(
             name: "STFileProvider",
             dependencies: [
                 "STCore",
@@ -147,6 +162,10 @@ let package = Package(
             ]
         ),
         .testTarget(name: "STSFTPTests", dependencies: ["STSFTP", "STSSH", "STTestSupport"]),
+        .testTarget(
+            name: "STForwardingTests",
+            dependencies: ["STForwarding", "STSSH", "STTestSupport", .product(name: "NIOPosix", package: "swift-nio")]
+        ),
         .testTarget(
             name: "STFileProviderTests",
             dependencies: ["STFileProvider", "STSSH", "STSFTP", "STTestSupport"]

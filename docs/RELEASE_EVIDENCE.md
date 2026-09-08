@@ -3,6 +3,42 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-08 — after D-045 (port forwarding)
+
+| Command | Result |
+| --- | --- |
+| `cd Packages/ApexTerminalKit && swift test --no-parallel` | **249 tests in 36 suites passed**, twice in a row, 112 s |
+| `bash scripts/app-integration-e2e.sh` | **243 tests in 44 suites passed** |
+| `bash scripts/ui-terminal-e2e.sh` | **46 passed, 3 failed** — the same 3 the previous commit produces, see D-044's entry |
+| `bash scripts/localization-audit.sh` | **green**, 40 new strings in both Chinese variants |
+| Release archive | **ARCHIVE SUCCEEDED** |
+
+**What the forwarding tests actually move.** Nine of the package's tests are a real listening
+socket on this machine, through a real SSH connection to OpenSSH's own `sshd`, to a real
+service — bytes in, the same bytes back, counted by the rule's own traffic counters. A local
+forward carries a service's opening greeting, which is the case a splice assembled a moment
+too late silently loses. A remote forward asks the server to listen, and a connection made
+to the *server's* port comes back and is answered here. A dynamic forward completes a SOCKS5
+handshake, tunnels, and refuses `BIND` and an authentication-only client in the protocol's
+own terms. Three app tests do it again through a `TerminalSession`, with the destination set
+to the test server's own SSH port so that what comes back is a real `SSH-2.0-` banner.
+
+**`--no-parallel` is new, and it is not a workaround for a product defect.** Starting an
+`OpenSSHTestServer` blocks the thread it is constructed on while it polls for sshd to
+answer, and in an `async` test that thread belongs to Swift Concurrency's cooperative pool.
+Enough suites doing that at once leaves nothing to resume the tasks waiting on an SSH
+handshake, which then time out and blame a suite that did nothing wrong. Measured: with the
+forwarding suite added, six parallel runs produced four such failures, never the same test
+twice; the same suite with `--no-parallel` passed twice, and without the forwarding suite the
+parallel run passed twice. The pool was already close to the edge — the new suite is what
+pushed it over, not what broke it.
+
+Two things were fixed on the way to that conclusion rather than left as folklore.
+`OpenSSHTestServer` now reads the greeting on its port before declaring itself started: it
+chooses a port by binding zero and letting go, and when something else won that race the old
+check — "can I connect?" — was satisfied by the thief. And this suite's own listeners now
+bind outside the ephemeral range (49152 and up on this machine), so they cannot be the thief.
+
 ## 2026-09-08 — after D-044 (servers in the Files app)
 
 | Command | Result |

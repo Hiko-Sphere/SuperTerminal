@@ -3,6 +3,7 @@ import NIOTransportServices
 import Observation
 import STCloudflare
 import STCore
+import STForwarding
 import STSSH
 import STTerminal
 import UIKit
@@ -109,6 +110,13 @@ final class TerminalSession: Identifiable {
 
     private var emulator: TerminalEmulator
     private var connection: SSHConnection?
+    /// The port forwards running on this connection (D-045), and what each is doing.
+    ///
+    /// It lives on the session rather than on the host because that is the truth: a
+    /// forward is a thing this connection is doing, and it stops existing when the
+    /// connection does. The rules are saved on the host; the running of them is here.
+    private var forwarding: ForwardingSession?
+    private(set) var forwardStates: [PortForward.ID: PortForwardSnapshot] = [:]
     private var shell: SSHShellSession?
     private var pumpTask: Task<Void, Never>?
     private let group: NIOTSEventLoopGroup
@@ -235,6 +243,7 @@ final class TerminalSession: Identifiable {
             )
             self.shell = shell
             startPump(shell: shell, connection: connection)
+            await startForwards(on: connection)
             state = .connected
             onConnected?()
             haptics?.play(.connected)
@@ -255,6 +264,7 @@ final class TerminalSession: Identifiable {
     func disconnect() async {
         pumpTask?.cancel()
         pumpTask = nil
+        await stopForwards()
         if let shell { await shell.close() }
         if let connection { await connection.close() }
         shell = nil
@@ -641,10 +651,55 @@ final class TerminalSession: Identifiable {
 
     private func noteShellExited() { shellExited = true }
 
+    // MARK: - Port forwarding (D-045)
+
+    /// Rules the user asked to start with the connection.
+    private func startForwards(on connection: SSHConnection) async {
+        let rules = host.portForwards ?? []
+        guard !rules.isEmpty else { return }
+        let session = ForwardingSession(connection: connection, group: group, log: log)
+        forwarding = session
+        for rule in rules where rule.startsAutomatically {
+            _ = await session.start(rule)
+        }
+        await refreshForwardStates()
+    }
+
+    private func stopForwards() async {
+        await forwarding?.stopAll()
+        forwarding = nil
+        forwardStates = [:]
+    }
+
+    /// Starts one rule by hand. Returns nothing: what happened is in `forwardStates`,
+    /// which is what the interface reads.
+    func startForward(_ rule: PortForward) async {
+        guard let connection else { return }
+        if forwarding == nil {
+            forwarding = ForwardingSession(connection: connection, group: group, log: log)
+        }
+        _ = await forwarding?.start(rule)
+        await refreshForwardStates()
+    }
+
+    func stopForward(_ id: PortForward.ID) async {
+        await forwarding?.stop(id)
+        await refreshForwardStates()
+    }
+
+    /// Re-reads what every rule is doing. Called after a change, and on a timer while the
+    /// forwarding screen is open — traffic counters have no other way to move.
+    func refreshForwardStates() async {
+        forwardStates = await forwarding?.snapshot() ?? [:]
+    }
+
     private func handleClosed() async {
         pumpTask = nil
         shell = nil
         connection = nil
+        // A forward cannot outlive the connection under it, and must not go on claiming
+        // to be running when the thing it runs over has gone.
+        await stopForwards()
         if case .failed = state { return }
         if shellExited {
             state = .disconnected(reason: String(localized: "The shell exited."))

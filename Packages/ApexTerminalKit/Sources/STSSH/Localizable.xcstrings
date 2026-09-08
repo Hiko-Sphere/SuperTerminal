@@ -511,6 +511,23 @@
         }
       }
     },
+    "The port may already be in use, or the server may not allow remote forwarding — check that its sshd has AllowTcpForwarding and, for a port below 1024 or a non-local address, GatewayPorts.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "该端口可能已被占用，或服务器不允许远程转发——请检查其 sshd 是否设置了 AllowTcpForwarding；若端口低于 1024 或地址不是本机，还需要 GatewayPorts。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "該連接埠可能已被佔用，或伺服器不允許遠端轉發——請檢查其 sshd 是否設定了 AllowTcpForwarding；若連接埠低於 1024 或位址不是本機，還需要 GatewayPorts。"
+          }
+        }
+      }
+    },
     "The private key file is damaged or incomplete.": {
       "extractionState": "manual",
       "localizations": {
@@ -609,6 +626,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "伺服器拒絕分配終端機。"
+          }
+        }
+      }
+    },
+    "The server refused to listen on port %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器拒绝在端口 %@ 上监听。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "伺服器拒絕在連接埠 %@ 上監聽。"
           }
         }
       }

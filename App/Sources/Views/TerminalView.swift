@@ -16,6 +16,7 @@ struct TerminalView: View {
 
     @State private var isSearching = false
     @State private var showsSnippets = false
+    @State private var showsForwards = false
     @State private var searchQuery = ""
     @State private var searchCaseSensitive = false
 
@@ -201,6 +202,9 @@ struct TerminalView: View {
         .sheet(isPresented: assistantBinding) {
             AssistantView(session: session)
                 .environment(container)
+        }
+        .sheet(isPresented: $showsForwards) {
+            PortForwardsView(session: session)
         }
         .sheet(isPresented: $showsSnippets) {
             SnippetPickerView(session: session)
@@ -399,6 +403,10 @@ struct TerminalView: View {
                 Button(String(localized: "Assistant…"), systemImage: "sparkles") {
                     scene.isShowingAssistant = true
                 }
+                Button(String(localized: "Port Forwards…"), systemImage: "arrow.left.arrow.right") {
+                    showsForwards = true
+                }
+                .accessibilityIdentifier("terminal-menu-forwards")
                 Button(String(localized: "Find…"), systemImage: "magnifyingglass") {
                     isSearching = true
                 }

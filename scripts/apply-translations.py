@@ -33,6 +33,7 @@ CATALOGS = {
     "STSSH": "Packages/ApexTerminalKit/Sources/STSSH/Localizable.xcstrings",
     "STCloudflare": "Packages/ApexTerminalKit/Sources/STCloudflare/Localizable.xcstrings",
     "STFileProvider": "Packages/ApexTerminalKit/Sources/STFileProvider/Localizable.xcstrings",
+    "STForwarding": "Packages/ApexTerminalKit/Sources/STForwarding/Localizable.xcstrings",
 }
 SPECIFIER = re.compile(r"%(?:\d+\$)?(?:@|lld|llu|lf|d|u|s)")
 

@@ -124,6 +124,37 @@ wrapped across lines.
 cannot fight. When a program has enabled mouse reporting, two-finger scrolling becomes
 wheel events for that program instead.
 
+## Port forwarding
+
+Session menu → **Port Forwards**. Three kinds, the same three `ssh` offers:
+
+* **Local** (`ssh -L`) — this device listens; anything that connects is carried through the
+  server to a destination the *server* can reach. This is how you reach a database bound to
+  the server's own loopback: point the rule at `127.0.0.1:5432` and connect your client to
+  `127.0.0.1:<the port you chose>`.
+* **Remote** (`ssh -R`) — the server listens; anything that connects to it *there* is
+  carried back to a destination this device can reach. The server has to allow it
+  (`AllowTcpForwarding`, on by default), and binding anything other than its own loopback
+  additionally needs `GatewayPorts`, which most configurations leave off. Port 0 asks the
+  server to choose a port and it reports which one it took.
+* **Dynamic** (`ssh -D`) — this device listens as a SOCKS5 proxy and each client names its
+  own destination, which the server then connects to. One rule instead of one per address.
+  `CONNECT` only, no authentication: the proxy is bound to `127.0.0.1`, where a password
+  would protect against nothing that reaching `127.0.0.1` has not already defeated, and
+  `BIND`/`UDP ASSOCIATE` would require listening on the network for a peer to call back,
+  which is exactly what a forward on a phone must not do.
+
+A rule is saved with the connection, can be named, and can be set to start with it.
+
+Two limits worth knowing before you rely on one:
+
+* **A forward lives as long as the app does.** iOS suspends an app that is not on screen,
+  and a suspended app's sockets stop being served. Nothing here keeps a tunnel alive in the
+  background, and the screen says so rather than letting you find out later.
+* **Local and dynamic forwards listen on `127.0.0.1` only.** A phone that listened on its
+  Wi-Fi address would be offering a tunnel into your server to everything on whatever
+  network it has joined.
+
 ## Diagnostics
 
 Settings → Export diagnostics produces a report that contains **no** commands, terminal

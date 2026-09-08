@@ -188,6 +188,57 @@
         }
       }
     },
+    "%@, failed, %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@，失败，%@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@，失敗，%@"
+          }
+        }
+      }
+    },
+    "%@, running, %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@，运行中，%@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@，執行中，%@"
+          }
+        }
+      }
+    },
+    "%@, stopped, %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@，已停止，%@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@，已停止，%@"
+          }
+        }
+      }
+    },
     "%@. %@": {
       "extractionState": "manual",
       "localizations": {
@@ -303,6 +354,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "第 %lld 項，共 %lld 項"
+          }
+        }
+      }
+    },
+    "%lld open · %@ sent · %@ received": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 个连接 · 已发送 %@ · 已接收 %@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 個連線 · 已傳送 %@ · 已接收 %@"
           }
         }
       }
@@ -490,6 +558,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "資料夾必須為空才能刪除。"
+          }
+        }
+      }
+    },
+    "A forward carries a port on this device to a port the server can reach, or the other way round.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "转发把本设备上的一个端口接到服务器能访问的端口，或者反过来。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "轉發把本裝置上的一個連接埠接到伺服器能存取的連接埠，或者反過來。"
+          }
+        }
+      }
+    },
+    "A forward runs only while Apex Terminal is running and this connection is open. Leaving the app for long enough suspends it, and the forward stops with it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "转发只在 Apex Terminal 运行、且此连接保持打开时有效。离开 App 足够久，系统会挂起它，转发也随之停止。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "轉發只在 Apex Terminal 執行、且此連線保持開啟時有效。離開 App 夠久，系統會暫停它，轉發也隨之停止。"
           }
         }
       }
@@ -949,6 +1051,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "位址"
+          }
+        }
+      }
+    },
+    "Address the server binds": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器绑定的地址"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "伺服器綁定的位址"
           }
         }
       }
@@ -3333,6 +3452,57 @@
         }
       }
     },
+    "Destination": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目标"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目標"
+          }
+        }
+      }
+    },
+    "Destination host": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目标主机"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目標主機"
+          }
+        }
+      }
+    },
+    "Destination port": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目标端口"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目標連接埠"
+          }
+        }
+      }
+    },
     "Diagnostics": {
       "extractionState": "manual",
       "localizations": {
@@ -3588,6 +3758,23 @@
         }
       }
     },
+    "Dynamic (SOCKS5)": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "动态（SOCKS5）"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "動態（SOCKS5）"
+          }
+        }
+      }
+    },
     "Edit": {
       "extractionState": "manual",
       "localizations": {
@@ -3618,6 +3805,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "編輯連線"
+          }
+        }
+      }
+    },
+    "Edit Forward": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "编辑转发"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "編輯轉發"
           }
         }
       }
@@ -4625,6 +4829,23 @@
         }
       }
     },
+    "Host": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "主机"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "主機"
+          }
+        }
+      }
+    },
     "Host key changed": {
       "extractionState": "manual",
       "localizations": {
@@ -5288,6 +5509,23 @@
         }
       }
     },
+    "Leave the address as 127.0.0.1 unless the server's sshd sets GatewayPorts — without it, a request to bind anything else is refused. Port 0 asks the server to choose.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "除非服务器的 sshd 设置了 GatewayPorts，否则请保持地址为 127.0.0.1——没有它，绑定其它地址的请求会被拒绝。端口填 0 表示让服务器自己选。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "除非伺服器的 sshd 設定了 GatewayPorts，否則請保持位址為 127.0.0.1——沒有它，綁定其它位址的請求會被拒絕。連接埠填 0 表示讓伺服器自己選。"
+          }
+        }
+      }
+    },
     "Left arrow": {
       "extractionState": "manual",
       "localizations": {
@@ -5369,6 +5607,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "監聽連接埠"
+          }
+        }
+      }
+    },
+    "Local": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本地"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本機"
           }
         }
       }
@@ -5577,6 +5832,23 @@
         }
       }
     },
+    "New Forward": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新建转发"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新增轉發"
+          }
+        }
+      }
+    },
     "New Key": {
       "extractionState": "manual",
       "localizations": {
@@ -5709,6 +5981,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "尚未為服務提供者儲存 API 金鑰。"
+          }
+        }
+      }
+    },
+    "No Port Forwards": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "没有端口转发"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "沒有連接埠轉發"
           }
         }
       }
@@ -7056,6 +7345,40 @@
         }
       }
     },
+    "Port Forwards": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "端口转发"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "連接埠轉發"
+          }
+        }
+      }
+    },
+    "Port Forwards…": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "端口转发…"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "連接埠轉發…"
+          }
+        }
+      }
+    },
     "Port must be between 1 and 65535.": {
       "extractionState": "manual",
       "localizations": {
@@ -7069,6 +7392,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "連接埠必須在 1 到 65535 之間。"
+          }
+        }
+      }
+    },
+    "Port on the server": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器上的端口"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "伺服器上的連接埠"
+          }
+        }
+      }
+    },
+    "Port on this device": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本设备上的端口"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本裝置上的連接埠"
           }
         }
       }
@@ -7596,6 +7953,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "請重新整理資料夾查看目前內容。"
+          }
+        }
+      }
+    },
+    "Remote": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "远程"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "遠端"
           }
         }
       }
@@ -9045,6 +9419,40 @@
         }
       }
     },
+    "Start": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "启动"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "啟動"
+          }
+        }
+      }
+    },
+    "Start with the connection": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "随连接一起启动"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "隨連線一起啟動"
+          }
+        }
+      }
+    },
     "Starting screen sharing": {
       "extractionState": "manual",
       "localizations": {
@@ -10286,6 +10694,23 @@
         }
       }
     },
+    "The server listens. Anything that connects to it there is carried back to a destination this device can reach.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "由服务器监听。连到那里的流量会被带回本设备能访问的目标。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "由伺服器監聽。連到那裡的流量會被帶回本裝置能存取的目標。"
+          }
+        }
+      }
+    },
     "The server offers only screen sharing security types this app does not support.": {
       "extractionState": "manual",
       "localizations": {
@@ -10571,6 +10996,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "此裝置無法執行 Apple Intelligence。"
+          }
+        }
+      }
+    },
+    "This device listens as a SOCKS5 proxy. Each client picks its own destination, which the server then connects to — one rule instead of one per address.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本设备作为 SOCKS5 代理监听。每个客户端各自指定目标，再由服务器去连接——一条规则顶一批地址。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本裝置作為 SOCKS5 代理監聽。每個用戶端各自指定目標，再由伺服器去連線——一條規則抵一批位址。"
+          }
+        }
+      }
+    },
+    "This device listens. Anything that connects is carried through the server to the destination — the way to reach a database that only the server can see.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "由本设备监听。连进来的流量经服务器送到目标——用来访问只有服务器能看到的数据库。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "由本裝置監聽。連進來的流量經伺服器送到目標——用來存取只有伺服器能看到的資料庫。"
           }
         }
       }

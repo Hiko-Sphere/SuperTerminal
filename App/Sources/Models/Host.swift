@@ -1,5 +1,6 @@
 import Foundation
 import STCloudflare
+import STForwarding
 import STSSH
 
 /// A saved connection.
@@ -47,6 +48,9 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
     public var effectivePlatform: HostPlatform? { platformOverride ?? detectedPlatform }
 
     public var usesServiceToken: Bool { accessAuthentication == .serviceToken }
+    /// Port-forwarding rules saved with this connection (D-045). Optional so records
+    /// written before the feature existed still decode.
+    public var portForwards: [PortForward]?
     /// Whether this server appears in the Files app (D-044).
     ///
     /// Optional so records written before the feature existed still decode, and `nil`
@@ -132,7 +136,8 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
         accessAuthentication: AccessAuthentication? = nil,
         platformOverride: HostPlatform? = nil,
         detectedPlatform: HostPlatform? = nil,
-        showsInFiles: Bool? = nil
+        showsInFiles: Bool? = nil,
+        portForwards: [PortForward]? = nil
     ) {
         self.id = id
         self.name = name
@@ -151,6 +156,7 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
         self.platformOverride = platformOverride
         self.detectedPlatform = detectedPlatform
         self.showsInFiles = showsInFiles
+        self.portForwards = portForwards
     }
 
     /// The identity host keys are remembered against.

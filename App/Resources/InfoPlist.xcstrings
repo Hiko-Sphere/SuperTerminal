@@ -38,13 +38,13 @@
       }
     },
     "CFBundleName" : {
-      "comment" : "Bundle name",
+      "comment" : "Bundle name. The product name, spelled the way a person reads it — the system falls back to this wherever the display name is absent.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "ApexTerminal"
+            "state" : "translated",
+            "value" : "Apex Terminal"
           }
         }
       }

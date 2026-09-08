@@ -1,4 +1,5 @@
 import Foundation
+import STForwarding
 import STSSH
 
 #if DEBUG
@@ -43,7 +44,20 @@ enum UITestSeeding {
                 port: port,
                 username: username,
                 transport: .directTCP,
-                credentials: [.privateKey(id: keyID)]
+                credentials: [.privateKey(id: keyID)],
+                // A forwarding rule, for the run that drives the port-forward screen
+                // (D-045). Its destination is the test server's own SSH port, which is
+                // the one address the harness can promise is listening.
+                portForwards: environment["ST_UITEST_FORWARD_PORT"].flatMap { Int($0) }.map { listenPort in
+                    [PortForward(
+                        id: UUID(uuidString: "00000000-0000-4000-A000-000000000004")!,
+                        name: "Seeded forward",
+                        kind: .local,
+                        listenPort: listenPort,
+                        targetHost: "127.0.0.1",
+                        targetPort: port
+                    )]
+                }
             ),
             privateKeyPEM: pem,
             keyID: keyID,

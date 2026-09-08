@@ -66,16 +66,29 @@ public actor SSHConnection {
     private let credentialChain: SSHCredentialChain
     internal let log: STLogger
     private var closed = false
+    /// Where `forwarded-tcpip` channels go (D-045). Created before the handler, because
+    /// the handler needs it to decide whether to accept one.
+    internal let forwardedChannels: ForwardedChannelRouter
+
+    /// The loop that owns the connection.
+    ///
+    /// Public because port forwarding needs it (D-045): a forwarded connection is two
+    /// channels glued together, and the glue reaches across from one to the other, which
+    /// is only safe if both are on the same loop. Callers put their end of the pair here.
+    public nonisolated var eventLoop: EventLoop { channel.eventLoop }
+    internal nonisolated var sshHandler: EventLoopIsolated<NIOSSHHandler> { handler }
 
     private init(
         channel: Channel,
         handler: EventLoopIsolated<NIOSSHHandler>,
         credentialChain: SSHCredentialChain,
+        forwardedChannels: ForwardedChannelRouter,
         log: STLogger
     ) {
         self.channel = channel
         self.handler = handler
         self.credentialChain = credentialChain
+        self.forwardedChannels = forwardedChannels
         self.log = log
     }
 
@@ -107,6 +120,7 @@ public actor SSHConnection {
         // so the only safe place to build and install it is the loop that owns it.
         let readyPromise = channel.eventLoop.makePromise(of: Void.self)
         let monitor = SSHHandshakeMonitor(readyPromise: readyPromise, log: log)
+        let forwardedChannels = ForwardedChannelRouter()
 
         let handlerBox: EventLoopIsolated<NIOSSHHandler>
         do {
@@ -120,7 +134,34 @@ public actor SSHConnection {
                         )
                     ),
                     allocator: channel.allocator,
-                    inboundChildChannelInitializer: nil
+                    // Server-opened channels are refused unless a remote forward asked
+                    // for them (D-045). Passing `nil` here would refuse all of them,
+                    // which was right until remote forwarding existed and would now
+                    // silently break it; accepting all of them would let a server open
+                    // connections into the app that nothing requested.
+                    inboundChildChannelInitializer: { child, type in
+                        guard case let .forwardedTCPIP(forwarded) = type,
+                              let route = forwardedChannels.route(
+                                  host: forwarded.listeningHost,
+                                  port: forwarded.listeningPort
+                              )
+                        else {
+                            log.info("refused a channel the server opened", ["type": String(describing: type)])
+                            return child.eventLoop.makeFailedFuture(SSHConnection.unexpectedInboundChannel)
+                        }
+                        log.debug("accepted a forwarded connection", [
+                            "host": forwarded.listeningHost,
+                            "port": "\(forwarded.listeningPort)",
+                        ])
+                        // The route is called inside the initialiser, before the channel
+                        // is active, so it can install a handler in time to catch what
+                        // the server sends first. Switching `autoRead` off here would not
+                        // help: a child channel takes that from its parent when it
+                        // activates, and would turn it straight back on.
+                        return child.setOption(ChannelOptions.allowRemoteHalfClosure, value: true)
+                            .flatMap { child.pipeline.addHandler(SSHDataToByteBufferCodec()) }
+                            .map { route(child, forwarded) }
+                    }
                 )
                 try channel.pipeline.syncOperations.addHandlers([sshHandler, monitor])
                 // A peer that accepts and immediately closes — a health-check port, a
@@ -175,6 +216,7 @@ public actor SSHConnection {
             channel: channel,
             handler: handlerBox,
             credentialChain: chain,
+            forwardedChannels: forwardedChannels,
             log: log
         )
     }
@@ -195,6 +237,12 @@ public actor SSHConnection {
             AES256CTRSHA256ETMTransportProtection.self,
         ]
     }
+
+    /// Refuses a channel the server opened that no forward asked for.
+    static let unexpectedInboundChannel = STError(
+        category: .sshChannel,
+        message: "The server tried to open a channel that was not requested."
+    )
 
     /// The transport channel's closed future, so callers can observe disconnection.
     public var closeFuture: EventLoopFuture<Void> { channel.closeFuture }
@@ -300,6 +348,21 @@ public actor SSHConnection {
     /// handlers; the SSH data handler that turns channel data into bytes is installed
     /// here, because every consumer needs it.
     public func openDirectTCPIP(host: String, port: Int) async throws -> Channel {
+        try await openDirectTCPIP(host: host, port: port) { $0.eventLoop.makeSucceededVoidFuture() }
+    }
+
+    /// The same, with a chance to configure the channel *before* it is active.
+    ///
+    /// Port forwarding needs this (D-045): a service that speaks first — SMTP, IMAP, an
+    /// SSH server behind the forward — sends its greeting the moment the channel opens,
+    /// and a handler added afterwards would arrive to find those bytes already delivered
+    /// to a pipeline that had nowhere to put them. `configure` runs inside the channel
+    /// initialiser, which is the only point that is definitively early enough.
+    public func openDirectTCPIP(
+        host: String,
+        port: Int,
+        configure: @escaping @Sendable (Channel) -> EventLoopFuture<Void>
+    ) async throws -> Channel {
         let promise = channel.eventLoop.makePromise(of: Channel.self)
         let handler = handler
         let target = SSHChannelType.DirectTCPIP(
@@ -312,6 +375,8 @@ public actor SSHConnection {
                 sshHandler.createChannel(promise, channelType: .directTCPIP(target)) { child, _ in
                     child.setOption(ChannelOptions.allowRemoteHalfClosure, value: true).flatMap {
                         child.pipeline.addHandler(SSHDataToByteBufferCodec())
+                    }.flatMap {
+                        configure(child)
                     }
                 }
             }

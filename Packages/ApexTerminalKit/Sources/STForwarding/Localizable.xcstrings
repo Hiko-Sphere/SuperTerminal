@@ -1,0 +1,193 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "Could not listen on port %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法在端口 %@ 上监听。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法在連接埠 %@ 上監聽。"
+          }
+        }
+      }
+    },
+    "Enter the address the traffic should be forwarded to.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请填写流量要转发到的地址。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請填寫流量要轉發到的位址。"
+          }
+        }
+      }
+    },
+    "Port %@ on this device is already in use.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本设备的端口 %@ 已被占用。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本裝置的連接埠 %@ 已被佔用。"
+          }
+        }
+      }
+    },
+    "Ports below 1024 are reserved. Use a port of 1024 or above.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "低于 1024 的端口是保留端口。请使用 1024 或更大的端口。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "低於 1024 的連接埠是保留連接埠。請使用 1024 或更大的連接埠。"
+          }
+        }
+      }
+    },
+    "Stop whatever is using it, or give this rule a different port.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请停止占用它的程序，或给这条规则换一个端口。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請停止佔用它的程式，或給這條規則換一個連接埠。"
+          }
+        }
+      }
+    },
+    "The SOCKS client asked for something this proxy does not offer.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SOCKS 客户端请求了此代理不提供的功能。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SOCKS 用戶端請求了此代理不提供的功能。"
+          }
+        }
+      }
+    },
+    "The destination port must be between 1 and 65535.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目标端口必须在 1 到 65535 之间。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目標連接埠必須在 1 到 65535 之間。"
+          }
+        }
+      }
+    },
+    "The forward could not be started.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "转发未能启动。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "轉發未能啟動。"
+          }
+        }
+      }
+    },
+    "The port on this device must be between 1 and 65535.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本设备上的端口必须在 1 到 65535 之间。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本裝置上的連接埠必須在 1 到 65535 之間。"
+          }
+        }
+      }
+    },
+    "The port the server listens on must be between 0 and 65535. Zero asks it to choose one.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器监听的端口必须在 0 到 65535 之间。填 0 表示让它自己选。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "伺服器監聽的連接埠必須在 0 到 65535 之間。填 0 表示讓它自己選。"
+          }
+        }
+      }
+    },
+    "This device will not let the app listen on port %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本设备不允许 App 在端口 %@ 上监听。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本裝置不允許 App 在連接埠 %@ 上監聽。"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}
