@@ -234,3 +234,46 @@ Error Domain=com.apple.LocalAuthentication Code=-1020
 so `SecureEnclaveSSHKey.canRequireBiometrics` is `false` there and the UI says so instead
 of offering a switch that cannot work. The biometric policy is H-7 in
 `docs/HUMAN_ACTIONS.md` and is not claimed as verified.
+
+## The first modified key press a UI test sends is thrown away
+
+Measured on 2026-09-08, on an iPhone 17 Pro simulator, with eight probes against ⌘F, each
+run twice:
+
+| what was sent | did ⌘F open the find bar |
+| --- | --- |
+| ⌘F, first thing after the terminal opened | no |
+| ⌘F after typing a whole shell command | no |
+| ⌘F after a five-second settle | no |
+| ⌘F after typing one plain character | no |
+| ⌘F after ⌘C | **yes** |
+| ⌘F after ⌃⌥⇧⌘Z, which the app does not bind | **yes** |
+| ⌘F sent twice | **yes** |
+| the same command from the Session menu, no keyboard at all | **yes** |
+
+So: it is not a race — five seconds of waiting changes nothing — it is not about ⌘F, and
+it is not the app, which handles the second press and the menu row perfectly well. **The
+first modifier-bearing key press XCUITest delivers to a screen is discarded.** An
+unmodified key does not absorb it; any modified key does, bound or not.
+
+Two further measurements pinned down where the press has to go:
+
+* Sent immediately after `launch()` returns it absorbs nothing — the first real shortcut
+  still goes missing. The app has to be up first.
+* Sent on the host list and then followed by opening a terminal, the terminal's own first
+  shortcut goes missing again. So the loss is **per screen**, not per launch.
+
+`AppUITests/HardwareKeyboardSupport.swift` spends it: `primeModifierKeys()` for ordinary
+screens, using a combination the app does not bind, and `primeModifierKeysInTerminal()`
+for a terminal, which uses ⌘C. The distinction is not fussiness — a terminal forwards keys
+it does not handle to the remote shell, and priming it with the unbound combination put
+bytes on the wire that garbled the next line the test typed, failing a plain-typing
+assertion that had always passed. ⌘C is consumed by the terminal and copies nothing when
+nothing is selected.
+
+Before this, `HardwareKeyboardUITests` covered the loss with a retry and still failed
+about one run in three, and
+`HardwareKeyboardStateUITests.testTypingWorksAfterEveryThingThatTakesTheKeyboardAway`
+failed every run. With the press spent deliberately, both suites pass three runs out of
+three, and the retry in `HardwareKeyboardUITests.press` is left to cover the rarer second
+loss rather than being what every one of those tests silently depended on.

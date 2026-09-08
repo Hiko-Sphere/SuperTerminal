@@ -1383,4 +1383,5 @@ An index, so nothing has to be hunted for:
 | D-046 | `4a75b80` | OpenSSH certificates, both directions |
 | D-047 | `5300a1f` | Jump hosts, and a connection editor that stops eating fields |
 | D-048 | `ef8e1d6` | `mlkem768x25519-sha256`, verified from the server's own log |
-| D-049 | this commit | SSH keys held in the Secure Enclave, and what the app must refuse to promise about them |
+| D-049 | `f5e27ea` | SSH keys held in the Secure Enclave, and what the app must refuse to promise about them |
+| D-050 | this commit | The hardware-keyboard test failures: what the simulator does to the first modified key press |

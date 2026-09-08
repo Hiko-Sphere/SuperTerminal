@@ -35,6 +35,12 @@ final class HardwareKeyboardStateUITests: XCTestCase {
         XCTAssertTrue(terminal.waitForExistence(timeout: 30))
         let deadline = Date().addingTimeInterval(30)
         while Date() < deadline, app.activityIndicators.firstMatch.exists { usleep(200_000) }
+        // This simulator discards the first modified key press delivered to a screen, and
+        // the terminal is the screen these tests act on. ⌘C is spent on it here — the
+        // terminal consumes it and copies nothing, because nothing is selected — so the
+        // first shortcut a test sends is the first one that counts. See
+        // `XCUIApplication.primeModifierKeysInTerminal` for what was measured.
+        app.primeModifierKeysInTerminal()
     }
 
     private func screen(containing needle: String, timeout: TimeInterval = 20) -> String {

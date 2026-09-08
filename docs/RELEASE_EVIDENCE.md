@@ -3,6 +3,47 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-08 — after D-050 (the hardware-keyboard failures, understood and fixed)
+
+| Command | Result |
+| --- | --- |
+| `bash scripts/ui-terminal-e2e.sh` | **48 passed, 2 failed** — and the two are `ZZSearchProbeUITests`, another session's uncommitted work. Every hardware-keyboard test passes. It was 46/4 before |
+| Release archive | **ARCHIVE SUCCEEDED** |
+| `ST_ONLY_TESTING=…/HardwareKeyboardStateUITests`, three runs | **2 passed, 0 failed** each time — it had failed every run before |
+| `ST_ONLY_TESTING=…/HardwareKeyboardUITests`, three runs | **6 passed, 0 failed** each time — it had failed about one run in three |
+
+**What was actually wrong.** Not the app. `ZZFindProbeUITests`, a throwaway suite written to
+find out and then deleted, ran eight probes against ⌘F twice each:
+
+| what was sent | did ⌘F open the find bar |
+| --- | --- |
+| ⌘F, first thing after the terminal opened | no |
+| ⌘F after typing a whole shell command | no |
+| ⌘F after a five-second settle | no |
+| ⌘F after typing one plain character | no |
+| ⌘F after ⌘C | **yes** |
+| ⌘F after ⌃⌥⇧⌘Z, which the app does not bind | **yes** |
+| ⌘F sent twice | **yes** |
+| the same command from the Session menu, no keyboard at all | **yes** |
+
+**The first modifier-bearing key press XCUITest delivers to a screen is discarded.** Waiting
+does not help, so it is not a race; a plain key does not absorb it while any modified key
+does, bound or not; and the menu row and the second press both work, so the app is fine.
+
+Two more measurements said where the sacrificial press has to go. Sent right after
+`launch()` returns it absorbs nothing and the first real shortcut still vanishes — the app
+has to be up. Sent on the host list and then followed by opening a terminal, the terminal's
+own first shortcut vanishes again — so the loss is **per screen**, not per launch. And
+priming a terminal with the unbound combination made things worse in a way worth recording:
+the terminal forwards keys it does not handle to the remote shell, so those bytes garbled
+the next line the test typed and broke a plain-typing assertion that had always passed. The
+terminal is primed with ⌘C, which it consumes and which copies nothing when nothing is
+selected.
+
+No assertion was weakened and no test was deleted to get this green. What changed is that
+the press the simulator eats is now spent on purpose, so a test that fails afterwards failed
+for a reason.
+
 ## 2026-09-08 — after D-049 (Secure Enclave SSH keys)
 
 | Command | Result |

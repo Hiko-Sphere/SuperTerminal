@@ -48,9 +48,9 @@ xcodebuild -project ApexTerminal.xcodeproj -scheme ApexTerminal \
 ./scripts/app-integration-e2e.sh   # 258 tests in 48 suites on iPhone 17 Pro simulator, ** TEST SUCCEEDED **
 ./scripts/profile-emulator.sh      # real Instruments trace of the emulator hot path
 ./scripts/localization-audit.sh    # every user-visible string translated (zh-Hans, zh-Hant): green
-./scripts/ui-terminal-e2e.sh       # 46 passed, 4 failed on iPhone — 2 belong to another session, 1 is the
-                                   # first-key-after-launch flake, and 1 is a pre-existing ⌘F failure proved
-                                   # pre-existing by an A/B against ef8e1d6. See docs/RELEASE_EVIDENCE.md.
+./scripts/ui-terminal-e2e.sh       # 48 passed, 2 failed on iPhone — both ZZSearchProbeUITests, another
+                                   # session's uncommitted work. Every hardware-keyboard test passes since
+                                   # D-050. See docs/DEVELOPMENT.md for what the simulator does to key events.
 ./scripts/ui-terminal-e2e.sh "platform=iOS Simulator,name=iPad Pro 13-inch (M5)"
                                    # 39 passed on iPad, none skipped, ** TEST SUCCEEDED **
 

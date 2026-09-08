@@ -12,11 +12,11 @@ delivered. What remains needs the owner: a live Cloudflare environment (B-2), tw
 devices and a production CloudKit schema for the live iCloud checks (B-4 — archiving and
 the entitlements are now proven), and the legal placeholders with counsel review (B-5).
 
-**Last full regression (2026-09-08, after D-049):** package **275 tests in 40 suites** on
+**Last full regression (2026-09-08, after D-049 and D-050):** package **275 tests in 40 suites** on
 the host (the VNC suites against LibVNCServer); vendored NIOSSH **349 tests, 0 failures**;
 `ApexTerminalTests` **258 in 48 suites**, 0 failed, against a real `sshd`;
-`ApexTerminalUITests` **46 passed, 4 failed** on iPhone 17 Pro; Release **archive
-succeeded**; localisation audit complete in every language. The per-commit record, with
+`ApexTerminalUITests` **48 passed, 2 failed** on iPhone 17 Pro, both of them another
+session's `ZZSearchProbeUITests` (D-050); Release **archive succeeded**; localisation audit complete in every language. The per-commit record, with
 what each number was measured by, is `docs/RELEASE_EVIDENCE.md` — the figures in the tables
 further down this file were measured on the dates they name and are not all current.
 
@@ -24,12 +24,10 @@ Known failures, none in this change:
 
 * `ZZSearchProbeUITests` (2 cases) belongs to another session's uncommitted work and is not
   part of any commit here.
-* `HardwareKeyboardStateUITests.testTypingWorksAfterEveryThingThatTakesTheKeyboardAway`
-  fails at `⌘F should open the find bar` — **three isolated runs, three failures**, and the
-  same three-for-three at `ef8e1d6` in a detached worktree, so it is pre-existing. It is the
-  next thing to fix, not a permanent exception.
-* `HardwareKeyboardUITests.testCommandCommaOpensSettings` is the first-key-after-launch
-  flake: two passes and one failure in three isolated runs.
+* ~~The two hardware-keyboard failures~~ — **fixed in D-050.** The cause was measured, not
+  guessed: XCUITest's first modifier-bearing key press to a screen is discarded, so the
+  tests now spend it on a keystroke that means nothing. Both suites pass three runs out of
+  three. See `docs/DEVELOPMENT.md` for the eight probes that established it.
 * On iPad, `BlankFieldsUITests` and `SnippetUITests` depend on the Simulator's global
   "Connect Hardware Keyboard" preference in *opposite* directions — measured, one setting
   each way, each test in isolation — so the iPad suite cannot be green either way until

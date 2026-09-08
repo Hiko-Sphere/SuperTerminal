@@ -3,10 +3,11 @@ import XCTest
 /// Hardware-keyboard shortcuts, sent the way a physical keyboard sends them.
 ///
 /// The app exposes a debug probe (`ST_UITEST_KEY_PROBE`) that counts the shortcuts it
-/// performed. On this simulator the first hardware key after launch is sometimes dropped
-/// before the app ever sees it; a shortcut that neither shows its result nor moves the
-/// probe was lost that way and is sent once more, recorded as an attachment. A shortcut
-/// that moved the probe and still showed nothing is a defect and fails.
+/// performed. On this simulator the *first* modified key press of a run is always dropped
+/// before the app ever sees it — `XCUIApplication.primeModifierKeys` spends it — and a
+/// later one is occasionally dropped too; a shortcut that neither shows its result nor
+/// moves the probe was lost that way and is sent once more, recorded as an attachment. A
+/// shortcut that moved the probe and still showed nothing is a defect and fails.
 @MainActor
 final class HardwareKeyboardUITests: XCTestCase {
     override func setUpWithError() throws {
@@ -21,6 +22,11 @@ final class HardwareKeyboardUITests: XCTestCase {
         app.launchEnvironment["ST_UITEST_KEY_PROBE"] = "1"
         app.launch()
         XCTAssertTrue(app.navigationBars["Apex Terminal"].waitForExistence(timeout: 10))
+        // The first modified key press of the run is discarded before the app sees it —
+        // measured, see `XCUIApplication.primeModifierKeys`. Spending it here means the
+        // retry below is left to cover the rarer case of a *second* loss, rather than
+        // being the thing every one of these tests silently depends on.
+        app.primeModifierKeys()
         return app
     }
 
