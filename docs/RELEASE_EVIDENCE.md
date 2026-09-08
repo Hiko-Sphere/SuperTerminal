@@ -3,6 +3,19 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-08 — after D-040 (backup, restore and recovery)
+
+| Command | Result |
+| --- | --- |
+| `cd Packages/ApexTerminalKit && swift test` | **199 tests in 30 suites passed** |
+| `bash scripts/app-integration-e2e.sh` | **229 passed, 0 failed** |
+| `bash scripts/ui-terminal-e2e.sh` (BackupUITests) | **2 passed** |
+| `bash scripts/localization-audit.sh` | **green**, 32 new strings translated into both Chinese variants |
+| `xcodebuild … -configuration Release -destination 'generic/platform=iOS' … archive` | **ARCHIVE SUCCEEDED** |
+
+The backup file type `dev.apexterminal.backup` is present in the built `Info.plist`,
+verified with `plutil -p`.
+
 ## 2026-09-08 — after D-038 (export compliance) and D-039 (input-method composition)
 
 | Command | Result |

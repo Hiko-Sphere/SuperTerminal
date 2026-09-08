@@ -157,6 +157,8 @@ struct SettingsView: View {
                     Text("Diagnostics contain no commands, output, hostnames or credentials.")
                 }
 
+                BackupSettingsSection()
+
                 TutorialSettingsSection()
 
                 Section("Legal") {

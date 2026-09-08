@@ -25,6 +25,12 @@ final class AppContainer {
     let haptics: Haptics
     let vault: CredentialVault
     let knownHosts: any KnownHostsStore
+    /// Export and restore (D-040). Built on first use — most launches never open
+    /// Settings — and ignored by observation because it holds no state a view watches.
+    @ObservationIgnored lazy var backup: BackupService = BackupService(
+        hosts: hostStore, screens: screenStore, snippets: snippetStore,
+        knownHosts: knownHosts, settings: settings, vault: vault, log: diagnostics.logger
+    )
     let diagnostics: DiagnosticsCentre
     let sync: SyncCoordinator
     /// App-level keyboard shortcuts; every responder that exposes them routes here.

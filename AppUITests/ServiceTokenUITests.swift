@@ -74,7 +74,7 @@ final class ServiceTokenUITests: XCTestCase {
     }
 }
 
-private extension XCUIElement {
+extension XCUIElement {
     /// Taps and types, making sure the field really took focus first: a field just below
     /// the keyboard raised by the previous one does not focus on tap, and `typeText` then
     /// fails with "neither element nor any descendant has keyboard focus".

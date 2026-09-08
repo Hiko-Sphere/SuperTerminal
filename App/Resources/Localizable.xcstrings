@@ -239,6 +239,40 @@
         }
       }
     },
+    "%lld new": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 条新增"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 筆新增"
+          }
+        }
+      }
+    },
+    "%lld new, %lld already here": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 条新增，%lld 条已存在"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 筆新增，%lld 筆已存在"
+          }
+        }
+      }
+    },
     "%lld of %lld": {
       "extractionState": "manual",
       "localizations": {
@@ -252,6 +286,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "第 %lld 項，共 %lld 項"
+          }
+        }
+      }
+    },
+    "%lld record(s) already exist here.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "有 %lld 条记录在本设备上已存在。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "有 %lld 筆記錄在本裝置上已存在。"
           }
         }
       }
@@ -320,6 +371,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "5 分鐘"
+          }
+        }
+      }
+    },
+    "A backup can always be read by the version that wrote it or a later one, never an earlier one.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "备份总能被写出它的版本或更新的版本读取，但更旧的版本不行。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "備份總能被寫出它的版本或更新的版本讀取，但更舊的版本不行。"
           }
         }
       }
@@ -1004,6 +1072,125 @@
         }
       }
     },
+    "Apex Terminal": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apex Terminal"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apex Terminal"
+          }
+        }
+      }
+    },
+    "Apex Terminal diagnostics": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apex Terminal 诊断信息"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apex Terminal 診斷資訊"
+          }
+        }
+      }
+    },
+    "Apex Terminal is available in English, Simplified Chinese and Traditional Chinese. Terminal output is never translated — it comes from the remote machine exactly as it was sent.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apex Terminal 提供英文、简体中文和繁体中文。终端输出永远不会被翻译——它原样来自远程主机。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apex Terminal 提供英文、簡體中文和繁體中文。終端機輸出永遠不會被翻譯——它原樣來自遠端主機。"
+          }
+        }
+      }
+    },
+    "Apex Terminal is locked": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apex Terminal 已锁定"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apex Terminal 已鎖定"
+          }
+        }
+      }
+    },
+    "Apex Terminal is still starting. Try again in a moment.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apex Terminal 仍在启动，请稍后再试。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apex Terminal 仍在啟動，請稍後再試。"
+          }
+        }
+      }
+    },
+    "Apex Terminal signs in to Cloudflare Access in a system browser, then opens the tunnel itself. No cloudflared install is needed on this device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apex Terminal 会在系统浏览器中登录 Cloudflare Access，然后自行打开 Tunnel。本设备无需安装 cloudflared。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apex Terminal 會在系統瀏覽器中登入 Cloudflare Access，然後自行開啟 Tunnel。本裝置無需安裝 cloudflared。"
+          }
+        }
+      }
+    },
+    "Apex Terminal, %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apex Terminal，%@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apex Terminal，%@"
+          }
+        }
+      }
+    },
     "App lock": {
       "extractionState": "manual",
       "localizations": {
@@ -1289,6 +1476,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "上一步"
+          }
+        }
+      }
+    },
+    "Backup": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "备份"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "備份"
           }
         }
       }
@@ -1595,6 +1799,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "選擇一個連線以開啟終端機。"
+          }
+        }
+      }
+    },
+    "Choose a file exported from Apex Terminal, ending in .apexbackup.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请选择由 Apex Terminal 导出、以 .apexbackup 结尾的文件。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請選擇由 Apex Terminal 匯出、以 .apexbackup 結尾的檔案。"
           }
         }
       }
@@ -2292,6 +2513,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "連線"
+          }
+        }
+      }
+    },
+    "Connections, screens, snippets, key names and public keys, trusted host keys and your preferences. Passwords and private keys stay in this device's Keychain unless you ask for them and set a password.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "连接、屏幕、片段、密钥名称与公钥、受信任的主机密钥，以及你的偏好设置。密码和私钥会留在本设备的钥匙串中，除非你主动要求导出并设置密码。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "連線、螢幕、片段、金鑰名稱與公開金鑰、受信任的主機金鑰，以及你的偏好設定。密碼和私密金鑰會留在本裝置的鑰匙圈中，除非你主動要求匯出並設定密碼。"
           }
         }
       }
@@ -3367,6 +3605,23 @@
         }
       }
     },
+    "Export a backup…": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "导出备份…"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "匯出備份…"
+          }
+        }
+      }
+    },
     "Export diagnostics": {
       "extractionState": "manual",
       "localizations": {
@@ -4047,6 +4302,23 @@
         }
       }
     },
+    "If a record already exists": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "如果记录已存在"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "如果記錄已存在"
+          }
+        }
+      }
+    },
     "Immediately": {
       "extractionState": "manual",
       "localizations": {
@@ -4149,6 +4421,40 @@
         }
       }
     },
+    "Include private keys": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "包含私钥"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "包含私密金鑰"
+          }
+        }
+      }
+    },
+    "Included": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已包含"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已包含"
+          }
+        }
+      }
+    },
     "Increase Text Size": {
       "extractionState": "manual",
       "localizations": {
@@ -4230,6 +4536,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "保留本裝置的金鑰"
+          }
+        }
+      }
+    },
+    "Keep what is here": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保留现有"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保留現有"
           }
         }
       }
@@ -5254,6 +5577,23 @@
         }
       }
     },
+    "Nothing in this backup collides with what is on this device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这份备份与本设备上的内容没有冲突。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這份備份與本裝置上的內容沒有衝突。"
+          }
+        }
+      }
+    },
     "Nothing matches": {
       "extractionState": "manual",
       "localizations": {
@@ -5917,6 +6257,23 @@
         }
       }
     },
+    "Password for the backup file": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "备份文件的密码"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "備份檔案的密碼"
+          }
+        }
+      }
+    },
     "Paste": {
       "extractionState": "manual",
       "localizations": {
@@ -6117,6 +6474,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "優先使用裝置端模型"
+          }
+        }
+      }
+    },
+    "Preferences": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "偏好设置"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "偏好設定"
           }
         }
       }
@@ -6355,6 +6729,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "私密金鑰儲存在本裝置的鑰匙圈中，絕不會傳送到任何伺服器。沒有帳號，也沒有任何統計分析。iCloud 同步、密碼鎖和 Face ID 都由你自行決定是否開啟。"
+          }
+        }
+      }
+    },
+    "Protected by Face ID or Touch ID, so its private half cannot leave this device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "受 Face ID 或 Touch ID 保护，其私钥无法离开本设备。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "受 Face ID 或 Touch ID 保護，其私密金鑰無法離開本裝置。"
           }
         }
       }
@@ -6682,6 +7073,23 @@
         }
       }
     },
+    "Replace it": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "替换"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "取代"
+          }
+        }
+      }
+    },
     "Replace the stored key and connect": {
       "extractionState": "manual",
       "localizations": {
@@ -6746,6 +7154,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "正在解析 %@"
+          }
+        }
+      }
+    },
+    "Restore": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "恢复"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "還原"
+          }
+        }
+      }
+    },
+    "Restore from a backup…": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "从备份恢复…"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "從備份還原…"
+          }
+        }
+      }
+    },
+    "Restored %lld connection(s), %lld snippet(s) and %lld key(s).": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已恢复 %lld 个连接、%lld 个片段和 %lld 个密钥。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已還原 %lld 個連線、%lld 個片段和 %lld 個金鑰。"
           }
         }
       }
@@ -7889,125 +8348,6 @@
         }
       }
     },
-    "Apex Terminal": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apex Terminal"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apex Terminal"
-          }
-        }
-      }
-    },
-    "Apex Terminal diagnostics": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apex Terminal 诊断信息"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apex Terminal 診斷資訊"
-          }
-        }
-      }
-    },
-    "Apex Terminal is available in English, Simplified Chinese and Traditional Chinese. Terminal output is never translated — it comes from the remote machine exactly as it was sent.": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apex Terminal 提供英文、简体中文和繁体中文。终端输出永远不会被翻译——它原样来自远程主机。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apex Terminal 提供英文、簡體中文和繁體中文。終端機輸出永遠不會被翻譯——它原樣來自遠端主機。"
-          }
-        }
-      }
-    },
-    "Apex Terminal is locked": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apex Terminal 已锁定"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apex Terminal 已鎖定"
-          }
-        }
-      }
-    },
-    "Apex Terminal is still starting. Try again in a moment.": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apex Terminal 仍在启动，请稍后再试。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apex Terminal 仍在啟動，請稍後再試。"
-          }
-        }
-      }
-    },
-    "Apex Terminal signs in to Cloudflare Access in a system browser, then opens the tunnel itself. No cloudflared install is needed on this device.": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apex Terminal 会在系统浏览器中登录 Cloudflare Access，然后自行打开 Tunnel。本设备无需安装 cloudflared。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apex Terminal 會在系統瀏覽器中登入 Cloudflare Access，然後自行開啟 Tunnel。本裝置無需安裝 cloudflared。"
-          }
-        }
-      }
-    },
-    "Apex Terminal, %@": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apex Terminal，%@"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apex Terminal，%@"
-          }
-        }
-      }
-    },
     "Sync now": {
       "extractionState": "manual",
       "localizations": {
@@ -8348,6 +8688,23 @@
         }
       }
     },
+    "That file is not an Apex Terminal backup.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "该文件不是 Apex Terminal 的备份。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "該檔案不是 Apex Terminal 的備份。"
+          }
+        }
+      }
+    },
     "That passcode is not right.": {
       "extractionState": "manual",
       "localizations": {
@@ -8361,6 +8718,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "密碼不正確。"
+          }
+        }
+      }
+    },
+    "That password does not open this backup.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "该密码打不开这份备份。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "該密碼打不開這份備份。"
           }
         }
       }
@@ -8467,6 +8841,23 @@
         }
       }
     },
+    "The backup could not be used": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法使用这份备份"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法使用這份備份"
+          }
+        }
+      }
+    },
     "The command is typed into the terminal and waits for you to press Return.": {
       "extractionState": "manual",
       "localizations": {
@@ -8565,6 +8956,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "此版本未包含文件 %@。"
+          }
+        }
+      }
+    },
+    "The file is encrypted with the password you type here. It is not stored anywhere, and without it the backup cannot be opened — not by anyone, including you.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "文件会用你在这里输入的密码加密。该密码不会保存在任何地方，没有它就打不开这份备份——任何人都不行，包括你自己。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "檔案會用你在這裡輸入的密碼加密。該密碼不會儲存在任何地方，沒有它就打不開這份備份——任何人都不行，包括你自己。"
           }
         }
       }
@@ -8735,6 +9143,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "此密碼是 App 自己的，與裝置密碼無關。密碼本身不會被儲存——只保存加鹽的衍生值，且僅在本裝置上。輸錯只會被延遲，絕不會刪除任何資料。"
+          }
+        }
+      }
+    },
+    "The password is the one typed when the backup was exported. It is not stored anywhere and cannot be recovered.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密码就是导出备份时输入的那一个。它没有保存在任何地方，也无法找回。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密碼就是匯出備份時輸入的那一個。它沒有儲存在任何地方，也無法找回。"
           }
         }
       }
@@ -9041,6 +9466,91 @@
           "stringUnit": {
             "state": "translated",
             "value": "沒有帳號、沒有伺服器、沒有分析，也沒有當機回報器。流量只會傳送至您所連線的伺服器，以及（對於經隧道連線的主機）代表您傳送至 Cloudflare。"
+          }
+        }
+      }
+    },
+    "This backup could not be read: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法读取这份备份：%@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法讀取這份備份：%@"
+          }
+        }
+      }
+    },
+    "This backup is empty.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这份备份是空的。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這份備份是空的。"
+          }
+        }
+      }
+    },
+    "This backup is encrypted": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这份备份已加密"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這份備份已加密"
+          }
+        }
+      }
+    },
+    "This backup is encrypted. Enter the password it was exported with.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这份备份已加密。请输入导出时使用的密码。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這份備份已加密。請輸入匯出時使用的密碼。"
+          }
+        }
+      }
+    },
+    "This backup was written by a newer version of the app (format %lld). Update Apex Terminal and try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这份备份由更新版本的应用写出（格式 %lld）。请更新 Apex Terminal 后重试。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這份備份由更新版本的 App 寫出（格式 %lld）。請更新 Apex Terminal 後重試。"
           }
         }
       }
@@ -9568,6 +10078,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "請嘗試其他搜尋字詞。"
+          }
+        }
+      }
+    },
+    "Try exporting again from the device the backup came from.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请在备份来源设备上重新导出一次。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請在備份來源裝置上重新匯出一次。"
           }
         }
       }
@@ -10129,6 +10656,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "您想在這台伺服器上做什麼？"
+          }
+        }
+      }
+    },
+    "What this backup holds": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这份备份包含什么"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這份備份包含什麼"
           }
         }
       }

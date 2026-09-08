@@ -12,6 +12,31 @@
 	  another device's changes by a silent push, and without this the app is not woken to
 	  read it. No notification is ever shown.
 	-->
+	<!--
+	  The backup file type (D-040). Declared so Files.app names it, shows the app's icon
+	  beside it, and offers Apex Terminal when one is opened from elsewhere — a backup
+	  nobody can find again is not a backup.
+	-->
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>dev.apexterminal.backup</string>
+			<key>UTTypeDescription</key>
+			<string>Apex Terminal Backup</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.json</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>apexbackup</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>

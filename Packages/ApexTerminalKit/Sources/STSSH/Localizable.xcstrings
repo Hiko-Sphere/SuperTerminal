@@ -1,6 +1,23 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "ApexTerminal does not support %@ keys yet.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ApexTerminal 尚不支持 %@ 密钥。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ApexTerminal 尚不支援 %@ 金鑰。"
+          }
+        }
+      }
+    },
     "Check that the port really is an SSH server, and that the server's log does not show a rejected connection.": {
       "extractionState": "manual",
       "localizations": {
@@ -303,23 +320,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "重新連線以繼續。"
-          }
-        }
-      }
-    },
-    "ApexTerminal does not support %@ keys yet.": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ApexTerminal 尚不支持 %@ 密钥。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ApexTerminal 尚不支援 %@ 金鑰。"
           }
         }
       }
