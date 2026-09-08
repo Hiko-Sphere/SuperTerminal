@@ -33,6 +33,7 @@ struct HostEditorView: View {
     @State private var terminalType = "xterm-256color"
     /// nil is "Automatic": use what the server reports.
     @State private var platformOverride: HostPlatform?
+    @State private var showsInFiles = false
 
     init(host: Host?) {
         existing = host
@@ -156,6 +157,13 @@ struct HostEditorView: View {
                         .autocorrectionDisabled()
                 }
 
+                // Only for a connection that already exists: whether it can be
+                // published depends on a host key that has been checked and a credential
+                // that is stored, and neither is true of a connection still being typed.
+                if let existing {
+                    HostFilesSection(host: existing, showsInFiles: $showsInFiles)
+                }
+
                 if !problems.isEmpty {
                     Section("Before you can save") {
                         ForEach(problems, id: \.self) { problem in
@@ -167,7 +175,10 @@ struct HostEditorView: View {
                 }
             }
             .task {
-                if let existing { hasStoredServiceToken = container.vault.hasServiceToken(hostID: existing.id) }
+                if let existing {
+                    hasStoredServiceToken = container.vault.hasServiceToken(hostID: existing.id)
+                    showsInFiles = existing.isPublishedToFiles
+                }
             }
             .navigationTitle(existing == nil ? "New Connection" : "Edit Connection")
             .navigationBarTitleDisplayMode(.inline)
@@ -215,7 +226,8 @@ struct HostEditorView: View {
             lastConnected: existing?.lastConnected,
             accessAuthentication: usesCloudflare ? accessAuthentication : nil,
             platformOverride: platformOverride,
-            detectedPlatform: existing?.detectedPlatform
+            detectedPlatform: existing?.detectedPlatform,
+            showsInFiles: showsInFiles ? true : nil
         )
     }
 

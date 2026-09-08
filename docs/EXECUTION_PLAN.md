@@ -20,7 +20,7 @@ from the first unfinished item rather than starting over.
 | # | Item | State |
 | --- | --- | --- |
 | 1.1 | SFTP | **Done except multiple tabs** — D-041 protocol, D-042 interface, D-043 prompts, permissions, sharing and drag-and-drop. Several remote folders open at once is the one part not built; the iPad shows one browser at a time |
-| 1.2 | Files.app File Provider extension | Not started |
+| 1.2 | Files.app File Provider extension | **Implemented, awaiting a device** — D-044; a replicated extension, a per-connection switch, and 29 package tests against real OpenSSH plus 7 in the app host. The simulator downgrades a replicated domain because it has no FPFS, so the system actually serving Files is H-6 |
 | 1.3 | Port forwarding as a first-class object | Not started — the `direct-tcpip` plumbing exists (D-022) but is not a user feature |
 | 1.4 | keyboard-interactive, Secure Enclave keys, certificates, ProxyJump, agent, FIDO2, PQ KEX | Not started |
 

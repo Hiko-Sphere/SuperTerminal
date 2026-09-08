@@ -11,11 +11,21 @@
 		39760EFDF3D41C49B8DAEF3F /* STSecureStore in Frameworks */ = {isa = PBXBuildFile; productRef = 66EC5B52880DDE0D62F467B2 /* STSecureStore */; };
 		3B9F1C7D5E2A48C6B0D7E9A1 /* STVNC in Frameworks */ = {isa = PBXBuildFile; productRef = 7C0E4D2A91B3F6A5C8D1E0F2 /* STVNC */; };
 		4CB926D6FE5D4B5DC1050F82 /* STCloudflare in Frameworks */ = {isa = PBXBuildFile; productRef = 7336BD2111C0BCE3753A0960 /* STCloudflare */; };
+		4F1A2B3C4D5E6F7081920A0A /* ApexTerminalFileProvider.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4F1A2B3C4D5E6F7081920A02 /* ApexTerminalFileProvider.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		4F1A2B3C4D5E6F7081920A0E /* STFileProvider in Frameworks */ = {isa = PBXBuildFile; productRef = 4F1A2B3C4D5E6F7081920A0D /* STFileProvider */; };
+		4F1A2B3C4D5E6F7081920A10 /* STFileProvider in Frameworks */ = {isa = PBXBuildFile; productRef = 4F1A2B3C4D5E6F7081920A0F /* STFileProvider */; };
 		5AF8E8A64A12E0813644DB47 /* STCore in Frameworks */ = {isa = PBXBuildFile; productRef = 68ABF9CA4E0014042782D04F /* STCore */; };
 		821759160ADD6FD915B89444 /* STSSH in Frameworks */ = {isa = PBXBuildFile; productRef = B40FC04F3815CB5D7BBC0DFE /* STSSH */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		4F1A2B3C4D5E6F7081920A0C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D6BD5DAB9DD5B43A5C9D3B4D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4F1A2B3C4D5E6F7081920A01;
+			remoteInfo = ApexTerminalFileProvider;
+		};
 		6AA58E69BB763842AC84EC51 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = D6BD5DAB9DD5B43A5C9D3B4D /* Project object */;
@@ -32,13 +42,33 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		4F1A2B3C4D5E6F7081920A09 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				4F1A2B3C4D5E6F7081920A0A /* ApexTerminalFileProvider.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		4F1A2B3C4D5E6F7081920A02 /* ApexTerminalFileProvider.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ApexTerminalFileProvider.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		55D5262F03C46B2F986E66AC /* ApexTerminalTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ApexTerminalTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7A0D01B7D6971484542AEB5F /* ApexTerminalUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ApexTerminalUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D28A5CC5999CE79BC0FC534B /* ApexTerminal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ApexTerminal.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		4F1A2B3C4D5E6F7081920A03 /* FileProvider */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = FileProvider;
+			sourceTree = "<group>";
+		};
 		9C874AC1290A14BBDEEFD85F /* App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = App;
@@ -74,6 +104,15 @@
 				821759160ADD6FD915B89444 /* STSSH in Frameworks */,
 				25596A0A0CF9314A1864083B /* STTerminal in Frameworks */,
 				3B9F1C7D5E2A48C6B0D7E9A1 /* STVNC in Frameworks */,
+				4F1A2B3C4D5E6F7081920A10 /* STFileProvider in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4F1A2B3C4D5E6F7081920A05 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4F1A2B3C4D5E6F7081920A0E /* STFileProvider in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -93,6 +132,7 @@
 				D28A5CC5999CE79BC0FC534B /* ApexTerminal.app */,
 				55D5262F03C46B2F986E66AC /* ApexTerminalTests.xctest */,
 				7A0D01B7D6971484542AEB5F /* ApexTerminalUITests.xctest */,
+				4F1A2B3C4D5E6F7081920A02 /* ApexTerminalFileProvider.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -103,6 +143,7 @@
 				9C874AC1290A14BBDEEFD85F /* App */,
 				D87D1B187DFC946CEC43A4B5 /* AppTests */,
 				C464726B1CAC60C5C083FA60 /* AppUITests */,
+				4F1A2B3C4D5E6F7081920A03 /* FileProvider */,
 				7E4D46289AFB6D064D4748F3 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -117,10 +158,12 @@
 				28D015943A914368DA6BA8DF /* Sources */,
 				2254E75E7FB20C18D8BC3EF3 /* Frameworks */,
 				46EFACEB5693BE4C37DBE558 /* Resources */,
+				4F1A2B3C4D5E6F7081920A09 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				4F1A2B3C4D5E6F7081920A0B /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				9C874AC1290A14BBDEEFD85F /* App */,
@@ -133,10 +176,33 @@
 				B40FC04F3815CB5D7BBC0DFE /* STSSH */,
 				A2B78DE99686039E19D5F920 /* STTerminal */,
 				7C0E4D2A91B3F6A5C8D1E0F2 /* STVNC */,
+				4F1A2B3C4D5E6F7081920A0F /* STFileProvider */,
 			);
 			productName = ApexTerminal;
 			productReference = D28A5CC5999CE79BC0FC534B /* ApexTerminal.app */;
 			productType = "com.apple.product-type.application";
+		};
+		4F1A2B3C4D5E6F7081920A01 /* ApexTerminalFileProvider */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4F1A2B3C4D5E6F7081920A06 /* Build configuration list for PBXNativeTarget "ApexTerminalFileProvider" */;
+			buildPhases = (
+				4F1A2B3C4D5E6F7081920A04 /* Sources */,
+				4F1A2B3C4D5E6F7081920A05 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				4F1A2B3C4D5E6F7081920A03 /* FileProvider */,
+			);
+			name = ApexTerminalFileProvider;
+			packageProductDependencies = (
+				4F1A2B3C4D5E6F7081920A0D /* STFileProvider */,
+			);
+			productName = ApexTerminalFileProvider;
+			productReference = 4F1A2B3C4D5E6F7081920A02 /* ApexTerminalFileProvider.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 		9DF596627503136E2AC8D185 /* ApexTerminalTests */ = {
 			isa = PBXNativeTarget;
@@ -195,6 +261,9 @@
 					08FBFB53D7061476547B5C53 = {
 						CreatedOnToolsVersion = 26.6;
 					};
+					4F1A2B3C4D5E6F7081920A01 = {
+						CreatedOnToolsVersion = 26.6;
+					};
 					9DF596627503136E2AC8D185 = {
 						CreatedOnToolsVersion = 26.6;
 						TestTargetID = 08FBFB53D7061476547B5C53;
@@ -227,6 +296,7 @@
 				08FBFB53D7061476547B5C53 /* ApexTerminal */,
 				9DF596627503136E2AC8D185 /* ApexTerminalTests */,
 				D2A1670D5CD1578257E625B0 /* ApexTerminalUITests */,
+				4F1A2B3C4D5E6F7081920A01 /* ApexTerminalFileProvider */,
 			);
 		};
 /* End PBXProject section */
@@ -243,6 +313,13 @@
 
 /* Begin PBXSourcesBuildPhase section */
 		28D015943A914368DA6BA8DF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4F1A2B3C4D5E6F7081920A04 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -266,6 +343,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		4F1A2B3C4D5E6F7081920A0B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4F1A2B3C4D5E6F7081920A01 /* ApexTerminalFileProvider */;
+			targetProxy = 4F1A2B3C4D5E6F7081920A0C /* PBXContainerItemProxy */;
+		};
 		97E31B2CD3113FA72E2F4C24 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 08FBFB53D7061476547B5C53 /* ApexTerminal */;
@@ -323,6 +405,54 @@
 				TEST_TARGET_NAME = ApexTerminal;
 			};
 			name = Debug;
+		};
+		4F1A2B3C4D5E6F7081920A07 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = FileProvider/ApexTerminalFileProvider.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7CDDP73WJS;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Config/FileProviderInfo.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Apex Terminal";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.apexterminal.app.fileprovider;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		4F1A2B3C4D5E6F7081920A08 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = FileProvider/ApexTerminalFileProvider.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7CDDP73WJS;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Config/FileProviderInfo.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Apex Terminal";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.apexterminal.app.fileprovider;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
 		};
 		577A350DBBB41CE5BC463A7A /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -527,6 +657,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		4F1A2B3C4D5E6F7081920A06 /* Build configuration list for PBXNativeTarget "ApexTerminalFileProvider" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4F1A2B3C4D5E6F7081920A07 /* Debug */,
+				4F1A2B3C4D5E6F7081920A08 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		A37DE4CF4E933985DE0B3677 /* Build configuration list for PBXNativeTarget "ApexTerminalTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -555,6 +694,14 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		4F1A2B3C4D5E6F7081920A0D /* STFileProvider */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = STFileProvider;
+		};
+		4F1A2B3C4D5E6F7081920A0F /* STFileProvider */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = STFileProvider;
+		};
 		66EC5B52880DDE0D62F467B2 /* STSecureStore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = STSecureStore;

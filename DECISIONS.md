@@ -1359,3 +1359,23 @@ and hides itself.
 **Shown rather than hidden.** Someone looking for sync should find out where it stands
 rather than wonder whether they missed it, so the row is still there, disabled, with the
 reason under it.
+
+## D-038 and after · where the later decisions are written
+
+From D-038 the reasoning lives in the commit message of the change it belongs to, with the
+state of each item in `docs/EXECUTION_PLAN.md` and what was actually run in
+`docs/RELEASE_EVIDENCE.md`. This file is not being abandoned — it is the record for
+decisions that outlive one change — but a decision made and carried out in a single commit
+is better read next to that commit's diff than paraphrased here.
+
+An index, so nothing has to be hunted for:
+
+| | | |
+| --- | --- | --- |
+| D-038 | `b2a7fa9` | Export compliance: the algorithm inventory, and the hand-written DES replaced with CommonCrypto |
+| D-039 | `67022ca` | `UITextInput` composition, so Pinyin, Kana and Hangul reach the terminal |
+| D-040 | `2ab22a0` | Backup and restore, and what a backup must refuse to do |
+| D-041 | `713d9d1` | SFTP version 3, spoken to OpenSSH's own `internal-sftp` |
+| D-042 | `e30b44b` | The file browser on top of it |
+| D-043 | `0622e74` | Prompts, permissions, sharing and drag-and-drop in the browser |
+| D-044 | this commit | Servers in the Files app, through a replicated File Provider extension |

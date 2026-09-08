@@ -10,17 +10,10 @@ import STSecureStore
 /// Keychain protection class for each kind of secret is decided once rather than at
 /// every call site.
 struct CredentialVault: Sendable {
-    /// Keychain services. Separate services rather than one, so "forget all Cloudflare
-    /// sessions" and "delete all keys" are each a single scoped delete.
-    enum Service {
-        static let privateKeys = "dev.apexterminal.keys"
-        static let passwords = "dev.apexterminal.passwords"
-        static let accessTokens = "dev.apexterminal.cloudflare.tokens"
-        static let serviceTokens = "dev.apexterminal.cloudflare.servicetokens"
-        static let assistant = "dev.apexterminal.assistant"
-        static let vncPasswords = "dev.apexterminal.vnc"
-        static let appLock = "dev.apexterminal.applock"
-    }
+    /// Keychain services. Defined in `STSecureStore` because the File Provider extension
+    /// reads the same items (D-044); a second copy of these strings is a second chance
+    /// for one of them to drift, and a drifted name looks exactly like a missing secret.
+    typealias Service = SecureStoreServices
 
     private let store: any SecureStore
 

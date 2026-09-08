@@ -32,6 +32,12 @@ final class AppContainer {
         sessionManager.makeFileSession(for: host)
     }
 
+    /// Which connections appear in the Files app, and the domains the system knows
+    /// about (D-044). Built on first use like `backup`: most launches never touch it.
+    @ObservationIgnored lazy var files: FileProviderDomains = FileProviderDomains(
+        hostStore: hostStore, vault: vault, knownHosts: knownHosts, log: diagnostics.logger
+    )
+
     @ObservationIgnored lazy var backup: BackupService = BackupService(
         hosts: hostStore, screens: screenStore, snippets: snippetStore,
         knownHosts: knownHosts, settings: settings, vault: vault, log: diagnostics.logger
@@ -97,7 +103,7 @@ final class AppContainer {
         let diagnostics = DiagnosticsCentre()
         let vault = CredentialVault()
         let knownHosts = FileKnownHostsStore(
-            url: directory.appendingPathComponent("known_hosts.json"),
+            url: KnownHostsLocation.url(appContainer: directory),
             log: diagnostics.logger
         )
         let settings = AppSettings()
@@ -130,7 +136,6 @@ final class AppContainer {
             tombstones: tombstones,
             log: diagnostics.logger
         )
-        hostStore.didChange = { [weak sync] in sync?.scheduleSync() }
         screenStore.didChange = { [weak sync] in sync?.scheduleSync() }
         snippetStore.didChange = { [weak sync] in sync?.scheduleSync() }
         sessionManager.didConnect = { [weak sync] in sync?.scheduleSync() }
@@ -159,6 +164,13 @@ final class AppContainer {
             screens: screens, appLock: appLock
         )
         shortcuts.sceneProvider = { [weak container] in container?.activeScene }
+        // Assigned after the container exists, because a change to the host list has to
+        // reach the Files domains as well as sync: a connection deleted here must leave
+        // the Files sidebar, not linger there pointing at nothing.
+        hostStore.didChange = { [weak sync, weak container] in
+            sync?.scheduleSync()
+            Task { await container?.files.refresh() }
+        }
         #if DEBUG
         UITestSeeding.apply(to: container)
         #endif

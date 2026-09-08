@@ -1,0 +1,176 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "A folder has no contents to download.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "文件夹没有可下载的内容。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "檔案夾沒有可下載的內容。"
+          }
+        }
+      }
+    },
+    "Apex Terminal cannot reach its shared storage.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apex Terminal 无法访问共享存储。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apex Terminal 無法存取共用儲存空間。"
+          }
+        }
+      }
+    },
+    "No password is saved for this server on this device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此设备上没有为该服务器保存密码。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此裝置上沒有為該伺服器儲存密碼。"
+          }
+        }
+      }
+    },
+    "The Cloudflare Access session for this server has expired.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此服务器的 Cloudflare Access 登录已过期。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此伺服器的 Cloudflare Access 登入已過期。"
+          }
+        }
+      }
+    },
+    "The connection to the server closed.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "与服务器的连接已关闭。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "與伺服器的連線已關閉。"
+          }
+        }
+      }
+    },
+    "The server speaks SFTP version %u, which this app does not support.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器使用 SFTP 版本 %u，本 App 不支持。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "伺服器使用 SFTP 版本 %u，本 App 不支援。"
+          }
+        }
+      }
+    },
+    "This connection has no credential that can be used without you.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此连接没有可以在无人操作时使用的凭据。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此連線沒有可以在無人操作時使用的憑證。"
+          }
+        }
+      }
+    },
+    "This connection's key can only be unlocked in the app.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此连接的密钥只能在 App 中解锁。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此連線的金鑰只能在 App 中解鎖。"
+          }
+        }
+      }
+    },
+    "This connection's key needs its passphrase, which only the app can ask for.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此连接的密钥需要口令，而只有 App 能询问。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此連線的金鑰需要通行密碼，而只有 App 能詢問。"
+          }
+        }
+      }
+    },
+    "This server is no longer set up in Apex Terminal.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apex Terminal 中已不再有此服务器的设置。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apex Terminal 中已不再有此伺服器的設定。"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

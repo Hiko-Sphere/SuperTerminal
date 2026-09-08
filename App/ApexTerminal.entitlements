@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<!--
-	  Deliberately minimal. The app needs no Network Extension, no VPN and no app groups:
-	  the Cloudflare tunnel is an ordinary outbound TLS connection made in-process, which
-	  is what keeps App Review straightforward.
+	  Deliberately minimal. The app needs no Network Extension and no VPN: the Cloudflare
+	  tunnel is an ordinary outbound TLS connection made in-process, which is what keeps
+	  App Review straightforward.
 
 	  Push is the one exception, and only because iCloud sync needs it: CKSyncEngine keeps
 	  a database subscription so a change on another device is noticed, and a container
@@ -15,6 +15,16 @@
 	-->
 	<key>aps-environment</key>
 	<string>$(ST_APS_ENVIRONMENT)</string>
+	<!--
+	  The App Group the File Provider extension reads its list of servers from (D-044).
+	  Two processes, one list: the app writes it, the extension only reads. Nothing
+	  secret crosses it — credentials stay in the Keychain group below, which the
+	  extension shares so that a password is stored once rather than copied.
+	-->
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.dev.apexterminal.app</string>
+	</array>
 	<key>keychain-access-groups</key>
 	<array>
 		<string>$(AppIdentifierPrefix)dev.apexterminal.app</string>

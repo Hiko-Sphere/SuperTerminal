@@ -19,6 +19,7 @@ let package = Package(
         .library(name: "STTerminal", targets: ["STTerminal"]),
         .library(name: "STVNC", targets: ["STVNC"]),
         .library(name: "STSFTP", targets: ["STSFTP"]),
+        .library(name: "STFileProvider", targets: ["STFileProvider"]),
         .library(name: "STTestSupport", targets: ["STTestSupport"]),
     ],
     dependencies: [
@@ -102,6 +103,21 @@ let package = Package(
             resources: [.process("Localizable.xcstrings")]
         ),
         .target(
+            name: "STFileProvider",
+            dependencies: [
+                "STCore",
+                "STSFTP",
+                "STSSH",
+                "STSecureStore",
+                "STCloudflare",
+                .product(name: "NIOCore", package: "swift-nio"),
+                .product(name: "NIOTransportServices", package: "swift-nio-transport-services"),
+            ],
+            // Everything this module says reaches the user through the Files app, where
+            // there is no app around it to reword anything — so it is translated here.
+            resources: [.process("Localizable.xcstrings")]
+        ),
+        .target(
             name: "STTestSupport",
             dependencies: [
                 "STCore",
@@ -131,6 +147,10 @@ let package = Package(
             ]
         ),
         .testTarget(name: "STSFTPTests", dependencies: ["STSFTP", "STSSH", "STTestSupport"]),
+        .testTarget(
+            name: "STFileProviderTests",
+            dependencies: ["STFileProvider", "STSSH", "STSFTP", "STTestSupport"]
+        ),
         // The RFB client (D-022). No dependency on the SSH module: it speaks over any
         // channel, and the app hands it a `direct-tcpip` one.
         .target(

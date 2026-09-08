@@ -44,6 +44,10 @@ PasswordAuthentication no
 KbdInteractiveAuthentication no
 UsePAM no
 StrictModes no
+# Without this the sftp subsystem request is refused and the Files integration cannot be
+# tested at all — the failure looks like a broken client rather than a server missing a
+# line of configuration.
+Subsystem sftp internal-sftp
 CONFIG
 
 /usr/sbin/sshd -f "$WORK/sshd_config" -D -e > "$WORK/sshd.log" 2>&1 &
@@ -63,17 +67,32 @@ FINGERPRINT="$(ssh-keygen -lf "$WORK/host_ed25519.pub" | awk '{print $2}')"
 echo "Test sshd listening on 127.0.0.1:$PORT  host key $FINGERPRINT"
 
 cd "$ROOT"
+
+ONLY_TESTING=(-only-testing:"${ST_ONLY_TESTING:-ApexTerminalTests}")
+
 # xcodebuild forwards variables prefixed with TEST_RUNNER_ into the test process on the
 # simulator or device, with the prefix stripped. Plain shell variables would only reach
 # xcodebuild itself, never the app under test.
-exec env \
+#
+# One clone, not two. These tests share a single sshd and, for the Files integration, a
+# single File Provider domain; running two copies at once has them registering and
+# withdrawing the same domain underneath each other.
+#
+# Run as a child rather than `exec`: an `exec` replaces this shell, so the EXIT trap never
+# fires and every run leaves an sshd listening. The same mistake cost a hundred stray
+# servers in scripts/ui-terminal-e2e.sh.
+env \
   TEST_RUNNER_ST_APP_TEST_SSH_HOST="${ST_APP_TEST_SSH_HOST_OVERRIDE:-127.0.0.1}" \
   TEST_RUNNER_ST_APP_TEST_SSH_PORT="$PORT" \
   TEST_RUNNER_ST_APP_TEST_SSH_USER="$(whoami)" \
   TEST_RUNNER_ST_APP_TEST_SSH_KEY="$(cat "$WORK/client")" \
   TEST_RUNNER_ST_APP_TEST_SSH_HOST_FINGERPRINT="$FINGERPRINT" \
+  TEST_RUNNER_ST_APP_TEST_SSH_HOME="$HOME" \
   xcodebuild test \
     -project ApexTerminal.xcodeproj \
     -scheme ApexTerminal \
     -destination "$DESTINATION" \
-    -only-testing:ApexTerminalTests
+    -parallel-testing-enabled NO \
+    "${ONLY_TESTING[@]}"
+STATUS=$?
+exit "$STATUS"

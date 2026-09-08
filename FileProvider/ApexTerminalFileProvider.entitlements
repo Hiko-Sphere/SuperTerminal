@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  The App Group is how this process learns which servers to publish: the app writes
+	  the list, this reads it. Nothing secret crosses it.
+	-->
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.dev.apexterminal.app</string>
+	</array>
+	<!--
+	  The app's Keychain group, so a saved password or an unprotected key can be used
+	  here without a second copy of the secret existing anywhere. Reading is all this
+	  process does with it; it never writes a credential and never approves a host key.
+	-->
+	<key>keychain-access-groups</key>
+	<array>
+		<string>$(AppIdentifierPrefix)dev.apexterminal.app</string>
+	</array>
+</dict>
+</plist>

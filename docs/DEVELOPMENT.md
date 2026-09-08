@@ -164,3 +164,36 @@ Package modules that produce user-facing error messages (`STSSH`, `STCloudflare`
 their own catalogs and use `String(localized:bundle: .module)`; `Package.swift` declares
 `defaultLocalization` and each catalog as a processed resource, which is what makes
 `Bundle.module` exist for the target. D-014 has the reasoning.
+
+## The File Provider extension in the simulator
+
+**It aborts, and that is expected.** A replicated File Provider domain needs FPFS, which
+the iOS Simulator does not have. `fileproviderd` logs
+
+```
+domain <NSFileProviderDomain: … (disabled,replicated,…)> was asked with FPFS,
+but it's not supported, will fallback
+```
+
+and drops the `replicated` flag; the downgraded domain is then served through the older
+`NSFileProviderExtension` API, which `ApexTerminalFileProvider` does not implement, so the
+process aborts in `__FILEPROVIDER_V2_EXTENSION_WITHOUT_IMPL` and a crash report lands in
+`~/Library/Logs/DiagnosticReports/ApexTerminalFileProvider-*.ips`.
+
+So in the simulator: everything up to and including registering a domain works and is
+tested (`FileProviderDomainTests`), and everything the extension *does* once asked is
+tested against a real OpenSSH server in `STFileProviderTests` — 29 tests, none of which
+need the system. What cannot be exercised is the system handing those two halves to each
+other. `FileProviderEndToEndTests` does exactly that and skips itself on the simulator;
+H-6 in `docs/HUMAN_ACTIONS.md` is the device run.
+
+Two configuration details that cost a morning, in case they ever look wrong:
+
+* `NSExtensionFileProviderDocumentGroup` is **required in `Config/FileProviderInfo.plist`**
+  even for a replicated extension. Without it `fileproviderd` logs `"key not found in
+  Info.plist. Skipping provider"`, never registers the extension, and every lookup answers
+  "No provider found" — which surfaces as `NSFileReadNoPermissionError` from
+  `getUserVisibleURL`, a message with nothing to do with the cause.
+* The domain must be created with `NSFileProviderDomain(identifier:displayName:)`. The
+  three-argument initialiser that also takes `pathRelativeToDocumentStorage:` creates a
+  non-replicated domain and produces the same abort, on a device as well as here.

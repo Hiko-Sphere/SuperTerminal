@@ -3,6 +3,50 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-08 — after D-044 (servers in the Files app)
+
+| Command | Result |
+| --- | --- |
+| `cd Packages/ApexTerminalKit && swift test` | **240 tests in 35 suites passed** — 29 of them the File Provider's, against OpenSSH's own `internal-sftp` |
+| `bash scripts/app-integration-e2e.sh` | **234 tests in 42 suites passed**, 1 skipped |
+| `bash scripts/ui-terminal-e2e.sh` | **44 passed, 3 failed** — see below; the same 3-of-47 as the commit before this one |
+| `bash scripts/localization-audit.sh` | **green**, 17 new strings in both Chinese variants |
+| Release archive | **ARCHIVE SUCCEEDED** |
+
+**What the archive proves.** The signed extension inside the archive carries
+`com.apple.security.application-groups = [group.dev.apexterminal.app]` and
+`keychain-access-groups = [7CDDP73WJS.dev.apexterminal.app]` — the *app's* Keychain group,
+not its own — so on a device the extension really can read the credential the app stored,
+with one copy of the secret rather than two. Automatic signing registered the App Group and
+the extension's App ID without a manual step in the portal.
+
+**The one skipped test.** `FileProviderEndToEndTests` publishes a domain, asks the system
+where its root is, and reads it with `FileManager` — the whole path, with nothing mocked.
+It skips itself on the simulator, which has no FPFS: `fileproviderd` logs `was asked with
+FPFS, but it's not supported, will fallback`, drops the `replicated` flag from the domain,
+then serves it through the older API and aborts the extension. That is a property of the
+simulator, and `FileProviderDomainTests` asserts the downgrade so it cannot be mistaken for
+a regression. The device run is H-6.
+
+**The three UI failures are not this change.** The same suite was run at `0622e74`, in a
+detached worktree, and failed **the same 3 of 47**: `ZZSearchProbeUITests` twice — another
+session's uncommitted files, known — and one hardware-keyboard test. The third differed
+between runs (`HardwareKeyboardUITests.testCommandKWithTheSearchFieldFocused` here,
+`HardwareKeyboardStateUITests.testTypingWorksAfterEveryThingThatTakesTheKeyboardAway` at
+the baseline), both failing with *Neither element nor any descendant has keyboard focus* —
+the `ConnectHardwareKeyboard` fragility already recorded. Run on its own,
+`testCommandKWithTheSearchFieldFocused` passes on both trees. No test was edited to make
+any of this go away.
+
+**A defect the tests found rather than the reviewer.** `FileProviderRetryTests` severs a
+real TCP connection in the middle of a real 24 MB upload. The first version of the recovery
+left the dead attempt's `.apexupload-*` file on the server, because the only connection
+that could have removed it was the one that had just died; the test failed on exactly that
+and the upload now cleans up over the *next* connection before trying again. It also had to
+be made honest twice: sampling `completedUnitCount` missed the restart often enough to pass
+without proving anything, so the restart is now observed through KVO. Four consecutive runs
+see the cut, the restart, the whole file byte-for-byte, and nothing left behind.
+
 ## 2026-09-08 — after D-043 (prompts, permissions, sharing, drag-and-drop)
 
 | Command | Result |

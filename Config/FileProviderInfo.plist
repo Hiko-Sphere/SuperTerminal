@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  Outside the target's own folder because that folder is a synchronized group: a
+	  plist inside it would also be copied as a resource, and the build then fails with
+	  "Multiple commands produce Info.plist". The same reason `Config/Info.plist` is
+	  where it is.
+	-->
+	<key>NSExtension</key>
+	<dict>
+		<!--
+		  Required, even though the extension is a replicated one: without this key
+		  `fileproviderd` logs "key not found in Info.plist. Skipping provider" and never
+		  registers the extension at all, so every domain lookup answers "no provider
+		  found". The App Group it names is reached through the entitlement; this key is
+		  what makes the daemon willing to look.
+		-->
+		<key>NSExtensionFileProviderDocumentGroup</key>
+		<string>group.dev.apexterminal.app</string>
+		<key>NSExtensionPointIdentifier</key>
+		<string>com.apple.fileprovider-nonui</string>
+		<key>NSExtensionPrincipalClass</key>
+		<string>$(PRODUCT_MODULE_NAME).FileProviderExtension</string>
+	</dict>
+</dict>
+</plist>

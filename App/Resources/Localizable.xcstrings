@@ -851,6 +851,23 @@
         }
       }
     },
+    "Add a user name to this connection first. The Files app cannot ask for one.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请先为此连接填写用户名。「文件」App 无法代为询问。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請先為此連線填寫使用者名稱。「檔案」App 無法代為詢問。"
+          }
+        }
+      }
+    },
     "Add an SSH connection first, or connect to the screen another way.": {
       "extractionState": "manual",
       "localizations": {
@@ -2653,6 +2670,23 @@
         }
       }
     },
+    "Connect to this server once in Apex Terminal first, so its host key is checked and remembered.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请先在 Apex Terminal 中连接一次此服务器，以便核对并记住它的主机密钥。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請先在 Apex Terminal 中連線一次此伺服器，以便核對並記住它的主機金鑰。"
+          }
+        }
+      }
+    },
     "Connected": {
       "extractionState": "manual",
       "localizations": {
@@ -3975,6 +4009,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "匯出診斷資訊"
+          }
+        }
+      }
+    },
+    "Files": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "文件"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "檔案"
           }
         }
       }
@@ -7991,6 +8042,23 @@
         }
       }
     },
+    "Save a password, or use a key without a passphrase and without Face ID. The Files app cannot ask for either.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请保存密码，或改用没有口令、也不需要面容 ID 的密钥。「文件」App 两者都无法询问。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請儲存密碼，或改用沒有通行密碼、也不需要 Face ID 的金鑰。「檔案」App 兩者都無法詢問。"
+          }
+        }
+      }
+    },
     "Save key": {
       "extractionState": "manual",
       "localizations": {
@@ -8701,6 +8769,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "顯示隱藏檔案"
+          }
+        }
+      }
+    },
+    "Show in the Files app": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在「文件」App 中显示"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在「檔案」App 中顯示"
           }
         }
       }
@@ -10405,6 +10490,23 @@
         }
       }
     },
+    "This build cannot reach its shared storage, so servers cannot appear in Files.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此版本无法访问共享存储，因此服务器无法出现在「文件」中。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此版本無法存取共用儲存空間，因此伺服器無法出現在「檔案」中。"
+          }
+        }
+      }
+    },
     "This cannot be undone.": {
       "extractionState": "manual",
       "localizations": {
@@ -10673,6 +10775,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "此螢幕的使用者名稱和密碼各自最多 63 個字元。"
+          }
+        }
+      }
+    },
+    "This server appears in the Files app, where you can browse it, open files and save them back. Apex Terminal connects when Files asks and disconnects shortly after, so a change made on the server appears when you open or refresh the folder.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此服务器会出现在「文件」App 中，你可以在那里浏览、打开文件并保存回服务器。Apex Terminal 会在「文件」需要时连接，并在稍后断开，因此服务器上的改动会在你打开或刷新文件夹时才显示。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此伺服器會出現在「檔案」App 中，你可以在那裡瀏覽、開啟檔案並儲存回伺服器。Apex Terminal 會在「檔案」需要時連線，並在稍後斷開，因此伺服器上的變更會在你開啟或重新整理檔案夾時才顯示。"
           }
         }
       }

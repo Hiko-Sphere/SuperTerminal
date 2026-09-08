@@ -47,6 +47,13 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
     public var effectivePlatform: HostPlatform? { platformOverride ?? detectedPlatform }
 
     public var usesServiceToken: Bool { accessAuthentication == .serviceToken }
+    /// Whether this server appears in the Files app (D-044).
+    ///
+    /// Optional so records written before the feature existed still decode, and `nil`
+    /// reads as off: a connection is never published to Files without being asked for.
+    public var showsInFiles: Bool?
+    /// Whether the connection is published to Files right now.
+    public var isPublishedToFiles: Bool { showsInFiles ?? false }
     /// When this record last changed, on any device. Drives last-writer-wins in sync.
     ///
     /// Optional on purpose: files written before sync existed have no such field, and a
@@ -124,7 +131,8 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
         lastConnected: Date? = nil,
         accessAuthentication: AccessAuthentication? = nil,
         platformOverride: HostPlatform? = nil,
-        detectedPlatform: HostPlatform? = nil
+        detectedPlatform: HostPlatform? = nil,
+        showsInFiles: Bool? = nil
     ) {
         self.id = id
         self.name = name
@@ -142,6 +150,7 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
         self.accessAuthentication = accessAuthentication
         self.platformOverride = platformOverride
         self.detectedPlatform = detectedPlatform
+        self.showsInFiles = showsInFiles
     }
 
     /// The identity host keys are remembered against.

@@ -103,3 +103,61 @@ Deploy Schema to Production before any TestFlight build syncs.
 `ApexTerminalTests`, then sync between two signed devices.
 
 **Blocks.** iCloud sync, which is currently not offered at all.
+
+---
+
+## H-6 · Browse a server in the Files app on a real device
+
+**Why a person.** Not a matter of judgement this time — a matter of hardware. A replicated
+File Provider domain is backed by FPFS, and the iOS Simulator does not have it.
+`fileproviderd` says so in as many words and then quietly downgrades the domain:
+
+```
+domain <NSFileProviderDomain: … (disabled,replicated,syncTrash,userInfo)> was asked with
+FPFS, but it's not supported, will fallback
+Adding domain <NSFileProviderDomain: … (disabled,syncTrash,userInfo)>
+```
+
+The second line no longer says `replicated`. The system then serves that domain through
+the older, non-replicated API, finds that the extension does not implement it — correctly,
+because it is a replicated extension — and aborts the extension process in
+`__FILEPROVIDER_V2_EXTENSION_WITHOUT_IMPL`. **Nothing about the feature can be concluded
+from that**, and it is not a defect to be fixed. `FileProviderDomainTests` asserts the
+downgrade so the diagnosis does not have to be made twice.
+
+**Steps.** On an iPhone or iPad with the build installed, and a reachable SSH server:
+
+1. Add a connection, connect once so its host key is checked and remembered, and save
+   either a password or a key with no passphrase and no Face ID.
+2. Edit the connection → Files → turn on **Show in the Files app**.
+   *Expect:* the switch is enabled. If it is not, the footer says which of the three
+   conditions is missing.
+3. Open the Files app → Browse.
+   *Expect:* the connection's name in the sidebar, under Locations.
+4. Open it.
+   *Expect:* the server's login directory, with the real files in it.
+5. Open a text file, edit it in any app that can save back, and save.
+   *Expect:* the change is on the server — check with `cat` over SSH, not in Files.
+6. Create a folder, rename a file, drag a file in from iCloud Drive, and delete something.
+   *Expect:* each one is real on the server, and Delete says Delete rather than offering a
+   Trash this provider does not have.
+7. Make a change on the server behind the app's back, then pull to refresh in Files.
+   *Expect:* the listing catches up. It will not catch up on its own: SFTP cannot push.
+8. Turn the switch off.
+   *Expect:* the location disappears from Files.
+
+**Automated version.** With the device attached and an SSH server reachable from it, the
+whole of steps 3–5 is `FileProviderEndToEndTests`, which skips itself on the simulator:
+
+```
+ST_APP_TEST_SSH_HOST_OVERRIDE=<this Mac's LAN address> \
+  ./scripts/app-integration-e2e.sh "platform=iOS,name=<device>"
+```
+
+**Verification afterwards.** Record the result in `docs/RELEASE_EVIDENCE.md` against
+D-044.
+
+**Blocks.** Claiming that servers appear in the Files app. Every layer beneath it is
+verified against a real OpenSSH server — the protocol, the file operations, the
+enumeration, the error mapping, the domain registration — but the system actually serving
+those answers to Files has only been proven on hardware once this is done.
