@@ -123,6 +123,8 @@ public final class OpenSSHTestServer: @unchecked Sendable {
     ///   - hostKeyAlgorithms: which host keys the server offers. Restricting this to RSA
     ///     is how a client's RSA host-key support is proved: with no Ed25519 or ECDSA host
     ///     key present, a connection can only succeed through RSA.
+    ///   - kexAlgorithms: when set, restricts the server's `KexAlgorithms`. Narrowing it
+    ///     to the classical exchange is how a client's fallback is proved (D-048).
     ///   - ciphers: when set, restricts the server's `Ciphers` and `MACs` lists. Narrowing
     ///     this to the CTR family is how a client's non-GCM support is proved: with AES-GCM
     ///     unavailable, a connection can only succeed through the other scheme.
@@ -135,7 +137,8 @@ public final class OpenSSHTestServer: @unchecked Sendable {
         extraAuthorizedKeys: [String] = [],
         hostKeyAlgorithms: Set<HostKeyAlgorithm> = [.ed25519, .ecdsa],
         ciphers: (ciphers: String, macs: String)? = nil,
-        certificateOptions: CertificateOptions = .init()
+        certificateOptions: CertificateOptions = .init(),
+        kexAlgorithms: String? = nil
     ) throws {
         guard FileManager.default.isExecutableFile(atPath: Self.sshdPath) else {
             throw StartupError.sshdMissing(Self.sshdPath)
@@ -246,6 +249,7 @@ public final class OpenSSHTestServer: @unchecked Sendable {
         \(hostCertificateLine)
         Subsystem sftp internal-sftp
         \(ciphers.map { "Ciphers \($0.ciphers)\nMACs \($0.macs)" } ?? "")
+        \(kexAlgorithms.map { "KexAlgorithms \($0)" } ?? "")
         LogLevel DEBUG1
         """
             let configURL = root.appendingPathComponent("sshd_config")

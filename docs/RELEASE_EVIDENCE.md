@@ -3,6 +3,44 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-08 — after D-048 (post-quantum key exchange)
+
+| Command | Result |
+| --- | --- |
+| `cd Packages/ApexTerminalKit && swift test --no-parallel` | **267 tests in 39 suites passed** |
+| `cd Packages/swift-nio-ssh-rsa && swift test` | **349 tests, 0 failures** — run because this changes what every connection negotiates |
+| `bash scripts/app-integration-e2e.sh` | **253 tests in 47 suites passed** |
+| `bash scripts/ui-terminal-e2e.sh` | **46 passed, 3 failed** — the same 3 as the last four commits |
+| `bash scripts/localization-audit.sh` | **green**, no new strings |
+| Release archive | **ARCHIVE SUCCEEDED** |
+
+**How the hybrid was verified, and why the verification is the point.** A key exchange can
+be wrong in a way that is completely invisible from inside: an implementation that encodes
+the shared secret differently at both ends agrees with itself perfectly and with nothing
+else. So the test does not check this code's own arithmetic. It connects to OpenSSH 10.2p1,
+runs a command, and then reads **sshd's own log** for the line naming the algorithm it
+chose:
+
+```
+debug1: kex: algorithm: mlkem768x25519-sha256
+```
+
+The assertion matches that line specifically, not the bare algorithm name — the log also
+lists everything the client offered, and a looser check would have passed even if the
+classical exchange had been selected. And the command's output is the second half of the
+proof: the keys protecting it are derived from the hybrid secret, so an encoding wrong by
+one length prefix fails the MAC on the next packet rather than producing wrong output.
+
+A second test narrows the server to `KexAlgorithms curve25519-sha256` and checks the
+connection still works and that sshd chose the classical exchange — a client that offers a
+hybrid first must accept being told no.
+
+**What was refactored to make room.** RFC 4253 § 7.2 key derivation moved out of
+`EllipticCurveKeyExchange` into `SessionKeyDerivation`, shared by both exchanges. The two
+differ only in how `K` is absorbed — an mpint for the elliptic curves, a fixed-length string
+for the hybrid — and duplicating a key-derivation function would have been two chances for
+one copy to drift. The vendored fork's own 349 tests cover the moved code.
+
 ## 2026-09-08 — after D-047 (jump hosts)
 
 | Command | Result |

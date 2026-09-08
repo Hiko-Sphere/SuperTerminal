@@ -22,7 +22,7 @@ from the first unfinished item rather than starting over.
 | 1.1 | SFTP | **Done except multiple tabs** — D-041 protocol, D-042 interface, D-043 prompts, permissions, sharing and drag-and-drop. Several remote folders open at once is the one part not built; the iPad shows one browser at a time |
 | 1.2 | Files.app File Provider extension | **Implemented, awaiting a device** — D-044; a replicated extension, a per-connection switch, and 29 package tests against real OpenSSH plus 7 in the app host. The simulator downgrades a replicated domain because it has no FPFS, so the system actually serving Files is H-6 |
 | 1.3 | Port forwarding as a first-class object | **Done** — D-045; local, remote and dynamic (SOCKS5), saved with the connection, started by hand or with it, with real byte counters. 9 package tests move real bytes through a real OpenSSH server, 3 app tests through a real `TerminalSession`, 2 UI tests through the screen |
-| 1.4 | Authentication | **Certificates and jump hosts done** — D-046 certificates (user and host, against a real `TrustedUserCAKeys`/`HostCertificate` server); D-047 jump chains (`ssh -J`), 4 package tests through two real servers and 5 app tests. keyboard-interactive, Secure Enclave, agent, FIDO2 and post-quantum KEX are still ahead — see the note below |
+| 1.4 | Authentication | **Certificates, jump hosts and post-quantum key exchange done** — D-046 certificates; D-047 jump chains; D-048 `mlkem768x25519-sha256`, negotiated with a real OpenSSH 10.2 and confirmed from the server's own log. keyboard-interactive, Secure Enclave, agent and FIDO2 are still ahead — see the note below |
 
 ## Phase 2 — moat
 
@@ -66,9 +66,6 @@ ProxyJump is done (D-047); what follows is the rest.
 * **FIDO2 (`*-sk`)** — needs a security-key middleware iOS does not have; what iOS offers is
   passkeys through `ASAuthorization`, which is not the same protocol. Likely not honestly
   deliverable.
-* **Post-quantum KEX** — `mlkem768x25519-sha256` is reachable: swift-crypto vendors
-  BoringSSL's ML-KEM, so no primitive would be written here. It needs a new key exchange in
-  the fork, and OpenSSH 9.x on this machine can verify it.
 
 ## Standing corrections found while auditing
 

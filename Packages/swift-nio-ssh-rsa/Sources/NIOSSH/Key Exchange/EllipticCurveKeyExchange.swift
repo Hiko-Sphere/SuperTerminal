@@ -235,226 +235,27 @@ extension EllipticCurveKeyExchange {
         sessionID: ByteBuffer,
         expectedKeySizes: ExpectedKeySizes
     ) -> NIOSSHSessionKeys {
-        // Cool, now it's time to generate the keys. In my ideal world I'd have a mechanism to handle this digest securely, but this is
-        // not available in CryptoKit so we're going to spill these keys all over the heap and the stack. This isn't ideal, but I don't
-        // think the risk is too bad.
+        // In an ideal world there would be a way to handle this digest securely, but that
+        // is not available in CryptoKit, so these keys are spread over the heap and the
+        // stack. Not ideal, but the risk is judged acceptable.
         //
-        // We generate these as follows:
-        //
-        // - Initial IV client to server: HASH(K || H || "A" || session_id)
-        //    (Here K is encoded as mpint and "A" as byte and session_id as raw
-        //    data.  "A" means the single character A, ASCII 65).
-        // - Initial IV server to client: HASH(K || H || "B" || session_id)
-        // - Encryption key client to server: HASH(K || H || "C" || session_id)
-        // - Encryption key server to client: HASH(K || H || "D" || session_id)
-        // - Integrity key client to server: HASH(K || H || "E" || session_id)
-        // - Integrity key server to client: HASH(K || H || "F" || session_id)
-        //
-        // As all of these hashes begin the same way we save a trivial amount of compute by
-        // using the value semantics of the hasher.
+        // `K` goes in as an mpint here, which is what the elliptic-curve exchanges call
+        // for; the post-quantum hybrid encodes it differently and so builds its own base
+        // hasher. Everything after that is common, and lives in `SessionKeyDerivation`.
         var baseHasher = PrivateKey.Hasher()
         baseHasher.updateAsMPInt(sharedSecret: sharedSecret)
         exchangeHash.withUnsafeBytes { hashPtr in
             baseHasher.update(bufferPointer: hashPtr)
         }
 
-        switch self.ourRole {
-        case .client:
-            return NIOSSHSessionKeys(
-                initialInboundIV: self.generateServerToClientIV(
-                    baseHasher: baseHasher,
-                    sessionID: sessionID,
-                    expectedKeySize: expectedKeySizes.ivSize
-                ),
-                initialOutboundIV: self.generateClientToServerIV(
-                    baseHasher: baseHasher,
-                    sessionID: sessionID,
-                    expectedKeySize: expectedKeySizes.ivSize
-                ),
-                inboundEncryptionKey: self.generateServerToClientEncryptionKey(
-                    baseHasher: baseHasher,
-                    sessionID: sessionID,
-                    expectedKeySize: expectedKeySizes.encryptionKeySize
-                ),
-                outboundEncryptionKey: self.generateClientToServerEncryptionKey(
-                    baseHasher: baseHasher,
-                    sessionID: sessionID,
-                    expectedKeySize: expectedKeySizes.encryptionKeySize
-                ),
-                inboundMACKey: self.generateServerToClientMACKey(
-                    baseHasher: baseHasher,
-                    sessionID: sessionID,
-                    expectedKeySize: expectedKeySizes.macKeySize
-                ),
-                outboundMACKey: self.generateClientToServerMACKey(
-                    baseHasher: baseHasher,
-                    sessionID: sessionID,
-                    expectedKeySize: expectedKeySizes.macKeySize
-                )
-            )
-        case .server:
-            return NIOSSHSessionKeys(
-                initialInboundIV: self.generateClientToServerIV(
-                    baseHasher: baseHasher,
-                    sessionID: sessionID,
-                    expectedKeySize: expectedKeySizes.ivSize
-                ),
-                initialOutboundIV: self.generateServerToClientIV(
-                    baseHasher: baseHasher,
-                    sessionID: sessionID,
-                    expectedKeySize: expectedKeySizes.ivSize
-                ),
-                inboundEncryptionKey: self.generateClientToServerEncryptionKey(
-                    baseHasher: baseHasher,
-                    sessionID: sessionID,
-                    expectedKeySize: expectedKeySizes.encryptionKeySize
-                ),
-                outboundEncryptionKey: self.generateServerToClientEncryptionKey(
-                    baseHasher: baseHasher,
-                    sessionID: sessionID,
-                    expectedKeySize: expectedKeySizes.encryptionKeySize
-                ),
-                inboundMACKey: self.generateClientToServerMACKey(
-                    baseHasher: baseHasher,
-                    sessionID: sessionID,
-                    expectedKeySize: expectedKeySizes.macKeySize
-                ),
-                outboundMACKey: self.generateServerToClientMACKey(
-                    baseHasher: baseHasher,
-                    sessionID: sessionID,
-                    expectedKeySize: expectedKeySizes.macKeySize
-                )
-            )
-        }
-    }
-
-    private func generateClientToServerIV(
-        baseHasher: PrivateKey.Hasher,
-        sessionID: ByteBuffer,
-        expectedKeySize: Int
-    ) -> [UInt8] {
-        self.deriveKeyMaterial(
+        return SessionKeyDerivation.sessionKeys(
             baseHasher: baseHasher,
-            discriminatorByte: UInt8(ascii: "A"),
             sessionID: sessionID,
-            length: expectedKeySize
+            role: self.ourRole,
+            expectedKeySizes: expectedKeySizes
         )
     }
 
-    private func generateServerToClientIV(
-        baseHasher: PrivateKey.Hasher,
-        sessionID: ByteBuffer,
-        expectedKeySize: Int
-    ) -> [UInt8] {
-        self.deriveKeyMaterial(
-            baseHasher: baseHasher,
-            discriminatorByte: UInt8(ascii: "B"),
-            sessionID: sessionID,
-            length: expectedKeySize
-        )
-    }
-
-    private func generateClientToServerEncryptionKey(
-        baseHasher: PrivateKey.Hasher,
-        sessionID: ByteBuffer,
-        expectedKeySize: Int
-    ) -> SymmetricKey {
-        SymmetricKey(data: self.deriveKeyMaterial(
-            baseHasher: baseHasher,
-            discriminatorByte: UInt8(ascii: "C"),
-            sessionID: sessionID,
-            length: expectedKeySize
-        ))
-    }
-
-    private func generateServerToClientEncryptionKey(
-        baseHasher: PrivateKey.Hasher,
-        sessionID: ByteBuffer,
-        expectedKeySize: Int
-    ) -> SymmetricKey {
-        SymmetricKey(data: self.deriveKeyMaterial(
-            baseHasher: baseHasher,
-            discriminatorByte: UInt8(ascii: "D"),
-            sessionID: sessionID,
-            length: expectedKeySize
-        ))
-    }
-
-    private func generateClientToServerMACKey(
-        baseHasher: PrivateKey.Hasher,
-        sessionID: ByteBuffer,
-        expectedKeySize: Int
-    ) -> SymmetricKey {
-        SymmetricKey(data: self.deriveKeyMaterial(
-            baseHasher: baseHasher,
-            discriminatorByte: UInt8(ascii: "E"),
-            sessionID: sessionID,
-            length: expectedKeySize
-        ))
-    }
-
-    private func generateServerToClientMACKey(
-        baseHasher: PrivateKey.Hasher,
-        sessionID: ByteBuffer,
-        expectedKeySize: Int
-    ) -> SymmetricKey {
-        SymmetricKey(data: self.deriveKeyMaterial(
-            baseHasher: baseHasher,
-            discriminatorByte: UInt8(ascii: "F"),
-            sessionID: sessionID,
-            length: expectedKeySize
-        ))
-    }
-
-    /// Derives `length` bytes of key material, extending past one digest as RFC 4253 § 7.2
-    /// requires.
-    ///
-    /// The first block is HASH(K || H || X || session_id), as before. If more is needed the
-    /// key is extended by hashing K || H || (the key so far) and appending the result:
-    ///
-    ///     K1 = HASH(K || H || X || session_id)
-    ///     K2 = HASH(K || H || K1)
-    ///     K3 = HASH(K || H || K1 || K2)
-    ///     key = K1 || K2 || K3 || ...
-    ///
-    /// `baseHasher` already holds K || H, which is exactly the prefix each extension round
-    /// starts from. Upstream never needed this — no bundled cipher asks for more than the
-    /// 32 bytes SHA-256 provides — so every generator asserted the size fitted one digest.
-    /// chacha20-poly1305@openssh.com needs 64 bytes with a 32-byte digest, which is the
-    /// case the specification describes and this implements.
-    private func deriveKeyMaterial(
-        baseHasher: PrivateKey.Hasher,
-        discriminatorByte: UInt8,
-        sessionID: ByteBuffer,
-        length: Int
-    ) -> [UInt8] {
-        var material = Array(
-            self.generateSpecificHash(
-                baseHasher: baseHasher,
-                discriminatorByte: discriminatorByte,
-                sessionID: sessionID
-            )
-        )
-        while material.count < length {
-            var extender = baseHasher
-            material.withUnsafeBytes { extender.update(bufferPointer: $0) }
-            material.append(contentsOf: Array(extender.finalize()))
-        }
-        // Truncation: a request shorter than one digest takes a prefix, as before, and one
-        // that is not a multiple of the digest size takes a prefix of the last block.
-        return Array(material.prefix(length))
-    }
-
-    private func generateSpecificHash(
-        baseHasher: PrivateKey.Hasher,
-        discriminatorByte: UInt8,
-        sessionID: ByteBuffer
-    ) -> PrivateKey.Hasher.Digest {
-        var localHasher = baseHasher
-        localHasher.update(byte: discriminatorByte)
-        localHasher.update(data: sessionID.readableBytesView)
-        return localHasher.finalize()
-    }
 }
 
 extension EllipticCurveKeyExchange {
@@ -591,7 +392,7 @@ private struct SharedSecretLengthHelper {
 }
 
 extension HashFunction {
-    fileprivate mutating func update(byte: UInt8) {
+    mutating func update(byte: UInt8) {
         withUnsafeBytes(of: byte) { bytePtr in
             assert(bytePtr.count == 1, "Why is this 8 bit integer so large?")
             self.update(bufferPointer: bytePtr)

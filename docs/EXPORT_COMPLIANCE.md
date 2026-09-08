@@ -12,6 +12,7 @@ Every row was established by reading the source, not by reading the previous doc
 | Algorithm | What it is for | Where it comes from | Licence |
 | --- | --- | --- | --- |
 | SSH transport: curve25519-sha256, ecdh-sha2-nistp256/384/521, AES-CTR, chacha20-poly1305, hmac-sha2-256/512-ETM | The SSH connection itself | `swift-nio-ssh`, vendored as `swift-nio-ssh-rsa` (D-007) | Apache-2.0 |
+| ML-KEM-768 (FIPS 203), combined with X25519 as `mlkem768x25519-sha256` | Post-quantum SSH key exchange, preferred where the system provides it (D-048) | **CryptoKit `MLKEM768` (Apple)**, iOS 26 / macOS 26 and later; the SSH plumbing around it is in `Sources/NIOSSH/Key Exchange/MLKEMHybridKeyExchange.swift` | Apple platform |
 | Ed25519, ECDSA P-256/384/521, RSA signing and verification | SSH host keys and user keys | same, over `swift-crypto` | Apache-2.0 |
 | TLS 1.2/1.3 | HTTPS to the Cloudflare edge, and the WebSocket carrier | `swift-nio-ssl` → BoringSSL | Apache-2.0 (BoringSSL: ISC/OpenSSL) |
 | SHA-256, SHA-512, HMAC, P-256, Curve25519 | SSH key exchange, JWT signature validation for Access | `swift-crypto` | Apache-2.0 |
@@ -23,6 +24,17 @@ Every row was established by reading the source, not by reading the previous doc
 | MD5 | Deriving the AES key from the Diffie-Hellman shared secret, as RFB security type 30 mandates | CryptoKit `Insecure.MD5` (Apple) | Apple platform |
 | SHA-1 | Deriving a name-based UUID (version 5) for screen migration ids — an identifier, not a security decision (D-027) | CryptoKit `Insecure.SHA1` (Apple) | Apple platform |
 | Modular exponentiation over the server's Diffie-Hellman group | Key agreement for RFB security type 30 | **`Packages/ApexTerminalKit/Sources/STVNC/VNCBigInteger.swift` — this repository** | — |
+
+## A note on the post-quantum exchange
+
+The ML-KEM implementation is Apple's, reached through `CryptoKit.MLKEM768`. What this
+repository contains is the SSH-side plumbing: how the two public values are concatenated,
+how the two shared secrets are combined (`SHA-256(K_PQ ‖ K_X25519)`), and how the result is
+encoded into the exchange hash and the key derivation. No primitive is implemented here.
+
+For the encryption questionnaire this is the same answer as the rest of the SSH transport —
+standard, published key agreement used to secure the app's own connections — with the note
+that ML-KEM is a FIPS 203 algorithm supplied by the operating system, not by this app.
 
 ## The one thing this app still implements itself, and why
 

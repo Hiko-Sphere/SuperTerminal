@@ -592,13 +592,28 @@ struct SSHKeyExchangeStateMachine {
 }
 
 extension SSHKeyExchangeStateMachine {
-    // For now this is a static list.
-    static let supportedKeyExchangeImplementations: [EllipticCurveKeyExchangeProtocol.Type] = [
-        EllipticCurveKeyExchange<P384.KeyAgreement.PrivateKey>.self,
-        EllipticCurveKeyExchange<P256.KeyAgreement.PrivateKey>.self,
-        EllipticCurveKeyExchange<P521.KeyAgreement.PrivateKey>.self,
-        EllipticCurveKeyExchange<Curve25519.KeyAgreement.PrivateKey>.self,
-    ]
+    /// The key exchanges this build can perform, most preferred first.
+    ///
+    /// The ML-KEM hybrid leads where the operating system provides ML-KEM, which is what
+    /// OpenSSH does too: a hybrid is no weaker than the classical exchange beneath it, so
+    /// preferring it costs nothing and protects a recorded session against a quantum
+    /// computer built later. Where the API is absent — anything before iOS 26 or macOS 26
+    /// — it is simply not offered, and the exchange is the same as it always was. The list
+    /// is computed rather than stored because that availability is a runtime question.
+    static var supportedKeyExchangeImplementations: [EllipticCurveKeyExchangeProtocol.Type] {
+        var implementations: [EllipticCurveKeyExchangeProtocol.Type] = []
+        if #available(macOS 26.0, iOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *) {
+            implementations.append(MLKEM768X25519KeyExchange.self)
+        }
+        let classical: [EllipticCurveKeyExchangeProtocol.Type] = [
+            EllipticCurveKeyExchange<Curve25519.KeyAgreement.PrivateKey>.self,
+            EllipticCurveKeyExchange<P384.KeyAgreement.PrivateKey>.self,
+            EllipticCurveKeyExchange<P256.KeyAgreement.PrivateKey>.self,
+            EllipticCurveKeyExchange<P521.KeyAgreement.PrivateKey>.self,
+        ]
+        implementations.append(contentsOf: classical)
+        return implementations
+    }
 
     static let supportedKeyExchangeAlgorithms: [Substring] = supportedKeyExchangeImplementations.flatMap {
         $0.keyExchangeAlgorithmNames

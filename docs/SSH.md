@@ -124,6 +124,22 @@ wrapped across lines.
 cannot fight. When a program has enabled mouse reporting, two-finger scrolling becomes
 wheel events for that program instead.
 
+## Post-quantum key exchange
+
+Where the system provides ML-KEM — iOS 26 and macOS 26 and later — the app offers
+`mlkem768x25519-sha256` ahead of the classical exchanges, and OpenSSH 9.x and newer will
+take it (D-048).
+
+A hybrid is no weaker than either half: an attacker has to break X25519 *and* ML-KEM-768 to
+recover the session key. The reason to adopt it now rather than later is that SSH traffic
+captured today can be decrypted whenever a quantum computer arrives, and a session recorded
+this year is still worth reading in ten.
+
+There is nothing to configure and nothing to see: the exchange is chosen during the
+handshake, and a server that does not offer it gets the classical one exactly as before.
+The ML-KEM implementation is Apple's, from CryptoKit; what this project added is the SSH
+plumbing around it.
+
 ## Jump hosts
 
 Edit a connection → *Jump hosts*, and pick saved connections to hop through, in order —
