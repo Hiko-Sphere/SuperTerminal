@@ -8,6 +8,7 @@ what it does not defend against.
 | Asset | Where it lives | Exposure if lost |
 | --- | --- | --- |
 | SSH private keys | Keychain, `WhenUnlockedThisDeviceOnly`, optionally biometric-gated; `WhenUnlocked` + synchronisable only for a key the user put in iCloud Keychain (never with biometrics) | Full access to every server trusting the key |
+| SSH keys held in the Secure Enclave | Inside the Enclave. The Keychain holds only the Enclave's wrapped reference, `WhenUnlockedThisDeviceOnly` (D-049) | Access to servers trusting the key **from this device only** — the private half has no exportable form, so it cannot be taken elsewhere |
 | SSH passwords | Keychain, `WhenUnlockedThisDeviceOnly` | Access to one account |
 | Cloudflare Access tokens | Keychain, `AfterFirstUnlockThisDeviceOnly` | Ability to reach the tunnelled service until the token expires |
 | Cloudflare service tokens | Keychain, `WhenUnlockedThisDeviceOnly` | Long-lived machine access |
@@ -111,6 +112,25 @@ items use `.biometryCurrentSet`, which invalidates the item if a new face or fin
 enrolled — so an attacker who learns the passcode still cannot enrol a biometric and
 read the key. Writes delete-then-add rather than update, so changing an item's
 protection class can never leave the old, weaker attributes in place.
+
+A key created in the Secure Enclave (D-049) removes this asset rather than protecting it:
+there is no private key to disclose. The Keychain item holds `dataRepresentation` — the
+Enclave's own wrapped reference — which no other device can unwrap, so the item is worth
+nothing if it is read, copied or restored elsewhere. Signing happens inside the Enclave,
+and with the biometric policy the Enclave itself demands a check before each signature
+rather than trusting the app to ask. The cost is stated in the UI before the key is
+created and again when it is deleted: such a key cannot be exported, backed up, synced or
+recovered. The backup names it as unexportable rather than dropping it silently, and the
+key list marks a record whose Enclave key is not on this device as unusable rather than
+merely missing.
+
+For a key with the biometric policy, the check is evaluated on the connecting task before
+the transport is opened, and the resulting `LAContext` is what the Enclave is handed. The
+reason is not cosmetic: NIOSSH signs the user-auth request on its event loop, so a prompt
+raised at signing time would block every other session sharing that loop for as long as a
+person took to answer. Evaluating `deviceOwnerAuthenticationWithBiometrics` — not the
+passcode-fallback policy — matches the key's `.biometryCurrentSet` access control, so the
+fallback cannot be used to reach a key that was explicitly gated on biometrics.
 
 ### T-7 · Log and diagnostics leakage
 

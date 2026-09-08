@@ -72,15 +72,22 @@ struct KeyManagementView: View {
                 if let key = keyToDelete {
                     // The Keychain item goes first: a record without its key is a
                     // confusing failure later, but a key without its record is invisible
-                    // material left behind on the device.
+                    // material left behind on the device. Both homes are cleared without
+                    // asking which one this key used: deleting the wrong one is a no-op,
+                    // and leaving one behind is exactly the failure this ordering avoids.
                     try? container.vault.deletePrivateKey(id: key.id)
+                    try? container.vault.deleteSecureEnclaveKey(id: key.id)
                     container.hostStore.remove(keyID: key.id)
                 }
                 keyToDelete = nil
             }
             Button("Cancel", role: .cancel) { keyToDelete = nil }
         } message: {
-            Text("The private key is removed from this device and any connection using it will stop working. This cannot be undone.")
+            if keyToDelete?.isHeldInSecureEnclave == true {
+                Text("This deletes the only reference to a key that has never existed outside the Secure Enclave, and nothing can rebuild it. There is no backup anywhere, so the key is gone for good and any connection using it will stop working.")
+            } else {
+                Text("The private key is removed from this device and any connection using it will stop working. This cannot be undone.")
+            }
         }
     }
 }
@@ -139,22 +146,36 @@ private struct KeyRow: View {
             .font(DesignTokens.Typography.caption)
             .accessibilityIdentifier("key-certificate")
 
+            if key.isHeldInSecureEnclave {
+                Label("In the Secure Enclave · cannot be exported", systemImage: "lock.shield")
+                    .font(DesignTokens.Typography.caption)
+                    .foregroundStyle(DesignTokens.Color.labelTertiary)
+                    .accessibilityIdentifier("key-secure-enclave")
+            }
             if key.requiresBiometrics {
                 Label("Unlocks with Face ID or Touch ID", systemImage: "faceid")
                     .font(DesignTokens.Typography.caption)
                     .foregroundStyle(DesignTokens.Color.labelTertiary)
             }
             if !hasSecret {
-                Label("Private key is not on this device", systemImage: "icloud.slash")
-                    .font(DesignTokens.Typography.caption)
-                    .foregroundStyle(DesignTokens.Color.warning)
+                if key.isHeldInSecureEnclave {
+                    // Not a sync problem and not fixable: this record arrived from
+                    // another device, whose enclave holds the only copy.
+                    Label("Made on another device. A Secure Enclave key cannot be moved, so this one cannot be used here.", systemImage: "exclamationmark.triangle")
+                        .font(DesignTokens.Typography.caption)
+                        .foregroundStyle(DesignTokens.Color.warning)
+                } else {
+                    Label("Private key is not on this device", systemImage: "icloud.slash")
+                        .font(DesignTokens.Typography.caption)
+                        .foregroundStyle(DesignTokens.Color.warning)
+                }
             } else if key.secretInICloud == true {
                 Label("In iCloud Keychain", systemImage: "icloud")
                     .font(DesignTokens.Typography.caption)
                     .foregroundStyle(DesignTokens.Color.labelTertiary)
             }
         }
-        .task(id: key.id) { hasSecret = container.vault.hasPrivateKey(id: key.id) }
+        .task(id: key.id) { hasSecret = container.vault.hasSecret(for: key) }
         .padding(.vertical, DesignTokens.Spacing.xxs)
         .accessibilityElement(children: .combine)
     }
@@ -167,10 +188,33 @@ struct GenerateKeySheet: View {
 
     @State private var name = ""
     @State private var algorithm: SSHKeyAlgorithm = .ed25519
+    @State private var storage: KeyStorageChoice = .keychain
     @State private var requireBiometrics = true
     @State private var storeSecretInICloud = false
-    @State private var generated: SSHKeyGenerator.GeneratedKey?
+    /// What was created, in the only form that can be shown: the public half.
+    @State private var generated: GeneratedSummary?
     @State private var errorMessage: String?
+    /// Asked once, when the sheet's state is created. Both answers involve building an
+    /// `LAContext`, and `body` runs on every keystroke in the name field.
+    @State private var enclaveIsAvailable = SecureEnclaveSSHKey.isAvailable
+    @State private var enclaveCanRequireBiometrics = SecureEnclaveSSHKey.canRequireBiometrics
+
+    /// Where the private half will live.
+    ///
+    /// Presented as a choice about the key's *nature* rather than as an implementation
+    /// detail, because it is irreversible: an enclave key can never be exported, and a
+    /// Keychain key can never become one.
+    enum KeyStorageChoice: String, CaseIterable, Identifiable {
+        case keychain
+        case secureEnclave
+        var id: String { rawValue }
+    }
+
+    struct GeneratedSummary {
+        var publicKeyOpenSSH: String
+        var fingerprintSHA256: String
+        var isSecureEnclave: Bool
+    }
 
     var body: some View {
         NavigationStack {
@@ -195,30 +239,74 @@ struct GenerateKeySheet: View {
                         Text("Key created")
                     } footer: {
                         // The next step is the one people forget, so it is spelled out.
-                        Text("Add this line to ~/.ssh/authorized_keys on the server. The private half stays on this device and is never shown or shared.")
+                        if generated.isSecureEnclave {
+                            Text("Add this line to ~/.ssh/authorized_keys on the server. The private half was created inside the Secure Enclave, has never existed outside it, and cannot be exported, backed up or moved to another device.")
+                        } else {
+                            Text("Add this line to ~/.ssh/authorized_keys on the server. The private half stays on this device and is never shown or shared.")
+                        }
                     }
                 } else {
                     Section("Key") {
                         TextField("Name", text: $name)
                             .textInputAutocapitalization(.words)
                             .accessibilityIdentifier("key-name")
-                        Picker("Algorithm", selection: $algorithm) {
-                            ForEach(SSHKeyAlgorithm.allCases) { option in
-                                Text(option.displayName).tag(option)
+                        if storage == .keychain {
+                            Picker("Algorithm", selection: $algorithm) {
+                                ForEach(SSHKeyAlgorithm.allCases) { option in
+                                    Text(option.displayName).tag(option)
+                                }
+                            }
+                            Text(algorithm.detail)
+                                .font(DesignTokens.Typography.caption)
+                                .foregroundStyle(DesignTokens.Color.labelSecondary)
+                        } else {
+                            // Not a picker: the enclave holds one signing curve, and a
+                            // disabled control that can never change is worse than a
+                            // sentence saying why.
+                            LabeledContent("Algorithm", value: "ECDSA P-256")
+                                .accessibilityElement(children: .combine)
+                                .accessibilityIdentifier("key-algorithm-fixed")
+                            Text("The only algorithm the Secure Enclave signs with. Every current OpenSSH server accepts it.")
+                                .font(DesignTokens.Typography.caption)
+                                .foregroundStyle(DesignTokens.Color.labelSecondary)
+                        }
+                    }
+
+                    if enclaveIsAvailable {
+                        Section {
+                            Picker("Private key", selection: $storage) {
+                                Text("In the Keychain").tag(KeyStorageChoice.keychain)
+                                Text("In the Secure Enclave").tag(KeyStorageChoice.secureEnclave)
+                            }
+                            .pickerStyle(.inline)
+                            .labelsHidden()
+                        } header: {
+                            Text("Where the private key lives")
+                        } footer: {
+                            if storage == .secureEnclave {
+                                Text("The key is created inside dedicated hardware and never exists outside it. It cannot be exported, included in a backup, or moved to another device — if you lose this device, the key is gone and you remove its public key from your servers.")
+                            } else {
+                                Text("The key is stored in the Keychain. It can be exported into an encrypted backup and restored onto another device.")
                             }
                         }
-                        Text(algorithm.detail)
-                            .font(DesignTokens.Typography.caption)
-                            .foregroundStyle(DesignTokens.Color.labelSecondary)
                     }
 
                     Section {
                         Toggle("Require Face ID or Touch ID", isOn: $requireBiometrics)
+                            .disabled(storage == .secureEnclave && !enclaveCanRequireBiometrics)
                     } footer: {
-                        Text("The key can only be used after a successful biometric or passcode check, and becomes unusable if the device's biometric enrolment changes.")
+                        if storage == .secureEnclave, !enclaveCanRequireBiometrics {
+                            Text("Face ID and Touch ID are not set up on this device, so a Secure Enclave key here can only require that the device is unlocked.")
+                        } else if storage == .secureEnclave {
+                            Text("The Secure Enclave asks for a biometric or passcode check before every signature, and destroys the key if the device's biometric enrolment changes.")
+                        } else {
+                            Text("The key can only be used after a successful biometric or passcode check, and becomes unusable if the device's biometric enrolment changes.")
+                        }
                     }
 
-                    ICloudKeyChoice(requireBiometrics: requireBiometrics, storeSecretInICloud: $storeSecretInICloud)
+                    if storage == .keychain {
+                        ICloudKeyChoice(requireBiometrics: requireBiometrics, storeSecretInICloud: $storeSecretInICloud)
+                    }
                 }
 
                 if let errorMessage {
@@ -249,27 +337,60 @@ struct GenerateKeySheet: View {
     private func generate() {
         do {
             let comment = "\(name.replacingOccurrences(of: " ", with: "-"))@apexterminal"
-            let key = try SSHKeyGenerator.generate(algorithm: algorithm, comment: comment)
-            let record = StoredKey(
-                name: name,
-                algorithm: key.algorithm.sshName,
-                publicKeyOpenSSH: key.publicKeyOpenSSH,
-                fingerprintSHA256: key.fingerprintSHA256,
-                requiresBiometrics: requireBiometrics,
-                isPassphraseProtected: false,
-                secretInICloud: storeSecretInICloud
-            )
-            // Stored before the record is added, so a Keychain failure cannot leave a
-            // record pointing at a key that does not exist.
-            try container.vault.storePrivateKey(
-                key.privateKeyPEM,
-                id: record.id,
-                requireBiometrics: requireBiometrics,
-                syncToICloud: storeSecretInICloud
-            )
-            container.hostStore.add(record)
-            generated = key
+            switch storage {
+            case .keychain:
+                let key = try SSHKeyGenerator.generate(algorithm: algorithm, comment: comment)
+                let record = StoredKey(
+                    name: name,
+                    algorithm: key.algorithm.sshName,
+                    publicKeyOpenSSH: key.publicKeyOpenSSH,
+                    fingerprintSHA256: key.fingerprintSHA256,
+                    requiresBiometrics: requireBiometrics,
+                    isPassphraseProtected: false,
+                    secretInICloud: storeSecretInICloud
+                )
+                // Stored before the record is added, so a Keychain failure cannot leave a
+                // record pointing at a key that does not exist.
+                try container.vault.storePrivateKey(
+                    key.privateKeyPEM,
+                    id: record.id,
+                    requireBiometrics: requireBiometrics,
+                    syncToICloud: storeSecretInICloud
+                )
+                container.hostStore.add(record)
+                generated = GeneratedSummary(
+                    publicKeyOpenSSH: key.publicKeyOpenSSH,
+                    fingerprintSHA256: key.fingerprintSHA256,
+                    isSecureEnclave: false
+                )
+            case .secureEnclave:
+                let policy: SecureEnclaveSSHKey.AccessPolicy =
+                    requireBiometrics && enclaveCanRequireBiometrics
+                        ? .biometricsEachUse
+                        : .deviceUnlocked
+                let handle = try SecureEnclaveSSHKey.generate(accessPolicy: policy, comment: comment)
+                let record = StoredKey(
+                    name: name,
+                    algorithm: handle.publicKey.algorithm,
+                    publicKeyOpenSSH: handle.publicKeyOpenSSH,
+                    fingerprintSHA256: handle.fingerprintSHA256,
+                    requiresBiometrics: policy == .biometricsEachUse,
+                    isPassphraseProtected: false,
+                    // Never: an enclave key has no form iCloud Keychain could carry.
+                    secretInICloud: false,
+                    isSecureEnclave: true
+                )
+                try container.vault.storeSecureEnclaveKey(handle.blob, id: record.id)
+                container.hostStore.add(record)
+                generated = GeneratedSummary(
+                    publicKeyOpenSSH: handle.publicKeyOpenSSH,
+                    fingerprintSHA256: handle.fingerprintSHA256,
+                    isSecureEnclave: true
+                )
+            }
             errorMessage = nil
+        } catch let error as SecureEnclaveKeyError {
+            errorMessage = error.stError.message
         } catch let error as CredentialVaultError {
             errorMessage = error.errorDescription
         } catch let error as STError {

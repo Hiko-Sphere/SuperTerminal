@@ -152,6 +152,13 @@ final class FileProviderDomains {
         )
     }
 
+    /// What the published record will list for this connection. Exposed so a test can
+    /// check *which* credential was published, not merely that publishing was allowed —
+    /// the two have been different before.
+    func publishedCredentials(of host: Host) -> [SharedDomain.Credential] {
+        usableCredentials(of: host)
+    }
+
     /// The credentials the extension could actually use, in the order the host offers
     /// them. A key behind Face ID or a passphrase is dropped here rather than published
     /// and refused later.
@@ -159,11 +166,15 @@ final class FileProviderDomains {
         host.credentials.compactMap { reference in
             switch reference {
             case let .privateKey(id):
-                guard let key = hostStore.key(withID: id),
-                      !key.requiresBiometrics,
-                      !key.isPassphraseProtected,
-                      vault.hasPrivateKey(id: id)
-                else { return nil }
+                guard let key = hostStore.key(withID: id), !key.requiresBiometrics else { return nil }
+                if key.isHeldInSecureEnclave {
+                    // An enclave key whose policy is "while the device is unlocked" signs
+                    // without anyone present, so it belongs in Files like any other. One
+                    // that asks for Face ID has already been dropped by the check above.
+                    guard vault.hasSecureEnclaveKey(id: id) else { return nil }
+                    return .secureEnclaveKey(id: id)
+                }
+                guard !key.isPassphraseProtected, vault.hasPrivateKey(id: id) else { return nil }
                 return .privateKey(id: id)
             case .password:
                 guard ((try? vault.loadPassword(hostID: host.id)) ?? nil) != nil else { return nil }

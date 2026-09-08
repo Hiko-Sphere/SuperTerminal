@@ -1,6 +1,6 @@
 # Project status
 
-**Updated:** 2026-09-06 · **Phase:** 5 of 7 in progress — the app is driven end to end
+**Updated:** 2026-09-08 · **Phase:** 5 of 7 in progress — the app is driven end to end
 through its own interface on iPhone and iPad; iCloud sync (opt-in, offline-verified), the
 legal texts with a consent gate, clipboard expiry, Access service tokens, hardware
 keyboard and pointer support (xterm modifiers, app shortcuts, wheel, clicks, drag),
@@ -12,15 +12,24 @@ delivered. What remains needs the owner: a live Cloudflare environment (B-2), tw
 devices and a production CloudKit schema for the live iCloud checks (B-4 — archiving and
 the entitlements are now proven), and the legal placeholders with counsel review (B-5).
 
-**Last full regression (2026-09-06, after D-024 … D-033):** package 198 tests in 30 suites
-on the host (the VNC suites against LibVNCServer); `ApexTerminalTests` 199 passed, 0
-failed; `ApexTerminalUITests` 41 passed on iPhone 17 Pro and 41 on iPad Pro 13-inch (M5).
-Localisation audit complete in every language.
+**Last full regression (2026-09-08, after D-049):** package **275 tests in 40 suites** on
+the host (the VNC suites against LibVNCServer); vendored NIOSSH **349 tests, 0 failures**;
+`ApexTerminalTests` **258 in 48 suites**, 0 failed, against a real `sshd`;
+`ApexTerminalUITests` **46 passed, 4 failed** on iPhone 17 Pro; Release **archive
+succeeded**; localisation audit complete in every language. The per-commit record, with
+what each number was measured by, is `docs/RELEASE_EVIDENCE.md` — the figures in the tables
+further down this file were measured on the dates they name and are not all current.
 
-Two known failures, neither in this app's shipping code:
+Known failures, none in this change:
 
-* `ZZSearchProbeUITests` (2 cases, both devices) belongs to another session's uncommitted
-  work and is not part of any commit here.
+* `ZZSearchProbeUITests` (2 cases) belongs to another session's uncommitted work and is not
+  part of any commit here.
+* `HardwareKeyboardStateUITests.testTypingWorksAfterEveryThingThatTakesTheKeyboardAway`
+  fails at `⌘F should open the find bar` — **three isolated runs, three failures**, and the
+  same three-for-three at `ef8e1d6` in a detached worktree, so it is pre-existing. It is the
+  next thing to fix, not a permanent exception.
+* `HardwareKeyboardUITests.testCommandCommaOpensSettings` is the first-key-after-launch
+  flake: two passes and one failure in three isolated runs.
 * On iPad, `BlankFieldsUITests` and `SnippetUITests` depend on the Simulator's global
   "Connect Hardware Keyboard" preference in *opposite* directions — measured, one setting
   each way, each test in isolation — so the iPad suite cannot be green either way until
@@ -40,6 +49,7 @@ This file is the resumable state of the work. It records what is *proven*, what 
 | --- | --- |
 | Ed25519 key authentication against real OpenSSH | `SSHIntegrationTests.ed25519KeyAuthenticationRunsCommand` — real `sshd`, real handshake, remote command returns `CF_E2E_OK` |
 | ECDSA P-256 key authentication | `SSHIntegrationTests.ecdsaKeyAuthentication` |
+| **A key held in the Secure Enclave authenticates to real OpenSSH** | `SecureEnclaveKeyTests` (package) and `SecureEnclaveAuthTests` (app, D-049) — a key generated inside the enclave, only its public half given to `sshd`, and the server's own log asserted: `Accepted publickey … ECDSA SHA256:<that key's fingerprint>`. The *biometric* policy is not covered: the Simulator has no LocalAuthentication, so it is H-7 |
 | Passphrase-protected OpenSSH key import (bcrypt + AES-CTR) | `SSHIntegrationTests.encryptedKeyAuthentication` — a wrong passphrase must fail, which only happens if the KDF is bit-exact |
 | Interactive PTY allocation | `SSHIntegrationTests.interactivePTYSession` — `stty size` on the remote reports the geometry we requested |
 | Terminal resize propagation | `SSHIntegrationTests.terminalResizePropagates` |

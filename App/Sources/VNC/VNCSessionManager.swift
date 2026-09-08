@@ -19,7 +19,7 @@ final class VNCSessionManager {
     private let haptics: Haptics?
     /// The same two providers every other kind of session gets (D-046): a screen behind a
     /// certificate-authenticated host must connect the same way its terminal does.
-    var certificateForKey: @Sendable (UUID) -> SSHCertificate? = { _ in nil }
+    var keyRecord: @Sendable (UUID) -> StoredKey? = { _ in nil }
     var certificateAuthorities: @Sendable () -> [SSHCertificateAuthority] = { [] }
     var hostByID: @Sendable (UUID) -> Host? = { _ in nil }
 
@@ -47,7 +47,7 @@ final class VNCSessionManager {
             knownHosts: knownHosts,
             log: diagnostics.logger,
             haptics: haptics,
-            certificateForKey: certificateForKey,
+            keyRecord: keyRecord,
             certificateAuthorities: certificateAuthorities(),
             hostByID: hostByID
         )

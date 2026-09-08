@@ -71,6 +71,42 @@ struct CredentialVault: Sendable {
         try store.remove(SecureStoreKey(service: Service.privateKeys, account: id.uuidString))
     }
 
+    // MARK: - Secure Enclave keys (D-049)
+
+    /// Stores the enclave's wrapped reference to a key it holds.
+    ///
+    /// This is not key material and is not protected as if it were: the enclave itself is
+    /// the access control, and it will refuse to sign for anyone but this device — with a
+    /// biometric check first when the key was made that way. What the Keychain adds is
+    /// that the reference is not readable while the device is locked and is never carried
+    /// into a backup, so it cannot even be enumerated off the device.
+    func storeSecureEnclaveKey(_ blob: Data, id: UUID) throws {
+        try store.set(
+            blob,
+            for: SecureStoreKey(service: Service.secureEnclaveKeys, account: id.uuidString),
+            protection: .whenUnlockedThisDeviceOnly,
+            prompt: nil
+        )
+    }
+
+    func loadSecureEnclaveKey(id: UUID) throws -> Data {
+        try store.get(SecureStoreKey(service: Service.secureEnclaveKeys, account: id.uuidString), prompt: nil)
+    }
+
+    func hasSecureEnclaveKey(id: UUID) -> Bool {
+        ((try? store.accounts(inService: Service.secureEnclaveKeys)) ?? []).contains(id.uuidString)
+    }
+
+    func deleteSecureEnclaveKey(id: UUID) throws {
+        try store.remove(SecureStoreKey(service: Service.secureEnclaveKeys, account: id.uuidString))
+    }
+
+    /// Whether the private half of a key record is present and usable on this device,
+    /// wherever it is kept. Attribute-only, so listing keys never raises a prompt.
+    func hasSecret(for key: StoredKey) -> Bool {
+        key.isHeldInSecureEnclave ? hasSecureEnclaveKey(id: key.id) : hasPrivateKey(id: key.id)
+    }
+
     // MARK: - Passwords
 
     func storePassword(_ password: String, hostID: UUID) throws {
@@ -272,7 +308,7 @@ struct CredentialVault: Sendable {
     func deleteServiceToken(screenID: UUID) throws { try deleteServiceToken(hostID: screenID) }
 
     func deleteEverything() throws {
-        for service in [Service.privateKeys, Service.passwords, Service.accessTokens, Service.serviceTokens, Service.assistant, Service.vncPasswords, Service.appLock] {
+        for service in [Service.privateKeys, Service.secureEnclaveKeys, Service.passwords, Service.accessTokens, Service.serviceTokens, Service.assistant, Service.vncPasswords, Service.appLock] {
             try store.removeAll(inService: service)
         }
     }

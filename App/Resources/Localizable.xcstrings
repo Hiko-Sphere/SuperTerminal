@@ -171,6 +171,23 @@
         }
       }
     },
+    "%@ · %@ · Secure Enclave": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · %@ · Secure Enclave"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · %@ · Secure Enclave"
+          }
+        }
+      }
+    },
     "%@, %@": {
       "extractionState": "manual",
       "localizations": {
@@ -1119,6 +1136,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "將這一行加入伺服器上的 ~/.ssh/authorized_keys。私密金鑰部分保留在本裝置上，絕不會被顯示或分享。"
+          }
+        }
+      }
+    },
+    "Add this line to ~/.ssh/authorized_keys on the server. The private half was created inside the Secure Enclave, has never existed outside it, and cannot be exported, backed up or moved to another device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "把这一行加入服务器的 ~/.ssh/authorized_keys。私钥是在 Secure Enclave 内部生成的，从未在其之外存在过，无法导出、备份，也无法移动到其他设备。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "把這一行加入伺服器的 ~/.ssh/authorized_keys。私密金鑰是在 Secure Enclave 內部產生的，從未在其之外存在過，無法匯出、備份，也無法移動到其他裝置。"
           }
         }
       }
@@ -4506,6 +4540,23 @@
         }
       }
     },
+    "Face ID and Touch ID are not set up on this device, so a Secure Enclave key here can only require that the device is unlocked.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本设备尚未设置 Face ID 或 Touch ID，因此这里的 Secure Enclave 密钥只能要求设备处于解锁状态。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本裝置尚未設定 Face ID 或 Touch ID，因此這裡的 Secure Enclave 金鑰只能要求裝置處於解鎖狀態。"
+          }
+        }
+      }
+    },
     "Files": {
       "extractionState": "manual",
       "localizations": {
@@ -4965,6 +5016,23 @@
         }
       }
     },
+    "Held in the Secure Enclave. Its private half has no exportable form and cannot be backed up or moved.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存在 Secure Enclave 中。其私钥没有任何可导出的形式，无法备份，也无法迁移。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存在 Secure Enclave 中。其私密金鑰沒有任何可匯出的形式，無法備份，也無法遷移。"
+          }
+        }
+      }
+    },
     "Help": {
       "extractionState": "manual",
       "localizations": {
@@ -5369,6 +5437,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "位於 iCloud Keychain"
+          }
+        }
+      }
+    },
+    "In the Keychain": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在钥匙串中"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在鑰匙圈中"
+          }
+        }
+      }
+    },
+    "In the Secure Enclave": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在 Secure Enclave 中"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在 Secure Enclave 中"
+          }
+        }
+      }
+    },
+    "In the Secure Enclave · cannot be exported": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在 Secure Enclave 中 · 无法导出"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在 Secure Enclave 中 · 無法匯出"
           }
         }
       }
@@ -5981,6 +6100,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "離開 App 後鎖定"
+          }
+        }
+      }
+    },
+    "Made on another device. A Secure Enclave key cannot be moved, so this one cannot be used here.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在其他设备上创建。Secure Enclave 密钥无法迁移，因此这把密钥在本设备上不可用。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在其他裝置上建立。Secure Enclave 金鑰無法遷移，因此這把金鑰在本裝置上不可用。"
           }
         }
       }
@@ -9657,6 +9793,23 @@
         }
       }
     },
+    "Sign in to %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "登录 %@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "登入 %@"
+          }
+        }
+      }
+    },
     "Sign in to iCloud in Settings, then try again.": {
       "extractionState": "manual",
       "localizations": {
@@ -10558,6 +10711,40 @@
         }
       }
     },
+    "The Secure Enclave asks for a biometric or passcode check before every signature, and destroys the key if the device's biometric enrolment changes.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Secure Enclave 会在每次签名前要求生物识别或密码验证；如果设备的生物识别录入发生变化，密钥将被销毁。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Secure Enclave 會在每次簽章前要求生物辨識或密碼驗證；若裝置的生物辨識登錄發生變更，金鑰將被銷毀。"
+          }
+        }
+      }
+    },
+    "The Secure Enclave destroys its copy. There is no backup anywhere, so this key can never be recovered and any connection using it will stop working.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Secure Enclave 会销毁它保存的副本。任何地方都没有备份，因此这把密钥永远无法恢复，使用它的连接都将无法继续工作。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Secure Enclave 會銷毀它保存的副本。任何地方都沒有備份，因此這把金鑰永遠無法復原，使用它的連線都將無法繼續運作。"
+          }
+        }
+      }
+    },
     "The address as the SSH server sees it. For that server's own desktop this is 127.0.0.1; for another machine on its network, that machine's address. A pasted address carrying its port is taken apart.": {
       "extractionState": "manual",
       "localizations": {
@@ -10881,6 +11068,40 @@
         }
       }
     },
+    "The key is created inside dedicated hardware and never exists outside it. It cannot be exported, included in a backup, or moved to another device — if you lose this device, the key is gone and you remove its public key from your servers.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密钥在专用硬件内部生成，且从不在其之外存在。它无法导出、无法写入备份，也无法迁移到其他设备——一旦丢失本设备，密钥即随之消失，你需要从服务器上删除它的公钥。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "金鑰在專用硬體內部產生，且從不在其之外存在。它無法匯出、無法寫入備份，也無法遷移到其他裝置——一旦遺失本裝置，金鑰即隨之消失，你需要從伺服器上刪除它的公開金鑰。"
+          }
+        }
+      }
+    },
+    "The key is stored in the Keychain. It can be exported into an encrypted backup and restored onto another device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密钥保存在钥匙串中。它可以导出到加密备份，并在其他设备上恢复。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "金鑰保存在鑰匙圈中。它可以匯出到加密備份，並在其他裝置上復原。"
+          }
+        }
+      }
+    },
     "The on-device model could not answer: %@": {
       "extractionState": "manual",
       "localizations": {
@@ -10979,6 +11200,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "裝置端模型需要 iOS 26。"
+          }
+        }
+      }
+    },
+    "The only algorithm the Secure Enclave signs with. Every current OpenSSH server accepts it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Secure Enclave 唯一支持的签名算法。当前所有 OpenSSH 服务器都接受它。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Secure Enclave 唯一支援的簽章演算法。目前所有 OpenSSH 伺服器都接受它。"
           }
         }
       }
@@ -11557,6 +11795,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "此連線設定為使用 Cloudflare Access 服務權杖，但本裝置上未儲存任何權杖。"
+          }
+        }
+      }
+    },
+    "This deletes the only reference to a key that has never existed outside the Secure Enclave, and nothing can rebuild it. There is no backup anywhere, so the key is gone for good and any connection using it will stop working.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这将删除指向该密钥的唯一引用，而这把密钥从未在 Secure Enclave 之外存在过，任何方式都无法重建它。任何地方都没有备份，因此密钥将永久消失，使用它的连接都将无法继续工作。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這將刪除指向該金鑰的唯一參照，而這把金鑰從未在 Secure Enclave 之外存在過，任何方式都無法重建它。任何地方都沒有備份，因此金鑰將永久消失，使用它的連線都將無法繼續運作。"
           }
         }
       }
@@ -12530,6 +12785,23 @@
         }
       }
     },
+    "Use the key for %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用 %@ 的密钥"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用 %@ 的金鑰"
+          }
+        }
+      }
+    },
     "Use the other device's key": {
       "extractionState": "manual",
       "localizations": {
@@ -12832,6 +13104,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "連線中斷時，Apex Terminal 會自行重試，並在網路恢復後立即重試。回捲紀錄會保留，新的 shell 會在終端機中標示出來——它是全新的，位於主目錄，沒有任何程式在執行。"
+          }
+        }
+      }
+    },
+    "Where the private key lives": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "私钥存放在哪里"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "私密金鑰存放在哪裡"
           }
         }
       }

@@ -161,3 +161,57 @@ D-044.
 verified against a real OpenSSH server — the protocol, the file operations, the
 enumeration, the error mapping, the domain registration — but the system actually serving
 those answers to Files has only been proven on hardware once this is done.
+
+## H-7 · A Secure Enclave key gated on Face ID, on a real device
+
+**Why a person is needed.** The Secure Enclave itself is available in the Simulator on
+Apple silicon — measured, and the whole enclave SSH path is verified there against a real
+OpenSSH server (D-049). Biometrics are not. Creating a key with the `.biometryCurrentSet`
+policy in the Simulator fails inside LocalAuthentication with:
+
+```
+Error Domain=com.apple.LocalAuthentication Code=-1020
+  "This call is not supported on iOS Simulator."
+```
+
+So the `deviceUnlocked` policy is proven and the `biometricsEachUse` policy is not. No
+amount of code can close that gap; it needs hardware with Face ID or Touch ID enrolled.
+
+**Exact steps.**
+
+1. On an iPhone or iPad with Face ID or Touch ID set up, install the app and open
+   Settings → Keys → Generate.
+2. Enter a name, choose **In the Secure Enclave**, and leave **Require Face ID or Touch
+   ID** on. Generate.
+   *Expect:* the key is created and the confirmation screen shows an
+   `ecdsa-sha2-nistp256 …` line. The Keys list shows both "In the Secure Enclave · cannot
+   be exported" and "Unlocks with Face ID or Touch ID".
+3. Copy the public key onto a server's `~/.ssh/authorized_keys`, and check the fingerprint
+   matches what the app shows:
+   `ssh-keygen -lf <the pasted line in a file>`.
+4. Add a connection using that key and connect.
+   *Expect:* **one** Face ID prompt, raised as the connection starts rather than part-way
+   through the handshake, then a shell. Two prompts would mean the pre-authenticated
+   `LAContext` did not satisfy the key's access control and the reuse window was not
+   honoured — report that, it is a real defect. Cancelling the prompt must report that you
+   cancelled, promptly, and not hang.
+   *Also check:* open a second session to a different server at the same time and connect
+   both. Neither should stall while the other's prompt is on screen.
+5. Settings → General → Face ID & Passcode → add another face (or fingerprint), then
+   connect again.
+   *Expect:* the connection fails and the key is reported as no longer usable. This is the
+   `.biometryCurrentSet` guarantee: enrolling a new biometric destroys the key.
+6. Turn on Files for a connection that uses this key.
+   *Expect:* the switch is refused with "needs a credential only you can provide" — a key
+   that asks for Face ID at every signature cannot serve a background process.
+7. Settings → Backup → Export with private keys included.
+   *Expect:* the sheet lists the key by name as unexportable, saying it is held in the
+   Secure Enclave.
+
+**Verification afterwards.** Record what happened at each step in
+`docs/RELEASE_EVIDENCE.md` against D-049.
+
+**Blocks.** Claiming that the biometric policy for Secure Enclave keys works. Everything
+else about those keys — creation, the SSH wire format, authentication against real
+OpenSSH, the unattended policy in Files, the export refusal — is verified automatically
+and does not depend on this.

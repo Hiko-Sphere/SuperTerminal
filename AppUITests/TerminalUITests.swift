@@ -478,6 +478,80 @@ final class KeyManagementUITests: XCTestCase {
             "the generated key should appear in the list"
         )
     }
+
+    /// Generating a key in the Secure Enclave, through the screen a user actually uses.
+    ///
+    /// The claim being checked is the one the product makes: the key exists, its public
+    /// half is offered for pasting into a server, and the list says plainly that this one
+    /// cannot leave the device. The Simulator has an enclave but no biometrics, so the
+    /// key is created with the device-unlocked policy — the same path a device takes when
+    /// the user chooses not to require Face ID.
+    func testGeneratingAKeyInTheSecureEnclaveSaysItCannotBeExported() throws {
+        let app = XCUIApplication()
+        app.launch()
+
+        app.buttons["Settings"].tap()
+        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 10))
+        let keysLink = app.descendants(matching: .any).matching(
+            NSPredicate(format: "label == %@", "Keys")
+        ).firstMatch
+        XCTAssertTrue(app.scroll(to: keysLink))
+        keysLink.tap()
+        XCTAssertTrue(app.navigationBars["Keys"].waitForExistence(timeout: 5))
+
+        app.buttons["Add key"].tap()
+        let generateItem = app.buttons["Generate…"]
+        XCTAssertTrue(generateItem.waitForExistence(timeout: 5))
+        generateItem.tap()
+
+        let keyName = "Enclave-\(Int(Date().timeIntervalSince1970))"
+        let nameField = app.textFields["Name"]
+        XCTAssertTrue(nameField.waitForExistence(timeout: 5))
+        nameField.tap()
+        nameField.typeText(keyName)
+
+        // The choice is only offered where there is an enclave. If this row is absent the
+        // test has nothing to say, and saying so beats a green run that checked nothing.
+        let enclaveChoice = app.buttons["In the Secure Enclave"]
+        guard app.scroll(to: enclaveChoice) else {
+            throw XCTSkip("this device offers no Secure Enclave storage")
+        }
+        enclaveChoice.tap()
+
+        // The algorithm stops being a choice: the enclave signs with one curve.
+        let fixedAlgorithm = app.descendants(matching: .any)["key-algorithm-fixed"].firstMatch
+        XCTAssertTrue(
+            fixedAlgorithm.waitForExistence(timeout: 5),
+            "a Secure Enclave key should state its algorithm rather than offer a picker"
+        )
+        XCTAssertTrue(
+            fixedAlgorithm.label.contains("ECDSA P-256"),
+            "the stated algorithm was “\(fixedAlgorithm.label)”"
+        )
+
+        let generate = app.buttons["Generate"]
+        XCTAssertTrue(app.scroll(to: generate))
+        generate.tap()
+
+        XCTAssertTrue(
+            app.navigationBars["Key Created"].waitForExistence(timeout: 15),
+            "generating in the enclave should land on the same confirmation screen"
+        )
+        let publicKey = app.staticTexts.containing(
+            NSPredicate(format: "label BEGINSWITH %@", "ecdsa-sha2-nistp256 ")
+        ).firstMatch
+        XCTAssertTrue(publicKey.waitForExistence(timeout: 5), "the public key should be shown for copying")
+
+        app.buttons["Done"].tap()
+        let row = app.staticTexts[keyName]
+        XCTAssertTrue(row.waitForExistence(timeout: 5))
+        // The one thing a user must not have to discover later.
+        let badge = app.descendants(matching: .any)["key-secure-enclave"].firstMatch
+        XCTAssertTrue(
+            app.scroll(to: badge),
+            "the list should say this key is in the Secure Enclave and cannot be exported"
+        )
+    }
 }
 
 /// Accessibility settings, exercised by actually turning them on.

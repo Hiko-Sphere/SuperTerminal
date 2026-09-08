@@ -91,6 +91,63 @@ struct FileProviderDomainTests {
         #expect(await app.files.publishability(of: host) == .needsInteractiveCredential)
     }
 
+    @Test("An enclave key that needs the device unlocked is a credential the extension can use")
+    func unattendedEnclaveKeyIsUsable() async throws {
+        try #require(SecureEnclaveSSHKey.isAvailable, "this device has no Secure Enclave")
+        let (app, _) = makeContainer()
+        let identity = KnownHostIdentity(host: "enclave.test", port: 22)
+        try await app.knownHosts.store(KnownHostEntry(
+            identity: identity,
+            key: SSHHostKey(algorithm: "ssh-ed25519", blob: Data([4, 5, 6])),
+            firstSeen: Date(), lastSeen: Date()
+        ))
+        let handle = try SecureEnclaveSSHKey.generate(accessPolicy: .deviceUnlocked, comment: "files")
+        let key = StoredKey(
+            name: "enclave", algorithm: handle.publicKey.algorithm,
+            publicKeyOpenSSH: handle.publicKeyOpenSSH, fingerprintSHA256: handle.fingerprintSHA256,
+            requiresBiometrics: false, isPassphraseProtected: false, isSecureEnclave: true
+        )
+        try app.vault.storeSecureEnclaveKey(handle.blob, id: key.id)
+        defer { try? app.vault.deleteSecureEnclaveKey(id: key.id) }
+        app.hostStore.add(key)
+        let host = Host(
+            name: "Enclave", hostname: "enclave.test", username: "root",
+            credentials: [.privateKey(id: key.id)]
+        )
+        app.hostStore.add(host)
+
+        // The enclave signs without anyone present, so this belongs in Files — and the
+        // published record must name the enclave, not the ordinary key store, or the
+        // extension would look for material that does not exist.
+        #expect(await app.files.publishability(of: host) == .publishable)
+        #expect(app.files.publishedCredentials(of: host) == [.secureEnclaveKey(id: key.id)])
+    }
+
+    @Test("An enclave key that asks for Face ID at every signature is not")
+    func biometricEnclaveKeyIsNotUsable() async throws {
+        let (app, _) = makeContainer()
+        let identity = KnownHostIdentity(host: "enclave-bio.test", port: 22)
+        try await app.knownHosts.store(KnownHostEntry(
+            identity: identity,
+            key: SSHHostKey(algorithm: "ssh-ed25519", blob: Data([7, 8, 9])),
+            firstSeen: Date(), lastSeen: Date()
+        ))
+        // No enclave call: what is being checked is the app's rule, which must hold on a
+        // device with no enclave at all.
+        let key = StoredKey(
+            name: "enclave-bio", algorithm: "ecdsa-sha2-nistp256",
+            publicKeyOpenSSH: "ecdsa-sha2-nistp256 AAAA", fingerprintSHA256: "SHA256:bio",
+            requiresBiometrics: true, isPassphraseProtected: false, isSecureEnclave: true
+        )
+        app.hostStore.add(key)
+        let host = Host(
+            name: "Enclave Face ID", hostname: "enclave-bio.test", username: "root",
+            credentials: [.privateKey(id: key.id)]
+        )
+        app.hostStore.add(host)
+        #expect(await app.files.publishability(of: host) == .needsInteractiveCredential)
+    }
+
     @Test("Publishing a connection registers a domain and writes a record the extension can read")
     func publishRegistersADomain() async throws {
         let (app, _) = makeContainer()

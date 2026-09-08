@@ -67,8 +67,8 @@ struct CertificateAuthTests {
             settings: AppSettings(defaults: UserDefaults(suiteName: "cert-\(UUID())")!),
             diagnostics: DiagnosticsCentre()
         )
-        manager.certificateForKey = { [weak hostStore] id in
-            MainActor.assumeIsolated { hostStore?.key(withID: id)?.certificate }
+        manager.keyRecord = { [weak hostStore] id in
+            MainActor.assumeIsolated { hostStore?.key(withID: id) }
         }
         defer { manager.closeAll() }
 

@@ -21,7 +21,9 @@ left out.
 ```bash
 cd Packages/ApexTerminalKit
 swift build          # 0 errors, 0 warnings from project code
-swift test           # 198 tests in 30 suites passed (the VNC suites run against LibVNCServer from Homebrew)
+swift test --no-parallel   # 275 tests in 40 suites passed (the VNC suites run against LibVNCServer
+                           # from Homebrew). --no-parallel is required: the sshd-backed suites poll
+                           # while blocking the cooperative pool, and parallel runs starve it.
 swift test -c release --filter TerminalThroughputTests   # the numbers below
 
 cd ..
@@ -41,18 +43,24 @@ xcodebuild -project ApexTerminal.xcodeproj -scheme ApexTerminal \
 xcodebuild -project ApexTerminal.xcodeproj -scheme ApexTerminal \
   -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
   -only-testing:ApexTerminalTests test
-# 165 passed, 8 skipped (the sshd-backed cases, run by the script below), 0 failed
+# the sshd-backed cases skip without the harness; run the script below for the full number
 
-./scripts/app-integration-e2e.sh   # 191 app tests on iPhone 17 Pro simulator, 0 skipped, ** TEST SUCCEEDED **
+./scripts/app-integration-e2e.sh   # 258 tests in 48 suites on iPhone 17 Pro simulator, ** TEST SUCCEEDED **
 ./scripts/profile-emulator.sh      # real Instruments trace of the emulator hot path
 ./scripts/localization-audit.sh    # every user-visible string translated (zh-Hans, zh-Hant): green
-./scripts/ui-terminal-e2e.sh       # 38 passed, 1 skipped on iPhone (multi-window, which that device does not offer), ** TEST SUCCEEDED **
+./scripts/ui-terminal-e2e.sh       # 46 passed, 4 failed on iPhone — 2 belong to another session, 1 is the
+                                   # first-key-after-launch flake, and 1 is a pre-existing ⌘F failure proved
+                                   # pre-existing by an A/B against ef8e1d6. See docs/RELEASE_EVIDENCE.md.
 ./scripts/ui-terminal-e2e.sh "platform=iOS Simulator,name=iPad Pro 13-inch (M5)"
                                    # 39 passed on iPad, none skipped, ** TEST SUCCEEDED **
 
 cd Packages/swift-nio-ssh-rsa
 swift test           # Executed 349 tests, with 0 failures (347 upstream + 2 for key extension)
 ```
+
+The numbers above were measured on 2026-09-08, after D-049. The per-slice figures further
+down were measured on the dates their sections name; `docs/RELEASE_EVIDENCE.md` carries the
+current per-commit record and is the file to trust when the two disagree.
 
 Warning counts were measured, not assumed:
 `swift build 2>&1 | grep -cE "Sources/.*warning:"` → **0**, and

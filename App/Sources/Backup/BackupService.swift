@@ -86,11 +86,23 @@ final class BackupService {
     /// The keys that cannot be included, so the export sheet can say so before the user
     /// chooses rather than after.
     func unexportableKeys() -> [Unexportable] {
-        hosts.keys.filter(\.requiresBiometrics).map {
-            Unexportable(
-                name: $0.name,
-                reason: String(localized: "Protected by Face ID or Touch ID, so its private half cannot leave this device.")
-            )
+        hosts.keys.compactMap { key in
+            // The enclave reason comes first because it is the stronger fact: a biometric
+            // Keychain key could in principle be exported after a prompt and is withheld
+            // by policy, while an enclave key has no exportable form at all.
+            if key.isHeldInSecureEnclave {
+                return Unexportable(
+                    name: key.name,
+                    reason: String(localized: "Held in the Secure Enclave. Its private half has no exportable form and cannot be backed up or moved.")
+                )
+            }
+            if key.requiresBiometrics {
+                return Unexportable(
+                    name: key.name,
+                    reason: String(localized: "Protected by Face ID or Touch ID, so its private half cannot leave this device.")
+                )
+            }
+            return nil
         }
     }
 
@@ -108,7 +120,7 @@ final class BackupService {
             // A key held behind a biometric check is deliberately skipped rather than
             // prompting for each one: the point of that protection is that the private
             // half does not leave, and an export is exactly it leaving.
-            for key in hosts.keys where !key.requiresBiometrics {
+            for key in hosts.keys where !key.requiresBiometrics && key.isExportable {
                 guard let pem = try? vault.loadPrivateKey(id: key.id, prompt: nil) else { continue }
                 payload.privateKeys.append(.init(keyID: key.id, openSSHPrivateKey: pem))
             }

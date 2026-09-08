@@ -45,6 +45,53 @@ and one for a scratch VM does not. Enrolling a new face or finger invalidates th
 which is deliberate: someone who learns the passcode still cannot add a biometric and use
 your key.
 
+### Secure Enclave keys
+
+Settings → Keys → Generate offers a second choice: **where the private key lives**. The
+default is the Keychain, which is what everything above describes. The other option is the
+**Secure Enclave**, and it is a different kind of key.
+
+The private half is created inside the Enclave and never exists outside it. There is no
+file, no PEM, no Keychain item holding key material — only a wrapped reference that this
+device's Enclave can unwrap and nothing else can. Signing happens inside the Enclave; the
+app sends it the bytes to sign and receives a signature back. Apple states the guarantee
+plainly: *"you can't extract the private key from the Secure Enclave"*
+([Storing Keys in the Secure Enclave](https://developer.apple.com/documentation/security/storing-keys-in-the-secure-enclave)).
+
+What that buys you: someone who takes the phone and defeats its Keychain still cannot walk
+away with a key that works anywhere else. What it costs you:
+
+* The key is **ECDSA P-256** — the only signing curve the Enclave holds. Every current
+  OpenSSH server accepts it; the app states the algorithm rather than offering a picker.
+* It **cannot be exported, backed up, synced, or moved.** The export sheet lists it by name
+  as unexportable rather than quietly leaving it out, and the key list marks it. If the
+  device is lost or erased, the key is gone: remove its public key from your servers and
+  generate a new one.
+* Restoring a backup onto a new device brings the key's *record* but not the key. The list
+  says so on that device, in those words.
+
+The Face ID toggle still applies and means something stronger here: with it on, the Enclave
+itself demands a biometric check before **every signature**, and destroys the key if the
+device's biometric enrolment changes. With it off, the key needs only an unlocked device —
+which is also what lets such a key serve a Files.app folder, where nobody is present to
+answer a prompt.
+
+The check is asked for when you tap Connect, before the connection is opened, rather than
+part-way through the handshake. That is deliberate: the Enclave signs on the networking
+thread, and a prompt raised there would hold up every other session while it waited. It
+also means cancelling the prompt says you cancelled, instead of reporting a connection
+failure.
+
+Adding one to a server is the same as any other key:
+
+```bash
+# On the server
+echo 'ecdsa-sha2-nistp256 AAAA... phone@apexterminal' >> ~/.ssh/authorized_keys
+```
+
+`ssh-keygen -l` reads the line and reports the same SHA-256 fingerprint the app shows, so
+you can check you pasted the right key.
+
 ## Host keys
 
 The first time you connect, the app shows the server's SHA-256 fingerprint and asks you to
@@ -71,7 +118,7 @@ The SSH implementation is built on `swift-nio-ssh`, with RSA added
 | --- | --- |
 | Key exchange | `curve25519-sha256`, `curve25519-sha256@libssh.org`, `ecdh-sha2-nistp256/384/521` |
 | Host keys | `ssh-ed25519`, `ecdsa-sha2-nistp256/384/521`, `rsa-sha2-512`, `rsa-sha2-256` |
-| User keys | `ssh-ed25519`, `ecdsa-sha2-nistp256`, `rsa-sha2-512`, `rsa-sha2-256` |
+| User keys | `ssh-ed25519`, `ecdsa-sha2-nistp256` (including keys held in the Secure Enclave), `rsa-sha2-512`, `rsa-sha2-256` |
 
 A P-384 or P-521 **host** key is accepted, but a P-384 or P-521 **user** key cannot be
 imported: the key-file parser handles Ed25519, ECDSA P-256 and RSA. If you have one, the

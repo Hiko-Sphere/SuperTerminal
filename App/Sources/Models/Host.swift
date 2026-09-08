@@ -229,6 +229,11 @@ public struct StoredKey: Identifiable, Sendable, Codable, Equatable {
     /// lives here with the rest of the metadata rather than in the Keychain. Optional so
     /// that records written before certificates existed still decode.
     public var certificate: SSHCertificate?
+    /// Whether the private half is held in the Secure Enclave (D-049) rather than as key
+    /// material in the Keychain. Such a key cannot be exported, backed up, or moved to
+    /// another device, and the record is worthless without the device it was made on.
+    /// Optional so records written before the enclave existed still decode.
+    public var isSecureEnclave: Bool?
 
     public init(
         id: UUID = UUID(),
@@ -240,7 +245,8 @@ public struct StoredKey: Identifiable, Sendable, Codable, Equatable {
         requiresBiometrics: Bool,
         isPassphraseProtected: Bool,
         secretInICloud: Bool? = nil,
-        certificate: SSHCertificate? = nil
+        certificate: SSHCertificate? = nil,
+        isSecureEnclave: Bool = false
     ) {
         self.id = id
         self.name = name
@@ -252,5 +258,13 @@ public struct StoredKey: Identifiable, Sendable, Codable, Equatable {
         self.isPassphraseProtected = isPassphraseProtected
         self.certificate = certificate
         self.secretInICloud = secretInICloud
+        self.isSecureEnclave = isSecureEnclave ? true : nil
     }
+
+    /// Whether the private half can leave this device at all — in a backup, in iCloud
+    /// Keychain, or in any other form. An enclave key cannot, by construction.
+    public var isExportable: Bool { isSecureEnclave != true }
+
+    /// Where the private half actually is, for the one line the key list shows about it.
+    public var isHeldInSecureEnclave: Bool { isSecureEnclave == true }
 }

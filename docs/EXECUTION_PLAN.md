@@ -22,7 +22,7 @@ from the first unfinished item rather than starting over.
 | 1.1 | SFTP | **Done except multiple tabs** — D-041 protocol, D-042 interface, D-043 prompts, permissions, sharing and drag-and-drop. Several remote folders open at once is the one part not built; the iPad shows one browser at a time |
 | 1.2 | Files.app File Provider extension | **Implemented, awaiting a device** — D-044; a replicated extension, a per-connection switch, and 29 package tests against real OpenSSH plus 7 in the app host. The simulator downgrades a replicated domain because it has no FPFS, so the system actually serving Files is H-6 |
 | 1.3 | Port forwarding as a first-class object | **Done** — D-045; local, remote and dynamic (SOCKS5), saved with the connection, started by hand or with it, with real byte counters. 9 package tests move real bytes through a real OpenSSH server, 3 app tests through a real `TerminalSession`, 2 UI tests through the screen |
-| 1.4 | Authentication | **Certificates, jump hosts and post-quantum key exchange done** — D-046 certificates; D-047 jump chains; D-048 `mlkem768x25519-sha256`, negotiated with a real OpenSSH 10.2 and confirmed from the server's own log. keyboard-interactive, Secure Enclave, agent and FIDO2 are still ahead — see the note below |
+| 1.4 | Authentication | **Certificates, jump hosts, post-quantum key exchange and Secure Enclave keys done** — D-046 certificates; D-047 jump chains; D-048 `mlkem768x25519-sha256`, negotiated with a real OpenSSH 10.2 and confirmed from the server's own log; D-049 Secure Enclave P-256 keys, generated in the Enclave and accepted by real OpenSSH, with the biometric policy device-only (H-7). keyboard-interactive, agent and FIDO2 are still ahead — see the note below |
 
 ## Phase 2 — moat
 
@@ -57,9 +57,15 @@ ProxyJump is done (D-047); what follows is the rest.
   a new delegate in the fork. It also cannot be verified against this machine's sshd, which
   falls back to BSD auth and would need the login password of a real account — so it lands
   as "implemented, awaiting verification" unless a server that offers it is available.
-* **Secure Enclave keys** — P-256 keys whose private half never leaves the Enclave. The
-  signing would go through `SecKeyCreateSignature`, which means teaching NIOSSH to accept a
-  signer it does not own. Verifiable only on a device.
+* ~~**Secure Enclave keys**~~ — **done, D-049.** The estimate above was wrong in a way
+  worth recording: it assumed signing would have to go through `SecKeyCreateSignature` and
+  that NIOSSH would need a pluggable signer. It does not. `NIOSSHPrivateKey` already takes
+  a `SecureEnclave.P256.Signing.PrivateKey` — upstream, not a fork change — so the work was
+  storage, UI and honest handling of a key that cannot be exported. It was also wrong that
+  this is "verifiable only on a device": the Simulator on Apple silicon has a working
+  Enclave, so a key created there authenticates to a real OpenSSH server in the automated
+  suite. What is genuinely device-only is the *biometric* policy, which LocalAuthentication
+  refuses in the Simulator; that is H-7 and is not claimed as done.
 * **ssh-agent and agent forwarding** — `auth-agent-req@openssh.com` is a channel type the
   fork does not implement, and iOS has no agent ecosystem to talk to. Honest scope is
   probably forwarding *to* a server from keys held in this app, not being an agent client.

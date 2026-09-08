@@ -69,6 +69,11 @@ public struct SharedDomain: Codable, Sendable, Equatable, Identifiable {
         case privateKey(id: UUID)
         /// The password saved for this host.
         case storedPassword
+        /// A key held in the Secure Enclave whose policy is "while the device is
+        /// unlocked" (D-049). The enclave signs without anyone present, so such a key is
+        /// usable here; one that asks for Face ID at every signature is not, and the app
+        /// never publishes it.
+        case secureEnclaveKey(id: UUID)
     }
 
     /// The identity host keys are remembered against — the same one the terminal uses,

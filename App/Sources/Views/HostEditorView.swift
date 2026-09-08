@@ -126,7 +126,15 @@ struct HostEditorView: View {
                     Picker("Private key", selection: $selectedKeyID) {
                         Text("None").tag(UUID?.none)
                         ForEach(container.hostStore.keys) { key in
-                            Text("\(key.name) · \(key.algorithm)").tag(UUID?.some(key.id))
+                            // Where the key lives belongs in this list: it decides whether
+                            // the connection can run without you, and whether the key works
+                            // on this device at all.
+                            Text(
+                                key.isHeldInSecureEnclave
+                                    ? String(localized: "\(key.name) · \(key.algorithm) · Secure Enclave")
+                                    : String(localized: "\(key.name) · \(key.algorithm)")
+                            )
+                            .tag(UUID?.some(key.id))
                         }
                     }
                     Toggle("Offer a password", isOn: $usesPassword)

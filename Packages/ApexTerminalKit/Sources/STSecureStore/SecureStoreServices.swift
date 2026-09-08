@@ -9,6 +9,12 @@
 /// keys" are each a single scoped delete.
 public enum SecureStoreServices {
     public static let privateKeys = "dev.apexterminal.keys"
+    /// The Secure Enclave's wrapped references to keys it holds (D-049). A separate
+    /// service from `privateKeys` because these are not key material and cannot be
+    /// treated like it: they never sync, never export, and mean nothing on another
+    /// device. Keeping them apart makes "which of my keys can leave this phone?" a
+    /// question the storage layout answers by itself.
+    public static let secureEnclaveKeys = "dev.apexterminal.keys.secureenclave"
     public static let passwords = "dev.apexterminal.passwords"
     public static let accessTokens = "dev.apexterminal.cloudflare.tokens"
     public static let serviceTokens = "dev.apexterminal.cloudflare.servicetokens"

@@ -167,10 +167,11 @@ final class AppContainer {
         // Assigned after the container exists, because a change to the host list has to
         // reach the Files domains as well as sync: a connection deleted here must leave
         // the Files sidebar, not linger there pointing at nothing.
-        // A key's certificate and the trusted authorities both live in the host store,
-        // and every kind of session reaches them the same way (D-046).
-        sessionManager.certificateForKey = { [weak hostStore] id in
-            MainActor.assumeIsolated { hostStore?.key(withID: id)?.certificate }
+        // A key's record — where its private half is kept, and the certificate issued for
+        // it — lives in the host store, and every kind of session reaches it the same way
+        // (D-046, D-049).
+        sessionManager.keyRecord = { [weak hostStore] id in
+            MainActor.assumeIsolated { hostStore?.key(withID: id) }
         }
         sessionManager.certificateAuthorities = { [weak hostStore] in
             MainActor.assumeIsolated { hostStore?.authorities ?? [] }
@@ -178,8 +179,8 @@ final class AppContainer {
         screens.certificateAuthorities = { [weak hostStore] in
             MainActor.assumeIsolated { hostStore?.authorities ?? [] }
         }
-        screens.certificateForKey = { [weak hostStore] id in
-            MainActor.assumeIsolated { hostStore?.key(withID: id)?.certificate }
+        screens.keyRecord = { [weak hostStore] id in
+            MainActor.assumeIsolated { hostStore?.key(withID: id) }
         }
         // Jump chains name saved connections (D-047), so both kinds of session resolve
         // them the same way.

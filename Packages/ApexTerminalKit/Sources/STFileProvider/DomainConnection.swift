@@ -252,6 +252,32 @@ public actor DomainConnection {
                     ))
                 }
                 credentials.append(.privateKey(try OpenSSHPrivateKeyParser.parse(pem: pem)))
+            case let .secureEnclaveKey(id):
+                // The reference is readable while the device is unlocked, and the enclave
+                // signs on its own — no prompt, no passphrase, nothing to ask a person.
+                // `authenticationPrompt: nil` makes that explicit: if the key turns out to
+                // want a biometric check after all, it fails here instead of trying to
+                // raise a sheet from a process the user cannot see.
+                guard let blob = try? secureStore.get(
+                    SecureStoreKey(service: SecureStoreServices.secureEnclaveKeys, account: id.uuidString),
+                    prompt: nil
+                ) else {
+                    throw FileProviderFailure.needsTheApp(reason: String(
+                        localized: "This connection's key can only be unlocked in the app.",
+                        bundle: .module
+                    ))
+                }
+                guard let material = try? SecureEnclaveSSHKey.material(
+                    blob: blob,
+                    comment: nil,
+                    authenticationPrompt: nil
+                ) else {
+                    throw FileProviderFailure.needsTheApp(reason: String(
+                        localized: "This connection's key is in the Secure Enclave and needs the app to unlock it.",
+                        bundle: .module
+                    ))
+                }
+                credentials.append(.privateKey(material))
             case .storedPassword:
                 guard let data = try? secureStore.getIfPresent(
                     SecureStoreKey(service: SecureStoreServices.passwords, account: domain.id.uuidString)

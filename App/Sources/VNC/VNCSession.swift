@@ -96,7 +96,7 @@ final class VNCSession: Identifiable {
         knownHosts: any KnownHostsStore,
         log: STLogger,
         haptics: Haptics? = nil,
-        certificateForKey: @escaping @Sendable (UUID) -> SSHCertificate? = { _ in nil },
+        keyRecord: @escaping @Sendable (UUID) -> StoredKey? = { _ in nil },
         certificateAuthorities: [SSHCertificateAuthority] = [],
         hostByID: @escaping @Sendable (UUID) -> Host? = { _ in nil }
     ) {
@@ -115,7 +115,7 @@ final class VNCSession: Identifiable {
             HostConnector(
                 host: $0, group: group, vault: vault, knownHosts: knownHosts,
                 log: sessionLog, prompts: prompts,
-                certificateForKey: certificateForKey,
+                keyRecord: keyRecord,
                 certificateAuthorities: certificateAuthorities,
                 hostByID: hostByID
             )

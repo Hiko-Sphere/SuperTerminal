@@ -1,6 +1,23 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "A Secure Enclave key cannot be restored or moved. Generate a new one and add its public key to the server.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Secure Enclave 密钥无法恢复或迁移。请重新生成一把，并把它的公钥添加到服务器。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Secure Enclave 金鑰無法復原或遷移。請重新產生一把，並把它的公開金鑰加入伺服器。"
+          }
+        }
+      }
+    },
     "A certificate looks like a public key but its type ends in `-cert-v01@openssh.com`. It is the file `ssh-keygen -s` writes, usually named `…-cert.pub`.": {
       "extractionState": "manual",
       "localizations": {
@@ -137,6 +154,23 @@
         }
       }
     },
+    "Connect again and complete the Face ID or Touch ID check.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请重新连接，并完成 Face ID 或 Touch ID 验证。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請重新連線，並完成 Face ID 或 Touch ID 驗證。"
+          }
+        }
+      }
+    },
     "Connection cancelled because the host key was not accepted.": {
       "extractionState": "manual",
       "localizations": {
@@ -239,6 +273,40 @@
         }
       }
     },
+    "Face ID and Touch ID are not set up on this device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本设备尚未设置 Face ID 或 Touch ID。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本裝置尚未設定 Face ID 或 Touch ID。"
+          }
+        }
+      }
+    },
+    "Face ID or Touch ID could not confirm it was you.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Face ID 或 Touch ID 未能确认是你本人。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Face ID 或 Touch ID 未能確認是你本人。"
+          }
+        }
+      }
+    },
     "For environments whose policy requires a NIST curve.": {
       "extractionState": "manual",
       "localizations": {
@@ -252,6 +320,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "適用於政策要求使用 NIST 曲線的環境。"
+          }
+        }
+      }
+    },
+    "Generate an ordinary key instead; it is stored in the Keychain.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请改为生成普通密钥，它会保存在钥匙串中。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請改為產生一般金鑰，它會保存在鑰匙圈中。"
           }
         }
       }
@@ -375,6 +460,40 @@
         }
       }
     },
+    "Set one up in Settings, or create the key so that it only needs the device to be unlocked.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请在“设置”中设置一项，或者创建一把只要求设备解锁的密钥。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請在「設定」中設定一項，或者建立一把只要求裝置解鎖的金鑰。"
+          }
+        }
+      }
+    },
+    "Set up Face ID, Touch ID or a passcode, or choose “While the device is unlocked”.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请设置 Face ID、Touch ID 或密码，或者选择“设备解锁时”。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請設定 Face ID、Touch ID 或密碼，或者選擇「裝置解鎖時」。"
+          }
+        }
+      }
+    },
     "That file is not an OpenSSH private key.": {
       "extractionState": "manual",
       "localizations": {
@@ -490,6 +609,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "無法建立 SSH 工作階段。"
+          }
+        }
+      }
+    },
+    "The Secure Enclave would not create the key.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Secure Enclave 拒绝创建这把密钥。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Secure Enclave 拒絕建立這把金鑰。"
           }
         }
       }
@@ -834,6 +970,57 @@
         }
       }
     },
+    "This device cannot protect a key the way you asked.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本设备无法按你要求的方式保护密钥。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本裝置無法按你要求的方式保護金鑰。"
+          }
+        }
+      }
+    },
+    "This device has no Secure Enclave.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本设备没有 Secure Enclave。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本裝置沒有 Secure Enclave。"
+          }
+        }
+      }
+    },
+    "This key is no longer usable on this device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这把密钥在本设备上已无法使用。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這把金鑰在本裝置上已無法使用。"
+          }
+        }
+      }
+    },
     "This key uses an encryption method ApexTerminal cannot read (%@).": {
       "extractionState": "manual",
       "localizations": {
@@ -915,6 +1102,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "已嘗試：%@。"
+          }
+        }
+      }
+    },
+    "Try again. If it keeps happening, generate an ordinary key instead; it is stored in the Keychain.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请重试。如果反复出现，请改为生成普通密钥，它会保存在钥匙串中。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請重試。若反覆出現，請改為產生一般金鑰，它會保存在鑰匙圈中。"
+          }
+        }
+      }
+    },
+    "Try again. This key is set to require a biometric check before every use.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请重试。这把密钥设置为每次使用前都要求生物识别验证。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請重試。這把金鑰設定為每次使用前都要求生物辨識驗證。"
+          }
+        }
+      }
+    },
+    "Unlocking the key was cancelled.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "解锁密钥已取消。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "解鎖金鑰已取消。"
           }
         }
       }

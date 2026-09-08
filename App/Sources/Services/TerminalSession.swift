@@ -137,7 +137,7 @@ final class TerminalSession: Identifiable {
         log: STLogger,
         reachability: NetworkReachability? = nil,
         haptics: Haptics? = nil,
-        certificateForKey: @escaping @Sendable (UUID) -> SSHCertificate? = { _ in nil },
+        keyRecord: @escaping @Sendable (UUID) -> StoredKey? = { _ in nil },
         certificateAuthorities: [SSHCertificateAuthority] = [],
         hostByID: @escaping @Sendable (UUID) -> Host? = { _ in nil }
     ) {
@@ -155,7 +155,7 @@ final class TerminalSession: Identifiable {
         connector = HostConnector(
             host: host, group: group, vault: vault, knownHosts: knownHosts,
             log: sessionLog, prompts: prompts,
-            certificateForKey: certificateForKey,
+            keyRecord: keyRecord,
             certificateAuthorities: certificateAuthorities,
             hostByID: hostByID
         )

@@ -1378,4 +1378,9 @@ An index, so nothing has to be hunted for:
 | D-041 | `713d9d1` | SFTP version 3, spoken to OpenSSH's own `internal-sftp` |
 | D-042 | `e30b44b` | The file browser on top of it |
 | D-043 | `0622e74` | Prompts, permissions, sharing and drag-and-drop in the browser |
-| D-044 | this commit | Servers in the Files app, through a replicated File Provider extension |
+| D-044 | `b6ac72c` | Servers in the Files app, through a replicated File Provider extension |
+| D-045 | `f8846de` | Port forwarding as a saved object: local, remote and SOCKS5 |
+| D-046 | `4a75b80` | OpenSSH certificates, both directions |
+| D-047 | `5300a1f` | Jump hosts, and a connection editor that stops eating fields |
+| D-048 | `ef8e1d6` | `mlkem768x25519-sha256`, verified from the server's own log |
+| D-049 | this commit | SSH keys held in the Secure Enclave, and what the app must refuse to promise about them |

@@ -137,6 +137,23 @@
         }
       }
     },
+    "This connection's key is in the Secure Enclave and needs the app to unlock it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "该连接的密钥保存在 Secure Enclave 中，需要在应用中解锁。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "該連線的金鑰保存在 Secure Enclave 中，需要在 App 中解鎖。"
+          }
+        }
+      }
+    },
     "This connection's key needs its passphrase, which only the app can ask for.": {
       "extractionState": "manual",
       "localizations": {

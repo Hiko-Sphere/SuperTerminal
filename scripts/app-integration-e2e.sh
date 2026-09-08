@@ -122,6 +122,7 @@ env \
   TEST_RUNNER_ST_APP_TEST_SSH_CERT_KEY="$(cat "$WORK/certified")" \
   TEST_RUNNER_ST_APP_TEST_SSH_CERT="$(cat "$WORK/certified-cert.pub")" \
   TEST_RUNNER_ST_APP_TEST_SSH_PORT2="$PORT2" \
+  TEST_RUNNER_ST_APP_TEST_AUTHORIZED_KEYS="$WORK/authorized_keys" \
   xcodebuild test \
     -project ApexTerminal.xcodeproj \
     -scheme ApexTerminal \

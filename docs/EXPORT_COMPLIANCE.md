@@ -14,6 +14,7 @@ Every row was established by reading the source, not by reading the previous doc
 | SSH transport: curve25519-sha256, ecdh-sha2-nistp256/384/521, AES-CTR, chacha20-poly1305, hmac-sha2-256/512-ETM | The SSH connection itself | `swift-nio-ssh`, vendored as `swift-nio-ssh-rsa` (D-007) | Apache-2.0 |
 | ML-KEM-768 (FIPS 203), combined with X25519 as `mlkem768x25519-sha256` | Post-quantum SSH key exchange, preferred where the system provides it (D-048) | **CryptoKit `MLKEM768` (Apple)**, iOS 26 / macOS 26 and later; the SSH plumbing around it is in `Sources/NIOSSH/Key Exchange/MLKEMHybridKeyExchange.swift` | Apple platform |
 | Ed25519, ECDSA P-256/384/521, RSA signing and verification | SSH host keys and user keys | same, over `swift-crypto` | Apache-2.0 |
+| ECDSA P-256 key generation and signing **inside the Secure Enclave** | SSH user keys whose private half never leaves the hardware (D-049) | **CryptoKit `SecureEnclave.P256.Signing` (Apple)**; this repository contributes only the SSH encoding of the public key and the offer | Apple platform |
 | TLS 1.2/1.3 | HTTPS to the Cloudflare edge, and the WebSocket carrier | `swift-nio-ssl` → BoringSSL | Apache-2.0 (BoringSSL: ISC/OpenSSL) |
 | SHA-256, SHA-512, HMAC, P-256, Curve25519 | SSH key exchange, JWT signature validation for Access | `swift-crypto` | Apache-2.0 |
 | `crypto_box` (X25519 + XSalsa20-Poly1305) | Sealing credentials to Cloudflare's login helper (D-001) | `swift-sodium` → libsodium | ISC |

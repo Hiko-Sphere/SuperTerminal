@@ -36,10 +36,11 @@ final class SessionManager {
     private let reachability: NetworkReachability?
     private let restoration: SessionRestorationStore?
     private let haptics: Haptics?
-    /// The certificate issued for a stored key, and the authorities trusted to vouch for
-    /// servers (D-046). Set by the container from the host store, so a session does not
-    /// have to know where either lives.
-    var certificateForKey: @Sendable (UUID) -> SSHCertificate? = { _ in nil }
+    /// The saved record for a key — where its private half is kept (D-049) and the
+    /// certificate issued for it (D-046) — and the authorities trusted to vouch for
+    /// servers. Set by the container from the host store, so a session does not have to
+    /// know where either lives.
+    var keyRecord: @Sendable (UUID) -> StoredKey? = { _ in nil }
     var certificateAuthorities: @Sendable () -> [SSHCertificateAuthority] = { [] }
     /// Resolves a saved connection for a jump chain (D-047).
     var hostByID: @Sendable (UUID) -> Host? = { _ in nil }
@@ -117,7 +118,7 @@ final class SessionManager {
             connector: HostConnector(
                 host: host, group: group, vault: vault, knownHosts: knownHosts,
                 log: diagnostics.logger, prompts: prompts,
-                certificateForKey: certificateForKey,
+                keyRecord: keyRecord,
                 certificateAuthorities: certificateAuthorities(),
                 hostByID: hostByID
             ),
@@ -137,7 +138,7 @@ final class SessionManager {
             log: diagnostics.logger,
             reachability: reachability,
             haptics: haptics,
-            certificateForKey: certificateForKey,
+            keyRecord: keyRecord,
             certificateAuthorities: certificateAuthorities(),
             hostByID: hostByID
         )

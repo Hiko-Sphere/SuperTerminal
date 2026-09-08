@@ -3,6 +3,96 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-08 — after D-049 (Secure Enclave SSH keys)
+
+| Command | Result |
+| --- | --- |
+| `cd Packages/ApexTerminalKit && swift test --no-parallel` | **275 tests in 40 suites passed** (267 before; 8 new) |
+| `cd Packages/swift-nio-ssh-rsa && swift test` | **349 tests, 0 failures** — unchanged, and unchanged *by* this: the fork was not touched |
+| `bash scripts/app-integration-e2e.sh` | **258 tests in 48 suites passed** (253 before; 5 new) |
+| `bash scripts/ui-terminal-e2e.sh` | **46 passed, 4 failed** — see below; none of the four is this change |
+| `bash scripts/localization-audit.sh` | **green**, 32 new strings translated into both Chinese variants |
+| Release archive | **ARCHIVE SUCCEEDED** |
+
+**The four UI failures, and why none of them is this change.** Two are
+`ZZSearchProbeUITests`, another session's uncommitted work, failing as they have for six
+commits. The other two are hardware-keyboard tests that report the Simulator delivering no
+key event at all:
+
+* `HardwareKeyboardUITests.testCommandCommaOpensSettings` — `probe after retry: (count: 0,
+  last: "-")`, meaning zero shortcuts were *performed*. Run on its own three times on this
+  tree it **passed twice and failed once**: the known first-key-after-launch flake.
+* `HardwareKeyboardStateUITests.testTypingWorksAfterEveryThingThatTakesTheKeyboardAway` —
+  fails at `⌘F should open the find bar`, one line after an assertion that ordinary typed
+  text *did* reach the shell, so input works and the modified key is what went missing.
+  This one is not a flake any more: **three isolated runs, three failures.** So it was A/B'd
+  against `ef8e1d6` in a detached worktree — the commit immediately before this one — where
+  it also failed **three times out of three, at the same line with the same message**. It is
+  a pre-existing failure this change neither caused nor fixes, and it is the next thing to
+  be dealt with rather than something to leave described as "known".
+
+**The measurement that changed the design.** The plan said Secure Enclave keys were
+"verifiable only on a device" and would need NIOSSH taught to accept an external signer.
+Both were wrong, and the way they were found to be wrong is the point.
+
+The signer: `NIOSSHPrivateKey` already has `init(secureEnclaveP256Key:)` — upstream
+`swift-nio-ssh`, not a fork change — so nothing in `Packages/swift-nio-ssh-rsa` was
+touched for this.
+
+The device: a probe compiled for `arm64-apple-ios18.0-simulator` and run with
+`xcrun simctl spawn` reported
+
+```
+SecureEnclave.isAvailable = true
+created, blob bytes = 143
+signed, valid = true
+restored, same pub = true
+```
+
+so the Simulator on this Apple silicon Mac has a working enclave. A second probe pinned
+down exactly what it does *not* have:
+
+```
+biometry policy evaluable: false — Biometry is not enrolled.
+privateKeyUsage:                    created + signed, valid = true
+privateKeyUsage+userPresence:       FAILED: com.apple.LocalAuthentication Code=-1020
+                                    "This call is not supported on iOS Simulator."
+privateKeyUsage+biometryCurrentSet: FAILED: … Code=-1020
+```
+
+That split is what the claims below are scoped to.
+
+**What is proven, and by whom.** The package suite's `SecureEnclaveKeyTests` generates a
+key inside the enclave, puts *only its public half* in a real `sshd`'s `authorized_keys`,
+authenticates, runs a command, and then reads the server's own log:
+
+```
+Accepted publickey for … ECDSA SHA256:<the enclave key's fingerprint>
+```
+
+The fingerprint in that line is the enclave key's, and it is the only credential offered —
+so the test cannot pass for another reason. A companion test points the same key at a
+server that was never told about it and requires the login to fail. `ssh-keygen -l` is run
+on the public key line the app writes and must report the same fingerprint the app shows,
+which is what makes "paste this into your server" a checkable instruction.
+
+`SecureEnclaveAuthTests` repeats the login through the app's own stack — Keychain,
+`SessionManager`, `TerminalSession` — and authorises its key by appending the public line
+over SSH rather than by writing the Mac's filesystem, so the same test is meaningful on a
+device. `KeyManagementUITests.testGeneratingAKeyInTheSecureEnclaveSaysItCannotBeExported`
+drives the real screens and checks that the list says the key cannot be exported.
+
+**What is not proven.** The biometric policy, for the reason measured above. It is H-7 in
+`docs/HUMAN_ACTIONS.md` and is not marked done anywhere.
+
+**What the app refuses to pretend.** An enclave key has no exportable form, so the backup
+lists it by name as unexportable instead of silently omitting it; iCloud Keychain is not
+offered for it at all; deleting one warns that the enclave destroys its only copy; and a
+record that arrives from another device is shown as unusable *here* rather than as a
+missing sync. In Files, a key whose policy is "while the device is unlocked" is published
+and works — the enclave signs with nobody present — while one that asks for Face ID at
+every signature is refused, because a background process cannot raise that prompt.
+
 ## 2026-09-08 — after D-048 (post-quantum key exchange)
 
 | Command | Result |

@@ -202,3 +202,35 @@ Two configuration details that cost a morning, in case they ever look wrong:
 * The domain must be created with `NSFileProviderDomain(identifier:displayName:)`. The
   three-argument initialiser that also takes `pathRelativeToDocumentStorage:` creates a
   non-replicated domain and produces the same abort, on a device as well as here.
+
+## The Secure Enclave in the simulator
+
+**It works — the biometrics do not.** On an Apple silicon Mac, CryptoKit's
+`SecureEnclave` reaches the host's enclave from the iOS Simulator, so
+`SecureEnclave.isAvailable` is `true` and a P-256 signing key can be created, used and
+restored there. Measured on this project:
+
+```
+SecureEnclave.isAvailable = true
+created, blob bytes = 143            # 324 on the host Mac — a different SEP path, both usable
+signed, valid = true
+restored, same pub = true
+```
+
+That is why D-049's whole SSH path is verified automatically: `SecureEnclaveKeyTests`
+(package) authenticates to a real `sshd` with an enclave key and asserts the server's own
+`Accepted publickey … ECDSA SHA256:…` line, and `SecureEnclaveAuthTests` (app) does the
+same through `SessionManager`.
+
+What the Simulator does not have is LocalAuthentication. Any access-control flag implying
+user presence — `.userPresence`, `.biometryAny`, `.biometryCurrentSet` — fails at key
+creation with
+
+```
+Error Domain=com.apple.LocalAuthentication Code=-1020
+  "This call is not supported on iOS Simulator."
+```
+
+so `SecureEnclaveSSHKey.canRequireBiometrics` is `false` there and the UI says so instead
+of offering a switch that cannot work. The biometric policy is H-7 in
+`docs/HUMAN_ACTIONS.md` and is not claimed as verified.

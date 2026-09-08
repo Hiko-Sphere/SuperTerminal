@@ -22,8 +22,9 @@ final class HostConnector {
     private let vault: CredentialVault
     private let knownHosts: any KnownHostsStore
     private let log: STLogger
-    /// The certificate issued for a stored key, when there is one (D-046).
-    private let certificateForKey: @Sendable (UUID) -> SSHCertificate?
+    /// The saved record for a key, which says where its private half lives (D-049) and
+    /// carries the certificate an authority issued for it (D-046).
+    private let keyRecord: @Sendable (UUID) -> StoredKey?
     /// Authorities trusted to vouch for servers, so a certified host key needs no
     /// fingerprint comparison.
     private let authorities: [SSHCertificateAuthority]
@@ -37,7 +38,7 @@ final class HostConnector {
         knownHosts: any KnownHostsStore,
         log: STLogger,
         prompts: PromptCoordinator,
-        certificateForKey: @escaping @Sendable (UUID) -> SSHCertificate? = { _ in nil },
+        keyRecord: @escaping @Sendable (UUID) -> StoredKey? = { _ in nil },
         certificateAuthorities: [SSHCertificateAuthority] = [],
         hostByID: @escaping @Sendable (UUID) -> Host? = { _ in nil }
     ) {
@@ -47,7 +48,7 @@ final class HostConnector {
         self.knownHosts = knownHosts
         self.log = log
         self.prompts = prompts
-        self.certificateForKey = certificateForKey
+        self.keyRecord = keyRecord
         authorities = certificateAuthorities
         self.hostByID = hostByID
     }
@@ -226,23 +227,59 @@ final class HostConnector {
         for reference in host.credentials {
             switch reference {
             case let .privateKey(id):
-                let pem = try vault.loadPrivateKey(
-                    id: id,
-                    prompt: String(localized: "Unlock the key for \(host.name)")
-                )
-                let inspection = try OpenSSHPrivateKeyParser.inspect(pem: pem)
+                let record = keyRecord(id)
                 let material: SSHPrivateKeyMaterial
-                if inspection.isEncrypted {
-                    let passphrase = try await prompts.requestPassphrase(keyName: host.name)
-                    material = try OpenSSHPrivateKeyParser.parse(pem: pem, passphrase: passphrase)
+                if record?.isHeldInSecureEnclave == true {
+                    // Nothing to unlock and nothing to parse: the private half is in the
+                    // enclave and stays there.
+                    do {
+                        let blob = try vault.loadSecureEnclaveKey(id: id)
+                        if record?.requiresBiometrics == true {
+                            // Asked for here, before the connection is opened. The enclave
+                            // would otherwise raise its sheet at the moment it signs —
+                            // inside the handshake, on a NIO event loop shared with every
+                            // other session, which would sit blocked for as long as the
+                            // person took to answer.
+                            let context = try await SecureEnclaveSSHKey.authenticatedContext(
+                                reason: String(localized: "Use the key for \(host.name)")
+                            )
+                            material = try SecureEnclaveSSHKey.material(
+                                blob: blob,
+                                comment: record?.name,
+                                context: context
+                            )
+                        } else {
+                            material = try SecureEnclaveSSHKey.material(
+                                blob: blob,
+                                comment: record?.name,
+                                authenticationPrompt: nil
+                            )
+                        }
+                    } catch let error as SecureEnclaveKeyError {
+                        // Translated here rather than left to the generic handler: an
+                        // enclave key that has stopped working needs the sentence that
+                        // says why and what to do, not "the connection could not be
+                        // established" with an enum case underneath it.
+                        throw error.stError
+                    }
                 } else {
-                    material = try OpenSSHPrivateKeyParser.parse(pem: pem)
+                    let pem = try vault.loadPrivateKey(
+                        id: id,
+                        prompt: String(localized: "Unlock the key for \(host.name)")
+                    )
+                    let inspection = try OpenSSHPrivateKeyParser.inspect(pem: pem)
+                    if inspection.isEncrypted {
+                        let passphrase = try await prompts.requestPassphrase(keyName: host.name)
+                        material = try OpenSSHPrivateKeyParser.parse(pem: pem, passphrase: passphrase)
+                    } else {
+                        material = try OpenSSHPrivateKeyParser.parse(pem: pem)
+                    }
                 }
                 // A key with a certificate is offered with it. An expired certificate is
                 // left off rather than offered: the server would refuse it, and burning
                 // an attempt against `MaxAuthTries` to be told so helps nobody. The bare
                 // key still goes, because a server may know it directly.
-                if let certificate = certificateForKey(id), certificate.isValid() {
+                if let certificate = record?.certificate, certificate.isValid() {
                     credentials.append(.certifiedKey(material, certificate))
                 } else {
                     credentials.append(.privateKey(material))
