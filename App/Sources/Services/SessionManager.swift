@@ -41,6 +41,8 @@ final class SessionManager {
     /// have to know where either lives.
     var certificateForKey: @Sendable (UUID) -> SSHCertificate? = { _ in nil }
     var certificateAuthorities: @Sendable () -> [SSHCertificateAuthority] = { [] }
+    /// Resolves a saved connection for a jump chain (D-047).
+    var hostByID: @Sendable (UUID) -> Host? = { _ in nil }
 
     init(
         vault: CredentialVault,
@@ -116,7 +118,8 @@ final class SessionManager {
                 host: host, group: group, vault: vault, knownHosts: knownHosts,
                 log: diagnostics.logger, prompts: prompts,
                 certificateForKey: certificateForKey,
-                certificateAuthorities: certificateAuthorities()
+                certificateAuthorities: certificateAuthorities(),
+                hostByID: hostByID
             ),
             prompts: prompts,
             log: diagnostics.logger
@@ -135,7 +138,8 @@ final class SessionManager {
             reachability: reachability,
             haptics: haptics,
             certificateForKey: certificateForKey,
-            certificateAuthorities: certificateAuthorities()
+            certificateAuthorities: certificateAuthorities(),
+            hostByID: hostByID
         )
         session.onConnected = { [weak self] in self?.didConnect?() }
         session.onPlatformDetected = { [weak self] platform in self?.didDetectPlatform?(host.id, platform) }

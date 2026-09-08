@@ -97,7 +97,8 @@ final class VNCSession: Identifiable {
         log: STLogger,
         haptics: Haptics? = nil,
         certificateForKey: @escaping @Sendable (UUID) -> SSHCertificate? = { _ in nil },
-        certificateAuthorities: [SSHCertificateAuthority] = []
+        certificateAuthorities: [SSHCertificateAuthority] = [],
+        hostByID: @escaping @Sendable (UUID) -> Host? = { _ in nil }
     ) {
         self.screen = screen
         self.sshHost = sshHost
@@ -115,7 +116,8 @@ final class VNCSession: Identifiable {
                 host: $0, group: group, vault: vault, knownHosts: knownHosts,
                 log: sessionLog, prompts: prompts,
                 certificateForKey: certificateForKey,
-                certificateAuthorities: certificateAuthorities
+                certificateAuthorities: certificateAuthorities,
+                hostByID: hostByID
             )
         }
         Task { [weak self, prompts] in

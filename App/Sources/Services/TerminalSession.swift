@@ -138,7 +138,8 @@ final class TerminalSession: Identifiable {
         reachability: NetworkReachability? = nil,
         haptics: Haptics? = nil,
         certificateForKey: @escaping @Sendable (UUID) -> SSHCertificate? = { _ in nil },
-        certificateAuthorities: [SSHCertificateAuthority] = []
+        certificateAuthorities: [SSHCertificateAuthority] = [],
+        hostByID: @escaping @Sendable (UUID) -> Host? = { _ in nil }
     ) {
         self.host = host
         self.group = group
@@ -155,7 +156,8 @@ final class TerminalSession: Identifiable {
             host: host, group: group, vault: vault, knownHosts: knownHosts,
             log: sessionLog, prompts: prompts,
             certificateForKey: certificateForKey,
-            certificateAuthorities: certificateAuthorities
+            certificateAuthorities: certificateAuthorities,
+            hostByID: hostByID
         )
         let initialEmulator = TerminalEmulator(
             columns: TerminalSize.default.columns,

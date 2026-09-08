@@ -21,6 +21,7 @@ final class VNCSessionManager {
     /// certificate-authenticated host must connect the same way its terminal does.
     var certificateForKey: @Sendable (UUID) -> SSHCertificate? = { _ in nil }
     var certificateAuthorities: @Sendable () -> [SSHCertificateAuthority] = { [] }
+    var hostByID: @Sendable (UUID) -> Host? = { _ in nil }
 
     init(
         vault: CredentialVault,
@@ -47,7 +48,8 @@ final class VNCSessionManager {
             log: diagnostics.logger,
             haptics: haptics,
             certificateForKey: certificateForKey,
-            certificateAuthorities: certificateAuthorities()
+            certificateAuthorities: certificateAuthorities(),
+            hostByID: hostByID
         )
         sessions.append(session)
         Task { await session.connect() }

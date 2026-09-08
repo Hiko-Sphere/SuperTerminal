@@ -3,6 +3,36 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-08 — after D-047 (jump hosts)
+
+| Command | Result |
+| --- | --- |
+| `cd Packages/ApexTerminalKit && swift test --no-parallel` | **265 tests in 38 suites passed** |
+| `bash scripts/app-integration-e2e.sh` | **253 tests in 47 suites passed** |
+| `bash scripts/ui-terminal-e2e.sh` | **46 passed, 3 failed** — the same 3 as the last three commits |
+| `bash scripts/localization-audit.sh` | **green**, 8 new strings in both Chinese variants |
+| Release archive | **ARCHIVE SUCCEEDED** |
+
+**What the jump tests prove.** Two real `sshd` processes with different host keys, and the
+inner connection's recorded host key is compared with the *second* server's published key —
+which is the only thing that tells "went through the bastion" apart from "never left it"
+when both are on the same loopback. The app-level suite adds a second `sshd` to
+`scripts/app-integration-e2e.sh` and checks the known-hosts store holds two entries after a
+jumped connection: each hop is checked against its own record, so a chain is as many trust
+decisions as it has hops.
+
+Closing behaviour is tested rather than assumed: closing the session closes the bastion
+behind it, and dropping the bastion's connection ends the session it carries. The second of
+those was rewritten during the work — killing the harness's sshd process does *not* end an
+established session, because sshd forks a child per connection, and a test relying on that
+would have been testing a property of sshd rather than of this client.
+
+**A defect this found in the previous commit.** The connection editor rebuilt a `Host` from
+the fields on screen, so saving an edit erased anything the editor does not show — including
+the port-forwarding rules D-045 had just added. The editor now applies its changes to the
+existing record through `Host.applying(_:)`, which makes the whole class of mistake
+impossible rather than something to remember, and `HostEditingTests` holds the rule.
+
 ## 2026-09-08 — after D-046 (OpenSSH certificates)
 
 | Command | Result |

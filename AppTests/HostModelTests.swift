@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+import STForwarding
 @testable import ApexTerminal
 
 @Suite("Host model")
@@ -63,5 +64,65 @@ struct HostModelTests {
             credentials: [.privateKey(id: UUID())]
         )
         #expect(host.validationProblems.isEmpty)
+    }
+}
+
+/// Editing a connection must not quietly discard what the editor does not show (D-047).
+@Suite("Editing a connection")
+struct HostEditingTests {
+    private var fields: HostEditorFields {
+        HostEditorFields(
+            name: "Renamed",
+            hostname: "new.example",
+            port: 2222,
+            username: "root",
+            transport: .directTCP,
+            credentials: [],
+            folder: nil,
+            terminalType: "xterm-256color",
+            accessAuthentication: nil,
+            platformOverride: nil,
+            showsInFiles: false,
+            jumpHosts: []
+        )
+    }
+
+    @Test("An edit keeps everything the editor does not show")
+    func editingPreservesUnseenFields() {
+        var host = Host(name: "Old", hostname: "old.example", username: "user")
+        host.portForwards = [PortForward(kind: .local, listenPort: 8080, targetHost: "db", targetPort: 5432)]
+        host.tags = ["work"]
+        host.environment = ["LANG": "en_GB.UTF-8"]
+        host.detectedPlatform = .linux
+        host.lastConnected = Date(timeIntervalSince1970: 1_700_000_000)
+        host.themeID = "solarized"
+
+        let edited = host.applying(fields)
+
+        // The fields the editor showed changed…
+        #expect(edited.name == "Renamed")
+        #expect(edited.hostname == "new.example")
+        #expect(edited.port == 2222)
+        // …and everything it did not is exactly as it was. This is the regression: saving
+        // an edit used to erase the port forwards.
+        #expect(edited.id == host.id)
+        #expect(edited.portForwards == host.portForwards)
+        #expect(edited.tags == host.tags)
+        #expect(edited.environment == host.environment)
+        #expect(edited.detectedPlatform == host.detectedPlatform)
+        #expect(edited.lastConnected == host.lastConnected)
+        #expect(edited.themeID == host.themeID)
+    }
+
+    @Test("An empty jump chain is stored as nothing rather than an empty list")
+    func emptyChainIsNil() {
+        var host = Host(name: "H", hostname: "h", username: "u")
+        host.jumpHosts = [UUID()]
+        #expect(host.applying(fields).jumpHosts == nil)
+
+        var withChain = fields
+        let hop = UUID()
+        withChain.jumpHosts = [hop]
+        #expect(host.applying(withChain).jumpHosts == [hop])
     }
 }

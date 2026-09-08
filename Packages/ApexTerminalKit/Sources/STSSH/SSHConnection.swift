@@ -66,6 +66,12 @@ public actor SSHConnection {
     private let credentialChain: SSHCredentialChain
     internal let log: STLogger
     private var closed = false
+    /// Connections this one is carried through — the jump hosts (D-047).
+    ///
+    /// Held so that closing this connection closes the chain behind it. Without that a
+    /// bastion session would stay open after the session it existed for had gone, which
+    /// on a bastion with a session limit is a slow way to lock yourself out.
+    private var carriers: [SSHConnection] = []
     /// Where `forwarded-tcpip` channels go (D-045). Created before the handler, because
     /// the handler needs it to decide whether to accept one.
     internal let forwardedChannels: ForwardedChannelRouter
@@ -388,10 +394,22 @@ public actor SSHConnection {
         }
     }
 
+    /// Takes ownership of the connection this one is carried through (D-047).
+    public func adopt(carrier: SSHConnection) {
+        carriers.append(carrier)
+    }
+
     public func close() async {
         guard !closed else { return }
         closed = true
         try? await channel.close().get()
+        // Innermost first: the outer connections are what the inner ones travel through,
+        // and closing a carrier before the thing it carries just drops the latter.
+        let carriers = carriers
+        self.carriers = []
+        for carrier in carriers.reversed() {
+            await carrier.close()
+        }
         log.info("SSH connection closed")
     }
 

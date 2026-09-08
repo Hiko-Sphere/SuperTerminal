@@ -124,6 +124,34 @@ wrapped across lines.
 cannot fight. When a program has enabled mouse reporting, two-finger scrolling becomes
 wheel events for that program instead.
 
+## Jump hosts
+
+Edit a connection → *Jump hosts*, and pick saved connections to hop through, in order —
+the equivalent of `ssh -J` (D-047).
+
+A chain is built from saved connections rather than typed addresses, and that is the point:
+each hop is a connection in its own right, with its own credentials and its own host key
+checked against its own record. A chain is therefore not one trust decision, it is as many
+as it has hops.
+
+What the bastion can and cannot do is worth being clear about. It makes the TCP connection
+to the next hop on your behalf and carries the bytes, so it knows *where* you are going. It
+cannot read what you send: the SSH session is encrypted between this device and the far
+server, and the bastion is carrying an opaque stream. It can drop the connection — and when
+it does, the session it carries ends rather than appearing to survive.
+
+Two rules the app enforces quietly:
+
+* A connection cannot jump through itself, and a hop named twice is used once. Following
+  either would recurse until something ran out.
+* A hop naming a connection that has since been deleted is skipped, and the editor shows
+  it as *A deleted connection* rather than dropping it from the list — a chain silently
+  getting shorter changes where the traffic goes.
+
+When a hop fails, the message names it: *Could not connect through Bastion*, with the
+underlying reason beneath. Which hop failed is the whole question when a chain does not
+come up.
+
 ## Certificates
 
 OpenSSH certificates are supported in both directions (D-046).

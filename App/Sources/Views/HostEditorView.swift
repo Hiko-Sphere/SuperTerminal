@@ -34,6 +34,7 @@ struct HostEditorView: View {
     /// nil is "Automatic": use what the server reports.
     @State private var platformOverride: HostPlatform?
     @State private var showsInFiles = false
+    @State private var jumpHosts: [UUID] = []
 
     init(host: Host?) {
         existing = host
@@ -141,6 +142,12 @@ struct HostEditorView: View {
                     Text("Credentials are stored in the Keychain, never in the connection list. Leave the password empty to be asked each time. With no key and no password chosen, the server is asked what it takes and you are asked for a password only if it takes one.")
                 }
 
+                // Only for a direct connection: a Cloudflare tunnel *is* the transport,
+                // and it has its own bastion setting above.
+                if !usesCloudflare {
+                    JumpHostsSection(hostID: existing?.id, jumpHosts: $jumpHosts)
+                }
+
                 Section("Advanced") {
                     TextField("Folder", text: $folder)
                     TextField("TERM", text: $terminalType)
@@ -178,6 +185,7 @@ struct HostEditorView: View {
                 if let existing {
                     hasStoredServiceToken = container.vault.hasServiceToken(hostID: existing.id)
                     showsInFiles = existing.isPublishedToFiles
+                    jumpHosts = existing.jumpHosts ?? []
                 }
             }
             .navigationTitle(existing == nil ? "New Connection" : "Edit Connection")
@@ -194,6 +202,11 @@ struct HostEditorView: View {
         }
     }
 
+    /// The connection as the editor would save it.
+    ///
+    /// The edits are applied to the existing record rather than used to build a new one,
+    /// so a field the editor does not show cannot be dropped by forgetting to list it.
+    /// `HostEditorFields` and `Host.applying(_:)` carry that rule, and a test holds it.
     private var draft: Host {
         var credentials: [Host.CredentialReference] = []
         if let selectedKeyID { credentials.append(.privateKey(id: selectedKeyID)) }
@@ -210,8 +223,8 @@ struct HostEditorView: View {
             ? (address?.port ?? Host.defaultPort(for: transport))
             : (Int(typedPort) ?? 0)
         let typedUser = username.trimmingCharacters(in: .whitespaces)
-        return Host(
-            id: existing?.id ?? UUID(),
+
+        let fields = HostEditorFields(
             name: name,
             hostname: address?.host ?? hostname.trimmingCharacters(in: .whitespaces),
             port: resolvedPort,
@@ -219,16 +232,13 @@ struct HostEditorView: View {
             transport: transport,
             credentials: credentials,
             folder: folder.isEmpty ? nil : folder,
-            tags: existing?.tags ?? [],
             terminalType: terminalType,
-            environment: existing?.environment ?? [:],
-            themeID: existing?.themeID,
-            lastConnected: existing?.lastConnected,
             accessAuthentication: usesCloudflare ? accessAuthentication : nil,
             platformOverride: platformOverride,
-            detectedPlatform: existing?.detectedPlatform,
-            showsInFiles: showsInFiles ? true : nil
+            showsInFiles: showsInFiles,
+            jumpHosts: jumpHosts
         )
+        return (existing ?? Host(name: "", hostname: "", username: "")).applying(fields)
     }
 
     private var problems: [String] { draft.validationProblems + editorProblems }

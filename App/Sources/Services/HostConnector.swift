@@ -27,6 +27,8 @@ final class HostConnector {
     /// Authorities trusted to vouch for servers, so a certified host key needs no
     /// fingerprint comparison.
     private let authorities: [SSHCertificateAuthority]
+    /// Resolves a saved connection by identifier, for the jump chain (D-047).
+    private let hostByID: @Sendable (UUID) -> Host?
 
     init(
         host: Host,
@@ -36,7 +38,8 @@ final class HostConnector {
         log: STLogger,
         prompts: PromptCoordinator,
         certificateForKey: @escaping @Sendable (UUID) -> SSHCertificate? = { _ in nil },
-        certificateAuthorities: [SSHCertificateAuthority] = []
+        certificateAuthorities: [SSHCertificateAuthority] = [],
+        hostByID: @escaping @Sendable (UUID) -> Host? = { _ in nil }
     ) {
         self.host = host
         self.group = group
@@ -46,14 +49,78 @@ final class HostConnector {
         self.prompts = prompts
         self.certificateForKey = certificateForKey
         authorities = certificateAuthorities
+        self.hostByID = hostByID
     }
 
     /// Connects and authenticates, naming each step through `progress` as it happens.
+    ///
+    /// A connection with jump hosts is opened one hop at a time (D-047), each hop a full
+    /// SSH connection in its own right — its own credentials, its own host key checked
+    /// against its own record. The final connection then travels inside the last hop, so
+    /// the bastion carries the traffic without being able to read it.
     func connect(progress: @escaping @MainActor (String) -> Void) async throws -> SSHConnection {
+        var carrier: SSHConnection?
+        for hop in jumpChain() {
+            progress(String(localized: "Connecting through \(hop.name)"))
+            do {
+                let connection = try await open(hop, over: carrier, progress: { _ in })
+                if let carrier { await connection.adopt(carrier: carrier) }
+                carrier = connection
+            } catch {
+                // Which hop failed is the whole question when a chain does not come up,
+                // and "the connection could not be established" answers none of it.
+                await carrier?.close()
+                throw Self.failure(at: hop, error: error)
+            }
+        }
+        do {
+            let connection = try await open(host, over: carrier, progress: progress)
+            if let carrier { await connection.adopt(carrier: carrier) }
+            return connection
+        } catch {
+            await carrier?.close()
+            throw error
+        }
+    }
+
+    /// The saved connections to hop through, first hop first.
+    ///
+    /// A chain that names a connection twice — or names itself — would otherwise recurse
+    /// until the app ran out of something. Each identifier is used once, and only the
+    /// chain the final connection names is followed: a hop's own jump list is ignored, so
+    /// the chain is exactly what the user can see in the editor rather than something
+    /// assembled from several records.
+    private func jumpChain() -> [Host] {
+        var seen: Set<UUID> = [host.id]
+        var chain: [Host] = []
+        for id in host.jumpHosts ?? [] {
+            guard !seen.contains(id), let hop = hostByID(id) else { continue }
+            seen.insert(id)
+            chain.append(hop)
+        }
+        return chain
+    }
+
+    private func open(
+        _ host: Host,
+        over carrier: SSHConnection?,
+        progress: @escaping @MainActor (String) -> Void
+    ) async throws -> SSHConnection {
         // A connection saved without a user name is asked for one before anything is
         // opened (D-024); the answer lives as long as this attempt.
-        let username = try await resolveUsername()
-        let transport = try await makeTransport(progress: progress)
+        let username = try await resolveUsername(for: host)
+        let transport: any ByteStreamTransport
+        if let carrier {
+            // A jump reaches the far server through a channel the previous hop opens, so
+            // the host's own transport setting does not apply — there is nothing to dial.
+            transport = JumpTransport(
+                through: carrier,
+                to: TransportEndpoint(host: host.hostname, port: host.port),
+                carrierDescription: Redactor.hostname(host.hostname)
+            )
+        } else {
+            transport = try await makeTransport(for: host, progress: progress)
+        }
         progress(String(localized: "Exchanging keys"))
 
         let approval: any HostKeyApprovalDelegate = Self.automaticHostKeyTrust
@@ -66,7 +133,7 @@ final class HostConnector {
             certificateAuthorities: authorities,
             log: log
         )
-        let credentials = try await resolveCredentials(username: username)
+        let credentials = try await resolveCredentials(username: username, for: host)
 
         let prompts = prompts
         let hostname = host.hostname
@@ -87,7 +154,18 @@ final class HostConnector {
         )
     }
 
-    private func makeTransport(progress: @escaping @MainActor (String) -> Void) async throws -> any ByteStreamTransport {
+    /// Says which hop failed, keeping the original reason.
+    static func failure(at hop: Host, error: Error) -> STError {
+        let underlying = error as? STError
+        return STError(
+            category: underlying?.category ?? .network,
+            message: String(localized: "Could not connect through \(hop.name)."),
+            recoverySuggestion: underlying?.message,
+            underlyingDescription: underlying?.underlyingDescription ?? String(describing: error)
+        )
+    }
+
+    private func makeTransport(for host: Host, progress: @escaping @MainActor (String) -> Void) async throws -> any ByteStreamTransport {
         switch host.transport {
         case .directTCP:
             return DirectTCPTransport(
@@ -103,7 +181,7 @@ final class HostConnector {
             // session has expired" are the same generic sentence otherwise (D-026).
             let credential: AccessCredential
             do {
-                credential = try await resolveAccessCredential(progress: progress)
+                credential = try await resolveAccessCredential(for: host, progress: progress)
             } catch let error as AccessError {
                 throw error.stError
             }
@@ -122,7 +200,7 @@ final class HostConnector {
         }
     }
 
-    private func resolveAccessCredential(progress: @escaping @MainActor (String) -> Void) async throws -> AccessCredential {
+    private func resolveAccessCredential(for host: Host, progress: @escaping @MainActor (String) -> Void) async throws -> AccessCredential {
         // The same steps a remote screen takes to reach its own tunnel (D-029).
         try await AccessCredentialResolver(
             hostname: host.hostname,
@@ -134,13 +212,13 @@ final class HostConnector {
         ).credential(progress: progress)
     }
 
-    private func resolveUsername() async throws -> String {
+    private func resolveUsername(for host: Host) async throws -> String {
         let saved = host.username.trimmingCharacters(in: .whitespaces)
         if !saved.isEmpty { return saved }
         return try await prompts.requestUsername(host: host.hostname)
     }
 
-    private func resolveCredentials(username: String) async throws -> [SSHCredential] {
+    private func resolveCredentials(username: String, for host: Host) async throws -> [SSHCredential] {
         // Nothing saved: offer `none`, which makes the server say what it takes; the
         // chain then asks for a password if that is among them (D-024).
         guard !host.credentials.isEmpty else { return [.none] }

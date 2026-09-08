@@ -22,7 +22,7 @@ from the first unfinished item rather than starting over.
 | 1.1 | SFTP | **Done except multiple tabs** — D-041 protocol, D-042 interface, D-043 prompts, permissions, sharing and drag-and-drop. Several remote folders open at once is the one part not built; the iPad shows one browser at a time |
 | 1.2 | Files.app File Provider extension | **Implemented, awaiting a device** — D-044; a replicated extension, a per-connection switch, and 29 package tests against real OpenSSH plus 7 in the app host. The simulator downgrades a replicated domain because it has no FPFS, so the system actually serving Files is H-6 |
 | 1.3 | Port forwarding as a first-class object | **Done** — D-045; local, remote and dynamic (SOCKS5), saved with the connection, started by hand or with it, with real byte counters. 9 package tests move real bytes through a real OpenSSH server, 3 app tests through a real `TerminalSession`, 2 UI tests through the screen |
-| 1.4 | Authentication | **Certificates done** — D-046; user certificates offered with a key, host certificates validated against trusted authorities, 12 package tests and 3 app tests against a real OpenSSH server configured with `TrustedUserCAKeys` and `HostCertificate`. keyboard-interactive, ProxyJump, Secure Enclave, agent, FIDO2 and post-quantum KEX are still ahead — see the note below |
+| 1.4 | Authentication | **Certificates and jump hosts done** — D-046 certificates (user and host, against a real `TrustedUserCAKeys`/`HostCertificate` server); D-047 jump chains (`ssh -J`), 4 package tests through two real servers and 5 app tests. keyboard-interactive, Secure Enclave, agent, FIDO2 and post-quantum KEX are still ahead — see the note below |
 
 ## Phase 2 — moat
 
@@ -49,15 +49,14 @@ Mac Catalyst, visionOS, watchOS. Not started, and deliberately after Phase 0–3
 
 ### What 1.4 still needs, and what it will cost
 
+ProxyJump is done (D-047); what follows is the rest.
+
 * **keyboard-interactive** — the vendored NIOSSH does not implement it at all: no
   `SSH_MSG_USERAUTH_INFO_REQUEST`, no `.keyboardInteractive` method, and message 60 is
   parsed unconditionally as `PK_OK`. Adding it means context-sensitive message parsing and
   a new delegate in the fork. It also cannot be verified against this machine's sshd, which
   falls back to BSD auth and would need the login password of a real account — so it lands
   as "implemented, awaiting verification" unless a server that offers it is available.
-* **ProxyJump** — no fork change needed: a jump is a `direct-tcpip` channel from the first
-  connection used as the transport for the second, and both halves already exist.
-  Verifiable with two harness servers.
 * **Secure Enclave keys** — P-256 keys whose private half never leaves the Enclave. The
   signing would go through `SecKeyCreateSignature`, which means teaching NIOSSH to accept a
   signer it does not own. Verifiable only on a device.

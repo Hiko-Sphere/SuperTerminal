@@ -48,6 +48,11 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
     public var effectivePlatform: HostPlatform? { platformOverride ?? detectedPlatform }
 
     public var usesServiceToken: Bool { accessAuthentication == .serviceToken }
+    /// Saved connections to hop through before reaching this one (D-047), first hop
+    /// first — `ssh -J`. Each is a full connection with its own credentials and its own
+    /// host key, which is what makes a chain safe rather than one trust decision.
+    /// Optional so records written before jump hosts existed still decode.
+    public var jumpHosts: [UUID]?
     /// Port-forwarding rules saved with this connection (D-045). Optional so records
     /// written before the feature existed still decode.
     public var portForwards: [PortForward]?
@@ -137,7 +142,8 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
         platformOverride: HostPlatform? = nil,
         detectedPlatform: HostPlatform? = nil,
         showsInFiles: Bool? = nil,
-        portForwards: [PortForward]? = nil
+        portForwards: [PortForward]? = nil,
+        jumpHosts: [UUID]? = nil
     ) {
         self.id = id
         self.name = name
@@ -157,6 +163,7 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
         self.detectedPlatform = detectedPlatform
         self.showsInFiles = showsInFiles
         self.portForwards = portForwards
+        self.jumpHosts = jumpHosts
     }
 
     /// The identity host keys are remembered against.

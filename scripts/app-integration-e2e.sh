@@ -18,9 +18,11 @@ DESTINATION="${1:-platform=iOS Simulator,name=iPhone 17 Pro}"
 WORK="$(mktemp -d)"
 
 cleanup() {
-  if [[ -f "$WORK/sshd.pid" ]]; then
-    kill "$(cat "$WORK/sshd.pid")" 2>/dev/null || true
-  fi
+  for pidfile in "$WORK/sshd.pid" "$WORK/sshd2.pid"; do
+    if [[ -f "$pidfile" ]]; then
+      kill "$(cat "$pidfile")" 2>/dev/null || true
+    fi
+  done
   rm -rf "$WORK"
 }
 trap cleanup EXIT
@@ -41,6 +43,7 @@ ssh-keygen -s "$WORK/ca" -I st-app-test -n "$(whoami)" -V -5m:+60m "$WORK/certif
 chmod 600 "$WORK/ca" "$WORK/certified"
 
 PORT="$(python3 -c 'import socket; s=socket.socket(); s.bind(("127.0.0.1",0)); print(s.getsockname()[1]); s.close()')"
+PORT2="$(python3 -c 'import socket; s=socket.socket(); s.bind(("127.0.0.1",0)); print(s.getsockname()[1]); s.close()')"
 
 cat > "$WORK/sshd_config" <<CONFIG
 Port $PORT
@@ -62,6 +65,16 @@ CONFIG
 /usr/sbin/sshd -f "$WORK/sshd_config" -D -e > "$WORK/sshd.log" 2>&1 &
 echo $! > "$WORK/sshd.pid"
 
+# A second server, for the jump-host tests (D-047). Same keys, its own port and its own
+# host key, so a connection that reached it can be told apart from one that stopped at
+# the first.
+ssh-keygen -t ed25519 -f "$WORK/host2_ed25519" -N '' -q -C st-app-test-host2
+chmod 600 "$WORK/host2_ed25519"
+sed -e "s|^Port .*|Port $PORT2|" -e "s|^HostKey .*|HostKey $WORK/host2_ed25519|" \
+    -e "s|^PidFile .*|PidFile $WORK/sshd2.pid|" "$WORK/sshd_config" > "$WORK/sshd2_config"
+/usr/sbin/sshd -f "$WORK/sshd2_config" -D -e > "$WORK/sshd2.log" 2>&1 &
+echo $! > "$WORK/sshd2.pid"
+
 for _ in $(seq 1 60); do
   if nc -z 127.0.0.1 "$PORT" 2>/dev/null; then break; fi
   sleep 0.2
@@ -69,6 +82,15 @@ done
 if ! nc -z 127.0.0.1 "$PORT" 2>/dev/null; then
   echo "sshd did not start. Log:" >&2
   cat "$WORK/sshd.log" >&2
+  exit 1
+fi
+for _ in $(seq 1 60); do
+  if nc -z 127.0.0.1 "$PORT2" 2>/dev/null; then break; fi
+  sleep 0.2
+done
+if ! nc -z 127.0.0.1 "$PORT2" 2>/dev/null; then
+  echo "the second sshd did not start. Log:" >&2
+  cat "$WORK/sshd2.log" >&2
   exit 1
 fi
 
@@ -99,6 +121,7 @@ env \
   TEST_RUNNER_ST_APP_TEST_SSH_HOME="$HOME" \
   TEST_RUNNER_ST_APP_TEST_SSH_CERT_KEY="$(cat "$WORK/certified")" \
   TEST_RUNNER_ST_APP_TEST_SSH_CERT="$(cat "$WORK/certified-cert.pub")" \
+  TEST_RUNNER_ST_APP_TEST_SSH_PORT2="$PORT2" \
   xcodebuild test \
     -project ApexTerminal.xcodeproj \
     -scheme ApexTerminal \

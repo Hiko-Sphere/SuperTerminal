@@ -181,6 +181,13 @@ final class AppContainer {
         screens.certificateForKey = { [weak hostStore] id in
             MainActor.assumeIsolated { hostStore?.key(withID: id)?.certificate }
         }
+        // Jump chains name saved connections (D-047), so both kinds of session resolve
+        // them the same way.
+        let resolveHost: @Sendable (UUID) -> Host? = { [weak hostStore] id in
+            MainActor.assumeIsolated { hostStore?.hosts.first { $0.id == id } }
+        }
+        sessionManager.hostByID = resolveHost
+        screens.hostByID = resolveHost
         hostStore.didChange = { [weak sync, weak container] in
             sync?.scheduleSync()
             Task { await container?.files.refresh() }
