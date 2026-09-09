@@ -5,7 +5,12 @@ import XCTest
 final class BackupUITests: XCTestCase {
     private lazy var app = XCUIApplication()
 
-    override func setUpWithError() throws {
+    // The async form, and `@MainActor` on it: an override may *add* actor isolation when it
+    // is async, because the caller awaits the hop. `setUpWithError()` cannot — it overrides a
+    // method that is not isolated — and every line of setup here touches `XCUIApplication`,
+    // which is the main actor's (D-068).
+    @MainActor
+    override func setUp() async throws {
         continueAfterFailure = false
         app.launchEnvironment["ST_UITEST_RESET"] = "1"
         app.launch()

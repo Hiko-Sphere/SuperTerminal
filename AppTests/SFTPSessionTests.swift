@@ -137,7 +137,10 @@ import Testing
 
     // MARK: - Permissions
 
+    // `@MainActor` because `FilePermissionsView` is a SwiftUI view and its `symbolic` is the
+    // main actor's; the test reads the same string the list shows.
     @Test("The mode editor keeps the file type and shows the same string a listing does")
+    @MainActor
     func permissionEditing() {
         // Only the low twelve bits are the user's; the type bits above them say what the
         // file *is*, and writing those back as a mode would be asking the server to turn

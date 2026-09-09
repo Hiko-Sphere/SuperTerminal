@@ -60,7 +60,10 @@ public final class ChatCompletionsTestServer: @unchecked Sendable {
         try? group.syncShutdownGracefully()
     }
 
-    private final class Responder: ChannelInboundHandler {
+    /// `@unchecked Sendable` for the same reason as the test server's other handler: it is
+    /// built inside NIO's channel initialiser, holds only locked boxes, and never leaves the
+    /// event loop it is added to.
+    private final class Responder: ChannelInboundHandler, @unchecked Sendable {
         typealias InboundIn = HTTPServerRequestPart
         typealias OutboundOut = HTTPServerResponsePart
 
@@ -116,7 +119,10 @@ public final class ChatCompletionsTestServer: @unchecked Sendable {
                 var buffer = context.channel.allocator.buffer(capacity: text.utf8.count)
                 buffer.writeString(text)
                 context.write(wrapOutboundOut(.body(.byteBuffer(buffer))), promise: nil)
-                context.writeAndFlush(wrapOutboundOut(.end(nil))).whenComplete { _ in context.close(promise: nil) }
+                // The channel, not the context: `ChannelHandlerContext` is not `Sendable` and
+                // must not outlive the call, while `Channel` is and may.
+                let channel = context.channel
+                context.writeAndFlush(wrapOutboundOut(.end(nil))).whenComplete { _ in channel.close(promise: nil) }
             case let .respond(status, body):
                 var headers = HTTPHeaders()
                 headers.add(name: "Content-Type", value: "application/json")
@@ -127,7 +133,10 @@ public final class ChatCompletionsTestServer: @unchecked Sendable {
                 var buffer = context.channel.allocator.buffer(capacity: body.utf8.count)
                 buffer.writeString(body)
                 context.write(wrapOutboundOut(.body(.byteBuffer(buffer))), promise: nil)
-                context.writeAndFlush(wrapOutboundOut(.end(nil))).whenComplete { _ in context.close(promise: nil) }
+                // The channel, not the context: `ChannelHandlerContext` is not `Sendable` and
+                // must not outlive the call, while `Channel` is and may.
+                let channel = context.channel
+                context.writeAndFlush(wrapOutboundOut(.end(nil))).whenComplete { _ in channel.close(promise: nil) }
             }
         }
     }

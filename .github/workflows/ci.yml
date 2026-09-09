@@ -93,6 +93,19 @@ jobs:
           xcodebuild -project ApexTerminal.xcodeproj -scheme ApexTerminal \
             -configuration Debug -destination "$SIMULATOR" build
 
+      - name: Fail on any warning from the app's own code
+        # The package has had this gate since the beginning; the app target did not, and
+        # collected eleven warnings in its sources and fifty-seven in its UI tests — three
+        # of them Swift 6 actor-isolation warnings that become errors. Building the tests
+        # too, because that is where most of them were, and counting only our own paths so
+        # the gate cannot be passed by ignoring the right files.
+        run: |
+          count=$(xcodebuild -project ApexTerminal.xcodeproj -scheme ApexTerminal \
+            -configuration Debug -destination "$SIMULATOR" build-for-testing 2>&1 \
+            | grep -cE "/(App|AppTests|AppUITests)/.*warning:" || true)
+          echo "app warnings: $count"
+          test "$count" -eq 0
+
       - name: Build (Release, unsigned device)
         run: |
           # Proves the arm64 device build compiles. Signing needs a team, which CI does

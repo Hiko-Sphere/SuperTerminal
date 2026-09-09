@@ -5,7 +5,11 @@ import XCTest
 final class ZZSearchProbeUITests: XCTestCase {
     private lazy var app = XCUIApplication()
 
-    override func setUpWithError() throws {
+    // An override may *add* actor isolation when it is async, because the caller awaits
+    // the hop; `setUpWithError()` cannot, and every line below touches `XCUIApplication`,
+    // which is the main actor's (D-068).
+    @MainActor
+    override func setUp() async throws {
         continueAfterFailure = false
         app.launchEnvironment["ST_UITEST_SEED"] = "1"
         app.launchEnvironment["ST_UITEST_HOST"] = "127.0.0.1"

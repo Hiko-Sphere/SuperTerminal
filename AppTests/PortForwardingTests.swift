@@ -218,7 +218,11 @@ final class ByteCollector: @unchecked Sendable {
     func append(_ new: [UInt8]) { lock.withLock { storage.append(contentsOf: new) } }
 }
 
-private final class CollectingTestHandler: ChannelInboundHandler {
+/// `@unchecked Sendable` because a `ChannelHandler` is not, and NIO's channel initialiser
+/// is: the handler is constructed inside that closure, touches nothing but the collector it
+/// is given — which does its own locking — and is only ever used by the event loop it is
+/// added to.
+private final class CollectingTestHandler: ChannelInboundHandler, @unchecked Sendable {
     typealias InboundIn = ByteBuffer
 
     private let collector: ByteCollector

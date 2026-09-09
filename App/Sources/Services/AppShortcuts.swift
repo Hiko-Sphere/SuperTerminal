@@ -104,6 +104,11 @@ enum AppShortcut: String, CaseIterable, Sendable {
 
     /// Key commands for the terminal view to return from `keyCommands`; `action` must be
     /// a selector taking the `UIKeyCommand`, which carries the shortcut in `propertyList`.
+    ///
+    /// `@MainActor` because `UIKeyCommand` is: every caller is a view or a main-actor test,
+    /// and saying so is what makes this compile without a warning that Swift 6 will turn
+    /// into an error.
+    @MainActor
     static func keyCommands(action: Selector) -> [UIKeyCommand] {
         allCases.map { shortcut in
             let command = UIKeyCommand(title: shortcut.title, action: action, input: shortcut.input,
@@ -113,6 +118,7 @@ enum AppShortcut: String, CaseIterable, Sendable {
         }
     }
 
+    @MainActor
     init?(command: UICommand) {
         guard let raw = command.propertyList as? String, let shortcut = AppShortcut(rawValue: raw) else { return nil }
         self = shortcut

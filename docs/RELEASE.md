@@ -15,7 +15,7 @@ cd ../.. && ./scripts/app-integration-e2e.sh
 ./scripts/live-e2e.sh          # needs the Cloudflare test environment
 ```
 
-- [ ] Zero errors and zero warnings from project code, in Debug **and** Release
+- [ ] Zero errors and zero warnings from project code, in Debug **and** Release (gated in CI for the package and, since D-068, for the app, its unit tests and its UI tests)
 - [ ] Every suite passes, including the live Cloudflare run
 - [ ] `patches/niossh-rsa.patch` still applies to the pinned upstream tag
 - [ ] No placeholder implementations, no committed credentials (both gated in CI)

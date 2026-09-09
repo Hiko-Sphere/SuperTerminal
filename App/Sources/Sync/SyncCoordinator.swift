@@ -129,7 +129,7 @@ final class SyncCoordinator {
                 // a pointer address, in the place that is supposed to say what to do.
                 status = .undetermined(SyncFailure.describe(error))
                 #if DEBUG
-                if let directory = await self?.directory { SyncDiagnostics.record(error, in: directory) }
+                if let directory = self?.directory { SyncDiagnostics.record(error, in: directory) }
                 #endif
             }
             self?.account = status

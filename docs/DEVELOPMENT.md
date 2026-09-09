@@ -91,6 +91,12 @@ CI enforces what the project claims, and the same checks run locally:
 # Zero warnings from our own code (third-party warnings are not counted, and not hidden)
 cd Packages/ApexTerminalKit && swift build 2>&1 | grep -cE "Sources/.*warning:"   # must be 0
 
+# The same for the app, its unit tests and its UI tests. `build-for-testing` because that is
+# where most of them were: the UI test target is compiled by nothing else.
+xcodebuild -project ApexTerminal.xcodeproj -scheme ApexTerminal -configuration Debug \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build-for-testing 2>&1 \
+  | grep -cE "/(App|AppTests|AppUITests)/.*warning:"                              # must be 0
+
 # No placeholder implementations
 grep -rnE "\b(TODO|FIXME)\b|fatalError\(\"not implemented" App/Sources Packages/ApexTerminalKit/Sources --include="*.swift"
 

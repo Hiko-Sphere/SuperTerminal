@@ -3,6 +3,45 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-10 — after D-068 (the app's own warnings, gone and gated)
+
+| Command | Result |
+| --- | --- |
+| `xcodebuild … build-for-testing` warnings from `App/`, `AppTests/`, `AppUITests/`, before | **68** (11 in the app and its unit tests, 57 in the UI tests) |
+| The same, after, from a **clean** build | **0** |
+| `bash scripts/app-integration-e2e.sh` | **335 tests in 64 suites passed**, no restarts |
+| `bash scripts/ui-terminal-e2e.sh` (iPhone 17 Pro) | **56 passed, 2 failed** — both `ZZSearchProbeUITests`, another session's work |
+| `bash scripts/ui-terminal-e2e.sh` (iPad Pro 13-inch M5) | **57 passed, 2 failed** — the same two |
+| Release archive | **ARCHIVE SUCCEEDED**, and **0** warnings from our own code in it |
+
+### A claim that was not true
+
+`docs/RELEASE.md` has said "zero errors and zero warnings from project code, in Debug **and**
+Release" since the checklist was written, and CI enforced exactly that — for the *package*.
+The app target had no such gate and had collected sixty-eight, three of them Swift 6
+actor-isolation warnings of the kind that become errors in a later language mode.
+
+Fifty-seven of them were one mistake repeated in eleven files: `setUpWithError()` cannot be
+`@MainActor`, because it overrides a method that is not, while `XCUIApplication` and the test
+classes both are — so every line of setup touching the app was a warning. Wrapping the body in
+`MainActor.assumeIsolated` fixes the isolation and produces a *different* error, "sending
+`self` risks causing data races", because a non-`Sendable` `self` then crosses the boundary.
+The form that works is the async one: an override may **add** actor isolation when it is
+`async`, because the caller awaits the hop. `override func setUp() async throws`, marked
+`@MainActor` — tried on one file and its two tests run green before the other ten were touched.
+
+The rest were ordinary: a binding never read, an `await` on something that never suspends,
+`UIKeyCommand` touched from a nonisolated context, a lock's result discarded, two NIO handlers
+in test fixtures that needed `@unchecked Sendable` with a reason, and a `ChannelHandlerContext`
+captured by a completion handler where the `Channel` was what was wanted.
+
+### Why the count was wrong the first time
+
+An incremental build showed eleven. A **clean** build showed sixty-eight: the UI test target is
+compiled by nothing else, so its warnings only appear when something builds the tests. The gate
+added to CI runs `build-for-testing` for that reason, and counts only `App/`, `AppTests/` and
+`AppUITests/` paths — a gate that passed by ignoring the right files would be worse than none.
+
 ## 2026-09-10 — after D-067 (a missing translation that says where it came from)
 
 | Command | Result |

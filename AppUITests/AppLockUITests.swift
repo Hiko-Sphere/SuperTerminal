@@ -7,7 +7,11 @@ import XCTest
 final class AppLockUITests: XCTestCase {
     private lazy var app = XCUIApplication()
 
-    override func setUpWithError() throws {
+    // An override may *add* actor isolation when it is async, because the caller awaits
+    // the hop; `setUpWithError()` cannot, and every line below touches `XCUIApplication`,
+    // which is the main actor's (D-068).
+    @MainActor
+    override func setUp() async throws {
         continueAfterFailure = false
         let environment = ProcessInfo.processInfo.environment
         for key in ["ST_UITEST_SEED", "ST_UITEST_HOST", "ST_UITEST_PORT", "ST_UITEST_USER",

@@ -33,7 +33,7 @@ final class AssistantCoordinator {
 
     /// What would answer right now, and why nothing would.
     var availability: AssistantAvailability {
-        if let engine = onDeviceEngine() { return .onDevice }
+        if onDeviceEngine() != nil { return .onDevice }
         if let provider = providerEngine() { return .provider(name: provider.displayName) }
         return .unavailable(reason: unavailabilityReason)
     }

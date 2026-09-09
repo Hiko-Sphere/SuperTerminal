@@ -1399,6 +1399,7 @@ An index, so nothing has to be hunted for:
 | D-062 | `e2b14aa` | OSC 7, 52 and 133, DEC 2026 and 1004, and who is allowed to write the clipboard |
 | D-063 | `c503865` | A font to work in: any monospaced face, a line height, and ligatures off for a reason |
 | D-064 | `0a24b51` | One parameter per spoken phrase, checked in a second rather than at archive time |
-| D-065 | this commit | Pictures in the grid: sixel, Kitty and iTerm2, and the transfers that cannot work over a network |
-| D-066 | this commit | A promise nobody would ever complete, on the path where a peer closes before the handshake |
-| D-067 | this commit | A missing translation that says which build it came from |
+| D-065 | `0efe5e8` | Pictures in the grid: sixel, Kitty and iTerm2, and the transfers that cannot work over a network |
+| D-066 | `277e492` | A promise nobody would ever complete, on the path where a peer closes before the handshake |
+| D-067 | `ea35071` | A missing translation that says which build it came from |
+| D-068 | this commit | The app's own warnings, gone and gated — the claim in RELEASE.md made true |

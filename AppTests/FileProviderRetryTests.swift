@@ -160,7 +160,7 @@ private final class TestKeyStore: SecureStore, @unchecked Sendable {
         }
     }
 
-    func remove(_ key: SecureStoreKey) throws { lock.withLock { items.removeValue(forKey: key) } }
+    func remove(_ key: SecureStoreKey) throws { lock.withLock { _ = items.removeValue(forKey: key) } }
 
     func accounts(inService service: String) throws -> [String] {
         lock.withLock { items.keys.filter { $0.service == service }.map(\.account).sorted() }
