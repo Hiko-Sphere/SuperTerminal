@@ -3,6 +3,30 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-10 — after D-066 (a promise nobody would ever complete)
+
+| Command | Result |
+| --- | --- |
+| `swift test --filter ConnectionFailurePathTests`, before the fix | **SIGTRAP**: `Fatal error: leaking promise created at STSSH/SSHConnection.swift:151` |
+| The same, after | **1 test passed** |
+| `cd Packages/ApexTerminalKit && swift test --no-parallel` | **376 tests in 55 suites** on the tree that carries this — see D-065's table |
+
+`SSHConnection.connect` makes the handshake promise *before* it installs the pipeline, and the
+path where installing fails threw without completing it. In a debug build NIO traps on the
+deallocation; in release it is simply a promise that will never be fulfilled.
+
+It was found by the app suite crashing mid-run — `EXC_BREAKPOINT` in
+`EventLoopFuture.deinit` under `SSHConnection.connect`, in `ReconnectionIntegrationTests`,
+which points a session at a server that is not there. The test alone passes, because whether
+the peer closes before or after the pipeline is built is a race. So the test written for it
+does not race: a transport that hands back a channel it has already closed makes the failure
+happen every time, and ten attempts make sure the deallocation happens inside the test rather
+than after it. Removing the one-line fix turns that test back into a trap, which is how it was
+checked.
+
+The path is not exotic. It is a health-check port, a load balancer with nothing behind it, or
+a server restarting underneath a retry — which is exactly what the reconnection tests do.
+
 ## 2026-09-09 — after D-065 (pictures in the grid)
 
 The numbers below are from one run of the tree that also carries D-066 and D-067 — the two

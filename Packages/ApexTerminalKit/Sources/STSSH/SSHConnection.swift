@@ -225,6 +225,13 @@ public actor SSHConnection {
                 return EventLoopIsolated(sshHandler, eventLoop: channel.eventLoop)
             }.get()
         } catch {
+            // The promise was made before the handlers went in, and nothing has taken it
+            // over yet — so failing it here is what stops it being deallocated unfulfilled.
+            // NIO checks for exactly that in a debug build and traps; in release it is a
+            // promise nobody will ever complete. This path is reached when a peer accepts
+            // and closes before the pipeline is built, which is a health-check port, a load
+            // balancer with no backend, or a server being restarted underneath a retry.
+            readyPromise.fail(error)
             try? await channel.close().get()
             throw STError(
                 category: .sshTransport,
