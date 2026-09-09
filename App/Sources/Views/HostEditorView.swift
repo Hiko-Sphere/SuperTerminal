@@ -37,8 +37,16 @@ struct HostEditorView: View {
     @State private var showsInFiles = false
     @State private var jumpHosts: [UUID] = []
 
-    init(host: Host?) {
+    /// - Parameter startsWithCloudflare: how a *new* connection opens. The add menu asks
+    ///   which kind is being made (D-053), because "SSH server" and "hostname behind
+    ///   Cloudflare Access" are different things to set up and burying the difference in a
+    ///   toggle two thirds of the way down a form made the second one look like an
+    ///   afterthought. Ignored when editing, where the record already says.
+    init(host: Host?, startsWithCloudflare: Bool = false) {
         existing = host
+        if host == nil, startsWithCloudflare {
+            _usesCloudflare = State(initialValue: true)
+        }
         if let host {
             _name = State(initialValue: host.name)
             _hostname = State(initialValue: host.hostname)

@@ -28,7 +28,7 @@ from the first unfinished item rather than starting over.
 
 | # | Item | State |
 | --- | --- | --- |
-| 2.1 | Cloudflare as a first-class connection type | Partly: the transport and Access flow ship (D-001, D-029); the creation flow is still a setting |
+| 2.1 | Cloudflare as a first-class connection type | **Mostly done**: transport and Access flow (D-001, D-029); D-053 adds the split creation flow, the Access diagnostics screen with per-application sign-out, and marks Cloudflare connections in the list. The live end-to-end run against a real tenant remains H-4 and is not claimed |
 | 2.2 | SSH connection multiplexing | Not started |
 | 2.3 | tmux control mode | Not started |
 | 2.4 | Server-to-device channel | Not started |

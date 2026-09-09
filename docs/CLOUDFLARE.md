@@ -262,3 +262,33 @@ Use a separate hostname, a separate Access application and a separate service to
 testing. The app stores tokens per `(hostname, audience)` pair and validates the audience
 before use, so a test token cannot be used against production even by accident — but
 separate credentials mean revoking one does not disturb the other.
+
+## Making one, and finding out why it will not connect
+
+**Adding one.** The **+** menu asks which kind of connection is being made: *New SSH
+Connection* or *New Cloudflare Connection*. They are different things to set up — one wants
+a host and a port, the other a public hostname and a way to sign in — and burying the
+difference in a toggle two thirds of the way down one form made the second look like an
+advanced option rather than a first-class way to reach a server. Choosing Cloudflare opens
+the same editor already set to it; nothing is hidden, and an existing connection can still
+be switched.
+
+**When it does not work.** Long-press a Cloudflare connection and choose **Access
+Diagnostics**. It checks, in the order a connection would, and reports what it actually
+found rather than what the record says:
+
+| Step | What it means |
+| --- | --- |
+| Reaching the hostname | The Cloudflare edge answered at all |
+| Access policy | Which application guards the hostname — or that **none does**, which is reported as something to look at, because the tunnel then works for anyone who can reach it |
+| Team domain | The `…cloudflareaccess.com` domain tokens will be issued by |
+| Session / Service token | Whether the stored credential is valid, expired, missing, or present but **unusable** |
+
+The last distinction is the one worth having. A stored token that will not validate is worse
+than no token: it is the state in which a connection fails with something that looks like
+the server's fault, and the screen says so and offers to sign out of *that application only*
+— someone with two organisations should not lose both sessions to fix one.
+
+Everything on that screen is measured when it runs. The reasoning on top of the measurements
+has its own tests (`AccessDiagnosticsTests`); the measurement itself is `AccessDiscovery`,
+and the end-to-end proof against a real tenant is H-4 in `docs/HUMAN_ACTIONS.md`.

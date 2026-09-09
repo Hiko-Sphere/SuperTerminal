@@ -26,7 +26,7 @@ final class LaunchUITests: XCTestCase {
             "an empty host list must offer a way to add one"
         )
         app.buttons["add-connection"].tap()
-        XCTAssertTrue(app.buttons["New Connection"].waitForExistence(timeout: 5), "and the menu offers a connection")
+        XCTAssertTrue(app.buttons["add-ssh-connection"].waitForExistence(timeout: 5), "and the menu offers a connection")
         XCTAssertTrue(app.buttons["New Screen"].exists, "and a screen")
     }
 
@@ -36,7 +36,7 @@ final class LaunchUITests: XCTestCase {
         app.launch()
 
         app.buttons["add-connection"].tap()
-        app.buttons["New Connection"].tap()
+        app.buttons["add-ssh-connection"].tap()
         XCTAssertTrue(app.navigationBars["New Connection"].waitForExistence(timeout: 5))
         // Save must stay disabled until the form is actually usable, rather than saving
         // a connection that cannot work.

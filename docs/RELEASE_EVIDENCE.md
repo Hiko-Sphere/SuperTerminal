@@ -3,6 +3,48 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-09 — after D-053 (Cloudflare as a connection you choose, and a screen that says why it failed)
+
+| Command | Result |
+| --- | --- |
+| `cd Packages/ApexTerminalKit && swift test --no-parallel` | **285 tests in 42 suites passed** — unchanged, and unchanged *by* this: the work is all in the app |
+| `bash scripts/app-integration-e2e.sh` | **267 tests in 50 suites passed** (261 before; 6 new) |
+| `bash scripts/ui-terminal-e2e.sh` | **48 passed, 2 failed** — both `ZZSearchProbeUITests`, another session's uncommitted work |
+| `bash scripts/localization-audit.sh` | **green**, 28 new strings translated into both Chinese variants |
+| Release archive | **ARCHIVE SUCCEEDED** |
+
+**What changed, and what it is not.** Cloudflare was already a working transport with a
+real Access sign-in (D-001, D-029); what it was not was a *choice*. The **+** menu now asks
+which kind of connection is being made, and the Cloudflare entry opens the editor already
+set to it. That is a small change with a specific point: setting up a hostname behind Access
+and setting up an SSH server are different tasks, and a toggle two thirds of the way down
+one form made the second look like an advanced option.
+
+**The diagnostics screen measures rather than restates.** It probes the hostname when it
+runs and reports what came back, in the order a connection would meet it: did the edge
+answer, is there an Access application, which team domain, and what state the stored
+credential is in. Three of those results are ones a record cannot tell you: a hostname with
+**no** Access application (reported as something to look at — the tunnel works and nothing
+is checking who uses it), a **service token that is missing** (fatal, not a warning: the
+connection cannot open at all), and a stored session that is **present but will not
+validate** — worse than none, because it is the state in which a connection fails with
+something that looks like the server's fault. Sign-out is per application, so someone with
+two organisations does not lose both to fix one.
+
+**Where the tests are, and why there.** The reasoning is a pure function over what came back
+(`AccessDiagnostics`), and it has six tests covering every state including the three above.
+The probe itself is `AccessDiscovery`, which has its own; the end-to-end run against a real
+tenant is `LiveCloudflareE2ETests`, which skips without one and is **H-4** — that part is not
+claimed as done and the plan still says so.
+
+**Three UI tests broke, and they were mine.** Renaming the menu item to "New SSH Connection"
+broke two `LaunchUITests` and one `ServiceTokenUITests` that tapped it by name. Fixed by
+giving the item a stable `accessibilityIdentifier` — the label is translated and has now been
+renamed once, so matching on words was always going to break — and `ServiceTokenUITests` now
+enters through the *Cloudflare* item and **asserts the toggle is already on**, which makes it
+a check that the new entry does what it claims rather than something that tolerates it if it
+does not.
+
 ## 2026-09-09 — after D-052 (agent forwarding, with the phone as the agent)
 
 | Command | Result |

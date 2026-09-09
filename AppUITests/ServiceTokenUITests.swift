@@ -15,13 +15,21 @@ final class ServiceTokenUITests: XCTestCase {
         app.launch()
 
         app.buttons["add-connection"].tap()
-        app.buttons["New Connection"].tap()
+        // The Cloudflare entry, which is how someone sets this up now (D-053): it opens
+        // the same editor already switched to Cloudflare, so the toggle below is expected
+        // to be on rather than needing a tap.
+        app.buttons["add-cloudflare-connection"].tap()
         XCTAssertTrue(app.navigationBars["New Connection"].waitForExistence(timeout: 5))
         let name = "Token host"
         app.textFields["Name"].tap(); app.textFields["Name"].typeText(name)
         app.textFields["Hostname"].tap(); app.textFields["Hostname"].typeText("ssh.example.com")
         app.textFields["Username"].tap(); app.textFields["Username"].typeText("ops")
-        try app.switches["Through Cloudflare Tunnel"].firstMatch.switchOn(in: app)
+        // Already on, because the menu said which kind of connection this is. Asserting
+        // rather than tapping makes this a check that the new entry really does what it
+        // claims, instead of quietly tolerating it if it does not.
+        let cloudflareSwitch = app.switches["Through Cloudflare Tunnel"].firstMatch
+        XCTAssertTrue(cloudflareSwitch.waitForExistence(timeout: 5))
+        XCTAssertEqual(cloudflareSwitch.value as? String, "1", "the Cloudflare entry should open the editor already set to it")
 
         let picker = app.descendants(matching: .any).matching(identifier: "access-auth-picker").firstMatch
         XCTAssertTrue(picker.waitForExistence(timeout: 5))

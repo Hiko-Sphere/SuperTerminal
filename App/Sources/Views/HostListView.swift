@@ -15,6 +15,9 @@ struct HostListView: View {
 
     @State private var searchText = ""
     @State private var editingHost: Host?
+    /// Which kind the add menu asked for, carried to the editor it opens (D-053).
+    @State private var creatingCloudflareConnection = false
+    @State private var diagnosingHost: Host?
     /// The connection whose files are open (D-042).
     @State private var browsingHost: Host?
     @State private var editingScreen: ScreenConnection?
@@ -158,7 +161,24 @@ struct HostListView: View {
                 // Two kinds of connection, so the button asks which (D-027). A menu rather
                 // than a picker inside one editor: the two have almost no fields in common.
                 Menu {
-                    Button("New Connection", systemImage: "terminal") { scene.isCreatingConnection = true }
+                    Button("New SSH Connection", systemImage: "terminal") {
+                        creatingCloudflareConnection = false
+                        scene.isCreatingConnection = true
+                    }
+                    // An identifier as well as a label: the label is translated, and it
+                    // has now been renamed once — a test that matches on the words breaks
+                    // every time the wording improves.
+                    .accessibilityIdentifier("add-ssh-connection")
+                    // A first-class choice rather than a switch inside the form (D-053).
+                    // Reaching a server through Cloudflare Access is a different thing to
+                    // set up — a public hostname, a browser sign-in or a service token, no
+                    // port — and the menu is where someone decides which they are doing.
+                    Button("New Cloudflare Connection", systemImage: "point.3.connected.trianglepath.dotted") {
+                        creatingCloudflareConnection = true
+                        scene.isCreatingConnection = true
+                    }
+                    .accessibilityIdentifier("add-cloudflare-connection")
+                    Divider()
                     Button("New Screen", systemImage: "display") { scene.isCreatingScreen = true }
                 } label: {
                     Label("Add", systemImage: "plus")
@@ -171,7 +191,7 @@ struct HostListView: View {
             }
         }
         .sheet(isPresented: creatingBinding) {
-            HostEditorView(host: nil)
+            HostEditorView(host: nil, startsWithCloudflare: creatingCloudflareConnection)
         }
         .sheet(isPresented: creatingScreenBinding) {
             ScreenEditorView(screen: nil)
@@ -182,6 +202,10 @@ struct HostListView: View {
         }
         .sheet(item: $editingHost) { host in
             HostEditorView(host: host)
+        }
+        .sheet(item: $diagnosingHost) { host in
+            AccessDiagnosticsView(host: host)
+                .environment(container)
         }
         .sheet(item: $editingScreen) { screen in
             ScreenEditorView(screen: screen)
@@ -199,7 +223,8 @@ struct HostListView: View {
             onEdit: { editingHost = host },
             onDelete: { delete(host) },
             onOpenScreen: nil,
-            onOpenFiles: { browsingHost = host }
+            onOpenFiles: { browsingHost = host },
+            onDiagnose: { diagnosingHost = host }
         ) {
             let session = container.sessionManager.open(host)
             container.hostStore.markConnected(host)
@@ -350,6 +375,8 @@ private struct HostRow: View {
     let onOpenScreen: (() -> Void)?
     /// Opens this connection's files (D-042).
     let onOpenFiles: (() -> Void)?
+    /// Present for a Cloudflare connection: checks the Access setup for real (D-053).
+    var onDiagnose: (() -> Void)?
     /// Last, so the call site can pass it as the trailing closure.
     let open: () -> Void
 
@@ -391,6 +418,12 @@ private struct HostRow: View {
             }
             Button("Edit Connection", systemImage: "pencil", action: onEdit)
                 .accessibilityIdentifier("host-edit")
+            if host.transport.isCloudflare, let onDiagnose {
+                // Only where it can say something: for a direct connection there is no
+                // Access application to ask about.
+                Button("Access Diagnostics", systemImage: "stethoscope", action: onDiagnose)
+                    .accessibilityIdentifier("host-access-diagnostics")
+            }
             Button("Delete Connection", systemImage: "trash", role: .destructive, action: onDelete)
         }
         // `.combine`, not `.ignore`: with children ignored the button underneath is no

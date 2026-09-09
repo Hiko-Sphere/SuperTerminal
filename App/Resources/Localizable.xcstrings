@@ -273,6 +273,23 @@
         }
       }
     },
+    "%@. %@. %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@。%@。%@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@。%@。%@"
+          }
+        }
+      }
+    },
     "%@. Will retry as soon as there is one.": {
       "extractionState": "manual",
       "localizations": {
@@ -864,6 +881,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Access"
+          }
+        }
+      }
+    },
+    "Access Diagnostics": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access 诊断"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access 診斷"
+          }
+        }
+      }
+    },
+    "Access policy": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access 策略"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access 政策"
           }
         }
       }
@@ -2058,6 +2109,23 @@
         }
       }
     },
+    "Browser": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "浏览器"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "瀏覽器"
+          }
+        }
+      }
+    },
     "Browser login": {
       "extractionState": "manual",
       "localizations": {
@@ -2245,6 +2313,23 @@
         }
       }
     },
+    "Check again": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新检查"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新檢查"
+          }
+        }
+      }
+    },
     "Check that the port is a VNC server and try again.": {
       "extractionState": "manual",
       "localizations": {
@@ -2347,6 +2432,23 @@
         }
       }
     },
+    "Checked just now, against the hostname itself.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "刚刚针对该主机名本身检查的结果。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "剛剛針對該主機名稱本身檢查的結果。"
+          }
+        }
+      }
+    },
     "Checking Cloudflare Access": {
       "extractionState": "manual",
       "localizations": {
@@ -2360,6 +2462,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "正在檢查 Cloudflare Access"
+          }
+        }
+      }
+    },
+    "Checking…": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在检查…"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在檢查…"
           }
         }
       }
@@ -4506,6 +4625,23 @@
         }
       }
     },
+    "Expired. Connecting will sign in again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已过期。连接时会重新登录。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已過期。連線時會重新登入。"
+          }
+        }
+      }
+    },
     "Expires": {
       "extractionState": "manual",
       "localizations": {
@@ -6308,6 +6444,23 @@
         }
       }
     },
+    "Needs attention": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "需要处理"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "需要處理"
+          }
+        }
+      }
+    },
     "Never": {
       "extractionState": "manual",
       "localizations": {
@@ -6338,6 +6491,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "新增憑發機構"
+          }
+        }
+      }
+    },
+    "New Cloudflare Connection": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新建 Cloudflare 连接"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新增 Cloudflare 連線"
           }
         }
       }
@@ -6423,6 +6593,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "新增金鑰"
+          }
+        }
+      }
+    },
+    "New SSH Connection": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新建 SSH 连接"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新增 SSH 連線"
           }
         }
       }
@@ -6546,6 +6733,23 @@
         }
       }
     },
+    "No Access application guards this hostname. The tunnel still works, but nothing is checking who connects.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "没有 Access 应用程序守护这个主机名。隧道仍然可用，但没有任何机制检查谁在连接。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "沒有 Access 應用程式守護這個主機名稱。通道仍然可用，但沒有任何機制檢查誰在連線。"
+          }
+        }
+      }
+    },
     "No Port Forwards": {
       "extractionState": "manual",
       "localizations": {
@@ -6661,6 +6865,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "尚未在「設定」中設定服務提供者。"
+          }
+        }
+      }
+    },
+    "No service token is stored. Edit the connection and enter its client ID and secret.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未存储服务令牌。请编辑该连接并填入它的 client ID 与 secret。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未儲存服務權杖。請編輯該連線並填入它的 client ID 與 secret。"
           }
         }
       }
@@ -6865,6 +7086,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "本裝置未登入 iCloud。"
+          }
+        }
+      }
+    },
+    "Not signed in yet. Connecting will open the sign-in page.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "尚未登录。连接时会打开登录页面。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "尚未登入。連線時會開啟登入頁面。"
           }
         }
       }
@@ -8331,6 +8569,40 @@
         }
       }
     },
+    "Problem": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "有问题"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "有問題"
+          }
+        }
+      }
+    },
+    "Protected by %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "由 %@ 保护。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "由 %@ 保護。"
+          }
+        }
+      }
+    },
     "Protected by Face ID or Touch ID, so its private half cannot leave this device.": {
       "extractionState": "manual",
       "localizations": {
@@ -8395,6 +8667,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "請透過 SSH 連線或 Cloudflare 通道存取此螢幕（兩者都會加密），或在伺服器上啟用此 App 支援的密碼驗證方式。"
+          }
+        }
+      }
+    },
+    "Reaching the hostname": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "连接主机名"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "連線主機名稱"
           }
         }
       }
@@ -9946,6 +10235,40 @@
         }
       }
     },
+    "Sign out of this application": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "退出此应用程序的登录"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "登出此應用程式"
+          }
+        }
+      }
+    },
+    "Sign-in": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "登录方式"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "登入方式"
+          }
+        }
+      }
+    },
     "Signed by": {
       "extractionState": "manual",
       "localizations": {
@@ -9976,6 +10299,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "正在登入 Cloudflare Access"
+          }
+        }
+      }
+    },
+    "Signs out of %@ only. Other Cloudflare Access applications keep their sessions.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "只退出 %@ 的登录。其他 Cloudflare Access 应用程序的会话会保留。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "只登出 %@。其他 Cloudflare Access 應用程式的工作階段會保留。"
           }
         }
       }
@@ -10303,6 +10643,23 @@
         }
       }
     },
+    "Stored on this device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已保存在本设备上。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已儲存在本裝置上。"
+          }
+        }
+      }
+    },
     "Suggested commands": {
       "extractionState": "manual",
       "localizations": {
@@ -10520,6 +10877,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "輕點此指令片段會立即執行。對於任何你想先核對的內容，請保持關閉。"
+          }
+        }
+      }
+    },
+    "Team domain": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "团队域名"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "團隊網域"
           }
         }
       }
@@ -10775,6 +11149,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "該密碼打不開這份備份。"
+          }
+        }
+      }
+    },
+    "The Cloudflare edge answered.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cloudflare 边缘节点已响应。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cloudflare 邊緣節點已回應。"
           }
         }
       }
@@ -11115,6 +11506,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "host key 已變更"
+          }
+        }
+      }
+    },
+    "The hostname could not be reached.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法连接到该主机名。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法連線到該主機名稱。"
           }
         }
       }
@@ -11659,6 +12067,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "shell 已結束。"
+          }
+        }
+      }
+    },
+    "The stored session could not be validated. Sign out and connect again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已保存的会话无法通过校验。请退出登录后重新连接。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已儲存的工作階段無法通過驗證。請登出後重新連線。"
           }
         }
       }
@@ -13074,6 +13499,23 @@
         }
       }
     },
+    "Valid until %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "有效期至 %@。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "有效期至 %@。"
+          }
+        }
+      }
+    },
     "View": {
       "extractionState": "manual",
       "localizations": {
@@ -13159,6 +13601,23 @@
         }
       }
     },
+    "What is configured": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "当前配置"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "目前設定"
+          }
+        }
+      }
+    },
     "What this backup holds": {
       "extractionState": "manual",
       "localizations": {
@@ -13172,6 +13631,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "這份備份包含什麼"
+          }
+        }
+      }
+    },
+    "What was found": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "检查结果"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "檢查結果"
           }
         }
       }

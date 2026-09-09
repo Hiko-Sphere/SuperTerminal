@@ -12,9 +12,9 @@ delivered. What remains needs the owner: a live Cloudflare environment (B-2), tw
 devices and a production CloudKit schema for the live iCloud checks (B-4 — archiving and
 the entitlements are now proven), and the legal placeholders with counsel review (B-5).
 
-**Last full regression (2026-09-09, after D-052):** package **285 tests in 42 suites** on
+**Last full regression (2026-09-09, after D-053):** package **285 tests in 42 suites** on
 the host (the VNC suites against LibVNCServer); vendored NIOSSH **360 tests, 0 failures**;
-`ApexTerminalTests` **261 in 49 suites**, 0 failed, against a real `sshd` and a containerised
+`ApexTerminalTests` **267 in 50 suites**, 0 failed, against a real `sshd` and a containerised
 OpenSSH with PAM;
 `ApexTerminalUITests` **48 passed, 2 failed** on iPhone 17 Pro, both of them another
 session's `ZZSearchProbeUITests` (D-050); Release **archive succeeded**; localisation audit complete in every language. The per-commit record, with
