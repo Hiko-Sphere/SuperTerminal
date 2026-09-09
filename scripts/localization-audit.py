@@ -18,6 +18,7 @@ import os
 import plistlib
 import sys
 from collections import defaultdict
+from datetime import datetime
 
 LANGUAGES = ("zh-Hans", "zh-Hant")
 
@@ -33,9 +34,17 @@ CATALOGS = {
 }
 
 
-def extracted_keys(derived_data: str) -> dict[str, set[str]]:
-    """Keys the compiler emitted, per module."""
+def extracted_keys(derived_data: str) -> tuple[dict[str, set[str]], dict[tuple[str, str], tuple[str, float]]]:
+    """Keys the compiler emitted, per module, and where each was last seen.
+
+    The provenance is not decoration. Xcode leaves the intermediates of builds nobody runs
+    any more — a device build from a week ago sits beside today's simulator one — and a key
+    that only exists in a stale one is reported as missing for as long as that directory
+    survives. Printing the file and its date next to a missing key turns a false alarm into
+    something a person recognises in a second, without hiding it.
+    """
     found: dict[str, set[str]] = defaultdict(set)
+    seen: dict[tuple[str, str], tuple[str, float]] = {}
     for root, _dirs, files in os.walk(os.path.join(derived_data, "Build", "Intermediates.noindex")):
         # Require the Objects-normal segment: "ApexTerminal.build" is also an ancestor of
         # "ApexTerminalUITests.build", and the test target's strings are not the app's.
@@ -56,11 +65,16 @@ def extracted_keys(derived_data: str) -> dict[str, set[str]]:
                     continue
             if data is None:
                 continue
+            when = os.path.getmtime(path)
             for entries in (data.get("tables") or {}).values():
                 for entry in entries or []:
-                    if entry.get("key"):
-                        found[module].add(entry["key"])
-    return found
+                    key = entry.get("key")
+                    if not key:
+                        continue
+                    found[module].add(key)
+                    if seen.get((module, key), ("", 0.0))[1] < when:
+                        seen[(module, key)] = (path, when)
+    return found, seen
 
 
 def translated_keys(path: str) -> dict[str, set[str]]:
@@ -87,7 +101,7 @@ def main() -> int:
     derived = sys.argv[1]
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-    compiler = extracted_keys(derived)
+    compiler, provenance = extracted_keys(derived)
     failures = 0
     for module, catalog_path in CATALOGS.items():
         keys = compiler.get(module, set())
@@ -105,7 +119,11 @@ def main() -> int:
                 print(f"  {language}: MISSING {len(missing)}")
                 shown = missing if os.environ.get("AUDIT_ALL") else missing[:20]
                 for key in shown:
-                    print(f"      {key!r}")
+                    where, when = provenance.get((module, key), ("", 0.0))
+                    origin = ""
+                    if where:
+                        origin = f"  [{os.path.relpath(where, derived)} · {datetime.fromtimestamp(when):%Y-%m-%d %H:%M}]"
+                    print(f"      {key!r}{origin}")
                 if len(missing) > 20:
                     if len(shown) < len(missing):
                         print(f"      … and {len(missing) - 20} more (AUDIT_ALL=1 lists every key)")

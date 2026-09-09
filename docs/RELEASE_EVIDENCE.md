@@ -3,6 +3,27 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-10 — after D-067 (a missing translation that says where it came from)
+
+| Command | Result |
+| --- | --- |
+| `bash scripts/localization-audit.sh` | **green** |
+| The same audit, with one translation deleted on purpose | reports the key **and** the `.stringsdata` it was extracted from, with that file's date |
+
+The audit spent an hour of this session being wrong. It reported
+`'Run ${snippet} on ${connection} with ${applicationName}'` untranslated in both Chinese
+variants — a phrase D-064 had *replaced*, whose translation had been filed under the new
+wording. The key came from
+`Build/Intermediates.noindex/ApexTerminal.build/Debug-iphoneos/…/ExtractedAppShortcutsMetadata.stringsdata`,
+a device build from **2026-09-08** that nothing has rebuilt since. Xcode leaves the
+intermediates of builds nobody runs any more, and the audit walked all of them.
+
+The fix is not to filter stale directories out — a filter that guesses which build counts can
+hide a real miss, and a false alarm is the safe direction to fail in. It is to make the false
+alarm recognisable in one second instead of an hour: every missing key is now printed with the
+file it was extracted from and that file's date. Verified by deleting one real translation and
+watching the audit name both the key and the archive build it came from.
+
 ## 2026-09-10 — after D-066 (a promise nobody would ever complete)
 
 | Command | Result |

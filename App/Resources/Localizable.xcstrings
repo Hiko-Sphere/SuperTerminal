@@ -9850,25 +9850,25 @@
         }
       }
     },
-    "Run ${snippet} on ${connection} with ${applicationName}": {
+    "Run ${snippet} with ${applicationName}": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "new",
-            "value": "Run ${snippet} on ${connection} with ${applicationName}"
+            "value": "Run ${snippet} with ${applicationName}"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "用${applicationName}在${connection}上运行${snippet}"
+            "value": "用${applicationName}运行${snippet}"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "用${applicationName}在${connection}上執行${snippet}"
+            "value": "用${applicationName}執行${snippet}"
           }
         }
       }

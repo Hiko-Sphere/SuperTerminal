@@ -1401,3 +1401,4 @@ An index, so nothing has to be hunted for:
 | D-064 | `0a24b51` | One parameter per spoken phrase, checked in a second rather than at archive time |
 | D-065 | this commit | Pictures in the grid: sixel, Kitty and iTerm2, and the transfers that cannot work over a network |
 | D-066 | this commit | A promise nobody would ever complete, on the path where a peer closes before the handshake |
+| D-067 | this commit | A missing translation that says which build it came from |
