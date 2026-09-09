@@ -3,6 +3,37 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-09 — after D-064 (a spoken phrase Apple only checks when you archive)
+
+| Command | Result |
+| --- | --- |
+| `xcodebuild … -configuration Release … archive`, before | **ARCHIVE FAILED** — `AppShortcuts.xcstrings:73` and `:80`, *"Multiple parameters detected in phrase. A single phrase can only use a single parameter."* |
+| `./scripts/check-app-shortcut-phrases.py`, on the phrase as it was | **exit 1**, naming the phrase and the count |
+| `./scripts/check-app-shortcut-phrases.py`, after | **exit 0** |
+| `xcodebuild … -configuration Release … archive`, after | **ARCHIVE SUCCEEDED** |
+
+### Why two archives passed with the same defect in them
+
+`AppShortcut` phrases may name **one** parameter. The snippet shortcut added in D-061 named
+two — the snippet *and* the connection — and D-061's and D-062's archives were both green,
+because `appshortcutstringsprocessor` validates the *string catalog*, and Xcode only writes a
+phrase into the catalog when a build extracts it. A build in this session finally did, and the
+next archive refused. The lesson worth keeping is not "run the archive more often": it is that
+this rule can be checked in a fraction of a second, and now is —
+`scripts/check-app-shortcut-phrases.py`, in CI beside the placeholder and key-material greps,
+verified by watching it exit 1 on the phrase as it was and 0 on the phrase as it is.
+
+Siri now hears `Run <snippet> with Apex Terminal` or `Run a snippet on <connection> with Apex
+Terminal`, and asks for whichever of the two was not said. Both phrasings are translated into
+both Chinese variants.
+
+### One failure in the same archive that was not a defect
+
+The same run also lost `CopySwiftLibs`: `bitcode_strip … terminated with uncaught signal 0. The
+command had no output.` It did not recur on the next archive, with two simulators no longer
+running, and nothing in the tree touches it. Recorded as an environment failure rather than
+explained away — if it returns, this is the note that says it has been seen before.
+
 ## 2026-09-09 — after D-063 (the font system)
 
 | Command | Result |

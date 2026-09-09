@@ -96,6 +96,10 @@ grep -rnE "\b(TODO|FIXME)\b|fatalError\(\"not implemented" App/Sources Packages/
 
 # No committed key material
 git grep -nE '^-{5}BEGIN [A-Z ]*PRIVATE KEY-{5}$'
+
+# Spoken App Shortcut phrases name at most one parameter — Apple's validator only says so
+# when the app is archived, which is much too late to find out
+./scripts/check-app-shortcut-phrases.py
 ```
 
 ## Signing

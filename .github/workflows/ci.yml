@@ -51,6 +51,11 @@ jobs:
         working-directory: Packages/ApexTerminalKit
         run: swift test
 
+      - name: App Shortcut phrases name at most one parameter
+        # Apple's own validator says so, but only when the app is archived — which is days
+        # after the mistake is made. This says so in a fraction of a second.
+        run: ./scripts/check-app-shortcut-phrases.py
+
       - name: The bundled third-party notices match the repository copy
         run: cmp THIRD_PARTY_NOTICES.md App/Resources/Legal/THIRD_PARTY_NOTICES.md
       - name: The user guide in docs still matches the one the app ships

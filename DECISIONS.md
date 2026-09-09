@@ -1398,3 +1398,4 @@ An index, so nothing has to be hunted for:
 | D-061 | `088633f` | Links, Spotlight, Handoff and a third shortcut — and what a link is not allowed to do |
 | D-062 | `e2b14aa` | OSC 7, 52 and 133, DEC 2026 and 1004, and who is allowed to write the clipboard |
 | D-063 | this commit | A font to work in: any monospaced face, a line height, and ligatures off for a reason |
+| D-064 | this commit | One parameter per spoken phrase, checked in a second rather than at archive time |

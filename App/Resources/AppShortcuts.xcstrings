@@ -70,6 +70,32 @@
         }
       }
     },
+    "Run ${snippet} with ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Run ${snippet} with ${applicationName}",
+              "Run a snippet on ${connection} with ${applicationName}"
+            ]
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用${applicationName}运行${snippet}"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用${applicationName}執行${snippet}"
+          }
+        }
+      }
+    },
     "SSH to ${connection} with ${applicationName}" : {
       "extractionState" : "stale",
       "localizations" : {

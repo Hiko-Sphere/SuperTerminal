@@ -243,10 +243,16 @@ struct ApexTerminalShortcuts: AppShortcutsProvider {
             shortTitle: "Connect",
             systemImageName: "terminal"
         )
+        // One parameter per phrase, which is Apple's rule and not a stylistic choice:
+        // `appshortcutstringsprocessor` rejects a phrase with two, and it only runs when the
+        // app is archived — so a spoken phrase naming both the snippet and the connection
+        // built and ran perfectly well right up to the point of shipping. Siri asks for
+        // whichever of the two was not said.
         AppIntents.AppShortcut(
             intent: RunSnippetIntent(),
             phrases: [
-                "Run \(\.$snippet) on \(\.$connection) with \(.applicationName)",
+                "Run \(\.$snippet) with \(.applicationName)",
+                "Run a snippet on \(\.$connection) with \(.applicationName)",
             ],
             shortTitle: "Run Snippet",
             systemImageName: "text.badge.plus"
