@@ -244,6 +244,12 @@ final class TerminalSession: Identifiable {
 
     func connect() async {
         guard !isConnected else { return }
+        // Installed here as well as at init, and awaited: the task at init usually wins,
+        // but "usually" is not a guarantee, and a host-key question raised before the
+        // handler exists waits for an answer that can never arrive (D-059).
+        await promptCoordinator.setPromptHandler { [weak self] prompt in
+            Task { @MainActor in self?.state = .awaitingUser(prompt: prompt) }
+        }
         state = .connecting(step: String(localized: "Resolving \(host.hostname)"))
 
         do {

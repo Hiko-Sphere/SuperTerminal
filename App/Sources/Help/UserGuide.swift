@@ -144,6 +144,7 @@ struct UserGuide: Equatable {
         "jump-hosts": "arrow.triangle.branch",
         "terminal": "terminal",
         "panes": "rectangle.split.2x1",
+        "tmux": "square.split.bottomrightquarter",
         "sessions": "square.stack",
         "files": "folder",
         "forwarding": "arrow.left.arrow.right",

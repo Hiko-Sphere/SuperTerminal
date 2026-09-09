@@ -137,6 +137,40 @@ struct TmuxWorkspaceTests {
         }
     }
 
+    @Test("Reattaching shows what a pane already had on it", .timeLimit(.minutes(3)))
+    func reattachShowsExistingContents() async throws {
+        // The behaviour this exists for: control mode sends `%output` only for what a pane
+        // writes *from now on*. A client that relied on it would show a blank pane over a
+        // session that has been running for a week, which is the opposite of why anybody
+        // uses tmux.
+        let server = try TmuxTestServer()
+        defer { server.shutDown() }
+        let connection = try await connect(to: server)
+
+        _ = try await connection.execute(command: "tmux new-session -d -s history")
+        _ = try await connection.execute(
+            command: #"tmux send-keys -t history "printf 'BEFORE_%s\n' ATTACH" Enter"#
+        )
+        // Long enough for the shell to have run it; the assertion below is what proves it.
+        try await Task.sleep(for: .seconds(2))
+
+        let (workspace, shell, pump) = try await workspace(
+            on: connection, command: "tmux -C attach-session -t history"
+        )
+        defer {
+            pump.cancel()
+            Task { await shell.close(); await connection.close() }
+        }
+
+        let showed = await wait(on: workspace) { workspace in
+            let snapshot = await workspace.snapshot()
+            guard let pane = snapshot.windows.first?.panes.first,
+                  let terminal = snapshot.terminal(for: pane) else { return false }
+            return terminal.activeScreen.visibleText.contains("BEFORE_ATTACH")
+        }
+        #expect(showed, "the pane should show what was printed before this client attached")
+    }
+
     @Test("Splitting adds a pane and a terminal for it", .timeLimit(.minutes(3)))
     func splittingAddsAPane() async throws {
         let server = try TmuxTestServer()
@@ -171,6 +205,37 @@ struct TmuxWorkspaceTests {
         #expect(window.panes.count == 2)
         let heights = window.panes.map { snapshot.size(of: $0)?.rows ?? 0 }
         #expect(heights.reduce(0, +) < 30, "two panes share the window's rows, got \(heights)")
+    }
+
+    @Test("The active pane is tmux's, not a guess", .timeLimit(.minutes(3)))
+    func activePaneFollowsTmux() async throws {
+        let server = try TmuxTestServer()
+        defer { server.shutDown() }
+        let connection = try await connect(to: server)
+        let (workspace, shell, pump) = try await workspace(on: connection, command: "tmux -C new-session -s active")
+        defer {
+            pump.cancel()
+            Task { await shell.close(); await connection.close() }
+        }
+
+        try await workspace.perform("split-window")
+        // Splitting makes the *new* pane active, which a client that assumed "the first
+        // one" would get wrong — and then its focus ring would sit on one pane while every
+        // tmux command acted on another.
+        let selected = await wait(on: workspace) { workspace in
+            let snapshot = await workspace.snapshot()
+            guard let window = snapshot.windows.first, window.panes.count == 2 else { return false }
+            return window.activePane == window.panes[1]
+        }
+        #expect(selected, "the new pane should be the active one")
+
+        try await workspace.perform("select-pane -t 0")
+        let movedBack = await wait(on: workspace) { workspace in
+            let snapshot = await workspace.snapshot()
+            guard let window = snapshot.windows.first else { return false }
+            return window.activePane == window.panes.first
+        }
+        #expect(movedBack, "selecting a pane should move the active one")
     }
 
     @Test("What is typed reaches the shell, and what it prints reaches the terminal",

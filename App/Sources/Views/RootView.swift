@@ -293,7 +293,8 @@ struct RootView: View {
         NavigationStack(path: $path) {
             HostListView(
                 onOpen: { session in path.append(.terminal(session.id)) },
-                onOpenScreen: { screen in path.append(.screen(screen.id)) }
+                onOpenScreen: { screen in path.append(.screen(screen.id)) },
+                onOpenTmux: { session in path.append(.tmux(session.id)) }
             )
             .navigationDestination(for: SessionRoute.self) { route in
                 // A phone splits too (D-056). Panes were built into the split view's detail
@@ -326,6 +327,16 @@ struct RootView: View {
                                 title: String(localized: "Screen closed"),
                                 message: String(localized: "This screen is no longer open."),
                                 systemImage: "display"
+                            )
+                        }
+                    case let .tmux(id):
+                        if let session = container.tmux.session(withID: id) {
+                            TmuxWindowView(session: session, wantsKeyboard: true)
+                        } else {
+                            EmptyStateView(
+                                title: String(localized: "Session ended"),
+                                message: String(localized: "This tmux session is no longer attached."),
+                                systemImage: "square.split.bottomrightquarter"
                             )
                         }
                     }
@@ -363,6 +374,8 @@ struct RootView: View {
                         layout = PaneLayout(content: .screen(screen.id))
                     } else if let session = container.sessionManager.session(withID: scene.selectedSessionID) {
                         layout = PaneLayout(content: .terminal(session.id))
+                    } else if let session = container.tmux.session(withID: scene.selectedTmuxSessionID) {
+                        layout = PaneLayout(content: .tmux(session.id))
                     }
                 }
                 return layout
@@ -386,6 +399,20 @@ struct RootView: View {
                         title: String(localized: "Session ended"),
                         message: String(localized: "This session is no longer open. Close the pane, or choose a connection."),
                         systemImage: "terminal"
+                    )
+                )
+            }
+        case let .tmux(id):
+            if let session = container.tmux.session(withID: id) {
+                wrappedInItsOwnStack
+                    ? AnyView(NavigationStack { TmuxWindowView(session: session, wantsKeyboard: true) })
+                    : AnyView(TmuxWindowView(session: session, wantsKeyboard: true))
+            } else {
+                AnyView(
+                    EmptyStateView(
+                        title: String(localized: "Session ended"),
+                        message: String(localized: "This tmux session is no longer attached. Open the connection again to attach to it."),
+                        systemImage: "square.split.bottomrightquarter"
                     )
                 )
             }
@@ -459,6 +486,7 @@ struct ApexTerminalCommands: Commands {
 enum SessionRoute: Hashable {
     case terminal(TerminalSession.ID)
     case screen(VNCSession.ID)
+    case tmux(UUID)
 
     /// The same thing, said in the pane tree's vocabulary — so a pushed route can ask
     /// whether the arrangement on screen is showing it.
@@ -466,6 +494,7 @@ enum SessionRoute: Hashable {
         switch self {
         case let .terminal(id): .terminal(id)
         case let .screen(id): .screen(id)
+        case let .tmux(id): .tmux(id)
         }
     }
 }

@@ -22,6 +22,9 @@ struct HostEditorFields: Equatable {
     var showsInFiles: Bool
     var jumpHosts: [UUID]
     var forwardsAgent: Bool
+    var usesTmux: Bool
+    /// Blank means the default session name.
+    var tmuxSessionName: String
 }
 
 extension Host {
@@ -47,6 +50,11 @@ extension Host {
             return false
         }) ? true : nil
         host.jumpHosts = fields.jumpHosts.isEmpty ? nil : fields.jumpHosts
+        host.usesTmux = fields.usesTmux ? true : nil
+        // A name is only meaningful while tmux is on, and one left behind by a toggle
+        // switched off would come back with it and surprise somebody.
+        let tmuxName = fields.tmuxSessionName.trimmingCharacters(in: .whitespacesAndNewlines)
+        host.tmuxSessionName = fields.usesTmux && !tmuxName.isEmpty ? tmuxName : nil
         return host
     }
 }

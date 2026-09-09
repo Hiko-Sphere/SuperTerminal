@@ -19,6 +19,9 @@ final class SceneState {
     /// terminal. Selecting a session clears it, and the other way round.
     var selectedScreenID: VNCSession.ID?
 
+    /// The tmux session this window is showing, if it is showing one (D-059).
+    var selectedTmuxSessionID: UUID?
+
     /// Whether this window is showing the new-connection sheet.
     ///
     /// Per window, because ⌘N used to be a broadcast notification: with two windows open
@@ -50,13 +53,22 @@ final class SceneState {
     func show(terminal id: TerminalSession.ID) {
         selectedSessionID = id
         selectedScreenID = nil
+        selectedTmuxSessionID = nil
         panes.show(.terminal(id))
     }
 
     func show(screen id: VNCSession.ID) {
         selectedScreenID = id
         selectedSessionID = nil
+        selectedTmuxSessionID = nil
         panes.show(.screen(id))
+    }
+
+    func show(tmux id: UUID) {
+        selectedTmuxSessionID = id
+        selectedSessionID = nil
+        selectedScreenID = nil
+        panes.show(.tmux(id))
     }
 
     init(selectedSessionID: TerminalSession.ID? = nil) {

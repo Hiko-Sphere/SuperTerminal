@@ -84,7 +84,9 @@ struct HostEditingTests {
             platformOverride: nil,
             showsInFiles: false,
             jumpHosts: [],
-            forwardsAgent: false
+            forwardsAgent: false,
+            usesTmux: false,
+            tmuxSessionName: ""
         )
     }
 

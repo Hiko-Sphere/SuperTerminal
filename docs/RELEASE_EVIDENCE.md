@@ -3,6 +3,79 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-09 — after D-059 (tmux in the app)
+
+| Command | Result |
+| --- | --- |
+| `cd Packages/ApexTerminalKit && swift test --no-parallel` | **329 tests in 48 suites, 4 failed** — all four are `SecureEnclaveKeyTests`, and all four are this machine (see below) |
+| `cd Packages/swift-nio-ssh-rsa && swift test` | **360 tests, 0 failures** |
+| `bash scripts/app-integration-e2e.sh` | **300 tests in 58 suites passed** (292 in 54 before) — including `TmuxAttachTests`, which connects to a real tmux over a real SSH connection, types, reads the shell's output back out of the pane's terminal, scrolls its history, splits, and detaches |
+| `bash scripts/ui-terminal-e2e.sh` (iPhone 17 Pro) | **52 passed, 2 failed** — both `ZZSearchProbeUITests`, another session's uncommitted work |
+| `bash scripts/ui-terminal-e2e.sh` (iPad Pro 13-inch M5) | **52 passed, 3 failed** — the same two, plus `TutorialUITests.testSkippingEndsItAndSettingsBringsItBack`, which failed once here and passed on a targeted re-run of that suite on the same device. Nothing in this change touches the tour; it is recorded rather than explained away |
+| `bash scripts/localization-audit.sh` | **green**; 20 new strings translated into both Chinese variants |
+| Release archive | **ARCHIVE SUCCEEDED** |
+
+### What the app does now
+
+A connection with **Attach to tmux** on opens `tmux -C new-session -A -s <name>` on a
+command channel instead of starting a shell. tmux's windows and panes are drawn where tmux
+says they are — from its own cell rectangles, not converted into the app's pane tree,
+because the server owns the arrangement in a tmux session and a binary tree cannot express
+every arrangement tmux can. Typing goes back as `send-keys -H`; the toolbar lists the
+windows, makes new ones, splits, closes panes, and detaches without killing anything.
+
+### Two things control mode does not do, and what the app does instead
+
+**A reattached pane would have been blank.** `%output` carries what a pane writes *from
+now on*, so attaching to a session that has been running for a week shows nothing until
+something new is printed — the opposite of why anybody uses tmux. Each pane's terminal is
+now seeded once, when it appears, with `capture-pane -p -e -J -S -2000`: colours and
+attributes kept, wrapped lines rejoined, history included. A test attaches to a session
+that printed something before this client existed and requires that text to be on screen.
+
+**Scrolling through tmux's copy mode would have scrolled a screen nobody can see.** The
+obvious implementation — `copy-mode -e` then `send-keys -X scroll-up` — *works*, in the
+sense that tmux scrolls: measured, `pane_in_mode` becomes 1 and `scroll_position` reaches
+40. It sends the control client **nothing at all**, because copy mode is a view in tmux's
+own terminal rather than something a pane writes, so the app's picture never changed. It
+was implemented that way first, and the test that said the view had not moved is what
+found it. Scrolling is local now, over the history each pane was seeded with, and typing
+returns the view to the newest output.
+
+### A race in the older sessions, found by the new one
+
+`TmuxAttachTests` failed with "I/O on closed channel", and the container's own `sshd` log
+showed the client closing the connection immediately after `SSH2_MSG_NEWKEYS` — before
+authentication. The cause was the prompt coordinator: the handler that surfaces a host-key
+question was installed from a detached `Task` in `init`, and a `connect()` called straight
+afterwards could ask before it existed. The question then went nowhere.
+
+`TerminalSession` and `VNCSession` install theirs the same way. They have never been seen
+to fail, because their `connect()` is called from a view's `.task` long after `init` — but
+"long after" is not a guarantee, and the failure mode is a connection that waits for an
+answer nobody can give. All three now install the handler at the top of `connect()`, awaited.
+
+The test answers the question the way a person would, approving the container's unseen host
+key, rather than pre-seeding a store to skip it.
+
+### Four package tests could not run on this machine, and why that is not a defect
+
+`SecureEnclaveKeyTests` (4 of its 8) failed with `errSecInteractionNotAllowed` (-25308)
+from `SecKeyCreateRandomKey`: the host's Secure Enclave would not generate a key at all.
+The same four passed in this session's earlier runs — 322 and 327 tests green, both
+including them — and they fail identically with **every change in this slice stashed**, on
+a clean checkout. Nothing here touches that path. It is the machine's keychain state, not
+the code, and it is recorded rather than left out.
+
+### A test that was wrong about how UI tests get their environment
+
+`TmuxUITests` could not find the seeded connection. The app under test is a separate
+process and inherits **none** of the runner's environment: the existing tests hand every
+variable over through `launchEnvironment`, and this one passed only the tmux ones. Traced
+by adding a temporary probe that reported what the app could see —
+`ST_UITEST_TMUX_PASSWORD, ST_UITEST_TMUX_PORT, ST_UITEST_TMUX_USER` and nothing else,
+which is exactly the list the test had set. The probe was removed once it had answered.
+
 ## 2026-09-09 — after D-058 (the tmux workspace: windows, panes and terminals)
 
 | Command | Result |

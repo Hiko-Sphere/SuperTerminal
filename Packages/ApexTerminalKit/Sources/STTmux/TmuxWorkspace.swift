@@ -22,6 +22,9 @@ public actor TmuxWorkspace {
         public let id: TmuxWindowID
         public var name: String
         public var layout: TmuxLayout
+        /// The pane tmux considers active in this window. A client that guessed would put
+        /// its focus ring on one pane while tmux's own commands acted on another.
+        public var activePane: TmuxPaneID?
         public var panes: [TmuxPaneID] { layout.panes.map(\.id) }
     }
 
@@ -36,6 +39,17 @@ public actor TmuxWorkspace {
     private let control: TmuxControlSession
     private let log: STLogger
     private var terminals: [TmuxPaneID: TerminalEmulator] = [:]
+    /// Panes whose existing contents have already been fetched.
+    ///
+    /// Control mode sends `%output` only for what a pane writes *from now on*. Attaching
+    /// to a session that has been running for a week therefore shows nothing at all until
+    /// something new is printed — measured, and the reason this exists: a pane's current
+    /// screen and history are asked for once, with `capture-pane`, and fed to its terminal
+    /// as if the pane had just written them.
+    private var captured: Set<TmuxPaneID> = []
+    /// How much history to ask for. tmux's own default `history-limit` is 2000 lines, and
+    /// asking for more than the pane has is not an error.
+    private let historyLines: Int
     private var windowsByID: [TmuxWindowID: Window] = [:]
     private var pump: Task<Void, Never>?
 
@@ -74,10 +88,12 @@ public actor TmuxWorkspace {
     public init(
         control: TmuxControlSession,
         size: (columns: Int, rows: Int) = (80, 24),
+        historyLines: Int = 2000,
         log: STLogger = .disabled
     ) {
         self.control = control
         self.log = log
+        self.historyLines = historyLines
         clientSize = size
         var continuation: AsyncStream<Event>.Continuation!
         events = AsyncStream { continuation = $0 }
@@ -217,6 +233,22 @@ public actor TmuxWorkspace {
                 continue
             }
 
+            // Which pane is active is a pane fact, not a window one, so it takes a second
+            // question. Asked inside the same guarded round as the layouts so the two
+            // describe the same moment.
+            let paneLines = (try? await control.send(
+                ##"list-panes -a -F "#{window_id} #{pane_id} #{pane_active}""##
+            )) ?? []
+            var activePanes: [TmuxWindowID: TmuxPaneID] = [:]
+            for line in paneLines {
+                let fields = line.split(separator: " ")
+                guard fields.count >= 3, fields[2] == "1",
+                      let window = TmuxControlParser.windowID(String(fields[0])),
+                      let pane = TmuxControlParser.paneID(String(fields[1]))
+                else { continue }
+                activePanes[window] = pane
+            }
+
             var rebuilt: [TmuxWindowID: Window] = [:]
             for line in lines {
                 let fields = line.split(separator: " ", maxSplits: 2, omittingEmptySubsequences: false)
@@ -231,7 +263,8 @@ public actor TmuxWorkspace {
                     rebuilt[id] = Window(
                         id: id,
                         name: fields.count > 2 ? String(fields[2]) : "",
-                        layout: layout
+                        layout: layout,
+                        activePane: activePanes[id] ?? layout.panes.first?.id
                     )
                 } catch {
                     // A layout that will not parse is reported and the window is dropped
@@ -247,6 +280,7 @@ public actor TmuxWorkspace {
             appliedLayoutSequence = max(appliedLayoutSequence, sequence)
             reconcileTerminals()
             eventContinuation?.yield(.windowsChanged)
+            await captureNewPanes()
         } while reloadAgain
     }
 
@@ -275,15 +309,25 @@ public actor TmuxWorkspace {
                 let parsed = try TmuxLayout.parse(layout)
                 if var existing = windowsByID[window] {
                     existing.layout = parsed
+                    // A pane that has gone cannot stay active.
+                    if let active = existing.activePane, !parsed.panes.contains(where: { $0.id == active }) {
+                        existing.activePane = parsed.panes.first?.id
+                    }
                     windowsByID[window] = existing
                 } else {
-                    windowsByID[window] = Window(id: window, name: "", layout: parsed)
+                    windowsByID[window] = Window(
+                        id: window,
+                        name: "",
+                        layout: parsed,
+                        activePane: parsed.panes.first?.id
+                    )
                 }
                 // Newer than anything a reload could still be waiting for.
                 stateGeneration += 1
                 appliedLayoutSequence = event.layoutSequence
                 reconcileTerminals()
                 eventContinuation?.yield(.windowsChanged)
+                await captureNewPanes()
             } catch {
                 log.error("a layout change could not be parsed", ["error": String(describing: error)])
             }
@@ -291,6 +335,14 @@ public actor TmuxWorkspace {
         case let .windowRenamed(window, name):
             guard var existing = windowsByID[window] else { return }
             existing.name = name
+            windowsByID[window] = existing
+            stateGeneration += 1
+            appliedLayoutSequence = max(appliedLayoutSequence, event.layoutSequence)
+            eventContinuation?.yield(.windowsChanged)
+
+        case let .windowPaneChanged(window, pane):
+            guard var existing = windowsByID[window] else { return }
+            existing.activePane = pane
             windowsByID[window] = existing
             stateGeneration += 1
             appliedLayoutSequence = max(appliedLayoutSequence, event.layoutSequence)
@@ -307,6 +359,33 @@ public actor TmuxWorkspace {
 
         default:
             break
+        }
+    }
+
+    /// Fetches what each new pane already has on it, once.
+    ///
+    /// `-e` keeps the colours and attributes, `-J` rejoins lines tmux wrapped, and `-S`
+    /// reaches back into the history. The result is fed to the pane's terminal like any
+    /// other output, so a reattached pane looks the way it did when it was left rather
+    /// than blank.
+    private func captureNewPanes() async {
+        let wanted = Set(terminals.keys).subtracting(captured)
+        for pane in wanted.sorted(by: { $0.number < $1.number }) {
+            captured.insert(pane)
+            do {
+                let lines = try await control.send(
+                    "capture-pane -p -e -J -S -\(historyLines) -t \(pane)"
+                )
+                guard !lines.isEmpty else { continue }
+                // Newlines between the lines but not after the last, so the cursor stays
+                // where tmux left it rather than one row lower.
+                feed(Array(lines.joined(separator: "\r\n").utf8), into: pane)
+            } catch {
+                // A pane that has gone between the layout and this question is not a
+                // failure; the arrangement will catch up.
+                log.debug("a pane's contents could not be captured", ["pane": pane.description])
+                captured.remove(pane)
+            }
         }
     }
 
@@ -336,6 +415,7 @@ public actor TmuxWorkspace {
         }
         for id in terminals.keys where !wanted.contains(id) {
             terminals.removeValue(forKey: id)
+            captured.remove(id)
         }
     }
 

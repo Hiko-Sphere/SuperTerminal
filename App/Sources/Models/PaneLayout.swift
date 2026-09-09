@@ -16,10 +16,14 @@ struct PaneLayout: Equatable, Sendable {
     enum Content: Equatable, Hashable, Sendable {
         case terminal(UUID)
         case screen(UUID)
+        /// A tmux session, whose own windows and panes are drawn inside this one (D-059).
+        /// The app does not split a tmux pane: in a tmux session the server owns the
+        /// arrangement, and two things deciding it would fight.
+        case tmux(UUID)
 
         var sessionID: UUID {
             switch self {
-            case let .terminal(id), let .screen(id): id
+            case let .terminal(id), let .screen(id), let .tmux(id): id
             }
         }
     }

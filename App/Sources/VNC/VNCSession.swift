@@ -135,6 +135,11 @@ final class VNCSession: Identifiable {
 
     func connect() async {
         guard !isConnected else { return }
+        // As in `TerminalSession`: awaited here so a question cannot be raised before
+        // anything can answer it (D-059).
+        await prompts.setPromptHandler { [weak self] prompt in
+            Task { @MainActor in self?.state = .awaitingUser(prompt: prompt) }
+        }
         state = .connecting(step: String(localized: "Resolving \(screen.address)"))
         do {
             var password = screen.hasPassword ? try vault.loadVNCPassword(screenID: screen.id) : nil

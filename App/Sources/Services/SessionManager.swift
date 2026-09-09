@@ -131,6 +131,27 @@ final class SessionManager {
         )
     }
 
+    /// The connector and prompt coordinator for a tmux session (D-059).
+    ///
+    /// Built here for the same reason the file browser's is: this is where the event-loop
+    /// group, the vault, the known-hosts store and the connection pool already are. Its own
+    /// prompt coordinator, so a host-key question raised while attaching does not land on
+    /// a terminal's screen.
+    func makeTmuxConnector(for host: Host) -> (connector: HostConnector, prompts: PromptCoordinator) {
+        let prompts = PromptCoordinator()
+        return (
+            HostConnector(
+                host: host, group: group, vault: vault, knownHosts: knownHosts,
+                log: diagnostics.logger, prompts: prompts,
+                keyRecord: keyRecord,
+                certificateAuthorities: certificateAuthorities(),
+                hostByID: hostByID,
+                pool: pool
+            ),
+            prompts
+        )
+    }
+
     @discardableResult
     func open(_ host: Host) -> TerminalSession {
         let session = TerminalSession(

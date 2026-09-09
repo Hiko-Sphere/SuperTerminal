@@ -21,6 +21,11 @@ enum UITestSeeding {
         let keyID: UUID
         /// The harness's screen server, reached through the seeded connection (D-027).
         let screen: ScreenConnection?
+        /// A connection that attaches to tmux, when the harness started a server with
+        /// tmux on it (D-059). Its own host and password: the machine running the tests
+        /// has no tmux, so this one is a container.
+        let tmuxHost: Host?
+        let tmuxPassword: String?
     }
 
     static var seedFromEnvironment: Seed? {
@@ -69,7 +74,21 @@ enum UITestSeeding {
                     port: port,
                     route: .throughSSH(hostID: UUID(uuidString: "00000000-0000-4000-A000-000000000002")!)
                 )
-            }
+            },
+            tmuxHost: environment["ST_UITEST_TMUX_PORT"].flatMap { Int($0) }.map { port in
+                Host(
+                    id: UUID(uuidString: "00000000-0000-4000-A000-000000000005")!,
+                    name: "tmux Test Server",
+                    hostname: "127.0.0.1",
+                    port: port,
+                    username: environment["ST_UITEST_TMUX_USER"] ?? "tmuxtest",
+                    transport: .directTCP,
+                    credentials: [.password],
+                    usesTmux: true,
+                    tmuxSessionName: "uitest"
+                )
+            },
+            tmuxPassword: environment["ST_UITEST_TMUX_PASSWORD"]
         )
     }
 
@@ -154,6 +173,12 @@ enum UITestSeeding {
         container.hostStore.add(seed.host)
         for host in extraHostsFromEnvironment { container.hostStore.add(host) }
         if let screen = seed.screen { container.screenStore.add(screen) }
+        if let tmuxHost = seed.tmuxHost {
+            if let password = seed.tmuxPassword {
+                try? container.vault.storePassword(password, hostID: tmuxHost.id)
+            }
+            container.hostStore.add(tmuxHost)
+        }
     }
 
     /// Whether host keys should be trusted without asking, so a UI run is not blocked by

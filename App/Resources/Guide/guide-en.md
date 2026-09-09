@@ -175,6 +175,29 @@ Tapping a connection in the list replaces the arrangement rather than adding to 
 splitting is a deliberate action, not something that happens because you opened
 something.
 
+<!-- topic: tmux -->
+## tmux
+
+Turn on **Attach to tmux** for a connection and opening it attaches to a tmux session on
+the server instead of starting a plain shell — creating that session if it is not there.
+What is running keeps running when you disconnect, and picking the connection up again on
+another device finds it exactly where you left it.
+
+In a tmux session the *server* owns the arrangement. The panes on screen are tmux's own
+windows and panes, drawn where tmux says they are, so an arrangement made from a laptop is
+the arrangement you see here. The **tmux** menu in the toolbar lists the windows, makes new
+ones, splits and closes panes, and detaches.
+
+- **Detach** leaves everything running. It is not the same as disconnecting by accident,
+  and it is the normal way to put the session down.
+- The session is named in the connection's settings. Leave it blank for `apex`; give it a
+  name to keep separate sets of work apart.
+- tmux must be installed on the server. If it is not, the app says so rather than dropping
+  you into a shell you did not ask for.
+
+The app's own split panes (⌘D) are for ordinary sessions. Inside tmux, use tmux's — two
+things deciding one layout would fight, and the server would win.
+
 <!-- topic: sessions -->
 ## Sessions and reused connections
 

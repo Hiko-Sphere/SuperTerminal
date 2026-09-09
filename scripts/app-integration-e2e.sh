@@ -26,6 +26,9 @@ cleanup() {
   if [[ -n "${KBDI_CONTAINER:-}" ]]; then
     docker rm -f "$KBDI_CONTAINER" >/dev/null 2>&1 || true
   fi
+  if [[ -n "${TMUX_CONTAINER:-}" ]]; then
+    docker rm -f "$TMUX_CONTAINER" >/dev/null 2>&1 || true
+  fi
   rm -rf "$WORK"
 }
 trap cleanup EXIT
@@ -125,6 +128,44 @@ DOCKERFILE
   fi
 fi
 
+# A fourth server, with tmux behind it (D-059). This machine has no tmux, and the app's
+# tmux session has to be driven against a real one to mean anything. Skipped without
+# Docker, like the keyboard-interactive one.
+TMUX_CONTAINER=""
+TMUX_PORT=""
+if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
+  TMUX_CONTAINER="st-tmux-app-$$"
+  if ! docker image inspect apexterminal-tmux:2 >/dev/null 2>&1; then
+    echo "building the tmux image (first run only)…"
+    docker build -q -t apexterminal-tmux:2 - > /dev/null <<'DOCKERFILE'
+FROM debian:bookworm-slim
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends openssh-server tmux \
+ && rm -rf /var/lib/apt/lists/* \
+ && mkdir -p /run/sshd
+RUN useradd -m -s /bin/bash tmuxtest \
+ && echo 'tmuxtest:correct horse battery staple' | chpasswd
+RUN printf '%s\n' \
+      'Port 22' 'PermitRootLogin no' 'PubkeyAuthentication no' \
+      'PasswordAuthentication yes' 'LogLevel DEBUG1' \
+    > /etc/ssh/sshd_config.d/tmux.conf
+RUN ssh-keygen -A
+CMD ["/usr/sbin/sshd", "-D", "-e"]
+DOCKERFILE
+  fi
+  for candidate in $(seq 8450 8499); do
+    if docker run --rm -d --name "$TMUX_CONTAINER" -p "127.0.0.1:$candidate:22" apexterminal-tmux:2 >/dev/null 2>&1; then
+      TMUX_PORT="$candidate"
+      break
+    fi
+    docker rm -f "$TMUX_CONTAINER" >/dev/null 2>&1 || true
+  done
+  if [[ -z "$TMUX_PORT" ]]; then
+    echo "could not start the tmux container; its tests will skip"
+    TMUX_CONTAINER=""
+  fi
+fi
+
 /usr/sbin/sshd -f "$WORK/sshd_config" -D -e > "$WORK/sshd.log" 2>&1 &
 echo $! > "$WORK/sshd.pid"
 
@@ -190,6 +231,9 @@ env \
   TEST_RUNNER_ST_APP_TEST_KBDI_USER="kbdtest" \
   TEST_RUNNER_ST_APP_TEST_KBDI_PASSWORD="correct horse battery staple" \
   TEST_RUNNER_ST_APP_TEST_KBDI_SECRET="GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ" \
+  TEST_RUNNER_ST_APP_TEST_TMUX_PORT="${TMUX_PORT:-}" \
+  TEST_RUNNER_ST_APP_TEST_TMUX_USER="tmuxtest" \
+  TEST_RUNNER_ST_APP_TEST_TMUX_PASSWORD="correct horse battery staple" \
   xcodebuild test \
     -project ApexTerminal.xcodeproj \
     -scheme ApexTerminal \

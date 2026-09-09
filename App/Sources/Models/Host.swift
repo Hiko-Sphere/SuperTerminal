@@ -72,6 +72,16 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
     public var forwardsAgent: Bool?
     /// Whether the agent is offered on this connection right now.
     public var isForwardingAgent: Bool { forwardsAgent ?? false }
+    /// Whether opening this connection attaches to tmux instead of starting a plain shell
+    /// (D-059).
+    ///
+    /// Optional so older records decode, and off unless asked for: tmux changes what a
+    /// session *is* — the work survives the connection, and the arrangement on screen is
+    /// the server's rather than the app's — which is a choice to make deliberately.
+    public var usesTmux: Bool?
+    public var isUsingTmux: Bool { usesTmux ?? false }
+    /// The tmux session to attach to, created if it is not there. Blank means `apex`.
+    public var tmuxSessionName: String?
     /// When this record last changed, on any device. Drives last-writer-wins in sync.
     ///
     /// Optional on purpose: files written before sync existed have no such field, and a
@@ -152,6 +162,8 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
         detectedPlatform: HostPlatform? = nil,
         showsInFiles: Bool? = nil,
         forwardsAgent: Bool? = nil,
+        usesTmux: Bool? = nil,
+        tmuxSessionName: String? = nil,
         portForwards: [PortForward]? = nil,
         jumpHosts: [UUID]? = nil
     ) {
@@ -173,6 +185,8 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
         self.detectedPlatform = detectedPlatform
         self.showsInFiles = showsInFiles
         self.forwardsAgent = forwardsAgent
+        self.usesTmux = usesTmux
+        self.tmuxSessionName = tmuxSessionName
         self.portForwards = portForwards
         self.jumpHosts = jumpHosts
     }

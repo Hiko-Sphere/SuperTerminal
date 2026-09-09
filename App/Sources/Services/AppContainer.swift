@@ -50,6 +50,8 @@ final class AppContainer {
     let assistant: AssistantCoordinator
     /// Remote screens (D-022), kept apart from the terminal sessions.
     let screens: VNCSessionManager
+    /// tmux sessions, one per connection that asked for tmux (D-059).
+    let tmux: TmuxSessionManager
     /// The app lock (D-023) and the windows it is shown in.
     let appLock: AppLock
     let lockWindows = AppLockWindows()
@@ -78,6 +80,7 @@ final class AppContainer {
         shortcuts: AppShortcutRouter,
         assistant: AssistantCoordinator,
         screens: VNCSessionManager,
+        tmux: TmuxSessionManager,
         appLock: AppLock
     ) {
         self.hostStore = hostStore
@@ -95,6 +98,7 @@ final class AppContainer {
         self.shortcuts = shortcuts
         self.assistant = assistant
         self.screens = screens
+        self.tmux = tmux
         self.appLock = appLock
     }
 
@@ -145,6 +149,7 @@ final class AppContainer {
         let shortcuts = AppShortcutRouter(sessionManager: sessionManager, settings: settings)
         let assistant = AssistantCoordinator(settings: settings, vault: vault, log: diagnostics.logger)
         let screens = VNCSessionManager(vault: vault, knownHosts: knownHosts, diagnostics: diagnostics, haptics: haptics)
+        let tmux = TmuxSessionManager(log: diagnostics.logger)
         let appLock = AppLock(settings: settings, vault: vault, log: diagnostics.logger)
         let container = AppContainer(
             hostStore: hostStore,
@@ -161,9 +166,15 @@ final class AppContainer {
             sync: sync,
             shortcuts: shortcuts,
             assistant: assistant,
-            screens: screens, appLock: appLock
+            screens: screens, tmux: tmux, appLock: appLock
         )
         shortcuts.sceneProvider = { [weak container] in container?.activeScene }
+        // Built where the event loop, the vault and the pool already are, so a tmux session
+        // reaches a server exactly as a terminal does — Cloudflare, jump hosts,
+        // certificates, the agent and the shared connection included (D-059).
+        tmux.connectorForHost = { [weak sessionManager] host in
+            sessionManager.map { $0.makeTmuxConnector(for: host) }
+        }
         // Assigned after the container exists, because a change to the host list has to
         // reach the Files domains as well as sync: a connection deleted here must leave
         // the Files sidebar, not linger there pointing at nothing.
@@ -231,11 +242,18 @@ final class AppContainer {
         let assistant = AssistantCoordinator(settings: settings, vault: vault, log: diagnostics.logger)
         let screens = VNCSessionManager(vault: vault, knownHosts: knownHosts, diagnostics: diagnostics, haptics: haptics)
         let appLock = AppLock(settings: settings, vault: vault, log: diagnostics.logger)
+        let tmux = TmuxSessionManager(log: diagnostics.logger)
         let container = AppContainer(
             hostStore: hostStore, screenStore: screenStore, snippetStore: snippetStore, restoration: restoration, sessionManager: sessionManager,
             settings: settings, reachability: reachability, haptics: haptics, vault: vault, knownHosts: knownHosts,
-            diagnostics: diagnostics, sync: sync, shortcuts: shortcuts, assistant: assistant, screens: screens, appLock: appLock
+            diagnostics: diagnostics, sync: sync, shortcuts: shortcuts, assistant: assistant, screens: screens,
+            tmux: tmux, appLock: appLock
         )
+        // The same wiring as `live()`: a test container that could not open a tmux session
+        // would make the tests pass for a reason the app does not have.
+        tmux.connectorForHost = { [weak sessionManager] host in
+            sessionManager.map { $0.makeTmuxConnector(for: host) }
+        }
         shortcuts.sceneProvider = { [weak container] in container?.activeScene }
         return container
     }

@@ -12,6 +12,8 @@ struct HostListView: View {
     let onOpen: (TerminalSession) -> Void
     /// Called after a remote screen is opened (D-022), for the same reason.
     let onOpenScreen: (VNCSession) -> Void
+    /// Pushes a tmux session on a layout that pushes (D-059).
+    var onOpenTmux: (TmuxSession) -> Void = { _ in }
 
     @State private var searchText = ""
     @State private var editingHost: Host?
@@ -226,6 +228,15 @@ struct HostListView: View {
             onOpenFiles: { browsingHost = host },
             onDiagnose: { diagnosingHost = host }
         ) {
+            // A connection that asked for tmux attaches to it instead of starting a plain
+            // shell: what is running there survives the connection, and the arrangement on
+            // screen is the server's (D-059).
+            if host.isUsingTmux, let session = container.tmux.open(host) {
+                container.hostStore.markConnected(host)
+                scene.show(tmux: session.id)
+                onOpenTmux(session)
+                return
+            }
             let session = container.sessionManager.open(host)
             container.hostStore.markConnected(host)
             // Selecting is this list's job in both layouts; `onOpen` only

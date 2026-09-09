@@ -1392,4 +1392,5 @@ An index, so nothing has to be hunted for:
 | D-055 | `4af75ed` | Split panes: several terminals and screens at once |
 | D-056 | `f33d5eb` | The guide, the legal texts and the third-party notices brought back to what the app actually does |
 | D-057 | `9ccb306` | tmux control mode: the protocol, against a real tmux |
-| D-058 | this commit | The tmux workspace: windows, panes, and a terminal for each |
+| D-058 | `c5968f0` | The tmux workspace: windows, panes, and a terminal for each |
+| D-059 | this commit | tmux in the app: a connection that attaches, and the server's own arrangement on screen |

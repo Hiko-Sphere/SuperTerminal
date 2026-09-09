@@ -29,6 +29,8 @@ struct HostEditorView: View {
     @State private var selectedKeyID: UUID?
     @State private var usesPassword = false
     @State private var forwardsAgent = false
+    @State private var usesTmux = false
+    @State private var tmuxSessionName = ""
     @State private var savedPassword = ""
     @State private var folder = ""
     @State private var terminalType = "xterm-256color"
@@ -63,6 +65,8 @@ struct HostEditorView: View {
             }.first)
             _usesPassword = State(initialValue: host.credentials.contains(.password))
             _forwardsAgent = State(initialValue: host.isForwardingAgent)
+            _usesTmux = State(initialValue: host.isUsingTmux)
+            _tmuxSessionName = State(initialValue: host.tmuxSessionName ?? "")
             _folder = State(initialValue: host.folder ?? "")
             _terminalType = State(initialValue: host.terminalType)
             _platformOverride = State(initialValue: host.platformOverride)
@@ -178,6 +182,25 @@ struct HostEditorView: View {
                     }
                 }
 
+                Section {
+                    Toggle("Attach to tmux", isOn: $usesTmux.animation())
+                        .accessibilityIdentifier("host-uses-tmux")
+                    if usesTmux {
+                        TextField("Session name", text: $tmuxSessionName, prompt: Text(verbatim: "apex"))
+                            .autocorrectionDisabled()
+                            .textInputAutocapitalization(.never)
+                            .accessibilityIdentifier("host-tmux-session")
+                    }
+                } header: {
+                    Text("tmux")
+                } footer: {
+                    if usesTmux {
+                        Text("Opening this connection attaches to a tmux session on the server, creating it if it is not there. What is running stays running when you disconnect, and tmux decides how the panes are arranged. tmux must be installed on the server.")
+                    } else {
+                        Text("Off. Opening this connection starts an ordinary shell, and what is running in it ends when the connection does.")
+                    }
+                }
+
                 // Only for a direct connection: a Cloudflare tunnel *is* the transport,
                 // and it has its own bastion setting above.
                 if !usesCloudflare {
@@ -273,7 +296,9 @@ struct HostEditorView: View {
             platformOverride: platformOverride,
             showsInFiles: showsInFiles,
             jumpHosts: jumpHosts,
-            forwardsAgent: forwardsAgent
+            forwardsAgent: forwardsAgent,
+            usesTmux: usesTmux,
+            tmuxSessionName: tmuxSessionName.trimmingCharacters(in: .whitespacesAndNewlines)
         )
         return (existing ?? Host(name: "", hostname: "", username: "")).applying(fields)
     }

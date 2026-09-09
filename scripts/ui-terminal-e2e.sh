@@ -28,6 +28,7 @@ cleanup() {
   if [[ -n "$XCODEBUILD_PID" ]]; then kill "$XCODEBUILD_PID" 2>/dev/null || true; fi
   if [[ -f "$WORK/sshd.pid" ]]; then kill "$(cat "$WORK/sshd.pid")" 2>/dev/null || true; fi
   if [[ -f "$WORK/vnc.pid" ]]; then kill "$(cat "$WORK/vnc.pid")" 2>/dev/null || true; fi
+  if [[ -n "${TMUX_CONTAINER:-}" ]]; then docker rm -f "$TMUX_CONTAINER" >/dev/null 2>&1 || true; fi
   rm -rf "$WORK"
 }
 trap cleanup EXIT
@@ -85,6 +86,46 @@ for prefix in /opt/homebrew/opt/libvncserver /usr/local/opt/libvncserver; do
 done
 [[ -n "$VNC_PORT" ]] || echo "LibVNCServer is not installed (brew install libvncserver); the screen tests will skip"
 
+# A server with tmux on it, for the tmux screen (D-059). This machine has no tmux, and a
+# test that drove a stand-in would prove nothing about the thing people will use, so it is
+# a container — skipped, with its tests, when Docker is not running.
+TMUX_CONTAINER=""
+TMUX_PORT=""
+if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
+  TMUX_CONTAINER="st-tmux-ui-$$"
+  if ! docker image inspect apexterminal-tmux:2 >/dev/null 2>&1; then
+    echo "building the tmux image (first run only)…"
+    docker build -q -t apexterminal-tmux:2 - > /dev/null <<'DOCKERFILE'
+FROM debian:bookworm-slim
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends openssh-server tmux \
+ && rm -rf /var/lib/apt/lists/* \
+ && mkdir -p /run/sshd
+RUN useradd -m -s /bin/bash tmuxtest \
+ && echo 'tmuxtest:correct horse battery staple' | chpasswd
+RUN printf '%s\n' \
+      'Port 22' 'PermitRootLogin no' 'PubkeyAuthentication no' \
+      'PasswordAuthentication yes' 'LogLevel DEBUG1' \
+    > /etc/ssh/sshd_config.d/tmux.conf
+RUN ssh-keygen -A
+CMD ["/usr/sbin/sshd", "-D", "-e"]
+DOCKERFILE
+  fi
+  for candidate in $(seq 8500 8549); do
+    if docker run --rm -d --name "$TMUX_CONTAINER" -p "127.0.0.1:$candidate:22" apexterminal-tmux:2 >/dev/null 2>&1; then
+      TMUX_PORT="$candidate"
+      break
+    fi
+    docker rm -f "$TMUX_CONTAINER" >/dev/null 2>&1 || true
+  done
+  if [[ -z "$TMUX_PORT" ]]; then
+    echo "could not start the tmux container; its tests will skip"
+    TMUX_CONTAINER=""
+  else
+    echo "Test tmux server listening on 127.0.0.1:$TMUX_PORT"
+  fi
+fi
+
 cd "$ROOT"
 # xcodebuild refuses to overwrite a result bundle, so a second local run would fail
 # before a single test ran. CI never sees this; a developer's checkout does.
@@ -103,6 +144,9 @@ env \
   TEST_RUNNER_ST_UITEST_FORWARD_PORT="$FORWARD_PORT" \
   TEST_RUNNER_ST_UITEST_VNC_PORT="$VNC_PORT" \
   TEST_RUNNER_ST_UITEST_VNC_LOG="$VNC_LOG" \
+  TEST_RUNNER_ST_UITEST_TMUX_PORT="$TMUX_PORT" \
+  TEST_RUNNER_ST_UITEST_TMUX_USER="tmuxtest" \
+  TEST_RUNNER_ST_UITEST_TMUX_PASSWORD="correct horse battery staple" \
   xcodebuild test \
     -project ApexTerminal.xcodeproj \
     -scheme ApexTerminal \

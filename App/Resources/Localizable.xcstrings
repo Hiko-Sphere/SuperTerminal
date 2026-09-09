@@ -1854,6 +1854,23 @@
         }
       }
     },
+    "Attach to tmux": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "连接到 tmux"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "連線至 tmux"
+          }
+        }
+      }
+    },
     "Attempt %lld": {
       "extractionState": "manual",
       "localizations": {
@@ -2377,6 +2394,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "請確認伺服器已啟用 SFTP，然後重試。"
+          }
+        }
+      }
+    },
+    "Check that tmux is installed and on the PATH for this account.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请确认该账户已安装 tmux，且 tmux 在 PATH 中。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請確認該帳號已安裝 tmux，且 tmux 位於 PATH 中。"
           }
         }
       }
@@ -3975,6 +4009,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "目標連接埠"
+          }
+        }
+      }
+    },
+    "Detach": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "断开但保留"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "中離但保留"
+          }
+        }
+      }
+    },
+    "Detached": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已断开但保留"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已中離但保留"
           }
         }
       }
@@ -6716,6 +6784,23 @@
         }
       }
     },
+    "New Window": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新建窗口"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新增視窗"
+          }
+        }
+      }
+    },
     "New passcode": {
       "extractionState": "manual",
       "localizations": {
@@ -7039,6 +7124,23 @@
         }
       }
     },
+    "No tmux windows": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "没有 tmux 窗口"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "沒有 tmux 視窗"
+          }
+        }
+      }
+    },
     "No transfers": {
       "extractionState": "manual",
       "localizations": {
@@ -7358,6 +7460,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "預設關閉，由你開啟"
+          }
+        }
+      }
+    },
+    "Off. Opening this connection starts an ordinary shell, and what is running in it ends when the connection does.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "关闭。打开此连接会启动普通 shell，其中运行的内容会随连接一同结束。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "關閉。開啟此連線會啟動一般 shell，其中執行的內容會隨連線一併結束。"
           }
         }
       }
@@ -7715,6 +7834,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "正在開啟通往螢幕的通道"
+          }
+        }
+      }
+    },
+    "Opening this connection attaches to a tmux session on the server, creating it if it is not there. What is running stays running when you disconnect, and tmux decides how the panes are arranged. tmux must be installed on the server.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打开此连接会接入服务器上的 tmux 会话；若不存在则创建它。断开连接后，其中运行的内容仍会继续运行，窗格的排布由 tmux 决定。服务器上必须已安装 tmux。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "開啟此連線會接上伺服器上的 tmux 工作階段；若不存在則建立它。中斷連線後，其中執行的內容仍會繼續執行，而窗格的排列由 tmux 決定。伺服器上必須已安裝 tmux。"
           }
         }
       }
@@ -10116,6 +10252,23 @@
         }
       }
     },
+    "Session name": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "会话名称"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "工作階段名稱"
+          }
+        }
+      }
+    },
     "Set a Passcode": {
       "extractionState": "manual",
       "localizations": {
@@ -10758,6 +10911,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "正在啟動 shell"
+          }
+        }
+      }
+    },
+    "Starting tmux": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在启动 tmux"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在啟動 tmux"
           }
         }
       }
@@ -12343,6 +12513,23 @@
         }
       }
     },
+    "The tmux session is still running on the server. Open the connection again to attach to it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "该 tmux 会话仍在服务器上运行。再次打开此连接即可重新接入。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "該 tmux 工作階段仍在伺服器上執行。再次開啟此連線即可重新接上。"
+          }
+        }
+      }
+    },
     "The two entries do not match.": {
       "extractionState": "manual",
       "localizations": {
@@ -12951,6 +13138,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "此文字包含換行字元，且遠端程式不支援 bracketed paste，因此每一行送達後會立即執行。"
+          }
+        }
+      }
+    },
+    "This tmux session has no windows. Create one to start working.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此 tmux 会话没有窗口。新建一个即可开始工作。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此 tmux 工作階段沒有視窗。新增一個即可開始工作。"
+          }
+        }
+      }
+    },
+    "This tmux session is no longer attached.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此 tmux 会话已不再接入。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此 tmux 工作階段已不再接上。"
+          }
+        }
+      }
+    },
+    "This tmux session is no longer attached. Open the connection again to attach to it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此 tmux 会话已不再接入。再次打开此连接即可重新接入。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此 tmux 工作階段已不再接上。再次開啟此連線即可重新接上。"
           }
         }
       }
@@ -14060,6 +14298,23 @@
         }
       }
     },
+    "Window %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "窗口 %lld"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "視窗 %lld"
+          }
+        }
+      }
+    },
     "Windows": {
       "extractionState": "manual",
       "localizations": {
@@ -14838,6 +15093,91 @@
           "stringUnit": {
             "state": "translated",
             "value": "要求被模型的安全規則拒絕"
+          }
+        }
+      }
+    },
+    "tmux": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tmux"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tmux"
+          }
+        }
+      }
+    },
+    "tmux could not be started on this server.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法在此服务器上启动 tmux。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法在此伺服器上啟動 tmux。"
+          }
+        }
+      }
+    },
+    "tmux could not start": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tmux 无法启动"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tmux 無法啟動"
+          }
+        }
+      }
+    },
+    "tmux pane %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tmux 窗格 %lld"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tmux 窗格 %lld"
+          }
+        }
+      }
+    },
+    "tmux pane %lld, active": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tmux 窗格 %lld，当前"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tmux 窗格 %lld，目前"
           }
         }
       }

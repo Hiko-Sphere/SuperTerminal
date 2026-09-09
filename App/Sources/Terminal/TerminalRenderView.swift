@@ -196,7 +196,18 @@ final class TerminalRenderView: UIView {
         boldFont = .monospacedSystemFont(ofSize: fontSize, weight: .bold)
         italicFont = Self.italicised(regularFont)
         boldItalicFont = Self.italicised(boldFont)
+        metrics = Self.metrics(forFontSize: fontSize)
+        setNeedsDisplay()
+    }
 
+    /// The cell size for a font size, without a view.
+    ///
+    /// A tmux window has to tell the server how many cells it is showing before it has any
+    /// pane to measure — tmux decides the arrangement from that number — so the same
+    /// arithmetic the view uses is available on its own rather than duplicated with a
+    /// guess (D-059).
+    static func metrics(forFontSize fontSize: CGFloat) -> Metrics {
+        let regularFont = UIFont.monospacedSystemFont(ofSize: fontSize, weight: .regular)
         // Monospaced by construction, so any glyph's advance is the cell width. `M` is
         // used because it is present in every font that could be substituted.
         let advance = ("M" as NSString).size(withAttributes: [.font: regularFont]).width
@@ -205,14 +216,13 @@ final class TerminalRenderView: UIView {
         let leading = regularFont.leading
         let lineHeight = (ascent + descent + leading).rounded(.up)
 
-        metrics = Metrics(
+        return Metrics(
             cellWidth: max(1, advance.rounded(.toNearestOrEven)),
             cellHeight: max(1, lineHeight),
             baselineOffset: ascent,
             underlineOffset: max(1, descent * 0.4),
             underlineThickness: max(1, (fontSize / 14).rounded(.up))
         )
-        setNeedsDisplay()
     }
 
     private static func italicised(_ font: UIFont) -> UIFont {
