@@ -182,6 +182,10 @@ final class AppContainer {
         screens.keyRecord = { [weak hostStore] id in
             MainActor.assumeIsolated { hostStore?.key(withID: id) }
         }
+        // One pool for the whole app (D-054): a screen tunnelled through a server should
+        // travel down the connection that server's terminal already has, not open a
+        // second one to the same account.
+        screens.pool = sessionManager.pool
         // Jump chains name saved connections (D-047), so both kinds of session resolve
         // them the same way.
         let resolveHost: @Sendable (UUID) -> Host? = { [weak hostStore] id in

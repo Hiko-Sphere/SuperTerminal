@@ -1387,4 +1387,5 @@ An index, so nothing has to be hunted for:
 | D-050 | `3cc578a` | The hardware-keyboard test failures: what the simulator does to the first modified key press |
 | D-051 | `d2e0c04` | RFC 4256 keyboard-interactive, and the container that made it verifiable |
 | D-052 | `d0131fd` | Agent forwarding, with the phone as the agent |
-| D-053 | this commit | Cloudflare as a connection you choose, and diagnostics that measure |
+| D-053 | `a8e109d` | Cloudflare as a connection you choose, and diagnostics that measure |
+| D-054 | this commit | One SSH transport shared by everything that wants the same server |

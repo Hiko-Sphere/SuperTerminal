@@ -29,7 +29,7 @@ from the first unfinished item rather than starting over.
 | # | Item | State |
 | --- | --- | --- |
 | 2.1 | Cloudflare as a first-class connection type | **Mostly done**: transport and Access flow (D-001, D-029); D-053 adds the split creation flow, the Access diagnostics screen with per-application sign-out, and marks Cloudflare connections in the list. The live end-to-end run against a real tenant remains H-4 and is not claimed |
-| 2.2 | SSH connection multiplexing | Not started |
+| 2.2 | SSH connection multiplexing | **Done (D-054)**: one transport per identity, shared by shells, SFTP, screens and forwards; reference counted with an idle timeout; proved by counting `sshd`'s own accepted authentications — four sessions cost one, not four |
 | 2.3 | tmux control mode | Not started |
 | 2.4 | Server-to-device channel | Not started |
 | 2.5 | Shortcuts, URL scheme, Handoff, Spotlight | Two App Intents ship (D-021); the rest not started |

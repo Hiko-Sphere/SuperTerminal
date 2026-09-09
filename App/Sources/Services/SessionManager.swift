@@ -28,6 +28,9 @@ final class SessionManager {
     private(set) var displayOwners: [TerminalSession.ID: UUID] = [:]
 
     private let group: NIOTSEventLoopGroup
+    /// One shared transport per identity, for every kind of session (D-054). Owned here
+    /// because this is what outlives individual sessions.
+    let pool = SSHConnectionPool()
     private let vault: CredentialVault
     private let knownHosts: any KnownHostsStore
     private let settings: AppSettings
@@ -120,7 +123,8 @@ final class SessionManager {
                 log: diagnostics.logger, prompts: prompts,
                 keyRecord: keyRecord,
                 certificateAuthorities: certificateAuthorities(),
-                hostByID: hostByID
+                hostByID: hostByID,
+                pool: pool
             ),
             prompts: prompts,
             log: diagnostics.logger
@@ -140,7 +144,8 @@ final class SessionManager {
             haptics: haptics,
             keyRecord: keyRecord,
             certificateAuthorities: certificateAuthorities(),
-            hostByID: hostByID
+            hostByID: hostByID,
+            pool: pool
         )
         session.onConnected = { [weak self] in self?.didConnect?() }
         session.onPlatformDetected = { [weak self] platform in self?.didDetectPlatform?(host.id, platform) }

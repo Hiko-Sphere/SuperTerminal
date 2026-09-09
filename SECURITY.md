@@ -184,6 +184,28 @@ switch's own text says, in those words, where the decision is made.
 the enclave, so what the server borrows is the *use* of the key for the length of a session,
 never the key.
 
+### T-6d · Sharing a connection with the wrong session (D-054)
+
+*Threat:* one transport now carries several sessions. Handing a connection authenticated as
+one identity to a session that asked for another would not raise an error — it would simply
+be a shell, a file browser or a forwarded port belonging to the wrong account, which is the
+worst kind of failure because nothing reports it.
+
+*Defence:* the pool is keyed on everything that decides who the connection is and where it
+comes out — endpoint and port, user name, the identifiers of the credentials offered, the
+jump chain, the tunnel, and whether the connection lends this device's SSH agent. Any
+difference is a different entry. Credentials are named by identifier, never by content, so
+no secret is ever part of a dictionary key or a log line; `diagnosticDescription` is an
+endpoint and a user name and nothing else.
+
+Agent forwarding is part of the key on purpose: a session that never asked to lend its key
+must not be given a transport that is already lending it.
+
+*Lifetime:* reference counted. A session releases rather than closes, because a transport
+shared with two other tabs is not its to close; the connection goes when nothing holds it
+and an idle period has passed. A transport that has died is discarded rather than handed
+out, so a later session opens a fresh one instead of failing at its first channel.
+
 ### T-7 · Log and diagnostics leakage
 
 *Defence:* redaction happens at construction, not by scrubbing afterwards. `Redacted<T>`

@@ -21,7 +21,7 @@ left out.
 ```bash
 cd Packages/ApexTerminalKit
 swift build          # 0 errors, 0 warnings from project code
-swift test --no-parallel   # 285 tests in 42 suites passed (the VNC suites run against LibVNCServer
+swift test --no-parallel   # 293 tests in 43 suites passed (the VNC suites run against LibVNCServer
                            # from Homebrew). --no-parallel is required: the sshd-backed suites poll
                            # while blocking the cooperative pool, and parallel runs starve it.
 swift test -c release --filter TerminalThroughputTests   # the numbers below
@@ -45,7 +45,7 @@ xcodebuild -project ApexTerminal.xcodeproj -scheme ApexTerminal \
   -only-testing:ApexTerminalTests test
 # the sshd-backed cases skip without the harness; run the script below for the full number
 
-./scripts/app-integration-e2e.sh   # 267 tests in 50 suites on iPhone 17 Pro simulator, ** TEST SUCCEEDED **
+./scripts/app-integration-e2e.sh   # 269 tests in 51 suites on iPhone 17 Pro simulator, ** TEST SUCCEEDED **
                                    # Starts a keyboard-interactive container too when Docker is running (D-051).
 ./scripts/profile-emulator.sh      # real Instruments trace of the emulator hot path
 ./scripts/localization-audit.sh    # every user-visible string translated (zh-Hans, zh-Hant): green
@@ -59,7 +59,7 @@ cd Packages/swift-nio-ssh-rsa
 swift test           # Executed 360 tests, with 0 failures (347 upstream, 2 for RSA, 11 for keyboard-interactive)
 ```
 
-The numbers above were measured on 2026-09-09, after D-053. The per-slice figures further
+The numbers above were measured on 2026-09-09, after D-054. The per-slice figures further
 down were measured on the dates their sections name; `docs/RELEASE_EVIDENCE.md` carries the
 current per-commit record and is the file to trust when the two disagree.
 

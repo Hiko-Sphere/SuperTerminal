@@ -30,6 +30,9 @@ final class HostConnector {
     private let authorities: [SSHCertificateAuthority]
     /// Resolves a saved connection by identifier, for the jump chain (D-047).
     private let hostByID: @Sendable (UUID) -> Host?
+    /// The shared transports (D-054). `nil` means every connection is this session's own,
+    /// which is what the tests that measure the *unpooled* cost rely on.
+    private let pool: SSHConnectionPool?
 
     init(
         host: Host,
@@ -40,7 +43,8 @@ final class HostConnector {
         prompts: PromptCoordinator,
         keyRecord: @escaping @Sendable (UUID) -> StoredKey? = { _ in nil },
         certificateAuthorities: [SSHCertificateAuthority] = [],
-        hostByID: @escaping @Sendable (UUID) -> Host? = { _ in nil }
+        hostByID: @escaping @Sendable (UUID) -> Host? = { _ in nil },
+        pool: SSHConnectionPool? = nil
     ) {
         self.host = host
         self.group = group
@@ -51,6 +55,7 @@ final class HostConnector {
         self.keyRecord = keyRecord
         authorities = certificateAuthorities
         self.hostByID = hostByID
+        self.pool = pool
     }
 
     /// Connects and authenticates, naming each step through `progress` as it happens.
@@ -59,6 +64,63 @@ final class HostConnector {
     /// SSH connection in its own right — its own credentials, its own host key checked
     /// against its own record. The final connection then travels inside the last hop, so
     /// the bastion carries the traffic without being able to read it.
+    /// A connection and the way to give it back.
+    ///
+    /// Sessions no longer close what they were handed (D-054): a transport shared with two
+    /// other tabs is not theirs to close, and the difference between "I am done with this"
+    /// and "nobody needs this" is exactly what the pool is for.
+    struct Established {
+        let connection: SSHConnection
+        /// Idempotent. Releases the pool's claim, or closes an unpooled connection.
+        let release: @Sendable () async -> Void
+    }
+
+    /// Opens a connection, or shares one that already exists for the same identity.
+    func establish(progress: @escaping @MainActor (String) -> Void) async throws -> Established {
+        guard let pool else {
+            let connection = try await connect(progress: progress)
+            return Established(connection: connection) { await connection.close() }
+        }
+
+        let identity = try await connectionIdentity(for: host)
+        let lease = try await pool.lease(identity: identity) {
+            try await connect(progress: progress)
+        }
+        return Established(connection: lease.connection) { await pool.release(lease) }
+    }
+
+    /// Everything that has to match before two sessions may share a transport.
+    ///
+    /// Built from what the connection *is*, not from the record's identifier: a connection
+    /// whose user name was edited is a different connection, and one reached through a
+    /// bastion is not the same as a direct one to the same address. Credentials are named
+    /// by their identifiers — never by their contents, which have no business in a
+    /// dictionary key.
+    private func connectionIdentity(for host: Host) async throws -> SSHConnectionIdentity {
+        let username = try await resolveUsername(for: host)
+        let credentials = host.credentials.map { reference -> String in
+            switch reference {
+            case let .privateKey(id): "key:\(id.uuidString)"
+            case .password: "password"
+            case .none: "none"
+            }
+        }
+        let tunnel: String?
+        if case let .cloudflare(destination) = host.transport {
+            tunnel = "cloudflare:\(destination ?? "")"
+        } else {
+            tunnel = nil
+        }
+        return SSHConnectionIdentity(
+            endpoint: "\(host.hostname):\(host.port)",
+            username: username,
+            credentials: credentials,
+            jumpChain: jumpChain().map { "\($0.id.uuidString)" },
+            tunnel: tunnel,
+            forwardsAgent: host.isForwardingAgent
+        )
+    }
+
     func connect(progress: @escaping @MainActor (String) -> Void) async throws -> SSHConnection {
         var carrier: SSHConnection?
         for hop in jumpChain() {

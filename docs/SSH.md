@@ -45,6 +45,32 @@ and one for a scratch VM does not. Enrolling a new face or finger invalidates th
 which is deliberate: someone who learns the passcode still cannot add a biometric and use
 your key.
 
+### One connection, many things on it
+
+SSH multiplexes by design: a single transport carries any number of channels, and a shell,
+a file browser, a forwarded port and a remote screen are all just channels. Apex Terminal
+uses that. Open a second tab on a server you are already connected to, browse its files, or
+open its screen, and none of them opens a second connection — they share the one that is
+already there.
+
+That is worth more on a phone than it sounds. A connection costs a TCP handshake, a key
+exchange and an authentication, which is the slowest part of opening anything and is paid
+again after every network drop. Measured on this project's own loopback, where the network
+costs essentially nothing: four sessions cost **86.8 ms and four authentications** separately,
+against **20.6 ms and one** shared. Over a real network the gap is larger, because each
+handshake is several round trips rather than none.
+
+**What is never shared is a different identity.** Two connections that differ in who they
+authenticate as, or where they come out, are not the same connection however similar the
+address looks. The user name, the credentials offered, the jump chain, the tunnel, and
+whether the connection lends your agent are all part of what decides — so editing a
+connection's user name gets you a new one, and a server reached through a bastion is never
+confused with the same address reached directly.
+
+A connection with nothing using it stays open for half a minute before closing, because
+closing a tab and opening another is a thing people do constantly and paying for a whole
+handshake in between is exactly what this avoids.
+
 ### Letting a server use your key
 
 A shell on a server often needs a key of its own — to `git push`, or to reach a third

@@ -20,6 +20,9 @@ final class VNCSessionManager {
     /// The same two providers every other kind of session gets (D-046): a screen behind a
     /// certificate-authenticated host must connect the same way its terminal does.
     var keyRecord: @Sendable (UUID) -> StoredKey? = { _ in nil }
+    /// The same pool the terminal sessions use (D-054): a screen tunnelled through a
+    /// server should travel down the connection that server already has.
+    var pool: SSHConnectionPool?
     var certificateAuthorities: @Sendable () -> [SSHCertificateAuthority] = { [] }
     var hostByID: @Sendable (UUID) -> Host? = { _ in nil }
 
@@ -48,6 +51,7 @@ final class VNCSessionManager {
             log: diagnostics.logger,
             haptics: haptics,
             keyRecord: keyRecord,
+            pool: pool,
             certificateAuthorities: certificateAuthorities(),
             hostByID: hostByID
         )

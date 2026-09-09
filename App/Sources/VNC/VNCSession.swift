@@ -79,6 +79,8 @@ final class VNCSession: Identifiable {
 
     private var client: VNCClient?
     private var connection: SSHConnection?
+    /// Hands the transport back rather than closing it (D-054).
+    private var releaseConnection: (@Sendable () async -> Void)?
     private var eventsTask: Task<Void, Never>?
     private var redrawScheduled = false
     private let connector: HostConnector?
@@ -97,6 +99,7 @@ final class VNCSession: Identifiable {
         log: STLogger,
         haptics: Haptics? = nil,
         keyRecord: @escaping @Sendable (UUID) -> StoredKey? = { _ in nil },
+        pool: SSHConnectionPool? = nil,
         certificateAuthorities: [SSHCertificateAuthority] = [],
         hostByID: @escaping @Sendable (UUID) -> Host? = { _ in nil }
     ) {
@@ -117,7 +120,8 @@ final class VNCSession: Identifiable {
                 log: sessionLog, prompts: prompts,
                 keyRecord: keyRecord,
                 certificateAuthorities: certificateAuthorities,
-                hostByID: hostByID
+                hostByID: hostByID,
+                pool: pool
             )
         }
         Task { [weak self, prompts] in
@@ -144,9 +148,11 @@ final class VNCSession: Identifiable {
                     return
                 }
                 if connection == nil {
-                    connection = try await connector.connect { [weak self] step in
+                    let established = try await connector.establish { [weak self] step in
                         self?.state = .connecting(step: step)
                     }
+                    connection = established.connection
+                    releaseConnection = established.release
                 }
             }
             // The server says whether it wants a password only after the version
@@ -257,7 +263,10 @@ final class VNCSession: Identifiable {
         eventsTask?.cancel()
         eventsTask = nil
         if let client { await client.close() }
-        if let connection { await connection.close() }
+        // The forwarded channel carrying RFB was this session's; the transport under it
+        // may be shared with a terminal on the same server (D-054).
+        await releaseConnection?()
+        releaseConnection = nil
         client = nil
         connection = nil
     }

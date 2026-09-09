@@ -38,6 +38,8 @@ final class SFTPSession {
     private var allEntries: [SFTPEntry] = []
     private var client: SFTPClient?
     private var connection: SSHConnection?
+    /// Hands the transport back rather than closing it (D-054).
+    private var releaseConnection: (@Sendable () async -> Void)?
     private let connector: HostConnector
     private let prompts: PromptCoordinator
     private let log: STLogger
@@ -73,10 +75,12 @@ final class SFTPSession {
     func connect() async {
         guard client == nil else { return }
         do {
-            let connection = try await connector.connect { [weak self] step in
+            let established = try await connector.establish { [weak self] step in
                 self?.phase = .connecting(step: step)
             }
+            let connection = established.connection
             self.connection = connection
+            releaseConnection = established.release
             phase = .connecting(step: String(localized: "Opening files"))
             let client = try await connection.openSFTP()
             self.client = client
@@ -102,7 +106,9 @@ final class SFTPSession {
         for transfer in transfers where !transfer.state.isTerminal { transfer.cancel() }
         await client?.close()
         client = nil
-        await connection?.close()
+        // The SFTP channel was this session's; the transport may be shared (D-054).
+        await releaseConnection?()
+        releaseConnection = nil
         connection = nil
     }
 

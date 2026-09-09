@@ -476,6 +476,13 @@ public actor SSHConnection {
         log.info("SSH connection closed")
     }
 
+    /// Whether this connection can still carry a channel.
+    ///
+    /// Asked by the pool before handing one out (D-054): a transport whose channel has gone
+    /// is worse than none, because every later caller would be given something that cannot
+    /// carry anything and would fail at the first channel open rather than at connect time.
+    public var isUsable: Bool { !closed && channel.isActive }
+
     /// The credential that was most recently offered, so a failed authentication can
     /// tell the user *which* credential the server rejected.
     public var lastOfferedCredential: SSHCredential? { credentialChain.mostRecentlyOffered }

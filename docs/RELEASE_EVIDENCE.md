@@ -3,6 +3,51 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-09 — after D-054 (one connection, many things on it)
+
+| Command | Result |
+| --- | --- |
+| `cd Packages/ApexTerminalKit && swift test --no-parallel` | **293 tests in 43 suites passed** (285 before; 8 new) |
+| `bash scripts/app-integration-e2e.sh` | **269 tests in 51 suites passed** (267 before; 2 new) |
+| `bash scripts/ui-terminal-e2e.sh` | **48 passed, 2 failed** — both `ZZSearchProbeUITests`, another session's uncommitted work |
+| `bash scripts/localization-audit.sh` | **green**, no new strings |
+| Release archive | **ARCHIVE SUCCEEDED** |
+
+**The claim is arithmetic, so it is counted rather than asserted.** `sshd` logs a line each
+time it accepts an authentication, so "four sessions should cost one handshake, not four" can
+be checked by reading the server's log instead of the pool's own bookkeeping — which would
+agree with itself whatever it did. Four leases, one `Accepted publickey`.
+
+**Measured, on this machine's loopback where the network costs nothing:**
+
+```
+four sessions, separate connections: 86.8 ms, 4 authentications
+four sessions, one shared transport: 20.6 ms, 1 authentication
+```
+
+Over a real network the gap is larger, because a handshake is several round trips rather
+than none. The measurement prints rather than asserting a threshold: the numbers belong to
+this machine, and a test that failed when the laptop was busy would teach nothing.
+
+**The failure this design is really about** is not slowness, it is sharing the wrong thing.
+A pool keyed on a host's identifier would hand a connection authenticated as one user to a
+session that asked for another, and nothing would report it — it would simply be a shell
+belonging to the wrong account. `SSHConnectionIdentity` therefore carries every input that
+decides who the connection is and where it comes out: endpoint and port, user name, the
+*identifiers* of the credentials (never their contents), the jump chain, the tunnel, and
+whether the connection lends this device's agent. A test walks each of those and requires it
+to produce a different key.
+
+**Lifetime.** Sessions release rather than close, because a transport shared with two other
+tabs is not theirs to close. Reference counted, with a thirty-second idle grace so closing a
+tab and opening another does not pay for a fresh handshake. A transport that has died is
+discarded rather than handed out — a test kills one underneath the pool and requires the next
+lease to be a different object that works.
+
+**And it is actually used.** `ConnectionReuseTests` opens a terminal and a file browser on
+one connection through the app's own `SessionManager` and requires the pool to report two
+users of one transport, then releases one and requires the other to keep working.
+
 ## 2026-09-09 — after D-053 (Cloudflare as a connection you choose, and a screen that says why it failed)
 
 | Command | Result |

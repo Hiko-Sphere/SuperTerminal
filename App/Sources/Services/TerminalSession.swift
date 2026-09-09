@@ -113,6 +113,9 @@ final class TerminalSession: Identifiable {
 
     private var emulator: TerminalEmulator
     private var connection: SSHConnection?
+    /// Gives the transport back rather than closing it (D-054). A connection shared with
+    /// two other tabs is not this session's to close; the pool decides when it goes.
+    private var releaseConnection: (@Sendable () async -> Void)?
     /// The port forwards running on this connection (D-045), and what each is doing.
     ///
     /// It lives on the session rather than on the host because that is the truth: a
@@ -142,7 +145,8 @@ final class TerminalSession: Identifiable {
         haptics: Haptics? = nil,
         keyRecord: @escaping @Sendable (UUID) -> StoredKey? = { _ in nil },
         certificateAuthorities: [SSHCertificateAuthority] = [],
-        hostByID: @escaping @Sendable (UUID) -> Host? = { _ in nil }
+        hostByID: @escaping @Sendable (UUID) -> Host? = { _ in nil },
+        pool: SSHConnectionPool? = nil
     ) {
         self.host = host
         self.group = group
@@ -160,7 +164,8 @@ final class TerminalSession: Identifiable {
             log: sessionLog, prompts: prompts,
             keyRecord: keyRecord,
             certificateAuthorities: certificateAuthorities,
-            hostByID: hostByID
+            hostByID: hostByID,
+            pool: pool
         )
         let initialEmulator = TerminalEmulator(
             columns: TerminalSize.default.columns,
@@ -242,10 +247,12 @@ final class TerminalSession: Identifiable {
         state = .connecting(step: String(localized: "Resolving \(host.hostname)"))
 
         do {
-            let connection = try await connector.connect { [weak self] step in
+            let established = try await connector.establish { [weak self] step in
                 self?.state = .connecting(step: step)
             }
+            let connection = established.connection
             self.connection = connection
+            releaseConnection = established.release
 
             state = .connecting(step: String(localized: "Starting shell"))
             let shell = try await connection.openShell(
@@ -278,7 +285,10 @@ final class TerminalSession: Identifiable {
         pumpTask = nil
         await stopForwards()
         if let shell { await shell.close() }
-        if let connection { await connection.close() }
+        // The shell channel is this session's and is closed; the transport underneath it
+        // may not be, so it is handed back instead.
+        await releaseConnection?()
+        releaseConnection = nil
         shell = nil
         connection = nil
         if case .connected = state {
@@ -708,6 +718,8 @@ final class TerminalSession: Identifiable {
     private func handleClosed() async {
         pumpTask = nil
         shell = nil
+        await releaseConnection?()
+        releaseConnection = nil
         connection = nil
         // A forward cannot outlive the connection under it, and must not go on claiming
         // to be running when the thing it runs over has gone.
