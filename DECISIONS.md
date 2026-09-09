@@ -1393,4 +1393,5 @@ An index, so nothing has to be hunted for:
 | D-056 | `f33d5eb` | The guide, the legal texts and the third-party notices brought back to what the app actually does |
 | D-057 | `9ccb306` | tmux control mode: the protocol, against a real tmux |
 | D-058 | `c5968f0` | The tmux workspace: windows, panes, and a terminal for each |
-| D-059 | this commit | tmux in the app: a connection that attaches, and the server's own arrangement on screen |
+| D-059 | `6ff9af5` | tmux in the app: a connection that attaches, and the server's own arrangement on screen |
+| D-060 | this commit | What a server may open towards the device, proved against one that tries |

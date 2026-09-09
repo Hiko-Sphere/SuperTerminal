@@ -31,7 +31,7 @@ from the first unfinished item rather than starting over.
 | 2.1 | Cloudflare as a first-class connection type | **Mostly done**: transport and Access flow (D-001, D-029); D-053 adds the split creation flow, the Access diagnostics screen with per-application sign-out, and marks Cloudflare connections in the list. The live end-to-end run against a real tenant remains H-4 and is not claimed |
 | 2.2 | SSH connection multiplexing | **Done (D-054)**: one transport per identity, shared by shells, SFTP, screens and forwards; reference counted with an idle timeout; proved by counting `sshd`'s own accepted authentications — four sessions cost one, not four |
 | 2.3 | tmux control mode | **Protocol done (D-057)**: `STTmux` speaks control mode — the `%begin`/`%end`/`%error` framing, every notification a real session sends, octal-unescaped output as bytes, and window layouts with tmux's own checksum verified. Proved against a real tmux 3.3a over a real SSH connection in `TmuxIntegrationTests` (5 tests). **Done (D-059)**: the app attaches. A connection marked *Attach to tmux* opens a tmux session instead of a shell; tmux's windows and panes are drawn where tmux says they are, input goes back as `send-keys -H`, and the toolbar lists windows, splits, closes panes and detaches. Verified through the interface against a real tmux in a container. Earlier: **Workspace (D-058)**: `TmuxWorkspace` keeps the windows, the panes in each and a terminal per pane, primes itself with `list-windows` because reattaching announces almost nothing, sends input as `send-keys -H`, and sizes tmux to the client. Verified against a real tmux (10 tests). The app does not offer it yet; wiring tmux windows onto the app's own panes is the next slice, and nothing in the interface claims it until then |
-| 2.4 | Server-to-device channel | Not started |
+| 2.4 | Server-to-device channel | **Audited and closed (D-060)**. SSH gives a server exactly four ways to open a channel towards a client: `forwarded-tcpip` (**ships**, D-045), `auth-agent@openssh.com` (**ships**, D-052), `x11`, and `tunnel@openssh.com`. The last two are not implemented and are described below rather than half-built. What the app *refuses* is now proved rather than asserted: `InboundChannelRefusalTests` drives a deliberately hostile server that opens channels nobody asked for |
 | 2.5 | Shortcuts, URL scheme, Handoff, Spotlight | Two App Intents ship (D-021); the rest not started |
 
 ### Split panes (D-055)
@@ -64,6 +64,24 @@ describes a different product than the one in the bundle is a defect, not a shor
   changes and reproduced the tree as it stood before D-046, D-048, D-051 and D-052 — so
   CI's "the patch still reproduces the vendored tree" check would have failed on the next
   run. Regenerated: 33 files, 2902 lines.
+
+### The two channel types a server cannot open here (D-060)
+
+Both are refused by construction — the client cannot even name them — and neither is
+claimed anywhere in the interface.
+
+* **`x11`.** Forwarding an X display needs an X server on this device to accept the
+  connection. iOS has none, and one app cannot provide a display server to others; the
+  only way to honour it would be to implement an X11 server *inside* the app and render
+  its clients. That is a product in itself, not a feature of this one. It is not an iOS
+  limitation so much as a scope one, and it is recorded as such rather than as impossible.
+* **`tunnel@openssh.com`.** This carries IP packets, which on iOS means a `utun`
+  interface, which means a Network Extension packet-tunnel provider and the
+  `com.apple.developer.networking.networkextension` entitlement. That is available to
+  apps, but the provider is a separate process with its own lifecycle: the SSH connection
+  would have to live inside the extension rather than in the app, which is a different
+  architecture from the one every other feature here depends on. Not started, and no part
+  of the app suggests otherwise.
 
 ## Phase 3 — terminal fidelity
 

@@ -3,6 +3,49 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-09 — after D-060 (what a server may open towards the device)
+
+| Command | Result |
+| --- | --- |
+| `cd Packages/ApexTerminalKit && swift test --no-parallel` | **333 tests in 49 suites, 4 failed** — the four are `SecureEnclaveKeyTests`, still failing with `errSecInteractionNotAllowed` from this machine's keychain, as they did on a clean checkout with every change stashed |
+| Zero-warning gate | **0** |
+
+### The promises this closes
+
+The User Notice tells people two things about what a server can reach: a forwarded
+connection arrives only where a forward was asked for, and the agent answers only where
+agent forwarding was turned on. Both are claims about what the client *refuses*, and a
+refusal cannot be tested by a well-behaved server. `HostileSSHTestServer` is one written to
+misbehave — it authenticates anything and then opens channels nobody asked for — and
+`InboundChannelRefusalTests` uses it to prove four things:
+
+* a `forwarded-tcpip` for a port nobody forwarded is refused;
+* an `auth-agent@openssh.com` channel is refused when the connection offers no agent;
+* a `session` opened by the server is refused, which would otherwise be the server running
+  something on the device;
+* a forward that *was* asked for is accepted — and only for its own port: asking for 9001
+  does not open 9002, and the refused channel never reaches the registered route.
+
+Each refusal leaves the connection usable. A client that dropped the session every time a
+server tried this would have turned a refusal into a way to be disconnected.
+
+### A finding about the client's own advertisement
+
+The first version of the hostile server could not complete a handshake at all: both sides
+reported `keyExchangeNegotiationFailure`. The cause is worth writing down because it is not
+a defect. The app advertises encrypt-then-MAC only (`hmac-sha2-256-etm@openssh.com`, from
+the AES-CTR scheme) plus the implicit MAC of AES-GCM; a peer offering only the library's
+bundled schemes advertises the fabricated `hmac-sha2-256` and shares nothing with it. Every
+real OpenSSH offers ETM, which is why the integration tests against real `sshd` have always
+passed. The fixture now takes the client's own scheme list, as a real server would.
+
+### Not implemented, and said so
+
+`x11` and `tunnel@openssh.com` are the other two channel types a server can open towards a
+client. Neither is implemented; `docs/EXECUTION_PLAN.md` says what each would take, and
+nothing in the interface suggests they work. The client cannot even name them, so they are
+refused by construction.
+
 ## 2026-09-09 — after D-059 (tmux in the app)
 
 | Command | Result |
