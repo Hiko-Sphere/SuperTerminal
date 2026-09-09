@@ -3,6 +3,87 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-09 — after D-063 (the font system)
+
+| Command | Result |
+| --- | --- |
+| `cd Packages/ApexTerminalKit && swift test --no-parallel` | **345 tests in 51 suites passed** — including the four `SecureEnclaveKeyTests` that this machine's keychain refused for the whole of the previous session. Nothing in this change touches them; they are recorded as passing because they did, and as a host condition that comes and goes |
+| Zero-warning gate | **0** |
+| `cd Packages/swift-nio-ssh-rsa && swift test` | **360 tests, 0 failures** (unchanged by this work; run because the regression includes it) |
+| `bash scripts/app-integration-e2e.sh` | **333 tests in 63 suites passed** (324 in 62 before) |
+| `bash scripts/localization-audit.sh` | **green**; 5 new strings translated into both Chinese variants |
+| `bash scripts/ui-terminal-e2e.sh` (iPhone 17 Pro) | **54 passed, 3 failed** — two `ZZSearchProbeUITests`, another session's uncommitted work; the third was `AppLockUITests`, explained and fixed below |
+| `ST_ONLY_TESTING=…/AppLockUITests` (iPhone 17 Pro), after the fix | **1 passed, 0 failed** |
+| `bash scripts/ui-terminal-e2e.sh 'platform=iOS Simulator,name=iPad Pro 13-inch (M5)'` | **54 passed, 4 failed** — two `ZZSearchProbeUITests`; `AppLockUITests`, which needed the same fix one line earlier on iPad than on the phone; and `HardwareKeyboardStateUITests` |
+| `ST_ONLY_TESTING=…/AppLockUITests` (iPad Pro 13-inch M5), after the fix | **1 passed, 0 failed** |
+| `ST_ONLY_TESTING=…/HardwareKeyboardStateUITests` (iPad Pro 13-inch M5) | **2 passed, 0 failed** — see below |
+| Release archive | **FAILED**, on nothing in this change — see below, and D-064 |
+
+### What the font system is, and what "monospaced" had to mean
+
+The picker offers families, not names from a list written here: `UIFont.familyNames` is asked
+for everything on the device and each family is **measured** — a narrow character, a wide one
+and a space, all within a tenth of a point. `UIFontDescriptor`'s `traitMonoSpace` is not set on
+every face that is one and is set on some that are not, and the property the grid actually
+depends on is the measurement, so the measurement is what decides.
+
+Three settings, and each one reaches the server. Changing the family, the line height or the
+size changes how many cells fit in the same view, and the app re-measures and sends a
+window-change; `FontUITests` proves it by asking the remote `stty` before and after and
+requiring the second number to be smaller.
+
+Ligatures default to off, which is a terminal judgement rather than a taste one: a font that
+draws `!=` as one glyph draws two cells as one, and the grid has been told they are two
+columns. The setting exists because a person who has chosen such a font may want it anyway.
+
+### The sample, and why it is not a screenshot of a font
+
+`FontSampleView` draws `0O1lI  \`'"  {}[]()` and `!= -> => >=  ~/.ssh` with the same face and
+with the row pinned to exactly `TerminalRenderView.metrics(…).cellHeight` — the same number
+the terminal divides its bounds by, not a paragraph-style approximation of it. Two unit tests
+check that (the font, the ligature attribute and both line-height bounds), and the UI test
+checks the thing a unit test cannot: that the sample on screen grows when the line height it
+is previewing grows.
+
+### A UI test the longer Settings screen broke
+
+`AppLockUITests` tapped the App-lock switch and then looked for *Change passcode* — adjacent
+rows until this change added four to the Appearance section above them. A long SwiftUI `Form`
+keeps only the rows near the viewport in the accessibility tree, so the row below the fold was
+not missing, it did not exist yet. The test now scrolls to whichever row it needs, which is
+the same fix `BackupUITests` needed in D-061 for the same reason. The assertion is unchanged.
+
+### A keyboard test that failed once and then did not
+
+`HardwareKeyboardStateUITests.testTypingWorksAfterEveryThingThatTakesTheKeyboardAway` failed on
+the iPad at *"⌘F should open the find bar"* and passed on the phone in the same session; run
+again on the iPad on its own, both tests in that class passed. The class already spends the
+simulator's discarded first modified keypress on the terminal — `primeModifierKeysInTerminal`,
+measured in D-018 — so this is not that. It is written down as an intermittent failure rather
+than explained away, and nothing here was changed to make it pass.
+
+### The archive failed, on a phrase written two commits ago
+
+`ValidateAppShortcutStringsMetadata` rejected `App/Resources/AppShortcuts.xcstrings`:
+*"Multiple parameters detected in phrase. A single phrase can only use a single parameter."*
+The phrase is `Run \(\.$snippet) on \(\.$connection) with \(.applicationName)`, added in
+D-061, and it had archived cleanly twice — because Xcode extracts phrases into the catalog
+during a build, and the validator reads the *catalog*. A build in this session finally wrote
+the phrase into it, and the next archive refused.
+
+It is not this change's defect and it is not fixed here; D-064 is the commit that fixes it and
+carries the green archive. What belongs in this entry is the honest state of this tree: the
+package, app and UI suites are green on it and the archive is not.
+
+### Two things found by reading the diff rather than by a test
+
+* `AppSettings.init` read the three new defaults **twice**. Harmless and dead, removed.
+* The Settings screen measured every font family inside `Task.detached { await MainActor.run { … } }`
+  — a hop off the main actor and straight back onto it, which is the opposite of what the
+  comment claimed. Type-checking a small file against the simulator SDK under Swift 6's
+  complete concurrency confirmed `UIFont.familyNames` and string measurement are not
+  main-actor work, so the detached task now does the measuring.
+
 ## 2026-09-09 — after D-062 (OSC 7, 52, 133; DEC 2026, 1004)
 
 | Command | Result |

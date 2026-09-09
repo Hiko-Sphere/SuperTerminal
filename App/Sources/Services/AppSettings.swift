@@ -13,6 +13,9 @@ final class AppSettings {
         static let lightThemeID = "settings.lightThemeID"
         static let followSystemAppearance = "settings.followSystemAppearance"
         static let fontSize = "settings.fontSize"
+        static let fontFamily = "settings.fontFamily"
+        static let lineHeightMultiple = "settings.lineHeightMultiple"
+        static let fontLigatures = "settings.fontLigatures"
         static let scrollbackLimit = "settings.scrollbackLimit"
         static let clipboardExpirySeconds = "settings.clipboardExpirySeconds"
         static let keepAwakeWhileConnected = "settings.keepAwakeWhileConnected"
@@ -37,7 +40,8 @@ final class AppSettings {
         static let appLockGraceSeconds = "settings.appLockGraceSeconds"
 
         static let all = [
-            themeID, lightThemeID, followSystemAppearance, fontSize, scrollbackLimit, clipboardExpirySeconds,
+            themeID, lightThemeID, followSystemAppearance, fontSize, fontFamily, lineHeightMultiple,
+            fontLigatures, scrollbackLimit, clipboardExpirySeconds,
             keepAwakeWhileConnected, commandHistoryEnabled, spotlightEnabled, remoteClipboardWrites,
             confirmMultilinePaste,
             hideContentInAppSwitcher, cursorBlink, bellEnabled, keyRowVisible,
@@ -61,6 +65,9 @@ final class AppSettings {
         lightThemeID = defaults.string(forKey: Key.lightThemeID) ?? TerminalTheme.daylight.id
         followSystemAppearance = defaults.bool(forKey: Key.followSystemAppearance)
         fontSize = defaults.double(forKey: Key.fontSize)
+        fontFamily = defaults.string(forKey: Key.fontFamily) ?? ""
+        lineHeightMultiple = defaults.double(forKey: Key.lineHeightMultiple)
+        fontLigatures = defaults.bool(forKey: Key.fontLigatures)
         scrollbackLimit = defaults.integer(forKey: Key.scrollbackLimit)
         clipboardExpirySeconds = defaults.integer(forKey: Key.clipboardExpirySeconds)
         keepAwakeWhileConnected = defaults.bool(forKey: Key.keepAwakeWhileConnected)
@@ -99,6 +106,12 @@ final class AppSettings {
             Key.assistantModel: "gpt-4o-mini",
             Key.followSystemAppearance: true,
             Key.fontSize: Self.defaultFontSize,
+            // The system's monospaced face, its own line height, and no ligatures — the
+            // last because a ligature draws two cells as one and the grid has been told
+            // they are two columns (D-063).
+            Key.fontFamily: "",
+            Key.lineHeightMultiple: 1.0,
+            Key.fontLigatures: false,
             Key.scrollbackLimit: 10000,
             Key.clipboardExpirySeconds: 60,
             Key.keepAwakeWhileConnected: true,
@@ -135,6 +148,9 @@ final class AppSettings {
         lightThemeID = defaults.string(forKey: Key.lightThemeID) ?? TerminalTheme.daylight.id
         followSystemAppearance = defaults.bool(forKey: Key.followSystemAppearance)
         fontSize = defaults.double(forKey: Key.fontSize)
+        fontFamily = defaults.string(forKey: Key.fontFamily) ?? ""
+        lineHeightMultiple = defaults.double(forKey: Key.lineHeightMultiple)
+        fontLigatures = defaults.bool(forKey: Key.fontLigatures)
         scrollbackLimit = defaults.integer(forKey: Key.scrollbackLimit)
         clipboardExpirySeconds = defaults.integer(forKey: Key.clipboardExpirySeconds)
         keepAwakeWhileConnected = defaults.bool(forKey: Key.keepAwakeWhileConnected)
@@ -160,6 +176,28 @@ final class AppSettings {
     }
 
     var themeID: String { didSet { defaults.set(themeID, forKey: Key.themeID) } }
+
+    /// The font family the terminal draws with, or empty for the system's monospaced face
+    /// (D-063).
+    var fontFamily: String {
+        didSet { defaults.set(fontFamily, forKey: Key.fontFamily) }
+    }
+
+    /// Line height as a multiple of the font's own. 1.0 is what the font asks for; more air
+    /// makes long output easier to read, less fits more on a phone.
+    var lineHeightMultiple: Double {
+        didSet { defaults.set(lineHeightMultiple, forKey: Key.lineHeightMultiple) }
+    }
+
+    /// Whether the chosen font's ligatures are drawn.
+    ///
+    /// Off by default, and that is a terminal-specific judgement rather than a taste one: a
+    /// font that draws `!=` as one glyph is drawing two cells as one, and a grid that has
+    /// been told those are two columns will put the cursor in the wrong place.
+    var fontLigatures: Bool {
+        didSet { defaults.set(fontLigatures, forKey: Key.fontLigatures) }
+    }
+
     var lightThemeID: String { didSet { defaults.set(lightThemeID, forKey: Key.lightThemeID) } }
     var followSystemAppearance: Bool {
         didSet { defaults.set(followSystemAppearance, forKey: Key.followSystemAppearance) }
@@ -270,4 +308,8 @@ final class AppSettings {
     /// phone, and above it a useful number of columns will not fit.
     static let fontSizeRange: ClosedRange<Double> = 8 ... 28
     static let defaultFontSize = 13.0
+
+    /// Line height is clamped too: much tighter than 0.9 and descenders collide with the
+    /// row below, much looser than 1.6 and a phone shows too few rows to be worth reading.
+    static let lineHeightRange: ClosedRange<Double> = 0.9 ... 1.6
 }

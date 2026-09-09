@@ -22,9 +22,31 @@ final class AppLockUITests: XCTestCase {
         app.descendants(matching: .any).matching(identifier: identifier).firstMatch
     }
 
+    /// Scrolls Settings until the row is there to be used.
+    ///
+    /// A long `Form` keeps only the rows near the viewport in the accessibility tree, so a
+    /// row below the fold does not exist until it is scrolled to — and a control that exists
+    /// but is off-screen cannot be tapped at a coordinate either. Settings has grown a
+    /// section every few changes; scrolling for what a test needs is what stops the next
+    /// section from breaking this one.
+    @discardableResult
+    private func settingsRow(_ identifier: String) -> XCUIElement {
+        let row = element(identifier)
+        var attempts = 0
+        while (!row.exists || !row.isHittable), attempts < 20 {
+            app.swipeUp()
+            attempts += 1
+        }
+        XCTAssertTrue(row.waitForExistence(timeout: 5), "Settings should offer \(identifier)")
+        return row
+    }
+
     func testPasscodeLocksTheAppAcrossALaunchAndAfterLeaving() throws {
         // Settings → App lock → set a passcode.
         app.buttons["Settings"].tap()
+        // Scroll first: on a phone *and* on an iPad the App lock switch is now below the
+        // fold, and a row below the fold is not in the accessibility tree at all.
+        settingsRow("applock-enabled")
         let toggle = app.switches["applock-enabled"].firstMatch
         XCTAssertTrue(toggle.waitForExistence(timeout: 10), "Settings should carry the App lock switch")
         // The switch control, not the row: a plain tap lands on the row's centre, which
@@ -43,7 +65,7 @@ final class AppLockUITests: XCTestCase {
         confirm.tap()
         confirm.typeText("open sesame")
         app.buttons["applock-save"].tap()
-        XCTAssertTrue(app.buttons["applock-change"].waitForExistence(timeout: 5), "with the lock on, Settings offers to change the passcode")
+        XCTAssertTrue(settingsRow("applock-change").exists, "with the lock on, Settings offers to change the passcode")
         XCTAssertEqual(toggle.value as? String, "1")
         XCTAssertFalse(element("lock-screen").exists, "turning the lock on does not lock the screen the user is on")
 

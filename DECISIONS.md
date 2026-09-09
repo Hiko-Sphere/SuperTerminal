@@ -1396,4 +1396,5 @@ An index, so nothing has to be hunted for:
 | D-059 | `6ff9af5` | tmux in the app: a connection that attaches, and the server's own arrangement on screen |
 | D-060 | `7f87801` | What a server may open towards the device, proved against one that tries |
 | D-061 | `088633f` | Links, Spotlight, Handoff and a third shortcut — and what a link is not allowed to do |
-| D-062 | this commit | OSC 7, 52 and 133, DEC 2026 and 1004, and who is allowed to write the clipboard |
+| D-062 | `e2b14aa` | OSC 7, 52 and 133, DEC 2026 and 1004, and who is allowed to write the clipboard |
+| D-063 | this commit | A font to work in: any monospaced face, a line height, and ligatures off for a reason |

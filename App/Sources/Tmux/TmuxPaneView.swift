@@ -15,6 +15,9 @@ struct TmuxPaneView: UIViewRepresentable {
     let screen: TerminalScreen
     let theme: TerminalTheme
     let fontSize: CGFloat
+    let fontFamily: String
+    let lineHeightMultiple: CGFloat
+    let ligaturesEnabled: Bool
     let blinkCursor: Bool
     /// How far back this pane is scrolled, in lines.
     let scrollbackOffset: Int
@@ -27,6 +30,9 @@ struct TmuxPaneView: UIViewRepresentable {
         let view = TerminalInputView()
         view.shortcutRouter = container.shortcuts
         view.renderView.theme = theme
+        view.renderView.fontFamily = fontFamily
+        view.renderView.lineHeightMultiple = lineHeightMultiple
+        view.renderView.ligaturesEnabled = ligaturesEnabled
         view.renderView.fontSize = fontSize
         context.coordinator.attach(to: view, session: session, pane: pane, onHaptic: onHaptic, onCopy: onCopy)
         return view
@@ -41,6 +47,11 @@ struct TmuxPaneView: UIViewRepresentable {
         }
         view.renderView.theme = theme
         let fontChanged = view.renderView.fontSize != fontSize
+            || view.renderView.fontFamily != fontFamily
+            || view.renderView.lineHeightMultiple != lineHeightMultiple
+        view.renderView.fontFamily = fontFamily
+        view.renderView.lineHeightMultiple = lineHeightMultiple
+        view.renderView.ligaturesEnabled = ligaturesEnabled
         view.renderView.fontSize = fontSize
         if fontChanged { view.reportGridSizeIfChanged() }
         view.renderView.update(screen: screen)

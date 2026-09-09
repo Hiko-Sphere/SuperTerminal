@@ -90,7 +90,8 @@ claimed anywhere in the interface.
 | 3.1 | OSC 7, 52, 133 | **Done (D-062)**: OSC 7 working directory (host ignored, path decoded and checked), OSC 52 clipboard *writes* reported to the app and performed only where the person allowed them — reads refused outright — and OSC 133 prompt/command/output/exit marks. Verified against a real shell over SSH |
 | 3.2 | DEC 2026, DEC 1004 | **Done (D-062)**: synchronised output and focus reporting as modes, and DECRQM (`CSI ? Ps $ p`) answers for every private mode this terminal has an opinion about — including 0 for the ones it does not implement, which is what tells a program not to send them |
 | 3.3 | Sixel (DCS), Kitty (APC), iTerm2 (OSC 1337) | Not started — DCS is parsed and discarded |
-| 3.4 | Font system | Not started — only point size is configurable |
+| 3.4 | Font system | **Done (D-063)**: any monospaced face on the device, a line height, and ligatures — with "monospaced" measured rather than believed (a family is kept only if a narrow character, a wide one and a space all measure the same). Changing any of them re-measures the grid and tells the server, proved through the interface by asking the remote `stty` |
+| 3.5 | Fuzzed input | Not started — the parser is written so no byte sequence can wedge it, and that claim is not yet tested by throwing random bytes at it |
 
 ## Phase 4 — platform reach
 

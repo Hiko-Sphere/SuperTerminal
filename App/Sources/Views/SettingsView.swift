@@ -19,12 +19,16 @@ struct SettingsView: View {
             ?? code
     }
 
+    /// Read once when the screen appears: enumerating families and measuring each one is
+    /// not something to do on every redraw.
+    @State private var monospacedFonts: [String] = []
+
     var body: some View {
         @Bindable var settings = container.settings
 
         NavigationStack {
             Form {
-                Section("Appearance") {
+                Section {
                     Toggle("Match system light and dark", isOn: $settings.followSystemAppearance)
                     Picker("Dark theme", selection: $settings.themeID) {
                         ForEach(settings.allThemes) { theme in
@@ -44,8 +48,40 @@ struct SettingsView: View {
                         in: AppSettings.fontSizeRange,
                         step: 1
                     )
+                    Picker("Font", selection: $settings.fontFamily) {
+                        Text("System").tag(TerminalFont.systemFamily)
+                        ForEach(monospacedFonts, id: \.self) { family in
+                            // Each name in its own face: the point of choosing a terminal
+                            // font is what the glyphs look like, not what it is called.
+                            // Resolved the same way the terminal resolves it, so the row
+                            // cannot show one face and the screen draw another.
+                            Text(family)
+                                .font(Font(TerminalFont.faces(family: family, size: 16).regular))
+                                .tag(family)
+                        }
+                    }
+                    .accessibilityIdentifier("settings-font")
+                    Stepper(
+                        "Line height \(settings.lineHeightMultiple, format: .number.precision(.fractionLength(2)))×",
+                        value: $settings.lineHeightMultiple,
+                        in: AppSettings.lineHeightRange,
+                        step: 0.05
+                    )
+                    .accessibilityIdentifier("settings-line-height")
+                    Toggle("Font ligatures", isOn: $settings.fontLigatures)
+                        .accessibilityIdentifier("settings-ligatures")
+                    FontSampleView(
+                        family: settings.fontFamily,
+                        size: settings.fontSize,
+                        lineHeightMultiple: settings.lineHeightMultiple,
+                        ligaturesEnabled: settings.fontLigatures
+                    )
                     Toggle("Blink the cursor", isOn: $settings.cursorBlink)
                     Toggle("Haptic feedback", isOn: $settings.hapticsEnabled)
+                } header: {
+                    Text("Appearance")
+                } footer: {
+                    Text("Only fonts where every character is the same width are offered: a terminal draws a grid, and a font that does not measure evenly draws a screen that does not line up. Ligatures are off by default because a font that draws != as one glyph is drawing two cells as one.")
                 }
 
                 AppLockSettingsSection()
@@ -194,6 +230,16 @@ struct SettingsView: View {
             // connection list visible behind it, and neither position in the tree nor
             // a localized label identifies which collection view is which.
             .accessibilityIdentifier("settings-form")
+            .task {
+                // Measuring every family on the device takes long enough to be worth doing
+                // once, and off the main thread: this runs while the screen is animating in
+                // (D-063). Font enumeration and string measurement are not main-actor work,
+                // which is why the detached task can do it.
+                guard monospacedFonts.isEmpty else { return }
+                monospacedFonts = await Task.detached(priority: .userInitiated) {
+                    TerminalFont.monospacedFamilies()
+                }.value
+            }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

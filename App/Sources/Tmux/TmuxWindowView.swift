@@ -115,7 +115,11 @@ struct TmuxWindowView: View {
             // guessed, so a different font size changes the number of cells rather than
             // the size of the text.
             .task(id: proxy.size) {
-                let metrics = TerminalRenderView.metrics(forFontSize: container.settings.fontSize)
+                let metrics = TerminalRenderView.metrics(
+                    forFontSize: container.settings.fontSize,
+                    family: container.settings.fontFamily,
+                    lineHeightMultiple: container.settings.lineHeightMultiple
+                )
                 await session.resize(
                     columns: max(Int(proxy.size.width / metrics.cellWidth), 1),
                     rows: max(Int(proxy.size.height / metrics.cellHeight), 1)
@@ -138,6 +142,9 @@ struct TmuxWindowView: View {
                 screen: emulator.activeScreen,
                 theme: theme,
                 fontSize: container.settings.fontSize,
+                fontFamily: container.settings.fontFamily,
+                lineHeightMultiple: container.settings.lineHeightMultiple,
+                ligaturesEnabled: container.settings.fontLigatures,
                 blinkCursor: container.settings.cursorBlink,
                 scrollbackOffset: session.scrollOffsets[pane] ?? 0,
                 wantsKeyboard: wantsKeyboard && isActive,

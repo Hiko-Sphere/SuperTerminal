@@ -146,6 +146,13 @@ latches for the next key, so Control then C sends `^C`. Hold it to keep it down.
 - **Paste** is confirmed when the text has more than one line, so a stray clipboard
   cannot run a command you did not read. That check can be turned off.
 - **Text size** is ⌘+ (or ⌘=) and ⌘−, ⌘0 for the original.
+- **The font** is in **Settings → Appearance**: any monospaced face on the device, a line
+  height to give long output more or less air, and ligatures if the font has them. Only
+  fonts where every character is the same width are offered, because a terminal draws a
+  grid. Changing any of them re-measures the screen and tells the server, so full-screen
+  programs stay the right size. A sample under the controls is drawn with the same face and
+  the same row height the terminal will use, so a zero can be told from an `O` before you
+  leave the screen.
 - **Themes** and light/dark following the system are in **Settings → Appearance**.
 - **Shell integration** is understood where a shell offers it: the app follows the working
   directory a shell reports, and knows where a prompt and its output begin. A program can

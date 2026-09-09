@@ -5101,6 +5101,40 @@
         }
       }
     },
+    "Font": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "字体"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "字體"
+          }
+        }
+      }
+    },
+    "Font ligatures": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "字体连字"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "字體連字"
+          }
+        }
+      }
+    },
     "Font size %lld pt": {
       "extractionState": "manual",
       "localizations": {
@@ -6461,6 +6495,23 @@
         }
       }
     },
+    "Line height %@×": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "行高 %@×"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "行高 %@×"
+          }
+        }
+      }
+    },
     "Links can come from anywhere — a web page, a message, a code on a wall. Check the server below is one you meant to reach. Opening it adds nothing to your connections until you save it.": {
       "extractionState": "manual",
       "localizations": {
@@ -7783,6 +7834,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "在伺服器上執行："
+          }
+        }
+      }
+    },
+    "Only fonts where every character is the same width are offered: a terminal draws a grid, and a font that does not measure evenly draws a screen that does not line up. Ligatures are off by default because a font that draws != as one glyph is drawing two cells as one.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "仅提供每个字符等宽的字体：终端绘制的是网格，而宽度不一致的字体会画出对不齐的屏幕。连字默认关闭，因为把 != 画成一个字形的字体，是在把两个单元格画成一个。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "僅提供每個字元等寬的字體：終端機繪製的是格線，而寬度不一致的字體會畫出對不齊的畫面。連字預設關閉，因為把 != 畫成一個字形的字體，是在把兩個儲存格畫成一個。"
           }
         }
       }
@@ -9886,6 +9954,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "SSH 連線已不存在"
+          }
+        }
+      }
+    },
+    "Sample of %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 字体示例"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 字體範例"
           }
         }
       }

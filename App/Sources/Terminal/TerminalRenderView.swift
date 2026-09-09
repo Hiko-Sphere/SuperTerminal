@@ -44,6 +44,22 @@ final class TerminalRenderView: UIView {
         didSet { if fontSize != oldValue { rebuildFonts() } }
     }
 
+    /// The font family, or empty for the system's monospaced face (D-063).
+    var fontFamily: String = TerminalFont.systemFamily {
+        didSet { if fontFamily != oldValue { rebuildFonts() } }
+    }
+
+    /// Line height as a multiple of what the font asks for.
+    var lineHeightMultiple: CGFloat = 1 {
+        didSet { if lineHeightMultiple != oldValue { rebuildFonts() } }
+    }
+
+    /// Whether the font's ligatures are drawn. Off draws each cell's glyph on its own,
+    /// which is what a grid means by a column.
+    var ligaturesEnabled = false {
+        didSet { if ligaturesEnabled != oldValue { setNeedsDisplay() } }
+    }
+
     /// Rows scrolled back from the live screen. Zero means the bottom.
     var scrollbackOffset: Int = 0 {
         didSet { if scrollbackOffset != oldValue { setNeedsDisplay() } }
@@ -192,11 +208,12 @@ final class TerminalRenderView: UIView {
     // MARK: - Fonts
 
     private func rebuildFonts() {
-        regularFont = .monospacedSystemFont(ofSize: fontSize, weight: .regular)
-        boldFont = .monospacedSystemFont(ofSize: fontSize, weight: .bold)
+        let faces = TerminalFont.faces(family: fontFamily, size: fontSize)
+        regularFont = faces.regular
+        boldFont = faces.bold
         italicFont = Self.italicised(regularFont)
         boldItalicFont = Self.italicised(boldFont)
-        metrics = Self.metrics(forFontSize: fontSize)
+        metrics = Self.metrics(forFontSize: fontSize, family: fontFamily, lineHeightMultiple: lineHeightMultiple)
         setNeedsDisplay()
     }
 
@@ -206,8 +223,12 @@ final class TerminalRenderView: UIView {
     /// pane to measure — tmux decides the arrangement from that number — so the same
     /// arithmetic the view uses is available on its own rather than duplicated with a
     /// guess (D-059).
-    static func metrics(forFontSize fontSize: CGFloat) -> Metrics {
-        let regularFont = UIFont.monospacedSystemFont(ofSize: fontSize, weight: .regular)
+    static func metrics(
+        forFontSize fontSize: CGFloat,
+        family: String = TerminalFont.systemFamily,
+        lineHeightMultiple: CGFloat = 1
+    ) -> Metrics {
+        let regularFont = TerminalFont.faces(family: family, size: fontSize).regular
         // Monospaced by construction, so any glyph's advance is the cell width. `M` is
         // used because it is present in every font that could be substituted.
         let advance = ("M" as NSString).size(withAttributes: [.font: regularFont]).width
@@ -218,7 +239,7 @@ final class TerminalRenderView: UIView {
 
         return Metrics(
             cellWidth: max(1, advance.rounded(.toNearestOrEven)),
-            cellHeight: max(1, lineHeight),
+            cellHeight: max(1, (lineHeight * max(lineHeightMultiple, 0.5)).rounded(.up)),
             baselineOffset: ascent,
             underlineOffset: max(1, descent * 0.4),
             underlineThickness: max(1, (fontSize / 14).rounded(.up))
@@ -359,9 +380,11 @@ final class TerminalRenderView: UIView {
             let attributed = NSAttributedString(string: run.text, attributes: [
                 .font: font(for: attributes),
                 .foregroundColor: UIColor(cgColor: color),
-                // Ligatures would merge `!=` or `->` into a single glyph and break the
-                // one-character-per-cell invariant the grid depends on.
-                .ligature: 0,
+                // Ligatures merge `!=` or `->` into a single glyph, which breaks the
+                // one-character-per-cell invariant the grid depends on — so they are off
+                // unless somebody asked for them, having chosen a font that has them
+                // (D-063).
+                .ligature: ligaturesEnabled ? 1 : 0,
             ])
             let ctLine = CTLineCreateWithAttributedString(attributed)
             context.textPosition = CGPoint(

@@ -7,6 +7,10 @@ struct TerminalScreenView: UIViewRepresentable {
     let session: TerminalSession
     let theme: TerminalTheme
     let fontSize: CGFloat
+    /// The font family, line height and ligature choice (D-063).
+    let fontFamily: String
+    let lineHeightMultiple: CGFloat
+    let ligaturesEnabled: Bool
     let blinkCursor: Bool
     let confirmMultilinePaste: Bool
     /// Called when ⌘K is pressed while the terminal has the keyboard.
@@ -33,6 +37,9 @@ struct TerminalScreenView: UIViewRepresentable {
         let view = TerminalInputView()
         view.shortcutRouter = container.shortcuts
         view.renderView.theme = theme
+        view.renderView.fontFamily = fontFamily
+        view.renderView.lineHeightMultiple = lineHeightMultiple
+        view.renderView.ligaturesEnabled = ligaturesEnabled
         view.renderView.fontSize = fontSize
         context.coordinator.attach(
             to: view,
@@ -66,6 +73,11 @@ struct TerminalScreenView: UIViewRepresentable {
         }
         view.renderView.theme = theme
         let fontChanged = view.renderView.fontSize != fontSize
+            || view.renderView.fontFamily != fontFamily
+            || view.renderView.lineHeightMultiple != lineHeightMultiple
+        view.renderView.fontFamily = fontFamily
+        view.renderView.lineHeightMultiple = lineHeightMultiple
+        view.renderView.ligaturesEnabled = ligaturesEnabled
         view.renderView.fontSize = fontSize
         // A different font means a different number of cells in the same bounds, and the
         // remote program has to be told before it draws anything else.
