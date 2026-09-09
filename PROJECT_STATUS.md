@@ -12,9 +12,9 @@ delivered. What remains needs the owner: a live Cloudflare environment (B-2), tw
 devices and a production CloudKit schema for the live iCloud checks (B-4 — archiving and
 the entitlements are now proven), and the legal placeholders with counsel review (B-5).
 
-**Last full regression (2026-09-09, after D-051):** package **279 tests in 41 suites** on
+**Last full regression (2026-09-09, after D-052):** package **285 tests in 42 suites** on
 the host (the VNC suites against LibVNCServer); vendored NIOSSH **360 tests, 0 failures**;
-`ApexTerminalTests` **260 in 49 suites**, 0 failed, against a real `sshd` and a containerised
+`ApexTerminalTests` **261 in 49 suites**, 0 failed, against a real `sshd` and a containerised
 OpenSSH with PAM;
 `ApexTerminalUITests` **48 passed, 2 failed** on iPhone 17 Pro, both of them another
 session's `ZZSearchProbeUITests` (D-050); Release **archive succeeded**; localisation audit complete in every language. The per-commit record, with
@@ -48,6 +48,7 @@ This file is the resumable state of the work. It records what is *proven*, what 
 | --- | --- |
 | Ed25519 key authentication against real OpenSSH | `SSHIntegrationTests.ed25519KeyAuthenticationRunsCommand` — real `sshd`, real handshake, remote command returns `CF_E2E_OK` |
 | ECDSA P-256 key authentication | `SSHIntegrationTests.ecdsaKeyAuthentication` |
+| **Agent forwarding, with this device as the agent** | `AgentForwardingTests` (D-052) — `ssh-add -l` run on a real OpenSSH server lists the key by the fingerprint this device holds, with a control showing the same command finding no agent when forwarding is off |
 | **Keyboard-interactive, multi-round** | `KeyboardInteractiveTests` (package) and `KeyboardInteractiveAuthTests` (app, D-051) — stock OpenSSH in a container accepting *only* `keyboard-interactive`, with PAM asking for a password and then a one-time code. Public key and password are both off there, so a login is evidence about this method alone |
 | **A key held in the Secure Enclave authenticates to real OpenSSH** | `SecureEnclaveKeyTests` (package) and `SecureEnclaveAuthTests` (app, D-049) — a key generated inside the enclave, only its public half given to `sshd`, and the server's own log asserted: `Accepted publickey … ECDSA SHA256:<that key's fingerprint>`. The *biometric* policy is not covered: the Simulator has no LocalAuthentication, so it is H-7 |
 | Passphrase-protected OpenSSH key import (bcrypt + AES-CTR) | `SSHIntegrationTests.encryptedKeyAuthentication` — a wrong passphrase must fail, which only happens if the KDF is bit-exact |

@@ -409,6 +409,8 @@ extension SSHChildChannel: Channel, ChannelCore {
             message = SSHMessage(event, recipientChannel: self.state.remoteChannelIdentifier!)
         case let event as SSHChannelRequestEvent.ShellRequest:
             message = SSHMessage(event, recipientChannel: self.state.remoteChannelIdentifier!)
+        case let event as SSHChannelRequestEvent.AgentForwardingRequest:
+            message = SSHMessage(event, recipientChannel: self.state.remoteChannelIdentifier!)
         case let event as SSHChannelRequestEvent.ExitSignal:
             message = SSHMessage(event, recipientChannel: self.state.remoteChannelIdentifier!)
         case let event as SSHChannelRequestEvent.SubsystemRequest:

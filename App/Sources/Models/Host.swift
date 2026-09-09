@@ -63,6 +63,15 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
     public var showsInFiles: Bool?
     /// Whether the connection is published to Files right now.
     public var isPublishedToFiles: Bool { showsInFiles ?? false }
+    /// Whether this device answers as an SSH agent for the far side (D-052).
+    ///
+    /// Off unless asked for, and asked for per connection rather than globally: agent
+    /// forwarding means anything with root on that server can ask this phone to sign for
+    /// as long as the session lasts, which is a reasonable trade for a machine you own and
+    /// a bad one for a shared box. Optional so older records still decode.
+    public var forwardsAgent: Bool?
+    /// Whether the agent is offered on this connection right now.
+    public var isForwardingAgent: Bool { forwardsAgent ?? false }
     /// When this record last changed, on any device. Drives last-writer-wins in sync.
     ///
     /// Optional on purpose: files written before sync existed have no such field, and a
@@ -142,6 +151,7 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
         platformOverride: HostPlatform? = nil,
         detectedPlatform: HostPlatform? = nil,
         showsInFiles: Bool? = nil,
+        forwardsAgent: Bool? = nil,
         portForwards: [PortForward]? = nil,
         jumpHosts: [UUID]? = nil
     ) {
@@ -162,6 +172,7 @@ public struct Host: Identifiable, Sendable, Codable, Equatable {
         self.platformOverride = platformOverride
         self.detectedPlatform = detectedPlatform
         self.showsInFiles = showsInFiles
+        self.forwardsAgent = forwardsAgent
         self.portForwards = portForwards
         self.jumpHosts = jumpHosts
     }

@@ -30,6 +30,12 @@ public struct SSHConnectionConfiguration: Sendable {
     /// which a server *asks*, so a host with two-factor authentication works without
     /// anything being set up for it. `nil` means the method is never offered.
     public var keyboardInteractiveResponder: SSHKeyboardInteractiveResponder?
+    /// The agent to answer with when the far side asks (D-052).
+    ///
+    /// `nil` — the default — means agent forwarding is off and an `auth-agent@openssh.com`
+    /// channel is refused like any other unrequested one. Setting it is what makes this
+    /// device sign for processes on the server.
+    public var agent: SSHAgent?
 
     public init(
         username: String,
@@ -38,7 +44,8 @@ public struct SSHConnectionConfiguration: Sendable {
         keepAliveInterval: TimeAmount = .seconds(30),
         handshakeTimeout: TimeAmount = .seconds(30),
         passwordProvider: SSHPasswordProvider? = nil,
-        keyboardInteractiveResponder: SSHKeyboardInteractiveResponder? = nil
+        keyboardInteractiveResponder: SSHKeyboardInteractiveResponder? = nil,
+        agent: SSHAgent? = nil
     ) {
         self.username = username
         self.credentials = credentials
@@ -47,6 +54,7 @@ public struct SSHConnectionConfiguration: Sendable {
         self.handshakeTimeout = handshakeTimeout
         self.passwordProvider = passwordProvider
         self.keyboardInteractiveResponder = keyboardInteractiveResponder
+        self.agent = agent
     }
 }
 
@@ -92,17 +100,24 @@ public actor SSHConnection {
     public nonisolated var eventLoop: EventLoop { channel.eventLoop }
     internal nonisolated var sshHandler: EventLoopIsolated<NIOSSHHandler> { handler }
 
+    /// Set when this connection offered to be the far side's agent (D-052). Kept so the
+    /// shell knows to ask for forwarding, and so the answer to "is anything signing on my
+    /// behalf over there?" has one place to come from.
+    internal let agent: SSHAgent?
+
     private init(
         channel: Channel,
         handler: EventLoopIsolated<NIOSSHHandler>,
         credentialChain: SSHCredentialChain,
         forwardedChannels: ForwardedChannelRouter,
+        agent: SSHAgent?,
         log: STLogger
     ) {
         self.channel = channel
         self.handler = handler
         self.credentialChain = credentialChain
         self.forwardedChannels = forwardedChannels
+        self.agent = agent
         self.log = log
     }
 
@@ -155,6 +170,27 @@ public actor SSHConnection {
                     // silently break it; accepting all of them would let a server open
                     // connections into the app that nothing requested.
                     inboundChildChannelInitializer: { child, type in
+                        // The agent channel, when this connection offered one. Anything
+                        // else of this type is refused: a server that opens it without
+                        // having been asked is asking to be signed for by a device that
+                        // never agreed to it.
+                        if case .authAgent = type {
+                            guard let agent = configuration.agent else {
+                                log.info("refused an agent channel that was never requested")
+                                return child.eventLoop.makeFailedFuture(SSHConnection.unexpectedInboundChannel)
+                            }
+                            log.debug("the server opened an agent channel")
+                            return child.eventLoop.makeCompletedFuture {
+                                try child.pipeline.syncOperations.addHandler(
+                                    SSHAgentChannelHandler(
+                                        agent: agent,
+                                        allocator: child.allocator,
+                                        log: log
+                                    )
+                                )
+                            }
+                        }
+
                         guard case let .forwardedTCPIP(forwarded) = type,
                               let route = forwardedChannels.route(
                                   host: forwarded.listeningHost,
@@ -232,6 +268,7 @@ public actor SSHConnection {
             handler: handlerBox,
             credentialChain: chain,
             forwardedChannels: forwardedChannels,
+            agent: configuration.agent,
             log: log
         )
     }
@@ -290,6 +327,23 @@ public actor SSHConnection {
                 failureCategory: .sshChannel,
                 failureMessage: String(localized: "The server refused to allocate a terminal.", bundle: .module)
             )
+            if agent != nil {
+                // Asked before the shell starts, so the environment the shell inherits
+                // already has SSH_AUTH_SOCK in it. A server that refuses is not an error:
+                // plenty have `AllowAgentForwarding no`, and the session is still usable
+                // without it — it just cannot sign for anything on the far side.
+                do {
+                    try await Self.request(
+                        on: child,
+                        event: SSHChannelRequestEvent.AgentForwardingRequest(wantReply: true),
+                        failureCategory: .sshChannel,
+                        failureMessage: String(localized: "The server refused to forward the agent.", bundle: .module)
+                    )
+                    log.info("agent forwarding accepted by the server")
+                } catch {
+                    log.info("the server refused agent forwarding", ["error": String(describing: error)])
+                }
+            }
             for (name, value) in environment.sorted(by: { $0.key < $1.key }) {
                 // Servers commonly refuse env requests they have not allowlisted;
                 // that is not fatal, so failures are logged and the session continues.

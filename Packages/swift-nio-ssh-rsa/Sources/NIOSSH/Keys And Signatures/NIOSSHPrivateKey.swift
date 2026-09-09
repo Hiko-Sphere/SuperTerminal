@@ -185,6 +185,39 @@ extension NIOSSHPrivateKey {
 }
 
 extension NIOSSHPrivateKey {
+    /// Signs bytes the peer chose, and writes the signature in SSH wire format.
+    ///
+    /// This exists for one caller: an SSH **agent**, which by definition signs a blob it
+    /// cannot inspect. `SSH_AGENTC_SIGN_REQUEST` (draft-miller-ssh-agent § 4.5) hands over
+    /// an opaque string that is, in practice, some other connection's user-auth payload —
+    /// the agent cannot tell which server it is for, and that is the risk agent forwarding
+    /// carries rather than a shortcoming of this method.
+    ///
+    /// It is named for that purpose so it cannot be reached for by accident. Nothing in
+    /// normal authentication should use it: the paths that sign a payload this library
+    /// itself constructed are the ones to prefer, because they know what they are signing.
+    ///
+    /// - Parameter rsaAlgorithm: which RSA variant to use, ignored for other key types.
+    ///   The name is written into the signature, so it must match what the caller declares.
+    public func signOpaqueAgentRequest(
+        _ data: ByteBuffer,
+        rsaAlgorithm: NIOSSHRSASignatureAlgorithm = .sha512
+    ) throws -> ByteBuffer {
+        let signature = try self.sign(UserAuthSignablePayload(bytes: data), rsaAlgorithm: rsaAlgorithm)
+        var buffer = ByteBufferAllocator().buffer(capacity: 128)
+        buffer.writeCompositeSSHString { $0.writeSSHSignature(signature) }
+        return buffer
+    }
+
+    /// The public half in the SSH wire encoding an agent puts in its identities answer.
+    public var publicKeyBlob: ByteBuffer {
+        var buffer = ByteBufferAllocator().buffer(capacity: 128)
+        buffer.writeCompositeSSHString { $0.writeSSHHostKey(self.publicKey) }
+        // The composite string wrote a length prefix; the agent wants the blob itself.
+        buffer.moveReaderIndex(forwardBy: 4)
+        return buffer
+    }
+
     /// Obtains the public key for a corresponding private key.
     public var publicKey: NIOSSHPublicKey {
         switch self.backingKey {

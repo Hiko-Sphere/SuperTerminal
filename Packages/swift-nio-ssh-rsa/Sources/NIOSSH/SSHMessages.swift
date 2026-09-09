@@ -269,6 +269,10 @@ extension SSHMessage {
             case session
             case forwardedTCPIP(ForwardedTCPIP)
             case directTCPIP(DirectTCPIP)
+            /// `auth-agent@openssh.com`: the server asking the client to be its SSH agent
+            /// for this connection, after the client asked for forwarding. Carries no
+            /// fields of its own — everything that follows is the agent protocol.
+            case authAgent
         }
 
         struct ForwardedTCPIP: Equatable {
@@ -367,6 +371,9 @@ extension SSHMessage {
             case windowChange(WindowChange)
             case xonXoff(Bool)
             case signal(String)
+            /// `auth-agent-req@openssh.com`: the client asking the server to forward its
+            /// agent. Carries nothing beyond the `want reply` flag every request has.
+            case authAgentReq
             case unknown
         }
 
@@ -1019,6 +1026,9 @@ extension ByteBuffer {
                     )
                 )
 
+            case "auth-agent@openssh.com":
+                type = .authAgent
+
             case "direct-tcpip":
                 guard
                     let hostToConnectTo = self.readSSHStringAsString(),
@@ -1642,6 +1652,9 @@ extension ByteBuffer {
 
         case .directTCPIP:
             writtenBytes += self.writeSSHString("direct-tcpip".utf8)
+
+        case .authAgent:
+            writtenBytes += self.writeSSHString("auth-agent@openssh.com".utf8)
         }
 
         writtenBytes += self.writeInteger(message.senderChannel)
@@ -1665,6 +1678,10 @@ extension ByteBuffer {
             writtenBytes += self.writeInteger(UInt32(data.portToConnectTo))
             writtenBytes += self.writeSSHString((data.originatorAddress.ipAddress ?? "<nio-error>").utf8)
             writtenBytes += self.writeInteger(UInt32(data.originatorAddress.port ?? -1))
+
+        case .authAgent:
+            // Nothing follows the header: the agent protocol starts on the channel itself.
+            break
         }
 
         return writtenBytes
@@ -1759,6 +1776,8 @@ extension ByteBuffer {
             writtenBytes += self.writeSSHString("xon-xoff".utf8)
         case .signal:
             writtenBytes += self.writeSSHString("signal".utf8)
+        case .authAgentReq:
+            writtenBytes += self.writeSSHString("auth-agent-req@openssh.com".utf8)
         case .unknown:
             preconditionFailure()
         }
@@ -1798,6 +1817,9 @@ extension ByteBuffer {
             writtenBytes += self.writeSSHBoolean(clientCanDo)
         case .signal(let name):
             writtenBytes += self.writeSSHString(name.utf8)
+        case .authAgentReq:
+            // The request is the whole message: nothing follows `want reply`.
+            break
         case .unknown:
             preconditionFailure()
         }

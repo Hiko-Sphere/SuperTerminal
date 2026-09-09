@@ -35,6 +35,13 @@ public enum SSHChannelType: Equatable, Sendable {
 
     /// "Forwarded TCP/IP" is a connection that was accepted from a listening socket and is being forwarded to the client.
     case forwardedTCPIP(ForwardedTCPIP)
+
+    /// `auth-agent@openssh.com`: the server has something to ask the client's SSH agent.
+    ///
+    /// Opened by the *server*, and only after the client asked for its agent to be
+    /// forwarded with ``SSHChannelRequestEvent/AgentForwardingRequest``. Everything sent on
+    /// it is the agent protocol, so the channel itself carries no fields.
+    case authAgent
 }
 
 extension SSHChannelType {
@@ -121,6 +128,8 @@ extension SSHChannelType {
                     originatorAddress: message.originatorAddress
                 )
             )
+        case .authAgent:
+            self = .authAgent
         case .forwardedTCPIP(let message):
             self = .forwardedTCPIP(
                 .init(
@@ -154,6 +163,8 @@ extension SSHMessage.ChannelOpenMessage.ChannelType {
                     originatorAddress: data.originatorAddress
                 )
             )
+        case .authAgent:
+            self = .authAgent
         }
     }
 }

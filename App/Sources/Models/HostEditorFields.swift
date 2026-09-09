@@ -21,6 +21,7 @@ struct HostEditorFields: Equatable {
     var platformOverride: HostPlatform?
     var showsInFiles: Bool
     var jumpHosts: [UUID]
+    var forwardsAgent: Bool
 }
 
 extension Host {
@@ -38,6 +39,13 @@ extension Host {
         host.accessAuthentication = fields.accessAuthentication
         host.platformOverride = fields.platformOverride
         host.showsInFiles = fields.showsInFiles ? true : nil
+        // Never left on for a connection that has no key to offer: the toggle is
+        // disabled in that state, and a record saved that way would claim a capability
+        // the connection cannot deliver.
+        host.forwardsAgent = fields.forwardsAgent && fields.credentials.contains(where: {
+            if case .privateKey = $0 { return true }
+            return false
+        }) ? true : nil
         host.jumpHosts = fields.jumpHosts.isEmpty ? nil : fields.jumpHosts
         return host
     }

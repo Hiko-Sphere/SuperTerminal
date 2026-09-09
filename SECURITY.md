@@ -152,6 +152,38 @@ password against `MaxAuthTries`.
 an info request only while this side has a keyboard-interactive exchange in flight, so a
 server cannot present a `PK_OK` body and have it parsed as prompts, or the reverse.
 
+### T-6c · A forwarded agent (D-052)
+
+*Threat:* agent forwarding is, by construction, a signing oracle offered to a remote
+machine. Anything with root on that server can reach the socket, and it chooses both the
+moment and the payload — which it can make be another server's authentication challenge.
+OpenSSH's own manual says as much about `ForwardAgent`.
+
+*What is not defended, and is stated rather than hidden:* a server that is already
+compromised can use the key while the session lasts. There is no cryptographic fix; the
+protocol's own answer is "do not forward to hosts you do not trust", and that is what the
+switch's own text says, in those words, where the decision is made.
+
+*What is defended:*
+
+* **Off unless asked for, per connection.** Never global, so a scratch box cannot inherit
+  the setting from a production one.
+* **Only this connection's own key.** The agent is built from the credentials that
+  connection already uses, so one server cannot ask for the key another one trusts.
+* **No unrequested channels.** An `auth-agent@openssh.com` channel is refused unless this
+  connection offered an agent — a server cannot open one and start asking.
+* **Read-only.** Only `REQUEST_IDENTITIES` and `SIGN_REQUEST` are answered.
+  `ADD_IDENTITY`, `REMOVE_IDENTITY`, `LOCK` and the rest get `SSH_AGENT_FAILURE`, so the
+  far side cannot change what this device holds — a forwarded agent that honoured
+  `ADD_IDENTITY` would be a way to plant a key on someone's phone.
+* **A policy hook on every signature**, so a future release can ask rather than assume.
+* **Bounded framing.** The channel is fed by the far side, so a message longer than 256 KiB
+  — OpenSSH's own agent limit — closes the channel rather than being allocated for.
+
+*Where the key is:* nowhere it was not already. A Secure Enclave key signs without leaving
+the enclave, so what the server borrows is the *use* of the key for the length of a session,
+never the key.
+
 ### T-7 · Log and diagnostics leakage
 
 *Defence:* redaction happens at construction, not by scrubbing afterwards. `Redacted<T>`

@@ -28,6 +28,7 @@ struct HostEditorView: View {
     @State private var jumpDestination = ""
     @State private var selectedKeyID: UUID?
     @State private var usesPassword = false
+    @State private var forwardsAgent = false
     @State private var savedPassword = ""
     @State private var folder = ""
     @State private var terminalType = "xterm-256color"
@@ -53,6 +54,7 @@ struct HostEditorView: View {
                 return nil
             }.first)
             _usesPassword = State(initialValue: host.credentials.contains(.password))
+            _forwardsAgent = State(initialValue: host.isForwardingAgent)
             _folder = State(initialValue: host.folder ?? "")
             _terminalType = State(initialValue: host.terminalType)
             _platformOverride = State(initialValue: host.platformOverride)
@@ -150,6 +152,24 @@ struct HostEditorView: View {
                     Text("Credentials are stored in the Keychain, never in the connection list. Leave the password empty to be asked each time. With no key and no password chosen, the server is asked what it takes and you are asked for a password only if it takes one.")
                 }
 
+                Section {
+                    Toggle("Let this server use my key", isOn: $forwardsAgent)
+                        .disabled(selectedKeyID == nil)
+                        .accessibilityIdentifier("host-agent-forwarding")
+                } header: {
+                    Text("Agent forwarding")
+                } footer: {
+                    if selectedKeyID == nil {
+                        Text("Choose a private key above first. Agent forwarding offers the key this connection already uses, and nothing else.")
+                    } else if forwardsAgent {
+                        // The risk, in the place the decision is made, and specific about
+                        // who can do what rather than a generic caution.
+                        Text("While you are connected, anything running as root on this server can ask your device to sign with this key — including for connections to other servers. It cannot read the key, and signing stops the moment you disconnect. Turn this on for machines you trust; leave it off for shared ones.")
+                    } else {
+                        Text("Off. Programs on the server cannot use your key. Turn this on only if you need to reach another server, or a Git remote, from a shell on this one.")
+                    }
+                }
+
                 // Only for a direct connection: a Cloudflare tunnel *is* the transport,
                 // and it has its own bastion setting above.
                 if !usesCloudflare {
@@ -244,7 +264,8 @@ struct HostEditorView: View {
             accessAuthentication: usesCloudflare ? accessAuthentication : nil,
             platformOverride: platformOverride,
             showsInFiles: showsInFiles,
-            jumpHosts: jumpHosts
+            jumpHosts: jumpHosts,
+            forwardsAgent: forwardsAgent
         )
         return (existing ?? Host(name: "", hostname: "", username: "")).applying(fields)
     }

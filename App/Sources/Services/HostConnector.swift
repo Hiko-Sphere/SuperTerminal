@@ -153,7 +153,9 @@ final class HostConnector {
                 // (D-051).
                 keyboardInteractiveResponder: { challenge in
                     await prompts.requestKeyboardInteractiveAnswers(host: hostname, challenge: challenge)
-                }
+                },
+                // The agent, when this connection was set up to offer one (D-052).
+                agent: try await resolveAgent(for: host)
             ),
             hostKeyVerifier: verifier,
             eventLoop: group.next(),
@@ -223,6 +225,48 @@ final class HostConnector {
         let saved = host.username.trimmingCharacters(in: .whitespaces)
         if !saved.isEmpty { return saved }
         return try await prompts.requestUsername(host: host.hostname)
+    }
+
+    /// Builds the agent this connection will answer with, or `nil` when forwarding is off.
+    ///
+    /// Only keys the connection already uses are offered. That is the narrowest thing that
+    /// is still useful: forwarding exists so a `git push` on the server can use a key from
+    /// the phone, and handing over *every* key the device holds would let one server ask to
+    /// sign for every other.
+    private func resolveAgent(for host: Host) async throws -> SSHAgent? {
+        guard host.isForwardingAgent else { return nil }
+
+        var identities: [SSHAgent.Identity] = []
+        for reference in host.credentials {
+            guard case let .privateKey(id) = reference, let record = keyRecord(id) else { continue }
+            let material: SSHPrivateKeyMaterial
+            if record.isHeldInSecureEnclave {
+                // A Secure Enclave key is the interesting case: the server gets signatures
+                // from a key that has never existed outside this device's hardware.
+                guard let blob = try? vault.loadSecureEnclaveKey(id: id),
+                      let enclave = try? SecureEnclaveSSHKey.material(
+                          blob: blob,
+                          comment: record.name,
+                          authenticationPrompt: nil
+                      )
+                else { continue }
+                material = enclave
+            } else {
+                guard let pem = try? vault.loadPrivateKey(id: id, prompt: nil),
+                      let inspection = try? OpenSSHPrivateKeyParser.inspect(pem: pem),
+                      !inspection.isEncrypted,
+                      let parsed = try? OpenSSHPrivateKeyParser.parse(pem: pem)
+                else { continue }
+                material = parsed
+            }
+            identities.append(.init(key: material.key, comment: record.name))
+        }
+
+        guard !identities.isEmpty else {
+            log.info("agent forwarding is on but no usable key is attached to this connection")
+            return nil
+        }
+        return SSHAgent(identities: identities, log: log)
     }
 
     private func resolveCredentials(username: String, for host: Host) async throws -> [SSHCredential] {

@@ -32,6 +32,16 @@ import NIOCore
 internal struct UserAuthSignablePayload {
     private(set) var bytes: ByteBuffer
 
+    /// Wraps bytes that came from somewhere else entirely.
+    ///
+    /// Used only by ``NIOSSHPrivateKey/signOpaqueAgentRequest(_:rsaAlgorithm:)``, where the
+    /// bytes are whatever a peer asked the agent to sign. The name of this type says
+    /// "user auth payload" because that is what it usually holds; here it holds a blob
+    /// nobody on this side has inspected, which is the nature of the agent protocol.
+    init(bytes: ByteBuffer) {
+        self.bytes = bytes
+    }
+
     /// - Parameter algorithmName: the public key algorithm name, which RFC 8332 §3.1
     ///   makes distinct from the key blob's identifier for RSA. Defaults to the key
     ///   prefix, which is correct for every other algorithm.

@@ -868,6 +868,23 @@
         }
       }
     },
+    "The server refused to forward the agent.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器拒绝转发代理。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "伺服器拒絕轉送代理。"
+          }
+        }
+      }
+    },
     "The server refused to listen on port %@.": {
       "extractionState": "manual",
       "localizations": {

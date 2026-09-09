@@ -309,6 +309,21 @@ public enum SSHChannelRequestEvent: Sendable {
             self.signal = signal
         }
     }
+
+    /// A request that the client's SSH agent be made available on the far side
+    /// (`auth-agent-req@openssh.com`).
+    ///
+    /// Sent by the client on a session channel. If the server agrees, it opens
+    /// ``SSHChannelType/authAgent`` channels back whenever something there wants the agent
+    /// — which means the client is now signing on behalf of processes it cannot see, and
+    /// for as long as the session lasts.
+    public struct AgentForwardingRequest: Hashable, Sendable {
+        public var wantReply: Bool
+
+        public init(wantReply: Bool) {
+            self.wantReply = wantReply
+        }
+    }
 }
 
 extension SSHChannelRequestEvent {
@@ -348,6 +363,8 @@ extension SSHChannelRequestEvent {
             )
         case .xonXoff(let clientCanDo):
             return LocalFlowControlRequest(clientCanDo: clientCanDo)
+        case .authAgentReq:
+            return AgentForwardingRequest(wantReply: message.wantReply)
         case .signal(let signalName):
             return SignalRequest(signal: signalName)
         case .unknown:
@@ -369,6 +386,15 @@ public struct ChannelFailureEvent: Hashable, Sendable {
 // MARK: Convert to messages
 
 extension SSHMessage {
+    init(_ event: SSHChannelRequestEvent.AgentForwardingRequest, recipientChannel: UInt32) {
+        let message = SSHMessage.ChannelRequestMessage(
+            recipientChannel: recipientChannel,
+            type: .authAgentReq,
+            wantReply: event.wantReply
+        )
+        self = .channelRequest(message)
+    }
+
     init(_ event: SSHChannelRequestEvent.ShellRequest, recipientChannel: UInt32) {
         let message = SSHMessage.ChannelRequestMessage(
             recipientChannel: recipientChannel,

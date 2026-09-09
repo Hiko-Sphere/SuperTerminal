@@ -83,8 +83,24 @@ struct HostEditingTests {
             accessAuthentication: nil,
             platformOverride: nil,
             showsInFiles: false,
-            jumpHosts: []
+            jumpHosts: [],
+            forwardsAgent: false
         )
+    }
+
+    @Test("Agent forwarding cannot be saved on a connection with no key to offer")
+    func agentForwardingNeedsAKey() {
+        let host = Host(name: "Old", hostname: "old.example", username: "user")
+        var wanted = fields
+        wanted.forwardsAgent = true
+
+        // No private key among the credentials: the toggle is disabled in that state, and
+        // a record saved with it on would promise something the connection cannot do.
+        #expect(host.applying(wanted).forwardsAgent == nil)
+
+        wanted.credentials = [.privateKey(id: UUID())]
+        #expect(host.applying(wanted).forwardsAgent == true)
+        #expect(host.applying(wanted).isForwardingAgent)
     }
 
     @Test("An edit keeps everything the editor does not show")

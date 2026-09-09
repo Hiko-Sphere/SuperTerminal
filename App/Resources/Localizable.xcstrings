@@ -1259,6 +1259,23 @@
         }
       }
     },
+    "Agent forwarding": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "代理转发"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "代理轉送"
+          }
+        }
+      }
+    },
     "Algorithm": {
       "extractionState": "manual",
       "localizations": {
@@ -2394,6 +2411,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "選擇檔案…"
+          }
+        }
+      }
+    },
+    "Choose a private key above first. Agent forwarding offers the key this connection already uses, and nothing else.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请先在上方选择一把私钥。代理转发只提供该连接本身正在使用的密钥，不会提供其他任何密钥。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請先在上方選擇一把私密金鑰。代理轉送只提供該連線本身正在使用的金鑰，不會提供其他任何金鑰。"
           }
         }
       }
@@ -6036,6 +6070,23 @@
         }
       }
     },
+    "Let this server use my key": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "允许此服务器使用我的密钥"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "允許此伺服器使用我的金鑰"
+          }
+        }
+      }
+    },
     "Light theme": {
       "extractionState": "manual",
       "localizations": {
@@ -6984,6 +7035,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "預設關閉，由你開啟"
+          }
+        }
+      }
+    },
+    "Off. Programs on the server cannot use your key. Turn this on only if you need to reach another server, or a Git remote, from a shell on this one.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已关闭。服务器上的程序无法使用你的密钥。仅当你需要从这台服务器的 shell 连接到另一台服务器或 Git 远端时才开启。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已關閉。伺服器上的程式無法使用你的金鑰。僅當你需要從這台伺服器的 shell 連線到另一台伺服器或 Git 遠端時才開啟。"
           }
         }
       }
@@ -13155,6 +13223,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "私密金鑰存放在哪裡"
+          }
+        }
+      }
+    },
+    "While you are connected, anything running as root on this server can ask your device to sign with this key — including for connections to other servers. It cannot read the key, and signing stops the moment you disconnect. Turn this on for machines you trust; leave it off for shared ones.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在你连接期间，这台服务器上任何以 root 身份运行的程序都可以请求你的设备用这把密钥签名——包括用于连接其他服务器。它无法读取密钥，断开连接后签名即刻停止。请只对你信任的机器开启；共享机器请保持关闭。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在你連線期間，這台伺服器上任何以 root 身分執行的程式都可以請求你的裝置用這把金鑰簽章——包括用於連線其他伺服器。它無法讀取金鑰，中斷連線後簽章即刻停止。請只對你信任的機器開啟；共享機器請保持關閉。"
           }
         }
       }

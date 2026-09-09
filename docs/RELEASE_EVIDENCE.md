@@ -3,6 +3,47 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-09 — after D-052 (agent forwarding, with the phone as the agent)
+
+| Command | Result |
+| --- | --- |
+| `cd Packages/ApexTerminalKit && swift test --no-parallel` | **285 tests in 42 suites passed** (279 before; 6 new) |
+| `cd Packages/swift-nio-ssh-rsa && swift test` | **360 tests, 0 failures**. Required: this changes the vendored fork |
+| `bash scripts/app-integration-e2e.sh` | **261 tests in 49 suites passed** (260 before; 1 new) |
+| `bash scripts/ui-terminal-e2e.sh` | **48 passed, 2 failed** — both `ZZSearchProbeUITests`, another session's uncommitted work |
+| `bash scripts/localization-audit.sh` | **green**, 6 new strings translated into both Chinese variants |
+| Release archive | **ARCHIVE SUCCEEDED** |
+
+**The claim, and who checks it.** Not "the code runs": **OpenSSH's own `ssh-add -l`, executed
+on the server, lists the key** — by the SHA-256 fingerprint the device holds and with the
+comment the device set. That exercises the request, the channel the server opens back, the
+length framing and the agent protocol, against the implementation people actually use. A
+control test runs the same command with forwarding off and requires `ssh-add` to report no
+agent at all, so the first result cannot be the *test machine's* agent leaking through.
+
+**The bug this found, and how.** The first end-to-end attempt failed with "Could not open a
+connection to your authentication agent." Rather than guess, the same server configuration
+was driven with OpenSSH's **own** client and `-A`: it got a socket. That put the fault on
+this side, not the server's, and the cause was specific — `SSHChannelRequestEvent` had gained
+an `AgentForwardingRequest` and an inbound conversion, but nothing converted it *outbound*,
+so `_actuallyTriggerOutboundEvent0` fell through to `ChannelError.operationUnsupported` and
+the request was never sent. One `case` and one initialiser.
+
+**What the fork gained, and why each piece.** `ChannelType.authAgent` and its parse/write
+(an inbound `auth-agent@openssh.com` previously could not parse at all);
+`ChannelRequestMessage.RequestType.authAgentReq`; the public `AgentForwardingRequest` event
+with both conversions; and two deliberately narrow additions on `NIOSSHPrivateKey` —
+`signOpaqueAgentRequest` and `publicKeyBlob`. The first is named for what it is: an agent
+signs a blob it cannot inspect, and that is the nature of the protocol rather than a
+shortcoming of the method. Nothing in ordinary authentication uses it.
+
+**What the agent will not do.** Only `REQUEST_IDENTITIES` and `SIGN_REQUEST` are answered.
+`ADD_IDENTITY`, `REMOVE_IDENTITY` and the rest are refused, and a test asserts it: a
+forwarded agent that honoured `ADD_IDENTITY` would let the far side plant a key on the
+phone. A channel of this type is refused outright unless this connection offered an agent,
+and only the keys that connection already uses are offered — so one server cannot ask to
+sign with the key another one trusts.
+
 ## 2026-09-09 — after D-051 (keyboard-interactive, RFC 4256)
 
 | Command | Result |

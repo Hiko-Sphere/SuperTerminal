@@ -83,7 +83,8 @@ func sshChildChannelInitializer(_ channel: Channel, _ channelType: SSHChannelTyp
                 }
             }
         }
-    case .forwardedTCPIP:
+    case .forwardedTCPIP, .authAgent:
+        // This sample server neither forwards ports back nor asks for an agent.
         return channel.eventLoop.makeFailedFuture(SSHServerError.invalidChannelType)
     }
 }

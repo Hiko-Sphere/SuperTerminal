@@ -22,7 +22,7 @@ from the first unfinished item rather than starting over.
 | 1.1 | SFTP | **Done except multiple tabs** — D-041 protocol, D-042 interface, D-043 prompts, permissions, sharing and drag-and-drop. Several remote folders open at once is the one part not built; the iPad shows one browser at a time |
 | 1.2 | Files.app File Provider extension | **Implemented, awaiting a device** — D-044; a replicated extension, a per-connection switch, and 29 package tests against real OpenSSH plus 7 in the app host. The simulator downgrades a replicated domain because it has no FPFS, so the system actually serving Files is H-6 |
 | 1.3 | Port forwarding as a first-class object | **Done** — D-045; local, remote and dynamic (SOCKS5), saved with the connection, started by hand or with it, with real byte counters. 9 package tests move real bytes through a real OpenSSH server, 3 app tests through a real `TerminalSession`, 2 UI tests through the screen |
-| 1.4 | Authentication | **Certificates, jump hosts, post-quantum key exchange, Secure Enclave keys and keyboard-interactive done** — D-046 certificates; D-047 jump chains; D-048 `mlkem768x25519-sha256`, negotiated with a real OpenSSH 10.2 and confirmed from the server's own log; D-049 Secure Enclave P-256 keys, generated in the Enclave and accepted by real OpenSSH, with the biometric policy device-only (H-7). D-051 RFC 4256 keyboard-interactive, multi-round, verified against a containerised OpenSSH with two PAM prompts. ssh-agent and FIDO2 are still ahead — see the note below |
+| 1.4 | Authentication | **Certificates, jump hosts, post-quantum key exchange, Secure Enclave keys and keyboard-interactive done** — D-046 certificates; D-047 jump chains; D-048 `mlkem768x25519-sha256`, negotiated with a real OpenSSH 10.2 and confirmed from the server's own log; D-049 Secure Enclave P-256 keys, generated in the Enclave and accepted by real OpenSSH, with the biometric policy device-only (H-7). D-051 RFC 4256 keyboard-interactive, multi-round, verified against a containerised OpenSSH with two PAM prompts; D-052 agent forwarding, proved by `ssh-add -l` on the server. Using a *local* agent and FIDO2 are recorded below as not deliverable, with the evidence |
 
 ## Phase 2 — moat
 
@@ -72,16 +72,12 @@ ProxyJump is done (D-047); what follows is the rest.
   connect to: the sandbox gives each app its own container, and `SSH_AUTH_SOCK` has no
   meaning where there are no processes to inherit it. There is nothing to talk to. The
   useful half of the idea is the other direction, below.
-* **Agent forwarding** — deliverable, and the next slice. The app would be the agent: the
-  session asks for `auth-agent-req@openssh.com`, the server opens an `auth-agent@openssh.com`
-  channel back, and the app answers `SSH_AGENTC_REQUEST_IDENTITIES` and `SSH_AGENTC_SIGN_REQUEST`
-  from the keys it holds — including Secure Enclave keys, which is the interesting part, since
-  those can then sign a `git push` on a server without existing anywhere but the phone. What
-  the fork lacks is narrow and known: `SSHMessage.ChannelOpenMessage.ChannelType` has exactly
-  three cases (`session`, `forwarded-tcpip`, `direct-tcpip`) and its parser has no branch for
-  anything else, so an inbound agent channel currently fails to parse. Verifiable end to end:
-  connect with forwarding on, then run `ssh-add -l` on the server and require it to list the
-  phone's key.
+* ~~**Agent forwarding**~~ — **done, D-052.** The app is the agent. The fork gained the
+  `auth-agent@openssh.com` channel type and the `auth-agent-req@openssh.com` request it had
+  no branch for; `SSHAgent` answers `REQUEST_IDENTITIES` and `SIGN_REQUEST` and refuses
+  everything else. Verified the way it was promised: `ssh-add -l`, run on a real OpenSSH
+  server, lists the key by the fingerprint the device holds — with a control that shows the
+  same command finding no agent when forwarding is off.
 * **FIDO2 (`sk-ssh-ed25519@openssh.com`, `sk-ecdsa-sha2-nistp256@openssh.com`)** — **not
   deliverable against stock OpenSSH, with a specific missing layer rather than a shrug.**
 

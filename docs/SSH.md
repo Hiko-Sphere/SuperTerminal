@@ -45,6 +45,36 @@ and one for a scratch VM does not. Enrolling a new face or finger invalidates th
 which is deliberate: someone who learns the passcode still cannot add a biometric and use
 your key.
 
+### Letting a server use your key
+
+A shell on a server often needs a key of its own — to `git push`, or to reach a third
+machine. Copying a private key onto that server is the wrong answer, and it is the answer
+people reach for. *Agent forwarding* is the right one: the key stays on the phone, and the
+server asks the phone to sign whenever it needs a signature.
+
+Turn it on per connection, in the connection editor, under **Agent forwarding**. It offers
+the key that connection already uses and nothing else — one server cannot ask to sign with
+the key you use for another. It works with a Secure Enclave key too, which is the strongest
+version of the idea: the server gets signatures from a key that has never existed outside
+the phone's hardware.
+
+The risk is real and stated where the switch is. While the session is open, anything running
+as root on that server can ask your device to sign — at a moment of its choosing, for a
+destination you cannot see. It cannot read the key, and the moment you disconnect it can ask
+for nothing. Turn it on for machines you control; leave it off for shared ones.
+
+Check it from the server:
+
+```bash
+ssh-add -l    # lists the key, by the fingerprint the app shows
+```
+
+The app never accepts an agent channel it did not ask for, and it refuses every agent
+request except "list the keys" and "sign this". In particular a forwarded agent cannot
+*add* a key: `SSH_AGENTC_ADD_IDENTITY` is answered with a failure, because a server that
+could plant a key on your phone would be a much worse deal than one that can borrow a
+signature.
+
 ### When the server asks its own questions
 
 Some servers do not want a password; they want to ask. A one-time code, an expired password

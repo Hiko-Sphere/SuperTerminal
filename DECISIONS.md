@@ -1386,3 +1386,4 @@ An index, so nothing has to be hunted for:
 | D-049 | `f5e27ea` | SSH keys held in the Secure Enclave, and what the app must refuse to promise about them |
 | D-050 | `3cc578a` | The hardware-keyboard test failures: what the simulator does to the first modified key press |
 | D-051 | `d2e0c04` | RFC 4256 keyboard-interactive, and the container that made it verifiable |
+| D-052 | this commit | Agent forwarding, with the phone as the agent |
