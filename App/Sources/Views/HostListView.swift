@@ -10,6 +10,9 @@ struct HostListView: View {
 
     /// Called after a session is opened, so a stack-based layout can push to it.
     let onOpen: (TerminalSession) -> Void
+    /// Told when a file browser is opened, so a stack-based layout pushes it the way it
+    /// pushes a shell (D-071).
+    var onOpenFiles: (SFTPSession) -> Void = { _ in }
     /// Called after a remote screen is opened (D-022), for the same reason.
     let onOpenScreen: (VNCSession) -> Void
     /// Pushes a tmux session on a layout that pushes (D-059).
@@ -21,7 +24,6 @@ struct HostListView: View {
     @State private var creatingCloudflareConnection = false
     @State private var diagnosingHost: Host?
     /// The connection whose files are open (D-042).
-    @State private var browsingHost: Host?
     @State private var editingScreen: ScreenConnection?
 
 
@@ -122,6 +124,33 @@ struct HostListView: View {
                 }
             }
 
+            if !container.sessionManager.fileSessions.isEmpty {
+                Section("Open file browsers") {
+                    ForEach(container.sessionManager.fileSessions, id: \.id) { session in
+                        Button {
+                            scene.show(files: session.id)
+                            onOpenFiles(session)
+                        } label: {
+                            Label(session.hostName, systemImage: "folder")
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("open-file-browser")
+                        .swipeActions {
+                            Button("Close", systemImage: "xmark", role: .destructive) {
+                                container.sessionManager.closeFiles(session)
+                            }
+                        }
+                        .contextMenu {
+                            Button("Close Browser", systemImage: "xmark", role: .destructive) {
+                                container.sessionManager.closeFiles(session)
+                            }
+                        }
+                    }
+                }
+            }
+
             if !filteredScreens.isEmpty || !container.screenStore.screens.isEmpty {
                 Section("Screens") {
                     ForEach(filteredScreens) { screen in
@@ -202,10 +231,6 @@ struct HostListView: View {
         .sheet(isPresented: creatingScreenBinding) {
             ScreenEditorView(screen: nil)
         }
-        .sheet(item: $browsingHost) { host in
-            FileBrowserView(session: container.makeFileSession(for: host))
-                .environment(container)
-        }
         .sheet(item: $editingHost) { host in
             HostEditorView(host: host)
         }
@@ -221,6 +246,16 @@ struct HostListView: View {
         }
     }
 
+    /// Opens a file browser as a session of its own, so several folders can be open at once
+    /// and each can be put in a pane (D-071). It used to be a sheet, which is why there could
+    /// only ever be one.
+    private func openFiles(_ host: Host) {
+        let session = container.sessionManager.openFiles(host)
+        container.hostStore.markConnected(host)
+        scene.show(files: session.id)
+        onOpenFiles(session)
+    }
+
     /// One connection row. Kept out of the list body so the type checker has one row's
     /// worth of expression to solve, not the whole list's.
     private func hostRow(_ host: Host) -> some View {
@@ -229,7 +264,7 @@ struct HostListView: View {
             onEdit: { editingHost = host },
             onDelete: { delete(host) },
             onOpenScreen: nil,
-            onOpenFiles: { browsingHost = host },
+            onOpenFiles: { openFiles(host) },
             onDiagnose: { diagnosingHost = host }
         ) {
             // A connection that asked for tmux attaches to it instead of starting a plain

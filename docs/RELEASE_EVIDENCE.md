@@ -3,6 +3,44 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-10 — after D-071 (several remote folders at once)
+
+| Command | Result |
+| --- | --- |
+| `bash scripts/app-integration-e2e.sh` | **340 tests in 65 suites passed**, no restarts (335 in 64 before) |
+| `ST_ONLY_TESTING=…/FileBrowserTabsUITests` (iPhone 17 Pro) | **1 passed, 0 failed**, first attempt |
+| `bash scripts/ui-terminal-e2e.sh` (iPhone 17 Pro) | **57 passed, 2 failed** — both `ZZSearchProbeUITests`, another session's work |
+| `bash scripts/ui-terminal-e2e.sh` (iPad Pro 13-inch M5) | **58 passed, 2 failed** — the same two |
+| `bash scripts/localization-audit.sh` | **green**; five new strings translated into both Chinese variants |
+| App warning gate | **0** |
+| Release archive | **ARCHIVE SUCCEEDED** |
+
+The package was not re-run: nothing outside `App/` changed, and it was green on the tree this
+sits on.
+
+### What was actually missing, and why one line of the plan hid it
+
+Phase 1.1 has said "Done except multiple tabs" since D-043. The reason there could only ever be
+one browser is smaller than "tabs": the browser was a **sheet**, built on the spot from
+`makeFileSession(for:)` and held by nothing. There was no identity to point a second one at, no
+list to put it in, and no way for the pane tree to hold it.
+
+So a browser is a session now. It has an `id` and the `hostID` it belongs to, `SessionManager`
+keeps them the way it keeps shells, `SessionRoute` and `PaneLayout.Content` both gained a
+`files` case, and the connection list has an *Open file browsers* section with the same swipe
+and context-menu closes the shells have. On an iPad two of them go side by side, which is what
+makes moving a file from one place to another possible without losing sight of either.
+
+Opening again always makes a new one, exactly as `open(_:)` does for a shell — two folders on
+the same server is the ordinary reason to want two browsers, and reusing one would move the
+first instead of adding a second.
+
+### The one thing that had to be undone to make it fit a pane
+
+`FileBrowserView` carried its own `NavigationStack`. A stack inside a pane pops the stack the
+pane is already in — the same defect tmux panes had on a phone in D-059 — so the view now takes
+`wrapsInItsOwnStack`, true for a pushed browser and false inside a pane.
+
 ## 2026-09-10 — after D-070 (Mac Catalyst: what it does, and what it does not)
 
 | Command | Result |

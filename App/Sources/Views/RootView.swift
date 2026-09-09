@@ -356,6 +356,7 @@ struct RootView: View {
         NavigationStack(path: $path) {
             HostListView(
                 onOpen: { session in path.append(.terminal(session.id)) },
+                onOpenFiles: { session in path.append(.files(session.id)) },
                 onOpenScreen: { screen in path.append(.screen(screen.id)) },
                 onOpenTmux: { session in path.append(.tmux(session.id)) }
             )
@@ -400,6 +401,16 @@ struct RootView: View {
                                 title: String(localized: "Session ended"),
                                 message: String(localized: "This tmux session is no longer attached."),
                                 systemImage: "square.split.bottomrightquarter"
+                            )
+                        }
+                    case let .files(id):
+                        if let session = container.sessionManager.fileSession(id: id) {
+                            FileBrowserView(session: session, wrapsInItsOwnStack: false)
+                        } else {
+                            EmptyStateView(
+                                title: String(localized: "Browser closed"),
+                                message: String(localized: "This file browser is no longer open."),
+                                systemImage: "folder"
                             )
                         }
                     }
@@ -462,6 +473,18 @@ struct RootView: View {
                         title: String(localized: "Session ended"),
                         message: String(localized: "This session is no longer open. Close the pane, or choose a connection."),
                         systemImage: "terminal"
+                    )
+                )
+            }
+        case let .files(id):
+            if let session = container.sessionManager.fileSession(id: id) {
+                AnyView(FileBrowserView(session: session, wrapsInItsOwnStack: wrappedInItsOwnStack))
+            } else {
+                AnyView(
+                    EmptyStateView(
+                        title: String(localized: "Browser closed"),
+                        message: String(localized: "This file browser is no longer open. Close the pane, or open a server's files again."),
+                        systemImage: "folder"
                     )
                 )
             }
@@ -550,6 +573,9 @@ enum SessionRoute: Hashable {
     case terminal(TerminalSession.ID)
     case screen(VNCSession.ID)
     case tmux(UUID)
+    /// A file browser, which is a session like the others now that more than one can be
+    /// open (D-071).
+    case files(UUID)
 
     /// The same thing, said in the pane tree's vocabulary — so a pushed route can ask
     /// whether the arrangement on screen is showing it.
@@ -558,6 +584,7 @@ enum SessionRoute: Hashable {
         case let .terminal(id): .terminal(id)
         case let .screen(id): .screen(id)
         case let .tmux(id): .tmux(id)
+        case let .files(id): .files(id)
         }
     }
 }

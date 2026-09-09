@@ -45,9 +45,16 @@ final class SFTPSession {
     private let log: STLogger
     private var transferTask: Task<Void, Never>?
 
+    /// Identity, so that several browsers can be open at once and each can be pointed at,
+    /// closed and arranged independently (D-071).
+    let id = UUID()
+    /// Which connection this is browsing. A browser is a session on a host the same way a
+    /// shell is, and the session list needs to say which host it belongs to.
+    let hostID: Host.ID
     let hostName: String
 
-    init(hostName: String, connector: HostConnector, prompts: PromptCoordinator, log: STLogger) {
+    init(hostID: Host.ID, hostName: String, connector: HostConnector, prompts: PromptCoordinator, log: STLogger) {
+        self.hostID = hostID
         self.hostName = hostName
         self.connector = connector
         self.prompts = prompts

@@ -13,6 +13,9 @@ import STSSH
 @MainActor
 final class SessionManager {
     private(set) var sessions: [TerminalSession] = []
+    /// File browsers, kept the same way shells are, so more than one folder can be open
+    /// and each can be put in a pane of its own (D-071).
+    private(set) var fileSessions: [SFTPSession] = []
     /// A connection succeeded; the known-hosts file may have a new entry to sync.
     var didConnect: (() -> Void)?
     /// A server reported its platform; the container records it against the host.
@@ -117,6 +120,7 @@ final class SessionManager {
     func makeFileSession(for host: Host) -> SFTPSession {
         let prompts = PromptCoordinator()
         return SFTPSession(
+            hostID: host.id,
             hostName: host.name,
             connector: HostConnector(
                 host: host, group: group, vault: vault, knownHosts: knownHosts,
@@ -174,6 +178,30 @@ final class SessionManager {
         rememberOpenSessions()
         Task { await session.connect() }
         return session
+    }
+
+    /// Opens a file browser and keeps it, so several can be on screen at once (D-071).
+    ///
+    /// A new one every time, like `open(_:)` for a shell: two folders on the same server is
+    /// the ordinary reason to want two browsers, and reusing one would make the second
+    /// request move the first.
+    @discardableResult
+    func openFiles(_ host: Host) -> SFTPSession {
+        let session = makeFileSession(for: host)
+        fileSessions.append(session)
+        // Not connected here: the browser connects from its own `.task` when it appears, and
+        // starting a second attempt over the top of the first is what made a terminal report
+        // "Not connected" against a server that was plainly there (D-062).
+        return session
+    }
+
+    func closeFiles(_ session: SFTPSession) {
+        Task { await session.disconnect() }
+        fileSessions.removeAll { $0.id == session.id }
+    }
+
+    func fileSession(id: UUID) -> SFTPSession? {
+        fileSessions.first { $0.id == id }
     }
 
     func close(_ session: TerminalSession) {

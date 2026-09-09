@@ -23,8 +23,16 @@ struct FileBrowserView: View {
     @State private var editingPermissions: SFTPEntry?
     @State private var sharing: URL?
 
-    init(session: SFTPSession) {
+    /// Whether this browser brings its own navigation stack.
+    ///
+    /// A sheet needs one; a pane must not have one, because a stack inside a pane pops the
+    /// stack the pane is already in — the same thing that made tmux panes on a phone throw
+    /// the user back to the connection list (D-059, D-071).
+    private let wrapsInItsOwnStack: Bool
+
+    init(session: SFTPSession, wrapsInItsOwnStack: Bool = true) {
         _session = State(initialValue: session)
+        self.wrapsInItsOwnStack = wrapsInItsOwnStack
     }
 
     var body: some View {
@@ -47,29 +55,36 @@ struct FileBrowserView: View {
             }
     }
 
+    @ViewBuilder
     private var content: some View {
-        NavigationStack {
-            Group {
-                switch session.phase {
-                case let .connecting(step):
-                    ProgressView(step).frame(maxWidth: .infinity, maxHeight: .infinity)
-                case let .failed(error):
-                    ContentUnavailableView {
-                        Label(error.message, systemImage: "exclamationmark.triangle")
-                    } description: {
-                        if let suggestion = error.recoverySuggestion { Text(suggestion) }
-                    } actions: {
-                        Button("Try Again") { Task { await session.connect() } }
-                    }
-                case .ready:
-                    listing
-                }
-            }
-            .navigationTitle(session.hostName)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar { toolbar }
-            .task { await session.connect() }
+        if wrapsInItsOwnStack {
+            NavigationStack { browser }
+        } else {
+            browser
         }
+    }
+
+    private var browser: some View {
+        Group {
+            switch session.phase {
+            case let .connecting(step):
+                ProgressView(step).frame(maxWidth: .infinity, maxHeight: .infinity)
+            case let .failed(error):
+                ContentUnavailableView {
+                    Label(error.message, systemImage: "exclamationmark.triangle")
+                } description: {
+                    if let suggestion = error.recoverySuggestion { Text(suggestion) }
+                } actions: {
+                    Button("Try Again") { Task { await session.connect() } }
+                }
+            case .ready:
+                listing
+            }
+        }
+        .navigationTitle(session.hostName)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar { toolbar }
+        .task { await session.connect() }
     }
 
     // MARK: - Listing

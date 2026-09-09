@@ -241,6 +241,9 @@ Every connection has a file browser: SFTP over the same connection, with no sepa
 sign-in.
 
 - Browse, sort by name, size or date, and go up with the toolbar.
+- **Several folders at once.** Each browser is a session of its own, listed under *Open file
+  browsers*, so you can have two open on the same server or on different ones — and on an iPad
+  you can put one in each pane and drag between them.
 - **Upload** from anywhere iOS can reach; **Download** to the Files app; **Quick Look**
   to read something without downloading it first.
 - Rename, delete, make folders, and edit permissions — the mode is shown as the

@@ -2211,6 +2211,23 @@
         }
       }
     },
+    "Browser closed": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "浏览器已关闭"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "瀏覽器已關閉"
+          }
+        }
+      }
+    },
     "Browser login": {
       "extractionState": "manual",
       "localizations": {
@@ -2870,6 +2887,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "關閉"
+          }
+        }
+      }
+    },
+    "Close Browser": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "关闭浏览器"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "關閉瀏覽器"
           }
         }
       }
@@ -7919,6 +7953,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "打開設定"
+          }
+        }
+      }
+    },
+    "Open file browsers": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已打开的文件浏览器"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已開啟的檔案瀏覽器"
           }
         }
       }
@@ -13303,6 +13354,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "本裝置的鑰匙圈"
+          }
+        }
+      }
+    },
+    "This file browser is no longer open.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "该文件浏览器已不再打开。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "該檔案瀏覽器已不再開啟。"
+          }
+        }
+      }
+    },
+    "This file browser is no longer open. Close the pane, or open a server's files again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "该文件浏览器已不再打开。请关闭此分窗，或重新打开某台服务器的文件。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "該檔案瀏覽器已不再開啟。請關閉此分割窗格，或重新開啟某台伺服器的檔案。"
           }
         }
       }

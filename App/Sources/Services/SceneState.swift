@@ -21,6 +21,8 @@ final class SceneState {
 
     /// The tmux session this window is showing, if it is showing one (D-059).
     var selectedTmuxSessionID: UUID?
+    /// The file browser the list is pointing at, when one is what is shown (D-071).
+    var selectedFilesSessionID: UUID?
 
     /// Whether this window is showing the new-connection sheet.
     ///
@@ -56,6 +58,7 @@ final class SceneState {
         selectedSessionID = id
         selectedScreenID = nil
         selectedTmuxSessionID = nil
+        selectedFilesSessionID = nil
         panes.show(.terminal(id))
     }
 
@@ -63,6 +66,7 @@ final class SceneState {
         selectedScreenID = id
         selectedSessionID = nil
         selectedTmuxSessionID = nil
+        selectedFilesSessionID = nil
         panes.show(.screen(id))
     }
 
@@ -70,7 +74,16 @@ final class SceneState {
         selectedTmuxSessionID = id
         selectedSessionID = nil
         selectedScreenID = nil
+        selectedFilesSessionID = nil
         panes.show(.tmux(id))
+    }
+
+    func show(files id: UUID) {
+        selectedFilesSessionID = id
+        selectedSessionID = nil
+        selectedScreenID = nil
+        selectedTmuxSessionID = nil
+        panes.show(.files(id))
     }
 
     init(selectedSessionID: TerminalSession.ID? = nil) {

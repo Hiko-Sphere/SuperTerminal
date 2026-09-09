@@ -20,10 +20,14 @@ struct PaneLayout: Equatable, Sendable {
         /// The app does not split a tmux pane: in a tmux session the server owns the
         /// arrangement, and two things deciding it would fight.
         case tmux(UUID)
+        /// A file browser (D-071). Several folders open at once is the reason panes and
+        /// browsers had to meet: on an iPad two of them side by side is how a file is moved
+        /// from one place to another without losing sight of either.
+        case files(UUID)
 
         var sessionID: UUID {
             switch self {
-            case let .terminal(id), let .screen(id), let .tmux(id): id
+            case let .terminal(id), let .screen(id), let .tmux(id), let .files(id): id
             }
         }
     }
