@@ -115,7 +115,7 @@ final class ScreenStore {
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         do {
             let data = try encoder.encode(screens)
-            try data.write(to: url, options: [.atomic, .completeFileProtection])
+            try data.write(to: url, options: .atomicAndProtected)
         } catch {
             loadError = STError(
                 category: .internalError,

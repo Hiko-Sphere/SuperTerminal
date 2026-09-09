@@ -21,9 +21,10 @@ public protocol KnownHostsStore: Sendable {
 /// File-backed ``KnownHostsStore``.
 ///
 /// Host keys are public data, so they live in the app container rather than the
-/// Keychain — but the file is written with `.completeFileProtection` so it is not
-/// readable while the device is locked, and it is excluded from backups so that
-/// restoring an old backup cannot silently reinstate a retired key.
+/// Keychain — but the file is written with ``Foundation/Data/WritingOptions/atomicAndProtected``
+/// so that on a device it is not readable while the device is locked, and it is excluded from
+/// backups so that restoring an old backup cannot silently reinstate a retired key. On a Mac
+/// that protection is FileVault's rather than the file's; see the option's own note (D-070).
 public actor FileKnownHostsStore: KnownHostsStore {
     private let url: URL
     private var cache: [String: KnownHostEntry]?
@@ -86,7 +87,7 @@ public actor FileKnownHostsStore: KnownHostsStore {
         // own tests run — the option makes the atomic write fail with EPERM, so it is asked
         // for only where it means something.
         #if os(iOS)
-        let options: Data.WritingOptions = [.atomic, .completeFileProtection]
+        let options: Data.WritingOptions = .atomicAndProtected
         #else
         let options: Data.WritingOptions = [.atomic]
         #endif

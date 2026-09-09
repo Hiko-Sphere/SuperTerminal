@@ -43,7 +43,7 @@ final class SyncTombstones: @unchecked Sendable {
 
     private func persist() {
         guard let data = try? JSONEncoder().encode(entries) else { return }
-        try? data.write(to: url, options: [.atomic, .completeFileProtection])
+        try? data.write(to: url, options: .atomicAndProtected)
     }
 }
 

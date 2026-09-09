@@ -36,12 +36,37 @@ final class FileProviderDomains {
         self.knownHosts = knownHosts
         self.log = log.child(subsystem: "files.domains")
         store = SharedDomainStore.shared()
+        #if targetEnvironment(macCatalyst)
+        unavailableReason = Self.macFinderNote
+        #else
         if store == nil {
             unavailableReason = String(localized: "This build cannot reach its shared storage, so servers cannot appear in Files.")
         }
+        #endif
     }
 
-    var isAvailable: Bool { store != nil }
+    /// What a Mac user is told where the switch would have been.
+    ///
+    /// Declared on every platform, and used only on the one where it is true: a string inside
+    /// `#if targetEnvironment(macCatalyst)` is never extracted by an iOS build, so it would
+    /// never reach the translators and a Chinese-speaking Mac user would read English (D-070).
+    static var macFinderNote: String {
+        String(localized: "On the Mac, servers cannot be added to Finder from this app. The system's replicated File Provider is not available to a Mac Catalyst app, so this switch would do nothing. The app's own file browser works here in full.")
+    }
+
+    /// Whether a server can be put in the system's file browser at all.
+    ///
+    /// False on Mac Catalyst, and not as an omission: `NSFileProviderManager` and everything
+    /// around it are marked unavailable there, and the Mac's Finder integration is a different
+    /// extension point on a different kind of target. The switch says so rather than sitting
+    /// there doing nothing (D-070).
+    var isAvailable: Bool {
+        #if targetEnvironment(macCatalyst)
+        false
+        #else
+        store != nil
+        #endif
+    }
 
     /// Whether a connection could be published, and if not, why.
     ///
@@ -90,6 +115,11 @@ final class FileProviderDomains {
     }
 
     private func reconcileDomains(with records: [SharedDomain]) async throws {
+        #if targetEnvironment(macCatalyst)
+        // The records are still written above: the app's own file browser reads them, and a
+        // Mac build that stopped recording which servers were chosen would forget the choice.
+        _ = records
+        #else
         let existing = try await NSFileProviderManager.domains()
         let wanted = Dictionary(records.map { ($0.id.uuidString, $0) }, uniquingKeysWith: { first, _ in first })
 
@@ -121,6 +151,7 @@ final class FileProviderDomains {
             ))
             log.info("published a domain", ["domain": record.displayName])
         }
+        #endif
     }
 
     /// Tells the system a folder's contents changed, so Files notices work the app did.
@@ -128,11 +159,15 @@ final class FileProviderDomains {
     /// Without this, a file uploaded in the app's own browser would not appear in Files
     /// until the user pulled to refresh — the same folder, two answers.
     func signalChange(for hostID: Host.ID) async {
+        #if targetEnvironment(macCatalyst)
+        _ = hostID
+        #else
         guard let manager = NSFileProviderManager(for: NSFileProviderDomain(
             identifier: NSFileProviderDomainIdentifier(hostID.uuidString),
             displayName: ""
         )) else { return }
         try? await manager.signalEnumerator(for: .workingSet)
+        #endif
     }
 
     private func record(for host: Host) -> SharedDomain {

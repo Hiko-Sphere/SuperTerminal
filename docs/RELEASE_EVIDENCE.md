@@ -3,6 +3,80 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-10 — after D-070 (Mac Catalyst: what it does, and what it does not)
+
+| Command | Result |
+| --- | --- |
+| `xcodebuild … -destination 'platform=macOS,variant=Mac Catalyst' build` | **BUILD SUCCEEDED** |
+| The Catalyst app, launched on this Mac | **runs**, and was still running nine seconds later |
+| `… -only-testing:ApexTerminalTests test` on Mac Catalyst | **324 tests, 316 passed** — the eight failures are `errSecMissingEntitlement` (`-34018`) |
+| `… -only-testing:ApexTerminalUITests test` on Mac Catalyst | **cannot run**: *"mapping process and mapped file (non-platform) have different Team IDs"* |
+| `cd Packages/ApexTerminalKit && swift test --no-parallel` | **380 tests in 56 suites, 4 failed** — the four `SecureEnclaveKeyTests` this machine's enclave will not run |
+| `bash scripts/app-integration-e2e.sh` | **335 tests in 64 suites passed**, no restarts |
+| `bash scripts/localization-audit.sh` | **green**, with the Mac sentence translated into both Chinese variants |
+| `bash scripts/ui-terminal-e2e.sh` (iPhone 17 Pro) | **56 passed, 2 failed** — both `ZZSearchProbeUITests`, another session's work |
+| `bash scripts/ui-terminal-e2e.sh` (iPad Pro 13-inch M5) | **57 passed, 2 failed** — the same two |
+| Release archive, and the app warning gate | **ARCHIVE SUCCEEDED**, **0** warnings |
+| The iOS archive still carries the extension | `PlugIns/ApexTerminalFileProvider.appex` is in it — the platform filter takes the extension out of the *Catalyst* build and nothing else |
+
+### A run that was the machine, and how that was established rather than assumed
+
+The first attempt at this regression reported 31 test-host restarts on the iPhone and a scatter
+of twelve failures across unrelated suites — accessibility, the app lock, backup, blank fields,
+consent, the file browser, fonts, the hardware keyboard — while the **iPad run beside it, on
+the same binary, passed 57**. That asymmetry is what said "machine", and it was checked rather
+than assumed: `xcrun simctl shutdown all`, then the same two suites again, on the same tree.
+The app suite went from a crashed run to **335 passed with no restarts**, and the iPhone from
+21-and-truncated to **56 passed with only the two `ZZSearchProbeUITests`**. Nothing was changed
+in between.
+
+### What running it on a Mac found
+
+Nine unit tests failed on Catalyst for a reason that had nothing to do with signing: snippets,
+command history, open sessions and known screens all refused to save, each reporting the app's
+own "Changes could not be saved.". The cause is one option:
+
+    try encoder.encode(value).write(to: url, options: [.atomic, .completeFileProtection])
+
+`completeFileProtection` is an iOS capability. On a Mac — Catalyst included — asking for it
+makes the write **fail** unless the app carries the Data Protection capability, which is
+granted through a provisioning profile. Ten places in the app and the package asked for it.
+They now ask through `Data.WritingOptions.atomicAndProtected`, which requests protection where
+the platform has it; on the Mac the equivalent is FileVault, which is a system setting rather
+than something one file can ask for. With that change the nine failures went and eight
+remained.
+
+This is worth stating plainly: it was not found by reading, and it would not have been found by
+building. It took running the app's own tests on the platform.
+
+### What is genuinely absent, and what the app says about it
+
+The replicated File Provider API — `NSFileProviderItemIdentifier`, `NSFileProviderManager` and
+everything around them — is marked unavailable in Mac Catalyst, and the Mac's Finder
+integration is a different extension point on a different kind of target. So `STFileProvider`
+is absent there, the extension is excluded from the Catalyst build by a platform filter on both
+the dependency and the embed phase, and the connection editor's *Show in the Files app* switch
+is off with the reason under it, in all three languages.
+
+### The eight that remain, and why they are not fixable here
+
+`errSecMissingEntitlement`. Getting past signing on a machine with no Mac Catalyst provisioning
+profile means building with `CODE_SIGN_ENTITLEMENTS=""`, which takes away
+`keychain-access-groups` — and those eight tests are the app lock's passcode, a Cloudflare
+service token and a screen's password. The UI suite cannot run at all for the same underlying
+reason: an ad-hoc signature gives the runner and the test bundle different team identities, and
+XCUITest will not load across that. **H-8** records exactly what a signing identity would
+unlock, and the plan claims nothing beyond "builds, launches, and its logic passes there".
+
+### A string that would never have reached the translators
+
+The sentence a Mac user reads where the switch would have been was first written inside
+`#if targetEnvironment(macCatalyst)`. An iOS build never compiles that, so the compiler never
+emits the key, so the audit never asks for it — and a Chinese-speaking Mac user would have read
+English. It is now declared outside the conditional and used inside it, which puts it in the
+simulator build's extracted strings where CI will see it. D-067's provenance line is what made
+this visible: the audit named the exact `.stringsdata` and its timestamp.
+
 ## 2026-09-10 — after D-069 (the parser's claim, tested by trying)
 
 | Command | Result |

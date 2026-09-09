@@ -215,3 +215,46 @@ amount of code can close that gap; it needs hardware with Face ID or Touch ID en
 else about those keys — creation, the SSH wire format, authentication against real
 OpenSSH, the unattended policy in Files, the export refusal — is verified automatically
 and does not depend on this.
+
+## H-8 · A Mac Catalyst signing identity, and what it would unlock
+
+**Why this is here.** Mac Catalyst is enabled and the app builds, launches and runs 316 of its
+324 unit tests on this Mac (D-070). What it cannot do here is run *signed*, because this
+machine has no Apple Developer team with a Mac Catalyst provisioning profile for
+`dev.apexterminal.app`. Everything below needs one, and none of it can be faked.
+
+**What is blocked, precisely.**
+
+1. **The Keychain.** Eight unit tests fail with `errSecMissingEntitlement` (`-34018`) because
+   the run has to be built with `CODE_SIGN_ENTITLEMENTS=""` to get past signing at all. The
+   `keychain-access-groups` entitlement is what those tests need, and it needs a profile.
+2. **The UI suite.** `xcodebuild … -only-testing:ApexTerminalUITests` on Mac Catalyst refuses
+   to load the test bundle: *"mapping process and mapped file (non-platform) have different
+   Team IDs"*. An ad-hoc signature gives the runner and the bundle different identities, and
+   XCUITest will not load across that boundary. Every claim about how the app *looks and
+   behaves* on the Mac is therefore unverified.
+3. **Per-file data protection.** `completeFileProtection` fails on Mac Catalyst unless the app
+   carries the Data Protection capability, which is granted through a provisioning profile.
+   Until then the app writes atomically without it on the Mac — see
+   `Data.WritingOptions.atomicAndProtected` — and the Mac's equivalent protection is FileVault,
+   which is a system setting rather than something a file asks for.
+
+**Steps.**
+
+1. In Xcode, select the ApexTerminal target → Signing & Capabilities, choose a team, and let
+   Xcode create a Mac Catalyst development profile.
+2. Run the unit tests on the Mac:
+   `xcodebuild -project ApexTerminal.xcodeproj -scheme ApexTerminal -destination 'platform=macOS,variant=Mac Catalyst' -only-testing:ApexTerminalTests test`
+   *Expect:* the eight `AppLockTests`, `ServiceTokenTests` and `ScreenConnectionTests` failures
+   to go, because the Keychain group is now real.
+3. Run the UI suite the same way, with the harness:
+   `bash scripts/ui-terminal-e2e.sh 'platform=macOS,variant=Mac Catalyst'`.
+   *Expect:* failures that are about a Mac rather than about signing — this is the first look
+   at how the interface actually behaves there, and what it finds belongs in the plan.
+4. Decide about data protection. Adding the Data Protection capability restores per-file
+   protection on the Mac and would let `atomicAndProtected` ask for it everywhere; leaving it
+   off means the privacy policy's "Encrypted while the device is locked" is an iOS statement
+   and would need a sentence about the Mac before a Mac build ships.
+
+**Blocks.** Any claim that Apex Terminal *works* on the Mac beyond "it builds, launches and its
+logic passes its tests there". The plan says exactly that and no more.

@@ -157,7 +157,7 @@ final class BackupService {
     /// nothing — never half a backup that looks importable.
     func write(_ document: BackupDocument, to url: URL) throws {
         let data = try Self.encoder.encode(document)
-        try data.write(to: url, options: [.atomic, .completeFileProtection])
+        try data.write(to: url, options: .atomicAndProtected)
     }
 
     // MARK: - Import

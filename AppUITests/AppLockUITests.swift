@@ -92,7 +92,14 @@ final class AppLockUITests: XCTestCase {
         XCTAssertTrue(app.buttons["Settings"].isHittable, "and what was behind the lock is reachable again")
 
         // Leaving and coming back locks again (the default is "immediately").
+        #if targetEnvironment(macCatalyst)
+        // A Mac has no home button, and `XCUIDevice.press` does not exist there. Deactivating
+        // by activating something else is the closest equivalent, and it is what a person
+        // does: click away, come back (D-070).
+        XCUIApplication(bundleIdentifier: "com.apple.finder").activate()
+        #else
         XCUIDevice.shared.press(.home)
+        #endif
         app.activate()
         XCTAssertTrue(lockScreen.waitForExistence(timeout: 10), "coming back after leaving locks the app")
         passcode.tap()

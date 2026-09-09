@@ -76,7 +76,7 @@ final class SessionRestorationStore {
         guard let data = try? encoder.encode(entries) else { return }
         // Which machines someone works on is not secret, but it is not nothing either:
         // it names internal hosts. Same protection as the connection list itself.
-        try? data.write(to: url, options: [.atomic, .completeFileProtection])
+        try? data.write(to: url, options: .atomicAndProtected)
         var target = url
         var values = URLResourceValues()
         values.isExcludedFromBackup = true

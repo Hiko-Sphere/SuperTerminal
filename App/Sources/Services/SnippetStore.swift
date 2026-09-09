@@ -179,7 +179,7 @@ final class SnippetStore {
         encoder.dateEncodingStrategy = .iso8601
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         do {
-            try encoder.encode(value).write(to: url, options: [.atomic, .completeFileProtection])
+            try encoder.encode(value).write(to: url, options: .atomicAndProtected)
         } catch {
             loadError = STError(
                 category: .internalError,

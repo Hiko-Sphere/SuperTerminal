@@ -7821,6 +7821,23 @@
         }
       }
     },
+    "On the Mac, servers cannot be added to Finder from this app. The system's replicated File Provider is not available to a Mac Catalyst app, so this switch would do nothing. The app's own file browser works here in full.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在 Mac 上，本应用无法把服务器添加到访达。系统的复制式 File Provider 对 Mac Catalyst 应用不可用，因此该开关不会起任何作用。本应用自带的文件浏览器在此处完全可用。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在 Mac 上，本應用程式無法把伺服器加入 Finder。系統的複製式 File Provider 對 Mac Catalyst 應用程式不可用，因此該開關不會起任何作用。本應用程式自帶的檔案瀏覽器在此處完全可用。"
+          }
+        }
+      }
+    },
     "On the server, run:": {
       "extractionState": "manual",
       "localizations": {

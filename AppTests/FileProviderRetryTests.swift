@@ -1,3 +1,7 @@
+// The File Provider extension does not exist on Mac Catalyst — the replicated API is
+// unavailable there — so neither do its tests. See `FileProviderDomains.isAvailable`, which is
+// what the app shows a Mac user instead (D-070).
+#if !targetEnvironment(macCatalyst)
 import FileProvider
 import Foundation
 import NIOTransportServices
@@ -170,3 +174,4 @@ private final class TestKeyStore: SecureStore, @unchecked Sendable {
         lock.withLock { for key in items.keys where key.service == service { items.removeValue(forKey: key) } }
     }
 }
+#endif

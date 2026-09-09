@@ -95,7 +95,11 @@ claimed anywhere in the interface.
 
 ## Phase 4 — platform reach
 
-Mac Catalyst, visionOS, watchOS. Not started, and deliberately after Phase 0–3.
+| # | Item | State |
+| --- | --- | --- |
+| 4.1 | Mac Catalyst | **Builds, launches and its logic passes there (D-070)** — and no more than that. The app compiles for Mac Catalyst, launches on this Mac and runs **316 of its 324 unit tests**; the eight that fail are `errSecMissingEntitlement`, because getting past signing on a machine with no Mac Catalyst profile means building without entitlements. The UI suite cannot run at all there — XCUITest refuses to load a test bundle whose team differs from the runner's — so nothing about how the app *behaves* on a Mac is verified. That is **H-8**. The File Provider feature is genuinely absent on Catalyst (the replicated API is unavailable) and the app says so where the switch would have been |
+| 4.2 | visionOS | Not started. The SDK is installed here; **no simulator runtime is**, so nothing could be run even if it compiled — a compile-only claim is all this machine could support |
+| 4.3 | watchOS | Not started. Same: SDK present, no runtime. A watch app is also a different product question — a terminal does not fit a watch, and what would fit (session status, a stop button) has not been designed |
 
 ### What 1.4 still needs, and what it will cost
 

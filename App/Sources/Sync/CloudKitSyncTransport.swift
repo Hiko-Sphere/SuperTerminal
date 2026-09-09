@@ -180,7 +180,7 @@ final class CloudKitSyncTransport: SyncTransport, @unchecked Sendable {
                 // Persisted so the next launch resumes from the same change token rather
                 // than re-fetching everything.
                 if let data = try? JSONEncoder().encode(update.stateSerialization) {
-                    try? data.write(to: stateURL, options: [.atomic, .completeFileProtection])
+                    try? data.write(to: stateURL, options: .atomicAndProtected)
                 }
             case let .fetchedRecordZoneChanges(changes):
                 var records: [SyncRecord] = []

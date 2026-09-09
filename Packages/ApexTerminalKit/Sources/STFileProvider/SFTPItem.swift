@@ -1,3 +1,9 @@
+// The replicated File Provider API this file is built on is unavailable in Mac Catalyst:
+// `NSFileProviderItemIdentifier`, `NSFileProviderEnumerator` and everything around them are
+// marked unavailable there, and the Mac's own File Provider is a different extension point on
+// a different kind of target. So this is absent on Catalyst rather than faked, and the app
+// says where the feature would have been (D-070).
+#if !targetEnvironment(macCatalyst)
 import FileProvider
 import Foundation
 import STSFTP
@@ -98,3 +104,4 @@ public final class SFTPItem: NSObject, NSFileProviderItem, @unchecked Sendable {
         Data("\(value)-\(date.map { String(Int64($0.timeIntervalSince1970)) } ?? "0")".utf8)
     }
 }
+#endif

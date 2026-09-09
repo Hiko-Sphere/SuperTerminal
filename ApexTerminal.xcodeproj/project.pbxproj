@@ -11,7 +11,7 @@
 		39760EFDF3D41C49B8DAEF3F /* STSecureStore in Frameworks */ = {isa = PBXBuildFile; productRef = 66EC5B52880DDE0D62F467B2 /* STSecureStore */; };
 		3B9F1C7D5E2A48C6B0D7E9A1 /* STVNC in Frameworks */ = {isa = PBXBuildFile; productRef = 7C0E4D2A91B3F6A5C8D1E0F2 /* STVNC */; };
 		4CB926D6FE5D4B5DC1050F82 /* STCloudflare in Frameworks */ = {isa = PBXBuildFile; productRef = 7336BD2111C0BCE3753A0960 /* STCloudflare */; };
-		4F1A2B3C4D5E6F7081920A0A /* ApexTerminalFileProvider.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4F1A2B3C4D5E6F7081920A02 /* ApexTerminalFileProvider.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		4F1A2B3C4D5E6F7081920A0A /* ApexTerminalFileProvider.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4F1A2B3C4D5E6F7081920A02 /* ApexTerminalFileProvider.appex */; platformFilters = (ios, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		4F1A2B3C4D5E6F7081920A0E /* STFileProvider in Frameworks */ = {isa = PBXBuildFile; productRef = 4F1A2B3C4D5E6F7081920A0D /* STFileProvider */; };
 		4F1A2B3C4D5E6F7081920A10 /* STFileProvider in Frameworks */ = {isa = PBXBuildFile; productRef = 4F1A2B3C4D5E6F7081920A0F /* STFileProvider */; };
 		4F1A2B3C4D5E6F7081920A12 /* STForwarding in Frameworks */ = {isa = PBXBuildFile; productRef = 4F1A2B3C4D5E6F7081920A11 /* STForwarding */; };
@@ -351,6 +351,7 @@
 /* Begin PBXTargetDependency section */
 		4F1A2B3C4D5E6F7081920A0B /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
+			platformFilters = (ios, );
 			target = 4F1A2B3C4D5E6F7081920A01 /* ApexTerminalFileProvider */;
 			targetProxy = 4F1A2B3C4D5E6F7081920A0C /* PBXContainerItemProxy */;
 		};
@@ -396,7 +397,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				ST_APS_ENVIRONMENT = production;
 				ST_ICLOUD_ENVIRONMENT = Production;
-				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 			};
 			name = Release;
@@ -641,7 +642,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				ST_APS_ENVIRONMENT = development;
 				ST_ICLOUD_ENVIRONMENT = Development;
-				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 			};
 			name = Debug;

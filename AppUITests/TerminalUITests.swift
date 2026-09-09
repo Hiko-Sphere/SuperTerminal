@@ -386,6 +386,11 @@ final class TerminalUITests: XCTestCase {
         XCTAssertTrue(afterInsert.contains("PALETTE_"), "the snippet should be typed in: \(afterInsert)")
     }
 
+    // A Mac has no pinch: `XCUIElement.pinch` does not exist on macOS at all. What this test
+    // proves beyond the gesture — that changing the text size re-measures the grid and tells
+    // the server — is covered on every platform by `FontUITests`, which changes the line
+    // height in Settings and asks the remote `stty` (D-070).
+    #if !targetEnvironment(macCatalyst)
     func testPinchingResizesTheTerminalAndTellsTheServer() throws {
         try openTerminal()
 
@@ -416,6 +421,7 @@ final class TerminalUITests: XCTestCase {
         }
         XCTAssertLessThan(after.columns, before.columns, "zooming in should leave room for fewer columns")
     }
+    #endif
 
     /// The most recent `rows columns` pair printed by `stty size`.
     private func latestSttySize() -> (rows: Int, columns: Int)? {

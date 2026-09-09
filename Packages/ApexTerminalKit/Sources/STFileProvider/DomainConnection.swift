@@ -1,3 +1,6 @@
+// Part of the File Provider extension's machinery, and unavailable in Mac Catalyst for the
+// same reason as the rest of it — see `DomainFileSystem` (D-070).
+#if !targetEnvironment(macCatalyst)
 import Foundation
 import NIOCore
 import NIOTransportServices
@@ -333,3 +336,4 @@ struct RefusingApproval: HostKeyApprovalDelegate {
     func approveUnknownHost(identity: KnownHostIdentity, key: SSHHostKey) async -> Bool { false }
     func approveChangedHost(identity: KnownHostIdentity, expected: SSHHostKey, presented: SSHHostKey) async -> Bool { false }
 }
+#endif
