@@ -1,5 +1,23 @@
 import SwiftUI
 
+/// Whether the pane a view is drawn in should put its items in the navigation bar.
+///
+/// On a phone the panes share one bar — the pushed route's — because a nested
+/// `NavigationStack` per pane pops the outer stack (measured: splitting from the Session
+/// menu returned the app to the connection list). Two panes both filling that one bar
+/// would give a person two identical Session menus and no way to tell which pane either
+/// acts on, so only the focused pane fills it.
+private struct PaneContributesToolbarKey: EnvironmentKey {
+    static let defaultValue = true
+}
+
+extension EnvironmentValues {
+    var paneContributesToolbar: Bool {
+        get { self[PaneContributesToolbarKey.self] }
+        set { self[PaneContributesToolbarKey.self] = newValue }
+    }
+}
+
 /// Draws a ``PaneLayout``: several terminals, several screens, or any mixture, at once.
 ///
 /// The tree is recursive so the view is too. Each split measures itself and hands each half
@@ -12,6 +30,9 @@ import SwiftUI
 /// which a colour-only cue would not, so the focused pane also says so to VoiceOver.
 struct PaneContainerView: View {
     @Binding var layout: PaneLayout
+    /// True where the panes have no navigation bar of their own — a phone — so only the
+    /// focused pane may fill the one bar they share.
+    var panesShareOneToolbar = false
     /// Builds the view for one pane's content. Passed in so this file knows nothing about
     /// terminals or screens: it is a layout, and layouts should not care.
     let content: (PaneLayout.Content) -> AnyView
@@ -52,6 +73,7 @@ struct PaneContainerView: View {
     private func pane(id: UUID, content paneContent: PaneLayout.Content) -> some View {
         let isFocused = layout.focused == id
         return content(paneContent)
+            .environment(\.paneContributesToolbar, panesShareOneToolbar ? isFocused : true)
             .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.md, style: .continuous))
             .overlay {
                 RoundedRectangle(cornerRadius: DesignTokens.Radius.md, style: .continuous)

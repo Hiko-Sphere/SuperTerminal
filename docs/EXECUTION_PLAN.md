@@ -41,6 +41,30 @@ or a mixture, on one screen. A recursive layout — splitting a pane replaces *i
 because a flat grid cannot express "a terminal on the left, and on the right a screen above a
 second terminal", which is what people build within a minute of being able to.
 
+### The guide, the legal texts and the notices (D-056)
+
+Asked for alongside the panes, and done as its own slice because documentation that
+describes a different product than the one in the bundle is a defect, not a shortfall.
+
+* **User guide** — eighteen topics covering everything the app now does, in English,
+  Simplified Chinese and Traditional Chinese. It ships as Markdown the app parses into a
+  searchable topic list (**Settings → Help → User Guide**, or ⌘/), and `docs/USER_GUIDE.md`
+  is generated from the English file so the two cannot drift.
+* **Legal texts** — Terms, Privacy Policy and User Notice rewritten in all three languages
+  to match the code: Secure Enclave keys, agent forwarding, port forwarding, the Files app,
+  reused connections, and the questions a server can ask. The iCloud sections described a
+  switch this build does not offer and now say what is true — nothing leaves the device.
+  `LegalDocument.currentVersion` is 7, so the consent screen is shown again.
+* **Third-party notices** — verified item by item against `Package.resolved` and the
+  vendored trees. `swift-nio-ssh` was listed as a package dependency and has not been one
+  since D-007; BoringSSL, vendored inside `swift-crypto` and `swift-nio-ssl` under terms
+  that are not Apache-2.0, was not mentioned at all; and LibVNCServer, which is GPL and
+  test-only, was nowhere in the audit.
+* **The vendored patch had drifted.** `patches/niossh-rsa.patch` still described three
+  changes and reproduced the tree as it stood before D-046, D-048, D-051 and D-052 — so
+  CI's "the patch still reproduces the vendored tree" check would have failed on the next
+  run. Regenerated: 33 files, 2902 lines.
+
 ## Phase 3 — terminal fidelity
 
 | # | Item | State |

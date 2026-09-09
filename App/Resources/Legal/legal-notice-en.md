@@ -7,7 +7,10 @@ This is what the app does with your keys, in plain words. It is not the Privacy 
 - Opens SSH sessions to servers you add, directly or through a Cloudflare Tunnel.
 - For tunnelled hosts, signs you in to Cloudflare Access in a system browser and uses the resulting token to open the tunnel on your behalf — or, if you gave the connection an Access service token, presents that instead, with no browser. The app never sees your Cloudflare password.
 - Stores your connections, keys, passwords, Access tokens, host keys and snippets on your device so you do not re-enter them.
-- Optionally syncs connections, snippets, host keys and the private keys you choose across your own devices through your own iCloud account. Passwords never sync.
+- Browses and transfers files over SFTP on the same connection, and — for connections you mark — publishes that server in the Files app.
+- Forwards ports in either direction, and offers a SOCKS5 proxy, over a connection you have already made.
+- Opens remote screens over VNC, on their own or inside an SSH connection.
+- Reuses one SSH connection for everything that matches it: a shell, a second shell, a file browser and a forward on the same server share one authentication rather than each making their own.
 
 ## What the app does not do
 
@@ -17,12 +20,13 @@ This is what the app does with your keys, in plain words. It is not the Privacy 
 - It never writes your terminal output to disk. Scrollback is memory only.
 - It does not record what you type unless you turn command history on. Turning it off deletes the record, not hides it.
 - It does not filter secrets out of command history, because a filter that mostly works would be worse than none. If you turn history on and type a password on a command line, it is recorded, as your shell would record it.
-- It does not sync anything unless you turn iCloud sync on.
+- It does not sync anything. iCloud sync is not available in this version; everything stays on the device it was created on.
 
 ## Where your keys live
 
 - **On the device:** in Apple's Keychain, readable only while the device is unlocked. With iCloud sync off, every item is marked this-device-only and cannot travel in iCloud Keychain or in a backup restored to another device. You can additionally lock a key behind Face ID or Touch ID. A key locked this way is tied to the biometrics enrolled now; enrolling a new face or finger makes it unusable, so someone who learns your passcode cannot add themselves and read it.
-- **In iCloud, only if you turn sync on:** a private key syncs only if you chose that for it, and only if it is *not* Face ID/Touch ID protected. It goes through iCloud Keychain, which Apple encrypts end to end. Passwords never sync. Biometric-protected keys never leave the device. Apple does not allow it and the app does not try.
+- **In the Secure Enclave:** a key generated there has no copy anywhere. The private half is created inside the chip and cannot be read out of it — not by this app, not by any app, not by Apple. Signing happens inside the Enclave and the app receives only the signature. Such a key can be set to require Face ID or Touch ID for every signature. It cannot be backed up, exported or moved to another device, which is the point and also the risk: lose the device and the key is gone.
+- **Not in iCloud.** Sync is not available in this version, so nothing — no key, no connection, no host key — leaves this device through it.
 - **Nowhere else.** A private key is never sent to a server; the server sees a signature made with it.
 
 ## What is protected, and how
@@ -36,6 +40,12 @@ This is what the app does with your keys, in plain words. It is not the Privacy 
 **Someone stealing or reusing an Access token.** Tokens are checked for signature, audience, issuer and expiry before they are sent. A token for one Access application cannot be used against another.
 
 **Your logs.** Nothing you type and nothing the server prints is ever logged. Hostnames and tokens are redacted as each log line is written, not scrubbed afterwards, so the diagnostics export is a copy of what was logged. Redaction keeps only the last two labels of a server name (`<host:…>.example.com`); IP addresses become `<ip>`.
+
+**Questions the server asks.** Some servers ask instead of taking a password: a one-time code, a token, a password that has expired. The app shows what the server sent, word for word, without rewriting it, and sends back exactly what you typed. Those answers are never stored, never logged and never offered again — the next connection asks again.
+
+**A server borrowing your key.** Agent forwarding is off unless you turn it on for a connection. When it is on, and only while that session is open, programs on that server can ask this device to sign with the one key that connection uses. They cannot read the key, they cannot reach any other key on the device, and signing stops the moment you disconnect. Anything running as root on that server can do this, so turn it on for machines you control and leave it off for shared ones.
+
+**Forwarded ports.** A forward carries bytes between a listener and a destination; the app does not read, record or store what goes through one. A local or dynamic forward listens on this device only. A remote forward listens on the server, where its reach is the server's `sshd` configuration, not this app's choice.
 
 **Retries.** Only network and tunnel failures are retried automatically. A refused host key, a failed certificate check, a rejected password or a refused Access sign-in stops and shows you the error. The app will not retry past a security check.
 
@@ -55,7 +65,11 @@ If a connection drops because of the network or the tunnel, the app reconnects. 
 
 ## iCloud, in one paragraph
 
-The switch is off until you turn it on. On: connection list, snippets, known host keys and the non-secret details of your keys go to your iCloud private database; private keys you chose for it, if not biometric, go through iCloud Keychain; passwords never do. Never: biometric keys, command history, the list of recently open sessions, diagnostics. Access tokens stay on the device that signed in. The developer cannot read any of it; whether Apple can is a property of your iCloud account settings, not of this app. Off stops syncing. "Delete all data" clears iCloud too. A host key synced from another device is trusted here for a host this device has not met, the same as one you confirmed here, so someone who controls your iCloud account could plant one; a synced key that differs from one this device already trusts is not applied; Settings → iCloud shows the disagreement and you choose which key to keep. Because your Apple Account can now reach your connection list and host keys, keep two-factor authentication on for it.
+There is no sync in this version. Settings shows the switch and says why it is unavailable rather than hiding it, because someone looking for sync deserves to find out where it stands. Nothing is uploaded to iCloud by this app: not connections, not keys, not host keys, not snippets. Everything is on the device you created it on, and a backup file you make yourself is the only way to move it. If sync is offered in a later version, it will be off until you turn it on, and this notice will say what it carries before it carries anything.
+
+## Files in the Files app
+
+A connection you mark with **Show in the Files app** appears there like any other file provider, so any app that can open a document can open one from your server. The extension that does this signs in as the connection does, using the same credentials from the same Keychain access group; it is not given a copy of them, and it can reach nothing the app itself cannot. A server you have not marked is not visible there at all.
 
 ## What you have to do yourself
 
@@ -63,7 +77,7 @@ The switch is off until you turn it on. On: connection list, snippets, known hos
 2. **Take a changed key seriously.** If the app says the key changed and you did not reinstall or rekey the server, stop and ask the administrator.
 3. **Keep a device passcode.** Every protection above assumes the device is locked when you are not using it.
 4. **Use Face ID or Touch ID for keys that matter.** It costs one glance per connection and means a stolen passcode is not enough.
-5. **If you turn iCloud sync on, secure the iCloud account.** Two-factor authentication on the Apple Account is the minimum.
+5. **Turn agent forwarding on deliberately, and off again.** It is per connection and off by default. A server you do not administer should not have it.
 6. **Do not type secrets on a command line with history on.** What you type is what is stored.
 7. **Revoke on the server, not just on the phone.** Deleting a key from the app does not remove the public key from the server's `authorized_keys`. Losing a device means revoking there, and revoking the Access session in your Cloudflare dashboard.
 8. **Do not install root certificates you do not trust.** The app trusts the operating system's trust store.
@@ -74,7 +88,8 @@ The switch is off until you turn it on. On: connection list, snippets, known hos
 - A first-connection fingerprint you confirmed without checking.
 - Whoever runs your network seeing which hostnames you connect to. The content is encrypted; the destination is not hidden.
 - Someone who can unlock your device and open the app. They can use any stored connection whose key is not biometric-protected.
-- Someone who controls your Apple Account, if iCloud sync is on.
+- Anything running as root on a server you turned agent forwarding on for, while that session is open.
+- Whatever reaches a port you forwarded. A local or dynamic forward is reachable by other apps on this device; a remote forward is reachable by whatever the server's configuration allows.
 - Anything you copy from the terminal stays on the clipboard for one minute by default, after which iOS removes it; Settings → Security changes the interval or turns this off. Public keys copied from the key list stay until replaced.
 - One dependency, libsodium, is included as a prebuilt binary from its maintainer rather than built from source. Its role is limited to opening the sealed Cloudflare sign-in result, which is independently verified afterwards, and to the ChaCha20-Poly1305 SSH cipher.
 - Cloudflare's FedRAMP endpoints are not supported.
@@ -85,4 +100,4 @@ The switch is off until you turn it on. On: connection list, snippets, known hos
 
 ## Open source
 
-The app includes code under Apache-2.0 (swift-nio family, swift-crypto), ISC (swift-sodium, bcrypt_pbkdf) and BSD-3-Clause (Blowfish). Their notices are in the app under Settings → Legal → Open-source licences. Cloudflare, Cloudflare Tunnel and Cloudflare Access are trademarks of Cloudflare, Inc.; Apex Terminal is not affiliated with Cloudflare.
+The app includes code under Apache-2.0 (the swift-nio family, swift-crypto, and a fork of swift-nio-ssh maintained in this project), ISC (swift-sodium, bcrypt_pbkdf), BSD-3-Clause (Blowfish) and BoringSSL's combination of ISC and OpenSSL terms, vendored inside swift-crypto and swift-nio-ssl. Their notices are in the app under Settings → Legal → Open-source licences. Cloudflare, Cloudflare Tunnel and Cloudflare Access are trademarks of Cloudflare, Inc.; Apex Terminal is not affiliated with Cloudflare.

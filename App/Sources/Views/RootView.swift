@@ -114,6 +114,9 @@ struct RootView: View {
             )
             .environment(scene)
         }
+        // The guide opens over whatever raised the question — ⌘/ from a terminal, or the
+        // row in Settings — rather than replacing it (D-056).
+        .sheet(isPresented: helpBinding) { HelpView() }
         // Tells the menu commands which window they are acting on.
         .focusedSceneValue(\.sceneState, scene)
         .onAppear {
@@ -272,6 +275,13 @@ struct RootView: View {
         #endif
     }
 
+    private var helpBinding: Binding<Bool> {
+        Binding(
+            get: { scene.isShowingHelp },
+            set: { scene.isShowingHelp = $0 }
+        )
+    }
+
     private var paletteBinding: Binding<Bool> {
         Binding(
             get: { scene.isShowingPalette },
@@ -286,26 +296,38 @@ struct RootView: View {
                 onOpenScreen: { screen in path.append(.screen(screen.id)) }
             )
             .navigationDestination(for: SessionRoute.self) { route in
-                switch route {
-                case let .terminal(id):
-                    if let session = container.sessionManager.sessions.first(where: { $0.id == id }) {
-                        TerminalView(session: session)
-                    } else {
-                        EmptyStateView(
-                            title: String(localized: "Session closed"),
-                            message: String(localized: "This session is no longer open."),
-                            systemImage: "terminal"
-                        )
+                // A phone splits too (D-056). Panes were built into the split view's detail
+                // column only, so on a compact layout "Split Right" changed the model and
+                // nothing on screen — a menu item that appears to do nothing, which is
+                // worse than one that is not offered. Measured on iPhone: the layout held
+                // two panes and exactly one terminal was in the accessibility tree.
+                if scene.panes.paneCount > 1, scene.panes.panes.contains(where: { $0.content == route.paneContent }) {
+                    PaneContainerView(layout: paneBinding, panesShareOneToolbar: true) { content in
+                        paneContent(content, wrappedInItsOwnStack: false)
                     }
-                case let .screen(id):
-                    if let screen = container.screens.session(withID: id) {
-                        VNCView(session: screen)
-                    } else {
-                        EmptyStateView(
-                            title: String(localized: "Screen closed"),
-                            message: String(localized: "This screen is no longer open."),
-                            systemImage: "display"
-                        )
+                    .padding(DesignTokens.Spacing.xs)
+                } else {
+                    switch route {
+                    case let .terminal(id):
+                        if let session = container.sessionManager.sessions.first(where: { $0.id == id }) {
+                            TerminalView(session: session)
+                        } else {
+                            EmptyStateView(
+                                title: String(localized: "Session closed"),
+                                message: String(localized: "This session is no longer open."),
+                                systemImage: "terminal"
+                            )
+                        }
+                    case let .screen(id):
+                        if let screen = container.screens.session(withID: id) {
+                            VNCView(session: screen)
+                        } else {
+                            EmptyStateView(
+                                title: String(localized: "Screen closed"),
+                                message: String(localized: "This screen is no longer open."),
+                                systemImage: "display"
+                            )
+                        }
                     }
                 }
             }
@@ -349,11 +371,13 @@ struct RootView: View {
         )
     }
 
-    private func paneContent(_ content: PaneLayout.Content) -> AnyView {
+    private func paneContent(_ content: PaneLayout.Content, wrappedInItsOwnStack: Bool = true) -> AnyView {
         switch content {
         case let .terminal(id):
             if let session = container.sessionManager.session(withID: id) {
-                AnyView(NavigationStack { TerminalView(session: session) })
+                wrappedInItsOwnStack
+                    ? AnyView(NavigationStack { TerminalView(session: session) })
+                    : AnyView(TerminalView(session: session))
             } else {
                 // The session ended while a pane was showing it. Saying so beats a blank
                 // rectangle, and the pane can still be closed.
@@ -367,7 +391,9 @@ struct RootView: View {
             }
         case let .screen(id):
             if let screen = container.screens.session(withID: id) {
-                AnyView(NavigationStack { VNCView(session: screen) })
+                wrappedInItsOwnStack
+                    ? AnyView(NavigationStack { VNCView(session: screen) })
+                    : AnyView(VNCView(session: screen))
             } else {
                 AnyView(
                     EmptyStateView(
@@ -433,4 +459,13 @@ struct ApexTerminalCommands: Commands {
 enum SessionRoute: Hashable {
     case terminal(TerminalSession.ID)
     case screen(VNCSession.ID)
+
+    /// The same thing, said in the pane tree's vocabulary — so a pushed route can ask
+    /// whether the arrangement on screen is showing it.
+    var paneContent: PaneLayout.Content {
+        switch self {
+        case let .terminal(id): .terminal(id)
+        case let .screen(id): .screen(id)
+        }
+    }
 }

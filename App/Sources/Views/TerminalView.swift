@@ -3,6 +3,7 @@ import SwiftUI
 
 /// A single terminal, with its connection state, prompts and accessory keys.
 struct TerminalView: View {
+    @Environment(\.paneContributesToolbar) private var paneContributesToolbar
     @Environment(AppContainer.self) private var container
     @Environment(SceneState.self) private var scene
     @Environment(\.colorScheme) private var colorScheme
@@ -381,64 +382,67 @@ struct TerminalView: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Menu {
-                Button(String(localized: "Reconnect"), systemImage: "arrow.clockwise") {
-                    Task { await session.reconnect() }
-                }
-                Button(String(localized: "Disconnect"), systemImage: "bolt.slash") {
-                    Task { await session.disconnect() }
-                }
-                // No shortcut here: ⌘K is the shell's app-level shortcut (RootView) and the
-                // terminal view's own key command; a third SwiftUI registration on this
-                // menu item made two ⌘K shortcuts compete in one hierarchy.
-                Button(String(localized: "Command Palette…"), systemImage: "command") {
-                    scene.isShowingPalette = true
-                }
-                .accessibilityIdentifier("terminal-menu-palette")
-                Button(String(localized: "Snippets…"), systemImage: "text.badge.plus") {
-                    showsSnippets = true
-                }
-                .accessibilityIdentifier("terminal-menu-snippets")
-                Button(String(localized: "Assistant…"), systemImage: "sparkles") {
-                    scene.isShowingAssistant = true
-                }
-                Button(String(localized: "Port Forwards…"), systemImage: "arrow.left.arrow.right") {
-                    showsForwards = true
-                }
-                .accessibilityIdentifier("terminal-menu-forwards")
-                // Panes have to be reachable without a keyboard: on a touch device the
-                // shortcuts do not exist, and a feature only a hardware keyboard can start
-                // is a feature most people never find (D-055).
-                Button(String(localized: "Split Right"), systemImage: "rectangle.split.2x1") {
-                    container.shortcuts.perform(.splitRight)
-                }
-                .accessibilityIdentifier("terminal-menu-split-right")
-                Button(String(localized: "Split Down"), systemImage: "rectangle.split.1x2") {
-                    container.shortcuts.perform(.splitDown)
-                }
-                .accessibilityIdentifier("terminal-menu-split-down")
-                if scene.panes.paneCount >= 2 {
-                    Button(String(localized: "Close Pane"), systemImage: "rectangle.badge.minus", role: .destructive) {
-                        container.shortcuts.perform(.closePane)
+        // Empty in a pane that is not the focused one, where the bar is shared (D-056).
+        if paneContributesToolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Button(String(localized: "Reconnect"), systemImage: "arrow.clockwise") {
+                        Task { await session.reconnect() }
                     }
-                    .accessibilityIdentifier("terminal-menu-close-pane")
+                    Button(String(localized: "Disconnect"), systemImage: "bolt.slash") {
+                        Task { await session.disconnect() }
+                    }
+                    // No shortcut here: ⌘K is the shell's app-level shortcut (RootView) and the
+                    // terminal view's own key command; a third SwiftUI registration on this
+                    // menu item made two ⌘K shortcuts compete in one hierarchy.
+                    Button(String(localized: "Command Palette…"), systemImage: "command") {
+                        scene.isShowingPalette = true
+                    }
+                    .accessibilityIdentifier("terminal-menu-palette")
+                    Button(String(localized: "Snippets…"), systemImage: "text.badge.plus") {
+                        showsSnippets = true
+                    }
+                    .accessibilityIdentifier("terminal-menu-snippets")
+                    Button(String(localized: "Assistant…"), systemImage: "sparkles") {
+                        scene.isShowingAssistant = true
+                    }
+                    Button(String(localized: "Port Forwards…"), systemImage: "arrow.left.arrow.right") {
+                        showsForwards = true
+                    }
+                    .accessibilityIdentifier("terminal-menu-forwards")
+                    // Panes have to be reachable without a keyboard: on a touch device the
+                    // shortcuts do not exist, and a feature only a hardware keyboard can start
+                    // is a feature most people never find (D-055).
+                    Button(String(localized: "Split Right"), systemImage: "rectangle.split.2x1") {
+                        container.shortcuts.perform(.splitRight)
+                    }
+                    .accessibilityIdentifier("terminal-menu-split-right")
+                    Button(String(localized: "Split Down"), systemImage: "rectangle.split.1x2") {
+                        container.shortcuts.perform(.splitDown)
+                    }
+                    .accessibilityIdentifier("terminal-menu-split-down")
+                    if scene.panes.paneCount >= 2 {
+                        Button(String(localized: "Close Pane"), systemImage: "rectangle.badge.minus", role: .destructive) {
+                            container.shortcuts.perform(.closePane)
+                        }
+                        .accessibilityIdentifier("terminal-menu-close-pane")
+                    }
+                    Divider()
+                    Button(String(localized: "Find…"), systemImage: "magnifyingglass") {
+                        isSearching = true
+                    }
+                    // The shortcut stays attached directly to the button, ahead of anything
+                    // that wraps it: this is the modifier order the ⌘F test was written
+                    // against, and there is no reason to make it prove itself again.
+                    .keyboardShortcut("f", modifiers: .command)
+                    .accessibilityIdentifier("terminal-menu-find")
+                    Divider()
+                    Toggle(String(localized: "Show Key Row"), isOn: keyRowBinding)
+                } label: {
+                    Label(String(localized: "Session"), systemImage: "ellipsis.circle")
                 }
-                Divider()
-                Button(String(localized: "Find…"), systemImage: "magnifyingglass") {
-                    isSearching = true
-                }
-                // The shortcut stays attached directly to the button, ahead of anything
-                // that wraps it: this is the modifier order the ⌘F test was written
-                // against, and there is no reason to make it prove itself again.
-                .keyboardShortcut("f", modifiers: .command)
-                .accessibilityIdentifier("terminal-menu-find")
-                Divider()
-                Toggle(String(localized: "Show Key Row"), isOn: keyRowBinding)
-            } label: {
-                Label(String(localized: "Session"), systemImage: "ellipsis.circle")
+                .accessibilityIdentifier("terminal-menu")
             }
-            .accessibilityIdentifier("terminal-menu")
         }
     }
 }

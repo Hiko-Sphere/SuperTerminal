@@ -7,7 +7,7 @@ import Testing
     @Test("Every page teaches something, in a stable order, with no placeholder text")
     func pages() {
         let pages = TutorialPage.all
-        #expect(pages.count == 6)
+        #expect(pages.count == 7)
         // The ids are the order and the TabView's tags; a gap or a repeat would page to
         // the wrong screen rather than fail visibly.
         #expect(pages.map(\.id) == Array(0 ..< pages.count))

@@ -19,10 +19,17 @@ enum AppShortcut: String, CaseIterable, Sendable {
     case session1, session2, session3, session4, session5, session6, session7, session8, session9
     case closeSession
     case increaseTextSize, decreaseTextSize, actualTextSize
+    /// The same command as `increaseTextSize`, under the key people actually press. ⌘ and
+    /// the key marked + is ⇧⌘= to UIKit, which does not match an `=` command — so the
+    /// guide would have had to document ⌘= and hope nobody tried the obvious thing.
+    case increaseTextSizeShifted
     case assistant
     /// Split panes (D-055). ⌘D and ⇧⌘D are what every tiling terminal uses, and ⌥⌘→ / ⌥⌘←
     /// move between panes without disturbing the shell's own arrow keys.
     case splitRight, splitDown, closePane, nextPane, previousPane
+    /// ⌘/ opens the guide — the Help key on every platform that has one, and reachable
+    /// with one hand from the terminal (D-056).
+    case help
 
     var title: String {
         switch self {
@@ -37,10 +44,11 @@ enum AppShortcut: String, CaseIterable, Sendable {
         case .nextPane: String(localized: "Next Pane")
         case .previousPane: String(localized: "Previous Pane")
         case .closeSession: String(localized: "Close Session")
-        case .increaseTextSize: String(localized: "Increase Text Size")
+        case .increaseTextSize, .increaseTextSizeShifted: String(localized: "Increase Text Size")
         case .decreaseTextSize: String(localized: "Decrease Text Size")
         case .actualTextSize: String(localized: "Actual Size")
         case .assistant: String(localized: "Assistant…")
+        case .help: String(localized: "User Guide")
         default: String(localized: "Session \(sessionNumber ?? 0)")
         }
     }
@@ -60,9 +68,11 @@ enum AppShortcut: String, CaseIterable, Sendable {
         case .previousSession: "["
         case .closeSession: "w"
         case .increaseTextSize: "="
+        case .increaseTextSizeShifted: "+"
         case .decreaseTextSize: "-"
         case .actualTextSize: "0"
         case .assistant: "a"
+        case .help: "/"
         case .splitRight: "d"
         case .splitDown: "d"
         case .closePane: "w"
@@ -74,7 +84,7 @@ enum AppShortcut: String, CaseIterable, Sendable {
 
     var modifiers: UIKeyModifierFlags {
         switch self {
-        case .nextSession, .previousSession, .assistant, .splitDown: [.command, .shift]
+        case .nextSession, .previousSession, .assistant, .splitDown, .increaseTextSizeShifted: [.command, .shift]
         // Option for the pane commands, so each keeps the letter it shares with its
         // session-level twin: ⌘W still closes the session, ⌥⌘W closes just this pane.
         case .closePane, .nextPane, .previousPane: [.command, .alternate]
@@ -142,13 +152,13 @@ final class AppShortcutRouter {
         switch shortcut {
         case .nextSession, .previousSession: sessionManager.sessions.count >= 2
         case .closeSession, .assistant: displayedSession != nil
-        case .newConnection, .commandPalette, .showSettings, .actualTextSize: scene != nil
+        case .newConnection, .commandPalette, .showSettings, .actualTextSize, .help: scene != nil
         // Splitting needs something to split, and the pane commands need more than one
         // pane — a "Close Pane" that closes the only pane is just "Close Session" wearing
         // the wrong name.
         case .splitRight, .splitDown: displayedSession != nil || scene?.panes.paneCount ?? 0 > 0
         case .closePane, .nextPane, .previousPane: (scene?.panes.paneCount ?? 0) >= 2
-        case .increaseTextSize: settings.fontSize < AppSettings.fontSizeRange.upperBound
+        case .increaseTextSize, .increaseTextSizeShifted: settings.fontSize < AppSettings.fontSizeRange.upperBound
         case .decreaseTextSize: settings.fontSize > AppSettings.fontSizeRange.lowerBound
         default: shortcut.sessionNumber.map { sessionManager.session(atOneBasedIndex: $0) != nil } ?? false
         }
@@ -167,10 +177,11 @@ final class AppShortcutRouter {
         case .nextSession: cycleSession(by: 1)
         case .previousSession: cycleSession(by: -1)
         case .closeSession: if let session = displayedSession { sessionManager.close(session) }
-        case .increaseTextSize: adjustFontSize(by: 1)
+        case .increaseTextSize, .increaseTextSizeShifted: adjustFontSize(by: 1)
         case .decreaseTextSize: adjustFontSize(by: -1)
         case .actualTextSize: settings.fontSize = AppSettings.defaultFontSize
         case .assistant: scene?.isShowingAssistant = true
+        case .help: scene?.isShowingHelp = true
         case .splitRight: splitFocusedPane(axis: .horizontal)
         case .splitDown: splitFocusedPane(axis: .vertical)
         case .closePane:

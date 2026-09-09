@@ -26,6 +26,23 @@ patches/niossh-rsa.patch       the entire difference from upstream
 scripts/                       test harnesses and maintenance scripts
 ```
 
+Two directories under `App/Resources/` are prose rather than code, and both are read at
+runtime rather than compiled:
+
+* `Legal/` — the Terms, Privacy Policy and User Notice, one Markdown file per language,
+  plus the third-party notices. `LegalDocument.currentVersion` is bumped whenever any of
+  the three changes in substance; everyone who accepted an older version is shown the
+  consent screen again.
+* `Guide/` — the user guide, one Markdown file per language, split into topics by
+  `<!-- topic: slug -->` markers. `UserGuide` parses it; the slugs are the same in all
+  three languages and a test enforces that. `docs/USER_GUIDE.md` is **generated** from the
+  English file by `scripts/generate-user-guide-doc.sh`, and CI fails if it has drifted, so
+  edit `App/Resources/Guide/guide-en.md` and regenerate rather than editing the doc.
+
+Adding a topic means adding it to all three files and adding its symbol to
+`UserGuide.symbols`; the tests fail on a topic with no symbol, a symbol with no topic, and
+a language whose topics differ from English.
+
 Most of the code lives in the package rather than the app target, and that is a testing
 decision: `swift test` runs the SSH stack against a real `sshd` in seconds, with no
 simulator in the loop.

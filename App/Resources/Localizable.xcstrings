@@ -6478,6 +6478,23 @@
         }
       }
     },
+    "More than one at a time": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "一次不止一个"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "一次不只一個"
+          }
+        }
+      }
+    },
     "Name": {
       "extractionState": "manual",
       "localizations": {
@@ -8688,6 +8705,23 @@
         }
       }
     },
+    "Private keys stay in this device's Keychain, or inside the Secure Enclave where they cannot be extracted at all. There is no account and no analytics. A passcode or Face ID can lock the app itself, and the guide is under Settings whenever you want it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "私钥留在本设备的 Keychain 中，或留在 Secure Enclave 内部——在那里它根本无法被导出。没有账户，也没有分析统计。密码或 Face ID 可以锁定应用本身，而指南随时都在“设置”中等着您。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "私密金鑰留在本裝置的 Keychain 中，或留在 Secure Enclave 內部——在那裡它根本無法被匯出。沒有帳號，也沒有分析統計。密碼或 Face ID 可以鎖定應用程式本身，而指南隨時都在「設定」中等著您。"
+          }
+        }
+      }
+    },
     "Problem": {
       "extractionState": "manual",
       "localizations": {
@@ -9789,6 +9823,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "搜尋指令片段"
+          }
+        }
+      }
+    },
+    "Search the guide": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "搜索指南"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "搜尋指南"
           }
         }
       }
@@ -11659,6 +11710,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "無法開啟此伺服器上的檔案。"
+          }
+        }
+      }
+    },
+    "The guide %@ is not included in this build.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此版本未包含指南 %@。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此版本未包含指南 %@。"
+          }
+        }
+      }
+    },
+    "The guide in this build is damaged.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此版本中的指南已损坏。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此版本中的指南已損壞。"
           }
         }
       }
@@ -13550,6 +13635,23 @@
         }
       }
     },
+    "User Guide": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用户指南"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用者指南"
+          }
+        }
+      }
+    },
     "User Notice": {
       "extractionState": "manual",
       "localizations": {
@@ -14804,6 +14906,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "⌘+Tab（Super+Tab）"
+          }
+        }
+      }
+    },
+    "⌘D splits a session to the right, ⇧⌘D downwards, and the Session menu does the same without a keyboard. Two shells, a shell and a remote screen, or four of either — drag the divider to share the space.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⌘D 向右拆分会话，⇧⌘D 向下拆分；没有键盘时，“会话”菜单可以做同样的事。两个 shell、一个 shell 加一个远程屏幕，或者四个任意组合——拖动分隔线来分配空间。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⌘D 向右分割工作階段，⇧⌘D 向下分割；沒有鍵盤時，「工作階段」選單可以做同樣的事。兩個 shell、一個 shell 加一個遠端畫面，或四個任意組合——拖曳分隔線來分配空間。"
           }
         }
       }

@@ -53,6 +53,13 @@ jobs:
 
       - name: The bundled third-party notices match the repository copy
         run: cmp THIRD_PARTY_NOTICES.md App/Resources/Legal/THIRD_PARTY_NOTICES.md
+      - name: The user guide in docs still matches the one the app ships
+        run: |
+          # docs/USER_GUIDE.md is generated from the guide the app parses. Regenerate and
+          # fail on a difference: a guide that describes a different app than the one in
+          # the bundle is worse than no guide.
+          ./scripts/generate-user-guide-doc.sh
+          git diff --exit-code -- docs/USER_GUIDE.md
       - name: The RSA patch still reproduces the vendored tree
         run: |
           # A patch that has drifted from the tree is worse than no patch: it applies

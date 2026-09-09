@@ -23,8 +23,12 @@ enum LegalDocument: String, CaseIterable, Identifiable, Sendable {
     /// version 2 had missed, and says instead that there is no request to make; 6 filled
     /// in the effective date and the developer's legal name, and removed the choice of
     /// governing law and venue — the terms now name no law and no court, which is a
-    /// change to what the reader agreed to, not merely a blank being completed.
-    static let currentVersion = 6
+    /// change to what the reader agreed to, not merely a blank being completed; 7 brought
+    /// all three texts up to what the app now does — Secure Enclave keys, agent
+    /// forwarding, port forwarding, the Files app, reused connections and the questions a
+    /// server can ask — and replaced the iCloud sections, which described a switch this
+    /// version does not offer, with what is actually true: nothing leaves the device.
+    static let currentVersion = 7
 
     var title: String {
         switch self {

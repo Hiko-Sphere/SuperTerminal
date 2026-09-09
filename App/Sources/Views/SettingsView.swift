@@ -163,6 +163,11 @@ struct SettingsView: View {
 
                 TutorialSettingsSection()
 
+                Section("Help") {
+                    NavigationLink("User Guide") { HelpTopicsView() }
+                        .accessibilityIdentifier("settings-guide")
+                }
+
                 Section("Legal") {
                     ForEach([LegalDocument.terms, .privacy, .notice, .licences]) { document in
                         NavigationLink(document.title) { LegalView(document: document) }

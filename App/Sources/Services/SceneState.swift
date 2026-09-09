@@ -34,6 +34,10 @@ final class SceneState {
     /// The assistant sheet over the displayed terminal (D-020).
     var isShowingAssistant = false
 
+    /// The user guide (D-056), shown as a sheet so it can be read over whatever raised
+    /// the question.
+    var isShowingHelp = false
+
     /// How this window's detail area is divided (D-055).
     ///
     /// The source of truth for what is on screen. `selectedSessionID` and

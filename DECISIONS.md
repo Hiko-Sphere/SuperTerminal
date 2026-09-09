@@ -1389,4 +1389,5 @@ An index, so nothing has to be hunted for:
 | D-052 | `d0131fd` | Agent forwarding, with the phone as the agent |
 | D-053 | `a8e109d` | Cloudflare as a connection you choose, and diagnostics that measure |
 | D-054 | `5f2e1e6` | One SSH transport shared by everything that wants the same server |
-| D-055 | this commit | Split panes: several terminals and screens at once |
+| D-055 | `4af75ed` | Split panes: several terminals and screens at once |
+| D-056 | this commit | The guide, the legal texts and the third-party notices brought back to what the app actually does |

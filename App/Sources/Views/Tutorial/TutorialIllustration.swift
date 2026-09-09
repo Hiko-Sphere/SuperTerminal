@@ -20,6 +20,7 @@ struct TutorialIllustration: View {
             case .keyRow: keyRow
             case .palette: palette
             case .screen: screen
+            case .panes: panes
             case .keychain: keychain
             }
         }
@@ -253,6 +254,51 @@ struct TutorialIllustration: View {
                 gesture("hand.point.up.left", String(localized: "Two fingers scroll"), 4)
             }
         }
+    }
+
+    /// Split panes: one card divided the way the app divides it, with the two keys that
+    /// do it underneath. The right half is split again, because the interesting claim is
+    /// that the arrangement nests rather than that it halves.
+    private var panes: some View {
+        VStack(spacing: DesignTokens.Spacing.md) {
+            card {
+                HStack(spacing: 3) {
+                    paneBox(lines: 4, focused: true, step: 0)
+                    VStack(spacing: 3) {
+                        paneBox(lines: 2, focused: false, step: 1)
+                        paneBox(lines: 2, focused: false, step: 2)
+                    }
+                }
+                .frame(height: 92)
+            }
+            HStack(spacing: DesignTokens.Spacing.sm) {
+                keyCap("⌘D", wide: true).modifier(entrance(3))
+                keyCap("⇧⌘D", wide: true).modifier(entrance(4))
+            }
+        }
+    }
+
+    private func paneBox(lines: Int, focused: Bool, step: Int) -> some View {
+        RoundedRectangle(cornerRadius: DesignTokens.Radius.sm, style: .continuous)
+            .fill(DesignTokens.Color.surfaceSecondary)
+            .overlay(
+                RoundedRectangle(cornerRadius: DesignTokens.Radius.sm, style: .continuous)
+                    .strokeBorder(
+                        focused ? DesignTokens.Color.accent : DesignTokens.Color.separator,
+                        lineWidth: focused ? 1.5 : 0.5
+                    )
+            )
+            .overlay(alignment: .topLeading) {
+                VStack(alignment: .leading, spacing: 3) {
+                    ForEach(0 ..< lines, id: \.self) { line in
+                        Capsule()
+                            .fill(DesignTokens.Color.labelTertiary.opacity(0.5))
+                            .frame(width: line == lines - 1 ? 22 : 40, height: 3)
+                    }
+                }
+                .padding(DesignTokens.Spacing.sm)
+            }
+            .modifier(entrance(step))
     }
 
     private func gesture(_ symbol: String, _ label: String, _ step: Int) -> some View {

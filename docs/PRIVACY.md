@@ -5,6 +5,11 @@ app under Settings → Legal and on the consent screen. This page is the enginee
 the same facts: where each piece of data is, under which protection class, and what the
 code does to keep the policy true. If the two disagree, the code is wrong or this page is.
 
+**Sync is not offered in this build.** `SyncAvailability.isAvailable` is `false` (D-037),
+so every "only through iCloud sync, if on" below currently reads as *no*: the switch is
+shown disabled with its reason. The rows are written for the mechanism because the code
+path is compiled and tested; the shipped behaviour is that nothing leaves the device.
+
 ## What the app stores, and where
 
 | Data | Where | Leaves the device? |
@@ -12,6 +17,8 @@ code does to keep the policy true. If the two disagree, the code is wrong or thi
 | Connection list (names, hostnames, usernames, ports) | App container, complete file protection | Only through iCloud sync, if on |
 | SSH private keys | Keychain, `WhenUnlockedThisDeviceOnly`, optionally biometric-gated | Only through iCloud Keychain, and only for a key the user put there (`WhenUnlocked` + `kSecAttrSynchronizable`); never a biometric key |
 | Key metadata (name, algorithm, public key, fingerprint, flags) | App container, complete file protection | Only through iCloud sync, if on |
+| SSH keys generated in the Secure Enclave | The Enclave itself; the container holds only `SecureEnclave.P256.Signing.PrivateKey.dataRepresentation`, a wrapped reference the chip can use and nothing else can read (D-049) | Never — the private half cannot be exported by any API |
+| Answers to `keyboard-interactive` prompts | Nowhere; held in memory for the round trip (D-051) | To that server only, never stored or logged |
 | SSH passwords | Keychain, `WhenUnlockedThisDeviceOnly` | No — never synced |
 | Cloudflare Access tokens | Keychain, `AfterFirstUnlockThisDeviceOnly` | Only back to Cloudflare, as the credential for your own connection. Never synced |
 | Cloudflare Access service tokens (only if entered for a connection) | Keychain, `WhenUnlockedThisDeviceOnly` | Only to Cloudflare, as that connection's credential. Never synced; deleted with the connection |

@@ -1,34 +1,94 @@
 # Third-party components
 
-Every dependency, why it is here, its licence, and — for anything vendored — exactly
-what was changed. Versions are pinned in `Packages/ApexTerminalKit/Package.resolved`.
+Every dependency that reaches a shipped build, why it is here, its licence, and — for
+anything vendored — exactly what was changed. Versions are the resolved ones in
+`Packages/ApexTerminalKit/Package.resolved`, which the app project pins to the same
+graph.
+
+Last verified against the resolved graph on 2026-09-09.
 
 ## Swift package dependencies
 
+Direct dependencies, declared in `Packages/ApexTerminalKit/Package.swift`:
+
 | Package | Version | Licence | Why |
 | --- | --- | --- | --- |
-| [swift-nio](https://github.com/apple/swift-nio) | 2.102.0 | Apache-2.0 | Channel pipeline, HTTP/1.1, WebSocket framing |
-| [swift-nio-ssh](https://github.com/apple/swift-nio-ssh) | 0.15.0 | Apache-2.0 | SSH transport, authentication and channels |
-| [swift-nio-ssl](https://github.com/apple/swift-nio-ssl) | 2.37.4 | Apache-2.0 | TLS for platforms where Network.framework is not used |
+| [swift-nio](https://github.com/apple/swift-nio) | 2.102.0 | Apache-2.0 | Channel pipeline, HTTP/1.1 and WebSocket framing |
+| [swift-nio-ssl](https://github.com/apple/swift-nio-ssl) | 2.37.4 | Apache-2.0 | TLS on the code paths that do not go through Network.framework |
 | [swift-nio-transport-services](https://github.com/apple/swift-nio-transport-services) | 1.28.0 | Apache-2.0 | Network.framework-backed channels — correct behaviour across network changes and app suspension on iOS |
-| [swift-crypto](https://github.com/apple/swift-crypto) | 3.15.1 | Apache-2.0 | SHA-2, Ed25519, P-256; `_CryptoExtras` for RSA signature verification (Access JWTs) and AES-CTR/CBC (OpenSSH key files) |
-| [swift-sodium](https://github.com/jedisct1/swift-sodium) | 0.11.0 | ISC | `crypto_box` — see below |
-| swift-asn1, swift-atomics, swift-collections, swift-system | transitive | Apache-2.0 | Pulled in by the above |
+| [swift-crypto](https://github.com/apple/swift-crypto) | 3.15.1 | Apache-2.0 | SHA-2, Ed25519, P-256; `_CryptoExtras` for RSA signatures and AES-CTR/CBC |
+| [swift-sodium](https://github.com/jedisct1/swift-sodium) | 0.11.0 | ISC | `crypto_box`, and raw libsodium for `chacha20-poly1305@openssh.com` — see below |
+
+Transitive, resolved through the packages above and linked as part of them:
+
+| Package | Version | Licence | Arrives through |
+| --- | --- | --- | --- |
+| [swift-asn1](https://github.com/apple/swift-asn1) | 1.7.2 | Apache-2.0 | swift-crypto |
+| [swift-atomics](https://github.com/apple/swift-atomics) | 1.3.1 | Apache-2.0 | swift-nio, swift-nio-ssh-rsa |
+| [swift-collections](https://github.com/apple/swift-collections) | 1.6.0 | Apache-2.0 | swift-nio |
+| [swift-system](https://github.com/apple/swift-system) | 1.8.1 | Apache-2.0 | swift-nio |
+
+### BoringSSL, inside two of those packages
+
+`swift-crypto` and `swift-nio-ssl` each vendor a copy of Google's BoringSSL —
+`CCryptoBoringSSL` and `CNIOBoringSSL` respectively — and rename its symbols so the two
+copies can coexist. It is C, it is compiled into the app, and it is **not** under
+Apache-2.0: `swift-nio-ssl`'s own `NOTICE.txt` describes the terms as a *combination ISC
+and OpenSSL licence*. Both are permissive and both are satisfied by this notice plus the
+licence texts shipped inside those packages.
+
+On Apple platforms most of `Crypto` forwards to CryptoKit, so the BoringSSL code that
+actually runs here is reached through `_CryptoExtras` (RSA, AES-CTR/CBC) and through
+`NIOSSL`.
 
 ### A note on `swift-sodium`
 
-Cloudflare's login helper seals the Access token with NaCl `crypto_box` — X25519 key
-agreement with XSalsa20-Poly1305. CryptoKit and `swift-crypto` provide X25519 but not
-XSalsa20 or a raw Poly1305, so there is no way to open that box with platform APIs
-alone, and writing the missing pieces by hand is exactly the kind of do-it-yourself
-cryptography this project refuses.
+Two separate needs, one dependency:
+
+1. Cloudflare's login helper seals the Access token with NaCl `crypto_box` — X25519 key
+   agreement with XSalsa20-Poly1305. CryptoKit and `swift-crypto` provide X25519 but not
+   XSalsa20 or a raw Poly1305, so there is no way to open that box with platform APIs
+   alone.
+2. `chacha20-poly1305@openssh.com` is OpenSSH's own construction, not the RFC 8439 AEAD:
+   it needs the stream cipher and the one-time authenticator separately, which is why
+   `STSSH` links `Clibsodium` directly rather than the `Sodium` wrapper.
+
+Writing the missing pieces by hand is exactly the kind of do-it-yourself cryptography
+this project refuses.
 
 `swift-sodium` is maintained by Frank Denis, libsodium's author. On Apple platforms it
 resolves to `Clibsodium.xcframework`, a **prebuilt binary** — which is a supply-chain
-consideration recorded in `SECURITY.md`, not something to wave through. The dependency
-is pinned to an exact version.
+consideration recorded in `SECURITY.md`, not something to wave through. The dependency is
+pinned to an exact version.
 
 ## Vendored source
+
+### `swift-nio-ssh`, as `Packages/swift-nio-ssh-rsa`
+
+**Upstream:** [apple/swift-nio-ssh](https://github.com/apple/swift-nio-ssh) at tag
+`0.15.0` (commit in `Packages/swift-nio-ssh-rsa/UPSTREAM_COMMIT`)
+**Licence:** Apache-2.0, unchanged — `Packages/swift-nio-ssh-rsa/LICENSE.txt`
+
+This is a fork, not a dependency: it is a path package, so it does **not** appear in
+`Package.resolved`. Upstream implements neither RSA nor several things a general-purpose
+SSH client needs, and a key algorithm cannot be added from outside the module.
+
+The whole difference from upstream is `patches/niossh-rsa.patch` — regenerated by
+`scripts/regenerate-niossh-patch.sh`, and CI fails if the committed patch stops
+reproducing the tree. What it carries:
+
+| Change | Why | Decision |
+| --- | --- | --- |
+| `rsa-sha2-256` / `rsa-sha2-512` host and user keys | Upstream has no RSA at all: RSA user keys cannot authenticate, and an RSA-only server cannot be reached | D-007 |
+| RFC 4253 § 7.2 key extension, and a sequence number on `decryptFirstBlock` | For `chacha20-poly1305@openssh.com`: a cipher may need more key material than one digest provides, and its length field is encrypted under a per-packet nonce | D-013 |
+| OpenSSH certificates as host and user keys | `NIOSSHCertifiedPublicKey` could be parsed but not offered for authentication or accepted as a host key | D-046 |
+| `mlkem768x25519-sha256` key exchange | Post-quantum key agreement, as OpenSSH 9.x negotiates it | D-048 |
+| `keyboard-interactive` messages (RFC 4256) | Message 60 is shared with `SSH_MSG_USERAUTH_PK_OK`, so the parser must be told which one to expect | D-051 |
+| `auth-agent@openssh.com` channel and `auth-agent-req@openssh.com` request | Agent forwarding needs both a channel type and an outbound request the pipeline can send | D-052 |
+
+Upstream's own test suite is vendored alongside the source and runs in CI, so a re-sync
+that breaks something is caught rather than assumed safe. If upstream adds these, this
+package should be deleted and the dependency pointed back at it.
 
 ### OpenBSD `bcrypt_pbkdf` and Blowfish
 
@@ -62,6 +122,22 @@ without it.
 key is imported and used to authenticate against a real `sshd`. A wrong passphrase must
 be rejected, which only happens if the derivation is bit-exact.
 
+## Used only to test, never shipped
+
+These are developer tooling. They are not linked into the app, not embedded in the
+archive, and not distributed with it.
+
+| Component | Licence | How it is used |
+| --- | --- | --- |
+| [LibVNCServer](https://github.com/LibVNC/libvncserver) | **GPL-2.0-or-later** | A real RFB server for the screen tests, compiled from `Sources/STTestSupport/Fixtures/vnc-test-server.c` against the Homebrew library on the developer's machine and run as a separate process |
+| OpenSSH `sshd` | BSD-style | The server the SSH and SFTP integration tests connect to |
+| A Debian container running `sshd` with PAM | mixed, per Debian | The `keyboard-interactive` tests need a server that actually asks questions |
+
+The GPL matters here, so it is worth being explicit: LibVNCServer is loaded by a **test
+harness process**, built on demand from a C file in this repository, and the app target
+does not reference it. No GPL code is combined with, linked to, or shipped inside Apex
+Terminal.
+
 ## Protocol research
 
 Cloudflare's carrier and login behaviour was determined by reading
@@ -74,6 +150,7 @@ against a future release.
 
 Cloudflare, Cloudflare Tunnel, Cloudflare Access and WARP are trademarks of Cloudflare,
 Inc. Apex Terminal is not affiliated with, endorsed by, or sponsored by Cloudflare.
-Product names such as iTerm2, Warp, Blink Shell and Termius belong to their respective
-owners and are referenced only to describe categories of prior art; no code, visual
-asset or protected design from any of them is used here.
+Apple, iPhone, iPad, Face ID, Touch ID and iCloud are trademarks of Apple Inc. Product
+names such as iTerm2, Warp, Blink Shell and Termius belong to their respective owners and
+are referenced only to describe categories of prior art; no code, visual asset or
+protected design from any of them is used here.

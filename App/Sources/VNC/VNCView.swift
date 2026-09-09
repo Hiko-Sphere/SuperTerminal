@@ -4,6 +4,7 @@ import SwiftUI
 /// A remote screen (D-022): the framebuffer, a key row for what touch cannot type, and
 /// the connection's state while it is not yet — or no longer — showing anything.
 struct VNCView: View {
+    @Environment(\.paneContributesToolbar) private var paneContributesToolbar
     @Environment(AppContainer.self) private var container
     let session: VNCSession
 
@@ -127,50 +128,53 @@ struct VNCView: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button(showsSoftwareKeyboard ? String(localized: "Hide Keyboard") : String(localized: "Keyboard"),
-                   systemImage: showsSoftwareKeyboard ? "keyboard.chevron.compact.down" : "keyboard") {
-                showsSoftwareKeyboard.toggle()
-            }
-            .disabled(!session.isConnected)
-            .accessibilityIdentifier("vnc-keyboard")
-        }
-        ToolbarItem(placement: .topBarTrailing) {
-            Menu {
-                Section {
-                    Menu(String(localized: "Send Keys"), systemImage: "command") {
-                        Button("Ctrl+Alt+Del") { session.chord([.control, .alt], VNCKeysym.delete) }
-                        Button("Alt+Tab") { session.chord([.alt], VNCKeysym.tab) }
-                        Button("⌘+Tab (Super+Tab)") { session.chord([.superKey], VNCKeysym.tab) }
-                        Button("Ctrl+C") { session.chord([.control], VNCKeysym.forCharacter("c")) }
-                        Button("Escape") { session.press(VNCKeysym.escape) }
-                    }
-                    .disabled(!session.isConnected)
-                    Toggle(String(localized: "Send ⌘ to Remote"), systemImage: "command.square", isOn: commandKeyBinding)
-                    Button(String(localized: "Paste to Remote Clipboard"), systemImage: "doc.on.clipboard") {
-                        if let text = UIPasteboard.general.string { session.sendClipboard(text) }
-                    }
-                    .disabled(!session.isConnected)
-                    Button(String(localized: "Fit to Screen"), systemImage: "arrow.down.right.and.arrow.up.left") {
-                        zoomResetToken += 1
-                    }
+        // Empty in a pane that is not the focused one, where the bar is shared (D-056).
+        if paneContributesToolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(showsSoftwareKeyboard ? String(localized: "Hide Keyboard") : String(localized: "Keyboard"),
+                       systemImage: showsSoftwareKeyboard ? "keyboard.chevron.compact.down" : "keyboard") {
+                    showsSoftwareKeyboard.toggle()
                 }
-                Section {
-                    if session.isConnected {
-                        Button(String(localized: "Disconnect"), systemImage: "bolt.slash", role: .destructive) {
-                            Task { await session.disconnect() }
+                .disabled(!session.isConnected)
+                .accessibilityIdentifier("vnc-keyboard")
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Section {
+                        Menu(String(localized: "Send Keys"), systemImage: "command") {
+                            Button("Ctrl+Alt+Del") { session.chord([.control, .alt], VNCKeysym.delete) }
+                            Button("Alt+Tab") { session.chord([.alt], VNCKeysym.tab) }
+                            Button("⌘+Tab (Super+Tab)") { session.chord([.superKey], VNCKeysym.tab) }
+                            Button("Ctrl+C") { session.chord([.control], VNCKeysym.forCharacter("c")) }
+                            Button("Escape") { session.press(VNCKeysym.escape) }
                         }
-                    } else {
-                        Button(String(localized: "Reconnect"), systemImage: "arrow.clockwise") { session.retry() }
+                        .disabled(!session.isConnected)
+                        Toggle(String(localized: "Send ⌘ to Remote"), systemImage: "command.square", isOn: commandKeyBinding)
+                        Button(String(localized: "Paste to Remote Clipboard"), systemImage: "doc.on.clipboard") {
+                            if let text = UIPasteboard.general.string { session.sendClipboard(text) }
+                        }
+                        .disabled(!session.isConnected)
+                        Button(String(localized: "Fit to Screen"), systemImage: "arrow.down.right.and.arrow.up.left") {
+                            zoomResetToken += 1
+                        }
                     }
-                    Button(String(localized: "Close Screen"), systemImage: "xmark", role: .destructive) {
-                        container.screens.close(session)
+                    Section {
+                        if session.isConnected {
+                            Button(String(localized: "Disconnect"), systemImage: "bolt.slash", role: .destructive) {
+                                Task { await session.disconnect() }
+                            }
+                        } else {
+                            Button(String(localized: "Reconnect"), systemImage: "arrow.clockwise") { session.retry() }
+                        }
+                        Button(String(localized: "Close Screen"), systemImage: "xmark", role: .destructive) {
+                            container.screens.close(session)
+                        }
                     }
+                } label: {
+                    Label(String(localized: "Screen"), systemImage: "ellipsis.circle")
                 }
-            } label: {
-                Label(String(localized: "Screen"), systemImage: "ellipsis.circle")
+                .accessibilityIdentifier("vnc-menu")
             }
-            .accessibilityIdentifier("vnc-menu")
         }
     }
 

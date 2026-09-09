@@ -24,7 +24,11 @@ final class TutorialUITests: XCTestCase {
 
         // Every page is reachable, and the last one ends it rather than continuing.
         let next = app.buttons["tutorial-next"]
-        for step in 1 ... 5 {
+        // Seven pages, so six taps of Continue reach the last one (D-056 added the one
+        // about split panes). The count is deliberately literal rather than "tap until
+        // Done appears": a tour that lost a page would still pass that, and the point of
+        // this test is that every page is reachable.
+        for step in 1 ... 6 {
             XCTAssertTrue(next.waitForExistence(timeout: 5), "step \(step) should offer Continue")
             next.tap()
         }

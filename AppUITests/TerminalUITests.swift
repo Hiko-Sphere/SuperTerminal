@@ -1,3 +1,4 @@
+import UIKit
 import XCTest
 
 /// Scrolling and searching that behave the same on a phone and an iPad.
@@ -159,6 +160,17 @@ final class TerminalUITests: XCTestCase {
         XCTAssertTrue(paneCount.waitForExistence(timeout: 5))
         XCTAssertEqual(paneCount.value as? String, "2", "splitting should produce two panes")
         XCTAssertEqual(terminals.count, 2, "and both should be on screen")
+
+        // Where the panes have no navigation bar of their own — a phone — they share the
+        // pushed route's, and only the focused pane may fill it: two identical Session
+        // menus with no way to tell which pane either acts on is not a toolbar, it is a
+        // guess. On an iPad each pane carries its own bar, so both are there (D-056).
+        let menus = app.buttons.matching(identifier: "terminal-menu").count
+        if UIDevice.current.userInterfaceIdiom == .phone {
+            XCTAssertEqual(menus, 1, "panes sharing one bar should not both fill it")
+        } else {
+            XCTAssertEqual(menus, 2, "each pane has its own navigation bar here")
+        }
 
         // And the divider between them is reachable, which is what makes the split
         // adjustable rather than fixed.

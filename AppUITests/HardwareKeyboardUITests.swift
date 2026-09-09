@@ -72,6 +72,15 @@ final class HardwareKeyboardUITests: XCTestCase {
         press("n", modifiers: .command, in: app, expecting: app.navigationBars["New Connection"], "⌘N should open the connection editor")
     }
 
+    /// ⌘/ is the Help key everywhere that has one, and the guide is the one thing a
+    /// person reaches for when they do not know what to press (D-056).
+    func testCommandSlashOpensTheGuide() throws {
+        let app = launch()
+        press("/", modifiers: .command, in: app, expecting: app.collectionViews["help-topics"], "⌘/ should open the user guide")
+        app.buttons["help-done"].firstMatch.tap()
+        XCTAssertTrue(app.collectionViews["help-topics"].waitForNonExistence(timeout: 5))
+    }
+
     func testCommandCommaOpensSettings() throws {
         let app = launch()
         press(",", modifiers: .command, in: app, expecting: app.navigationBars["Settings"], "⌘, should open Settings")

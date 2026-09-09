@@ -3,6 +3,90 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-09 — after D-056 (the guide, the legal texts and the notices)
+
+| Command | Result |
+| --- | --- |
+| `cd Packages/ApexTerminalKit && swift test --no-parallel` | **293 tests in 43 suites passed** — unchanged; nothing in the package moved |
+| `cd Packages/swift-nio-ssh-rsa && swift test` | **360 tests, 0 failures** — run because the patch and the README were regenerated |
+| `bash scripts/app-integration-e2e.sh` | **292 tests in 54 suites passed** (283 in 52 before; the guide adds two suites) |
+| `bash scripts/ui-terminal-e2e.sh` (iPhone 17 Pro) | **51 passed, 2 failed** — both `ZZSearchProbeUITests`, another session's uncommitted work |
+| `bash scripts/ui-terminal-e2e.sh` (iPad Pro 13-inch M5) | **52 passed, 2 failed** — the same two |
+| `bash scripts/localization-audit.sh` | **green**; 8 new strings translated into both Chinese variants |
+| Release archive | **ARCHIVE SUCCEEDED**, and the archived `.app` carries **3 guide files and 9 legal files** — checked by listing them inside `/tmp/apex.xcarchive`, because an archive that builds is not the same as an archive that ships the prose |
+
+### The notices, checked line by line rather than read
+
+`THIRD_PARTY_NOTICES.md` was compared against `Packages/ApexTerminalKit/Package.resolved`,
+the app project's resolved graph, and the vendored trees. Three things were wrong:
+
+* **`swift-nio-ssh` was listed as a package dependency.** It has not been one since D-007 —
+  it is a path package and does not appear in `Package.resolved` at all. It now has its own
+  section naming all six changes carried in `patches/niossh-rsa.patch`, each against the
+  decision it belongs to.
+* **BoringSSL was not mentioned.** `swift-crypto` and `swift-nio-ssl` each vendor a copy
+  (`CCryptoBoringSSL`, `CNIOBoringSSL`), it compiles into the app, and it is not
+  Apache-2.0: `swift-nio-ssl`'s own `NOTICE.txt` calls the terms a combination ISC and
+  OpenSSL licence.
+* **LibVNCServer was absent.** It is GPL-2.0-or-later. It is used only by a test harness
+  process built on demand from `Sources/STTestSupport/Fixtures/vnc-test-server.c`, is never
+  linked into the app, and the notices now say so in as many words.
+
+Licences were read from the checkouts, not recalled: `swift-sodium` is ISC (Frank Denis);
+every Apple package is Apache-2.0.
+
+### The vendored patch had drifted, and CI would have caught it next run
+
+`scripts/regenerate-niossh-patch.sh` produced a patch **1809 lines longer** than the
+committed one: it still reproduced the tree as it stood before D-046 (certificates), D-048
+(post-quantum key exchange), D-051 (keyboard-interactive) and D-052 (agent forwarding). CI
+regenerates and diffs, so the next run would have failed. Regenerated — 33 files, 2902
+lines — and regeneration is deterministic, verified by running it twice and comparing.
+
+### Four defects, each found by insisting on what a user sees
+
+**Splitting did nothing on a phone.** Panes (D-055) were wired into the split view's detail
+column only. On a compact layout the Session menu's "Split Right" changed the model and drew
+nothing: measured, `pane-count` read 2 while exactly one terminal was in the accessibility
+tree, full width. The compact route now draws the pane container too, and
+`testSplittingTheScreenShowsTwoTerminalsAndClosingRestoresOne` — which had only ever been
+recorded on iPad — passes on both.
+
+**A `NavigationStack` per pane popped the outer stack.** With the pane container inside a
+`navigationDestination`, splitting returned the app to the connection list. Measured from
+the tree: no pushed destination at all. On a phone the panes therefore share the pushed
+route's toolbar, and only the focused pane fills it — asserted per idiom, one Session menu
+on iPhone and two on iPad.
+
+**The guide could not be searched on an iPad.** `.searchable` with no explicit placement,
+pushed onto the Settings form sheet, rendered no search field: the tree held the topic list,
+the `User Guide` navigation bar, and nothing to type into. Stating
+`.navigationBarDrawer(displayMode: .always)` fixes it; the UI test now runs on both devices.
+
+**Opening a topic threw you out of Settings.** A value-based `NavigationLink` resolved
+against the wrong stack dismissed the sheet instead of pushing. The destination is in place
+now, as the rest of Settings does it.
+
+### An assertion made stronger, and why it had to change shape
+
+`UserGuideBundleTests` first required every topic to exceed 200 characters. Chinese failed
+it at 173 and 187 — not because those topics say less, but because Chinese says the same
+thing in 0.33 to 0.53 of the characters (measured across all eighteen topics in both
+variants). A flat threshold that fits English passes a stub in Chinese; one that fits
+Chinese fails nothing. Each translation is now required to be at least **0.30 of its own
+English topic**, which is a higher bar for the long topics than 200 characters ever was and
+actually catches the failure it was written for: a topic left untranslated or truncated.
+
+### Not evidence
+
+* The guide is prose. Its *structure* is tested — same topics in every language, every
+  topic reachable, search finding a topic by a word in its body, the shortcut table naming
+  shortcuts the app really binds — but no test can prove a sentence is true. Every claim in
+  it was checked against the code by hand, and three were wrong on the first pass: the
+  command palette has no "screens" scope, a forward row reports open connections and bytes
+  rather than a cumulative count, and key import accepts `ecdsa-sha2-nistp256`, not any
+  `ecdsa-*`.
+
 ## 2026-09-09 — after D-055 (several things on screen at once)
 
 | Command | Result |

@@ -1,6 +1,6 @@
 # Apex Terminal — Privacy Policy
 
-**Effective date:** 6 September 2026
+**Effective date:** 9 September 2026
 
 Apex Terminal collects nothing about you. The developer runs no server, so there is nowhere for data to go. This page says concretely what the app stores, where, and what leaves your device, because "we value your privacy" is not a claim anyone can check.
 
@@ -8,26 +8,31 @@ Apex Terminal collects nothing about you. The developer runs no server, so there
 
 - Your keys, passwords and connections stay on your device, in Apple's Keychain and the app's own protected storage.
 - The only network traffic is to the servers you connect to and, for tunnelled hosts, to Cloudflare on your behalf.
-- If you turn on iCloud sync, some of your data is stored in your own iCloud account. The developer cannot read it.
+- Nothing is stored anywhere else. iCloud sync is not available in this version, so this device is the only copy.
 - There is no analytics, no crash reporter, no telemetry, no advertising, no account.
 
 ## What the app stores on your device
 
 | Data | Where | Protected how | Leaves the device? |
 | --- | --- | --- | --- |
-| Connection list (names, hostnames, usernames, ports) | App storage | Encrypted while the device is locked | Only if you turn iCloud sync on |
-| SSH private keys | Keychain | Readable only while the device is unlocked; optionally locked behind Face ID or Touch ID as well | Never sent to a server; the server sees a signature, not the key. Through iCloud Keychain only if you turn sync on and choose that for the key; never when Face ID or Touch ID protected |
+| Connection list (names, hostnames, usernames, ports, jump hosts, port forwards) | App storage | Encrypted while the device is locked | No |
+| SSH private keys | Keychain | Readable only while the device is unlocked; optionally locked behind Face ID or Touch ID as well | Never sent to a server; the server sees a signature, not the key |
+| SSH keys generated in the Secure Enclave | Inside the Secure Enclave; the app stores only a reference to it | The private half never exists outside the chip and cannot be read by any software, including this app. Optionally requires Face ID or Touch ID for every signature | Never. It cannot leave the device even in a backup |
+| OpenSSH certificates for your keys | App storage | Encrypted while the device is locked | Offered to servers that trust the issuing authority, as the certificate is meant to be |
 | SSH passwords | Keychain | Readable only while the device is unlocked | To the server you are signing in to. Not synced |
 | Cloudflare Access tokens | Keychain | Readable after the device has been unlocked once since restart, so a reconnection can work from your pocket | Only back to Cloudflare, as the credential for your own connection. Not synced |
 | Cloudflare Access service tokens (only if you enter one for a connection) | Keychain | Readable only while the device is unlocked | Only to Cloudflare, as the credential for that connection. Not synced; deleted with the connection |
-| Known host keys | App storage | Encrypted while locked; excluded from device backups | Only if you turn iCloud sync on |
-| Snippets | App storage | Encrypted while locked; included in device backups | Only if you turn iCloud sync on |
+| Known host keys and trusted certificate authorities | App storage | Encrypted while locked; excluded from device backups | No |
+| Snippets | App storage | Encrypted while locked; included in device backups | No |
 | Settings | App preferences | Standard app storage | No |
 | List of recently open sessions | App storage | Connection names and times, kept for up to seven days; encrypted while locked; excluded from backups | No |
 | Terminal scrollback | Memory only | Gone when the session or the app ends. Never written to disk | No |
 | Command history | **Not recorded unless you turn it on.** Then: app storage, encrypted while locked, excluded from backups, last 500 commands | No. Deleted the moment you turn it off |
+| Answers to a server's own questions (one-time codes, tokens, expired-password prompts) | Nowhere | Held in memory for the moment it takes to answer the server | To that server only. Never stored, never logged, never offered again |
+| VNC passwords | Keychain | Readable only while the device is unlocked | To the screen you are opening |
+| Assistant API key, if you configure a provider | Keychain | Readable only while the device is unlocked | To the provider you chose, as the request's credential |
 
-With iCloud sync off, every Keychain item is marked this-device-only. It cannot travel in iCloud Keychain and cannot be restored from a backup onto a different device.
+Every Keychain item is marked this-device-only. It cannot travel in iCloud Keychain and cannot be restored from a backup onto a different device. The one way anything moves to another device is a backup file you export yourself, and a backup that includes private keys is encrypted with a password you type and which is stored nowhere.
 
 Face ID and Touch ID are handled entirely by iOS. The app never sees your face or fingerprint data; it only learns whether the system's check passed. A key protected this way becomes unusable if a new face or finger is enrolled on the device, so someone who learns your passcode cannot add themselves and read it.
 
@@ -39,7 +44,12 @@ Only three kinds of network traffic exist, and you choose all three.
 
 **2. To Cloudflare, for hosts you have marked as tunnelled.** The app asks the host which Access application protects it, fetches Cloudflare's signing keys, opens the sign-in page in a system browser, collects the resulting token, and presents that token to Cloudflare when opening the tunnel. Your sign-in itself happens in the browser, with Cloudflare and your identity provider; the app never sees the password you type there. All of this goes to Cloudflare's own endpoints, as it would if you used Cloudflare's own tools. What Cloudflare records about it is governed by Cloudflare's privacy policy and your agreement with them.
 
-**3. To iCloud, only if you turn it on.** See the next section.
+**3. To a provider you configure for the assistant, and only when you ask it a question.** See *The assistant* below. There is no provider until you enter one.
+
+Two things route other people's traffic rather than the app's own, and the app reads none of it:
+
+- **Port forwards** move bytes between a listener and a destination you specified. Nothing that passes through a forward is inspected, recorded or stored.
+- **Agent forwarding**, when you turn it on for a connection, lets programs on that server ask this device to sign a challenge with the one key that connection uses. The key is not sent; a signature is. It works only while that session is open.
 
 Nothing goes to the developer. There is no developer server, no analytics SDK, no crash reporter and no tracking domain. The app's App Store privacy label says "Data not collected" because that is true.
 
@@ -47,19 +57,19 @@ As with any SSH client, the operator of the network you are on can see which hos
 
 ## iCloud sync
 
-iCloud sync is **off** until you turn it on in Settings. When it is on:
+**There is no iCloud sync in this version.** The switch is shown in Settings, disabled, with the reason next to it, because someone looking for sync should be told where it stands rather than left wondering. Nothing this app holds is uploaded to iCloud: not your connection list, not your keys, not your host keys, not your snippets, not your settings.
 
-- **Your connection list, snippets and known host keys** sync through your own iCloud account, in the app's private database there, together with the non-secret details of your SSH keys (name, algorithm, public half, fingerprint, creation date, and whether the key is Face ID/Touch ID or passphrase protected or stored in iCloud Keychain) so the list makes sense on your other devices. Apple encrypts this data in transit and at rest. The developer has no access to it. Whether Apple itself can read it is a property of your iCloud account settings, not of this app.
-- **An SSH private key syncs only if you choose that for the key** when you create or import it, and only if it is not protected by Face ID or Touch ID. It then travels through iCloud Keychain, Apple's end-to-end-encrypted keychain sync, if iCloud Keychain is turned on for your device. **Passwords never sync**; each device asks for them again.
-- **Keys protected by Face ID or Touch ID never sync.** Apple does not allow it, and the app does not try. They exist only on the device where you created or imported them.
-- **Command history, the list of recently open sessions and diagnostics never sync**, whatever the switch says.
-- **Cloudflare Access tokens, service tokens and settings are not part of the sync.** Each device signs in to Access on its own, or asks for the service token again.
+That means this device is the only copy. To move to a new device, export a backup from **Settings → Backup** and restore it there; a backup that includes private keys is encrypted with a password you type and which is stored nowhere, so losing it loses the backup.
 
-Sync means "the same on every device signed in to your Apple Account". A host key you trusted on one device is trusted on the others, for a host they have not met yet. If another device sends a key that differs from one this device already trusts, the app does not apply it: this device keeps the key it has, and Settings → iCloud shows the disagreement so you can choose which key to keep. A key you allowed to sync is on every device trusted for iCloud Keychain.
+If sync is offered in a future version it will be off until you turn it on, and this policy will describe exactly what it carries before it carries anything.
 
-Because your iCloud account can then reach your connection list, your saved host keys and any keys you allowed to sync, that account becomes part of what protects your servers. Keep two-factor authentication on for your Apple Account.
+## Files in the Files app
 
-Turning the switch off stops syncing; data already on each device stays there. **Delete all data** removes the app's data from iCloud as well as from this device. If another of your devices has already synced a copy, run Delete all data there as well.
+A connection you mark with **Show in the Files app** is published there through a File Provider extension, so other apps can open documents from that server. The extension runs separately from the app and authenticates the same way, reading the same credentials from the same Keychain access group — it holds no second copy of anything and can reach no server you have not marked. File contents pass between the server and the app that asked for them; nothing is retained beyond the cache iOS itself manages for the Files app.
+
+## Reused connections
+
+Opening a second thing on a server you are already connected to reuses the connection that is already open, when everything about it matches: the same host and port, the same user, the same key or password, the same jump hosts, the same tunnel and the same agent-forwarding choice. This means one authentication instead of several. It never merges two different identities: change any of those and a separate connection is made, because a connection authenticated as somebody else is not the same connection. Reuse stores nothing new.
 
 ## Command history
 
@@ -87,13 +97,13 @@ With App Lock on, the app asks for its own passcode — or Face ID or Touch ID, 
 
 ## Your rights over your data
 
-Everything the app holds is on your device or in your own iCloud account, under your control. There is no copy with the developer, so there is nothing for the developer to give you, correct or delete on request. To see your data, open the app. To delete it, see below. Because the developer receives nothing, there is no request to make and no address to make it to; the controls that answer these rights are in the app itself, under Settings.
+Everything the app holds is on this device, under your control. There is no copy with the developer, so there is nothing for the developer to give you, correct or delete on request. To see your data, open the app. To delete it, see below. Because the developer receives nothing, there is no request to make and no address to make it to; the controls that answer these rights are in the app itself, under Settings.
 
 ## Deleting everything
 
-**Settings → Delete all data** closes every open session and removes every connection, SSH key, saved password, Cloudflare Access sign-in, snippet, command-history entry, the list of recently open sessions and every known host key from this device, and the app's data from iCloud if sync was on. Individual host keys can also be removed in **Settings → Known hosts**.
+**Settings → Delete all data** closes every open session and removes every connection, SSH key, saved password, Cloudflare Access sign-in, snippet, command-history entry, the list of recently open sessions and every known host key from this device. A key held in the Secure Enclave is destroyed with it. Individual host keys can also be removed in **Settings → Known hosts**.
 
-**Deleting the app** removes its files from the device. iOS does not promise to remove an app's Keychain items when the app is deleted, so run Delete all data first if you want keys, passwords and tokens gone as well, and to clear iCloud if sync was on.
+**Deleting the app** removes its files from the device. iOS does not promise to remove an app's Keychain items when the app is deleted, so run Delete all data first if you want keys, passwords and tokens gone as well.
 
 Neither action changes anything on your servers or at Cloudflare. To revoke access there, remove the public key from the server's `authorized_keys`, or revoke the session in your Cloudflare Zero Trust dashboard.
 

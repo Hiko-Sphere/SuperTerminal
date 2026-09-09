@@ -2,17 +2,17 @@ import Foundation
 
 /// What the tour teaches, in order (D-033).
 ///
-/// Six things, each one a thing the app can do that a person would not otherwise find:
+/// Seven things, each one a thing the app can do that a person would not otherwise find:
 /// paste an address instead of filling a form, what the fingerprint is for, how to type a
 /// control character on a phone, how to stop retyping commands, that a screen is not only
-/// a terminal, and where the keys actually live. Nothing here sells the app to someone who
-/// has already installed it.
+/// a terminal, that one screen holds more than one of them, and where the keys actually
+/// live. Nothing here sells the app to someone who has already installed it.
 ///
 /// Separated from the view so the content is testable and the order is a fact about the
 /// app rather than a fact about a layout.
 struct TutorialPage: Identifiable, Equatable {
     enum Illustration: Equatable {
-        case address, fingerprint, keyRow, palette, screen, keychain
+        case address, fingerprint, keyRow, palette, screen, panes, keychain
     }
 
     let id: Int
@@ -59,9 +59,16 @@ struct TutorialPage: Identifiable, Equatable {
         ),
         TutorialPage(
             id: 5,
+            symbol: "rectangle.split.2x1",
+            title: String(localized: "More than one at a time"),
+            body: String(localized: "⌘D splits a session to the right, ⇧⌘D downwards, and the Session menu does the same without a keyboard. Two shells, a shell and a remote screen, or four of either — drag the divider to share the space."),
+            illustration: .panes
+        ),
+        TutorialPage(
+            id: 6,
             symbol: "lock.shield",
             title: String(localized: "Everything stays yours"),
-            body: String(localized: "Private keys stay in this device's Keychain and never reach a server. There is no account and no analytics. Nothing is synced anywhere yet, and a passcode or Face ID is there if you want the app itself locked."),
+            body: String(localized: "Private keys stay in this device's Keychain, or inside the Secure Enclave where they cannot be extracted at all. There is no account and no analytics. A passcode or Face ID can lock the app itself, and the guide is under Settings whenever you want it."),
             illustration: .keychain
         ),
     ]

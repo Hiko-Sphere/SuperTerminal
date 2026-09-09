@@ -121,11 +121,13 @@ docs/                          Cloudflare setup, SSH guide, operations
 
 | Document | What it covers |
 | --- | --- |
+| [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) | The user guide the app ships, generated from `App/Resources/Guide/guide-en.md` — every feature, in the words shown under Settings → Help |
 | [`docs/CLOUDFLARE.md`](docs/CLOUDFLARE.md) | Publishing an SSH server through Cloudflare Tunnel and Access, service tokens, diagnosing each edge failure, revoking access |
 | [`docs/SSH.md`](docs/SSH.md) | Using the app: connections, keys, host key verification, the algorithm matrix, terminal gestures |
 | [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) | Building, testing, signing, and maintaining the vendored `swift-nio-ssh` |
 | [`docs/RELEASE.md`](docs/RELEASE.md) | App Store and TestFlight checklist, privacy answers, likely review questions |
 | [`docs/PRIVACY.md`](docs/PRIVACY.md) | What is stored, where, and what leaves the device — the engineering view |
+| [`App/Resources/Guide/`](App/Resources/Guide/) | The guide as shipped, one Markdown file per language |
 | [`App/Resources/Legal/`](App/Resources/Legal/) | The Terms of Use, Privacy Policy and User Notice as shipped, in English, Simplified and Traditional Chinese, plus the third-party notices |
 
 ## Known limitations
