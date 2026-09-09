@@ -3,6 +3,83 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-09 — after D-057 (tmux control mode: the protocol)
+
+| Command | Result |
+| --- | --- |
+| `cd Packages/ApexTerminalKit && swift test --no-parallel` | **322 tests in 47 suites passed** (293 in 43 before; `STTmux` adds 29 across 4 suites), five runs in a row |
+| Zero-warning gate (`swift build 2>&1 \| grep -cE "Sources/.*warning:"`) | **0** |
+| `TmuxIntegrationTests` | **5 passed** against a real tmux 3.3a, over a real SSH connection to a real OpenSSH server in a container |
+
+### Written against a running server, not against the manual
+
+Control mode has almost no specification, so every shape below was taken from a tmux 3.3a
+driven by hand and read, then turned into a test fixture. Four of them are things a
+from-the-documentation implementation gets wrong:
+
+* **A command's reply can begin with `%`.** `display-message -p '#{pane_id}'` answers `%0`.
+  A parser that dispatched on the leading `%` before asking whether it was inside a
+  `%begin` block would lose the answer and invent a notification.
+* **`%error` closes the block; the message is inside it.** A client that read only the
+  `%error` line would have nothing to show the user about what went wrong.
+* **Output is octal-escaped, including the backslash** (`\134`), so a literal backslash
+  never appears — and UTF-8 passes through as raw bytes. Decoding a line as text and
+  re-encoding it would work in the tests and corrupt any byte sequence that is not valid
+  UTF-8, which is why the payload is carried as `[UInt8]`.
+* **The attach block is told apart by its flags, not by its position.** See below.
+
+### The defect the real server found
+
+`%begin`/`%end` arrives once when the client attaches, before any command. The first
+implementation dropped a block when no command was waiting, which is correct only if the
+client is idle at that moment. `TmuxIntegrationTests` sent a command immediately on
+attaching — so it *was* waiting — and the attach block claimed it: the command returned the
+attach block's empty output, and every reply after that was one out of step.
+
+Measured on tmux 3.3a, with a command sent before anything else:
+
+```
+%begin 1788941559 259 0     <- attach, flags 0
+%end   1788941559 259 0
+%window-add @0
+%begin 1788941559 265 1     <- the reply, flags 1
+ORDERING_PROBE
+%end   1788941559 265 1
+```
+
+Every reply to a client's command carries flags `1`; the attach block carries `0`. That is
+what separates them, and the empty queue is kept as a second line of defence. A unit test
+now reproduces the race directly.
+
+### A second defect, in the test fixture itself
+
+Two integration tests failed with "The SSH handshake did not complete in time". The cause
+was the fixture, not the client: Docker's port proxy accepts a connection as soon as the
+container starts, well before `sshd` inside it binds anything, so a plain TCP connect
+reported ready and the handshake then waited 30 seconds for a server that was not there.
+The fixture now reads the `SSH-2.0-` greeting before declaring the server up, which is what
+`KeyboardInteractiveTestServer` already did.
+
+### Layout checksums are verified, not assumed
+
+`TmuxLayout` reimplements tmux's own `layout_checksum` — a 16-bit rotate-and-add — and
+rejects a layout whose checksum does not match. Both real layouts captured from the server
+(`b25d,80x24,0,0,0` and `c195,80x24,0,0[80x12,0,0,0,80x11,0,13,1]`) reproduce their
+checksums exactly, which is what makes the check meaningful rather than decorative: a
+corrupt layout would otherwise be drawn as a plausible arrangement that is not the one the
+server has.
+
+### Not evidence, and not claimed
+
+* **The app does not offer tmux yet.** This slice is the protocol and its verification;
+  no setting, menu item or screen mentions tmux, because a control it cannot honour would
+  be exactly the placeholder this project refuses to ship.
+* **One unexplained run.** Two of the first six full package runs ended "with 1 issue" and
+  no failing test named in the visible output; both happened while containers were being
+  started and killed by hand alongside the suite, which competes for the same ports. Five
+  consecutive clean runs followed, and the failing run's log had already been truncated
+  past the issue. It is recorded here rather than left out.
+
 ## 2026-09-09 — after D-056 (the guide, the legal texts and the notices)
 
 | Command | Result |

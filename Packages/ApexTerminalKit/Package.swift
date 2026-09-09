@@ -19,6 +19,7 @@ let package = Package(
         .library(name: "STTerminal", targets: ["STTerminal"]),
         .library(name: "STVNC", targets: ["STVNC"]),
         .library(name: "STSFTP", targets: ["STSFTP"]),
+        .library(name: "STTmux", targets: ["STTmux"]),
         .library(name: "STFileProvider", targets: ["STFileProvider"]),
         .library(name: "STForwarding", targets: ["STForwarding"]),
         .library(name: "STTestSupport", targets: ["STTestSupport"]),
@@ -153,6 +154,17 @@ let package = Package(
             exclude: ["Fixtures"]
         ),
         .target(name: "STTerminal", dependencies: ["STCore"]),
+        // tmux control mode (D-057): the protocol only, over any ordered byte channel, so
+        // it can be tested without an SSH connection and used with one.
+        .target(
+            name: "STTmux",
+            dependencies: [
+                "STCore",
+                .product(name: "NIOConcurrencyHelpers", package: "swift-nio"),
+            ],
+            resources: [.process("Localizable.xcstrings")]
+        ),
+        .testTarget(name: "STTmuxTests", dependencies: ["STTmux", "STSSH", "STTestSupport"]),
         // SFTP version 3, over any ordered byte channel (D-041).
         .target(
             name: "STSFTP",

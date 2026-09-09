@@ -369,6 +369,30 @@ public actor SSHConnection {
         return SSHShellSession(channel: child, output: stream, log: log)
     }
 
+    /// Runs a command and hands back its stream, rather than collecting it.
+    ///
+    /// `execute` waits for the command to finish, which is wrong for anything that keeps
+    /// talking — tmux in control mode, most of all (D-057). No pseudo-terminal is
+    /// requested: a program that speaks a protocol on stdout wants its bytes, not a
+    /// terminal's echo and line discipline in front of them.
+    public func openCommand(_ command: String) async throws -> SSHShellSession {
+        let child = try await createSessionChannel()
+        let stream = try await Self.attachStream(to: child)
+        do {
+            try await Self.request(
+                on: child,
+                event: SSHChannelRequestEvent.ExecRequest(command: command, wantReply: true),
+                failureCategory: .sshChannel,
+                failureMessage: String(localized: "The server refused to run the command.", bundle: .module)
+            )
+        } catch {
+            try? await child.close().get()
+            throw error
+        }
+        log.info("command channel opened")
+        return SSHShellSession(channel: child, output: stream, log: log)
+    }
+
     /// Runs a single command and collects its output.
     ///
     /// Used by the end-to-end verification path, where a known string must come back

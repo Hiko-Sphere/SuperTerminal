@@ -29,6 +29,7 @@ CATALOGS = {
     "STCloudflare": "Packages/ApexTerminalKit/Sources/STCloudflare/Localizable.xcstrings",
     "STFileProvider": "Packages/ApexTerminalKit/Sources/STFileProvider/Localizable.xcstrings",
     "STForwarding": "Packages/ApexTerminalKit/Sources/STForwarding/Localizable.xcstrings",
+    "STTmux": "Packages/ApexTerminalKit/Sources/STTmux/Localizable.xcstrings",
 }
 
 

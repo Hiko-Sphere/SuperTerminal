@@ -295,6 +295,24 @@ failed every run. With the press spent deliberately, both suites pass three runs
 three, and the retry in `HardwareKeyboardUITests.press` is left to cover the rarer second
 loss rather than being what every one of those tests silently depended on.
 
+## The tmux test server
+
+There is no tmux on this machine, and installing one to make a test pass is not this
+project's business, so `STTestSupport.TmuxTestServer` runs one in a container — Debian with
+stock OpenSSH and stock tmux, built on first use and pinned by its image tag
+(`apexterminal-tmux:2`). `TmuxIntegrationTests` connects to it with the real SSH client,
+runs `tmux -C new-session` in an exec channel, and drives the protocol.
+
+That matters more here than for most fixtures: control mode has almost no specification, and
+several of its shapes are only discoverable by reading what a running server actually sends.
+Every transcript in `TmuxControlParserTests` was captured from that container rather than
+written by hand.
+
+The readiness check reads the `SSH-2.0-` greeting rather than merely connecting. Docker's
+port proxy accepts a connection as soon as the container starts, before `sshd` binds
+anything inside it, and a plain connect therefore reports ready while the handshake that
+follows waits for nothing — measured, twice, before the check was fixed.
+
 ## The keyboard-interactive test server
 
 macOS builds OpenSSH **without PAM**. Its `sshd` will offer `keyboard-interactive`, but the
