@@ -95,7 +95,7 @@ struct TmuxPaneView: UIViewRepresentable {
             }
             // tmux sizes its panes itself, from the client size the session reports, so a
             // pane does not tell the server its own grid: it would fight the layout.
-            view.onGridSizeChange = { _, _ in }
+            view.onGridSizeChange = { _, _, _, _ in }
             view.onHaptic = onHaptic
             view.onCopy = onCopy
             // Local, over the history this pane's terminal was seeded with when it

@@ -168,11 +168,16 @@ final class TmuxSession: Identifiable {
 
     /// Tells tmux how big the view is. Panes are sized from this, so it is what makes the
     /// remote programs' idea of the screen match what is drawn.
-    func resize(columns: Int, rows: Int) async {
+    func resize(columns: Int, rows: Int, cellWidth: Int = 0, cellHeight: Int = 0) async {
         let size = (columns: max(columns, 1), rows: max(rows, 1))
+        guard let workspace else { return }
+        // The cell size is passed even when the grid has not changed: the font can change
+        // without the number of cells doing (D-065).
+        if cellWidth > 0, cellHeight > 0 {
+            await workspace.setCellSize(width: cellWidth, height: cellHeight)
+        }
         guard size != clientSize else { return }
         clientSize = size
-        guard let workspace else { return }
         try? await workspace.setClientSize(columns: size.columns, rows: size.rows)
     }
 

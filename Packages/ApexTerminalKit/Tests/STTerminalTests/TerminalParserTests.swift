@@ -110,6 +110,58 @@ struct TerminalParserTests {
         #expect(actions("\u{1B}]0;\(payload)\u{07}").isEmpty)
     }
 
+    @Test("A picture is allowed to be bigger than a title, and still not unbounded")
+    func picturesGetTheLargerCap() {
+        // An OSC 1337 carrying an inline image (D-065). At the title's cap this would be
+        // dropped, and the picture would never arrive.
+        let big = String(repeating: "A", count: TerminalParser.maximumStringLength * 2)
+        guard case let .osc(command, payload)? = actions("\u{1B}]1337;File=inline=1:\(big)\u{07}").first else {
+            Issue.record("an inline image should survive the length a title would be cut at")
+            return
+        }
+        #expect(command == 1337)
+        #expect(payload.hasSuffix("A"))
+        #expect(payload.count > TerminalParser.maximumStringLength)
+
+        // The larger cap is still a cap.
+        let enormous = String(repeating: "A", count: TerminalParser.maximumGraphicsLength + 100)
+        #expect(actions("\u{1B}]1337;File=inline=1:\(enormous)\u{07}").isEmpty)
+
+        // And it is only for the pictures: a title is still cut at the shorter one, so a
+        // hostile `printf` cannot buffer megabytes by calling it a window title.
+        let title = String(repeating: "A", count: TerminalParser.maximumStringLength + 100)
+        #expect(actions("\u{1B}]0;\(title)\u{07}").isEmpty)
+    }
+
+    @Test("Sixel data is allowed to be bigger than a title too")
+    func sixelGetsTheLargerCap() {
+        let band = String(repeating: "~", count: TerminalParser.maximumStringLength + 100)
+        guard case let .dcs(sequence)? = actions("\u{1B}P0;0;0q\(band)\u{1B}\\").first else {
+            Issue.record("a sixel should survive the length a title would be cut at")
+            return
+        }
+        #expect(sequence.final == UInt8(ascii: "q"))
+        #expect(sequence.payload.count > TerminalParser.maximumStringLength)
+
+        // A DCS that is not sixel keeps the short cap: nothing here reads those, and a
+        // terminfo query has no business being a megabyte. `ESC \\` is itself reported as an
+        // escape, so what matters is that no device-control string comes out of it.
+        let other = String(repeating: "A", count: TerminalParser.maximumStringLength + 100)
+        #expect(!actions("\u{1B}P0;0;0|\(other)\u{1B}\\").contains { if case .dcs = $0 { true } else { false } })
+    }
+
+    @Test("An APC string is kept, because the Kitty graphics protocol lives in one")
+    func apcIsKept() {
+        #expect(actions("\u{1B}_Ga=q,i=31\u{1B}\\").first == .apc("Ga=q,i=31"))
+        // SOS and PM are still discarded: nothing here claims either. The terminating
+        // `ESC \\` is reported as an escape whatever the string was, so the assertion is
+        // that no APC came out of them.
+        for introducer in ["X", "^"] {
+            let produced = actions("\u{1B}\(introducer)something\u{1B}\\")
+            #expect(!produced.contains { if case .apc = $0 { true } else { false } })
+        }
+    }
+
     @Test("Multi-byte UTF-8 is decoded across buffer boundaries")
     func utf8AcrossChunks() {
         var parser = TerminalParser()

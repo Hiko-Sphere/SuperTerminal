@@ -17,6 +17,9 @@ public enum TerminalAction: Sendable, Equatable {
     case osc(command: Int, payload: String)
     /// A completed DCS string.
     case dcs(DCSSequence)
+    /// A completed APC string — `ESC _ … ST`. Kitty's graphics protocol is carried in one
+    /// (D-065); nothing else this terminal understands is.
+    case apc(String)
 }
 
 /// A parsed CSI sequence.
@@ -75,6 +78,11 @@ public struct TerminalParser: Sendable {
     /// Hard caps. A stream that exceeds them is truncated rather than buffered, which is
     /// what stops `printf '\e]0;%s' $(yes | head -c 100M)` from exhausting memory.
     public static let maximumStringLength = 8192
+    /// The cap for a string that is carrying a picture (D-065). Sixel data, Kitty's base64
+    /// and iTerm2's are all far larger than a title or a clipboard payload, and a terminal
+    /// that truncated them would draw half an image; a terminal with no cap at all would be
+    /// a memory exhaustion away from a hostile `printf`.
+    public static let maximumGraphicsLength = 4 << 20
     public static let maximumParameters = 32
     public static let maximumIntermediates = 4
 
@@ -91,6 +99,7 @@ public struct TerminalParser: Sendable {
         case dcsIntermediate
         case dcsPassthrough
         case dcsIgnore
+        case apcString
         case oscString
         case sosPmApcString
     }
@@ -112,6 +121,9 @@ public struct TerminalParser: Sendable {
     private var intermediates: [UInt8] = []
     private var stringBuffer: String = ""
     private var stringTruncated = false
+    /// How long the string being collected may be. Reset with every string; raised for the
+    /// ones that carry pictures.
+    private var stringLimit = TerminalParser.maximumStringLength
     private var utf8Decoder = UTF8Accumulator()
     /// Holds a base character while we wait to see whether the next scalar combines
     /// with it, so `e` + U+0301 is delivered as one `Character`.
@@ -159,6 +171,7 @@ public struct TerminalParser: Sendable {
             case .oscString: dispatchOSC(sink: sink)
             case .dcsPassthrough: dispatchDCS(sink: sink)
             case .dcsIgnore, .sosPmApcString: state = .ground
+            case .apcString: dispatchAPC(sink: sink)
             default: break
             }
             enterEscape()
@@ -197,6 +210,8 @@ public struct TerminalParser: Sendable {
             dcsPassthrough(byte, sink: sink)
         case .dcsIgnore:
             dcsIgnore(byte)
+        case .apcString:
+            apcString(byte, sink: sink)
         case .oscString:
             oscString(byte, sink: sink)
         case .sosPmApcString:
@@ -274,7 +289,12 @@ public struct TerminalParser: Sendable {
         case 0x50: // P — DCS
             clear()
             state = .dcsEntry
-        case 0x58, 0x5E, 0x5F: // X (SOS), ^ (PM), _ (APC)
+        case 0x5F: // _ — APC, which is where the Kitty graphics protocol lives (D-065)
+            stringBuffer = ""
+            stringTruncated = false
+            stringLimit = Self.maximumGraphicsLength
+            state = .apcString
+        case 0x58, 0x5E: // X (SOS), ^ (PM) — nothing here claims either
             state = .sosPmApcString
         case 0x5B: // [ — CSI
             clear()
@@ -282,6 +302,7 @@ public struct TerminalParser: Sendable {
         case 0x5D: // ] — OSC
             stringBuffer = ""
             stringTruncated = false
+            stringLimit = Self.maximumStringLength
             state = .oscString
         case 0x30 ... 0x4F, 0x51 ... 0x57, 0x59, 0x5A, 0x5C, 0x60 ... 0x7E:
             sink(.escape(intermediates: intermediates, final: byte))
@@ -395,6 +416,8 @@ public struct TerminalParser: Sendable {
             intermediates.append(byte)
             stringBuffer = ""
             stringTruncated = false
+            // `q` is sixel, and a picture is not a title (D-065).
+            stringLimit = byte == 0x71 ? Self.maximumGraphicsLength : Self.maximumStringLength
             state = .dcsPassthrough
         default:
             state = .dcsIgnore
@@ -417,6 +440,8 @@ public struct TerminalParser: Sendable {
             intermediates.append(byte)
             stringBuffer = ""
             stringTruncated = false
+            // `q` is sixel, and a picture is not a title (D-065).
+            stringLimit = byte == 0x71 ? Self.maximumGraphicsLength : Self.maximumStringLength
             state = .dcsPassthrough
         default:
             state = .dcsIgnore
@@ -431,6 +456,8 @@ public struct TerminalParser: Sendable {
             intermediates.append(byte)
             stringBuffer = ""
             stringTruncated = false
+            // `q` is sixel, and a picture is not a title (D-065).
+            stringLimit = byte == 0x71 ? Self.maximumGraphicsLength : Self.maximumStringLength
             state = .dcsPassthrough
         default:
             state = .dcsIgnore
@@ -454,6 +481,23 @@ public struct TerminalParser: Sendable {
         // is handled when ESC is seen.
         if byte == 0x07 || byte == 0x9C {
             dispatchOSC(sink: sink)
+            return
+        }
+        appendToString(byte)
+        // iTerm2's inline images are an OSC, and a picture is not a title (D-065). The
+        // comparison happens on the first five bytes of an OSC and never again, because the
+        // limit is only raised once.
+        if stringLimit == Self.maximumStringLength,
+           stringBuffer.utf8.count <= 5,
+           stringBuffer.hasPrefix("1337;")
+        {
+            stringLimit = Self.maximumGraphicsLength
+        }
+    }
+
+    private mutating func apcString(_ byte: UInt8, sink: (TerminalAction) -> Void) {
+        if byte == 0x9C {
+            dispatchAPC(sink: sink)
             return
         }
         appendToString(byte)
@@ -483,6 +527,7 @@ public struct TerminalParser: Sendable {
             state = .ground
             stringBuffer = ""
             stringTruncated = false
+            stringLimit = Self.maximumStringLength
         }
         guard !stringTruncated else { return }
         let parts = stringBuffer.split(separator: ";", maxSplits: 1, omittingEmptySubsequences: false)
@@ -491,12 +536,26 @@ public struct TerminalParser: Sendable {
         sink(.osc(command: command, payload: payload))
     }
 
+    private mutating func dispatchAPC(sink: (TerminalAction) -> Void) {
+        defer {
+            state = .ground
+            clear()
+            stringBuffer = ""
+            stringTruncated = false
+            stringLimit = Self.maximumStringLength
+        }
+        // A truncated picture is not half a picture: it is bytes that mean something else.
+        guard !stringTruncated, !stringBuffer.isEmpty else { return }
+        sink(.apc(stringBuffer))
+    }
+
     private mutating func dispatchDCS(sink: (TerminalAction) -> Void) {
         defer {
             state = .ground
             clear()
             stringBuffer = ""
             stringTruncated = false
+            stringLimit = Self.maximumStringLength
         }
         guard let final = intermediates.last, !stringTruncated else { return }
         sink(.dcs(DCSSequence(
@@ -543,7 +602,7 @@ public struct TerminalParser: Sendable {
     }
 
     private mutating func appendToString(_ byte: UInt8) {
-        guard stringBuffer.utf8.count < Self.maximumStringLength else {
+        guard stringBuffer.utf8.count < stringLimit else {
             stringTruncated = true
             return
         }

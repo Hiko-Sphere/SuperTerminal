@@ -151,8 +151,15 @@ struct TerminalScreenView: UIViewRepresentable {
             view.onFontSizeChange = { size in
                 Task { @MainActor in onFontSizeChange(size) }
             }
-            view.onGridSizeChange = { columns, rows in
-                Task { @MainActor in await session.resize(columns: columns, rows: rows) }
+            view.onGridSizeChange = { columns, rows, pixelWidth, pixelHeight in
+                Task { @MainActor in
+                    await session.resize(
+                        columns: columns,
+                        rows: rows,
+                        pixelWidth: pixelWidth,
+                        pixelHeight: pixelHeight
+                    )
+                }
             }
             view.onSelectionChange = { range in
                 Task { @MainActor in session.selection = range }

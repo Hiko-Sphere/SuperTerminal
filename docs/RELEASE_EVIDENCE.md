@@ -3,6 +3,99 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-09 — after D-065 (pictures in the grid)
+
+The numbers below are from one run of the tree that also carries D-066 and D-067 — the two
+commits that follow, both of which are things this regression found. Each is verified on its
+own in its own entry above.
+
+| Command | Result |
+| --- | --- |
+| `cd Packages/ApexTerminalKit && swift test --no-parallel` | **376 tests in 55 suites, 4 failed** — the four `SecureEnclaveKeyTests`, which this machine's Secure Enclave refuses with `-25308 unable to generate key` and which passed earlier the same evening. A host condition that comes and goes, recorded as it is |
+| Zero-warning gate | **0** |
+| Segfaults | **0** (see below; there were two before the tmux accessor went) |
+| `bash scripts/app-integration-e2e.sh` | **335 tests in 64 suites passed**, no restarts (324 in 62 before this work) |
+| `bash scripts/localization-audit.sh` | **green** |
+| `bash scripts/ui-terminal-e2e.sh` (iPhone 17 Pro) | **56 passed, 2 failed** — both `ZZSearchProbeUITests`, another session's uncommitted work |
+| `bash scripts/ui-terminal-e2e.sh` (iPad Pro 13-inch M5) | **57 passed, 2 failed** — the same two |
+| Release archive | **ARCHIVE SUCCEEDED** |
+
+`GraphicsUITests.testASixelFromTheShellIsDrawnOnTheScreen` passes on **both** devices: it asks
+the shell for a 24×60 block of a colour nothing else on the screen uses, then reads the pixels
+of the app's own screenshot and looks for a run of eight of them. That is the only assertion in
+this change that covers the drawing.
+
+### An earlier run of the same tree, and what it was actually telling us
+
+The regression before this one reported six iPhone failures, a crashed app suite and a missing
+translation. Every one of them was chased down rather than re-run until green:
+
+* Four of the six — `AccessibilityUITests`, `AppLockUITests` and both `BackupUITests` — pass on
+  their own, on a machine that is not also finishing an integration suite. Recorded as
+  contention, and the run above, on an idle machine, has none of them.
+* `InboundChannelRefusalTests`' agent-channel case timed out at thirty seconds and passes alone.
+  Same cause.
+* The crashed app suite was **real**, and is D-066.
+* The missing translation was **not** real, and why it looked real is D-067.
+
+### Sixel, checked against an encoder that is not this one
+
+Two pictures were encoded by ImageMagick — `magick checker.png sixel:-` and the same for a
+64×12 image of flat bands, which it expresses with `!64` run-lengths — and both round-trip
+through ImageMagick itself back to the original PNG, pixel for pixel, before ever reaching
+this code. `SixelTests` then decodes those exact bytes and compares against pixels written
+out from the rule that drew the originals, not from what the decoder produced. The
+checkerboard is 8×14 on purpose: fourteen rows is not a multiple of six, so the last band is
+partial and the raster attributes are what say where the picture stops.
+
+DEC's colour wheel is not the usual one — hue 0 is blue, 120 red, 240 green — and that was
+settled by writing four HLS sixels by hand, decoding them with ImageMagick, and matching:
+`0;50;100` → `(0, 0, 255)`, `120;50;100` → `(255, 0, 0)`, `240;50;100` → `(0, 255, 0)`,
+`60;25;40` → `(89, 38, 89)`. The conversion here produces those four exactly.
+
+### Kitty, and the three formats agreeing with each other
+
+The same six pixels sent as raw RGB, as raw RGBA, as zlib-compressed RGB and as a PNG decode
+to the same bytes. That is one assertion doing real work: Kitty's RGBA is *straight* alpha and
+ImageIO hands back *premultiplied*, so before the decoders were made to agree the two differed
+on every pixel with an alpha that was not 0 or 255.
+
+What is refused is refused out loud. `t=f`, `t=t` and `t=s` hand a picture over as a file path,
+a temporary file or shared memory — all of them names on the filesystem of the machine running
+the program, which over a connection is the server. They are answered `ENOTSUPPORTED` rather
+than dropped, so a program can fall back to something that works. Deleting by anything other
+than an id or "all" is answered the same way. `q=1` and `q=2` suppress the replies the way the
+protocol says, which matters because an unwanted reply is escape codes printed into somebody's
+output.
+
+### The second segfault in the same place, and the thing that was actually wrong
+
+The package suite died — signal 11, no failing test named — at the first test of the tmux
+workspace suite. The crash report is unambiguous:
+
+    swift_release
+    outlined destroy of TerminalEmulator?
+    freestanding macro expansion #5 of expect … TmuxWorkspaceTests.swift line 107
+
+`#expect(await workspace.terminal(for: pane) != nil)` — a large struct handed out of an actor
+and held by a macro expansion across the suspension. It is the same failure D-058 hit, in the
+same file, and it came back for the same reason: `TerminalEmulator` grew again, this time by a
+cell size and the Kitty session's state.
+
+The fix this time is not in the test. `TmuxWorkspace.terminal(for:)` is **gone**: nothing in the
+app ever used it — everything draws from `snapshot()`, which hands over a dictionary rather than
+a value — and its own documentation already said so. With the accessor removed the suite runs
+clean, and there is no longer a way to write the call that crashed.
+
+### What is *not* supported, and why the app says so rather than staying quiet
+
+* Kitty's file, temporary-file and shared-memory transfers, and its animation protocol.
+* iTerm2's `File=` without `inline=1`, which asks the terminal to save a file the server chose
+  onto the device.
+
+Both are in the guide and in the privacy policy in all three languages, because the second one
+is a privacy claim: nothing a server sends can make this app read or write a file on the device.
+
 ## 2026-09-09 — after D-064 (a spoken phrase Apple only checks when you archive)
 
 | Command | Result |

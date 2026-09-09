@@ -122,7 +122,9 @@ struct TmuxWindowView: View {
                 )
                 await session.resize(
                     columns: max(Int(proxy.size.width / metrics.cellWidth), 1),
-                    rows: max(Int(proxy.size.height / metrics.cellHeight), 1)
+                    rows: max(Int(proxy.size.height / metrics.cellHeight), 1),
+                    cellWidth: Int(metrics.cellWidth),
+                    cellHeight: Int(metrics.cellHeight)
                 )
             }
         }

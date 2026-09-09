@@ -158,6 +158,16 @@ latches for the next key, so Control then C sends `^C`. Hold it to keep it down.
   directory a shell reports, and knows where a prompt and its output begin. A program can
   also ask to copy to your clipboard — `tmux` and `vim` do — which is off until you allow
   it in **Settings → Security**. Reading your clipboard is never allowed.
+- **Pictures** a program draws appear in the grid: **sixel**, which `img2sixel`, `gnuplot`
+  and `lsix` produce; the **Kitty** graphics protocol; and **iTerm2**'s inline images. They
+  scroll with the text, and go when something writes over them or the window changes width —
+  a rewrapped line is a different set of cells. The app tells the server how large a cell is,
+  so a program can size a picture properly. Two things are refused, and
+  the reason is worth knowing. Kitty can also hand a picture over as a *file path*, a
+  temporary file or shared memory: those name the filesystem of the machine running the
+  program, which over a connection is the server, so they are answered with
+  `ENOTSUPPORTED` rather than quietly dropped. And iTerm2's `File=` without `inline=1` is a
+  request to save a file the server chose onto your device, which this app does not do.
 
 If the connection drops and **Reconnect automatically** is on, it comes back on its own
 as soon as the network does. Your scrollback is kept and the new shell is marked in the

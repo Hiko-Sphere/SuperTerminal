@@ -66,6 +66,15 @@ public struct TerminalLine: Sendable, Equatable {
     /// line. Reflow on resize needs this to know which lines were one logical line.
     public var isWrapped: Bool
 
+    /// Strips of pictures drawn over this line's cells (D-065).
+    ///
+    /// They belong to the line rather than to the screen so that scrolling and scrollback
+    /// carry pictures without knowing anything about pictures: the line moves, and what is
+    /// drawn on it moves with it. A *width* change is the exception — rewrapping rebuilds
+    /// lines from their cells, so pictures are dropped there deliberately. Almost every line
+    /// has none, and the check that says so is a pointer comparison.
+    public private(set) var imageSlices: [ImageSlice] = []
+
     public init(width: Int, isWrapped: Bool = false) {
         cells = Array(repeating: .blank, count: max(0, width))
         self.isWrapped = isWrapped
@@ -80,11 +89,58 @@ public struct TerminalLine: Sendable, Equatable {
 
     public subscript(index: Int) -> TerminalCell {
         get { cells[index] }
-        set { cells[index] = newValue }
+        set {
+            cells[index] = newValue
+            // A character written where a picture is erases that part of the picture. Every
+            // terminal does this, and it is what stops a prompt drawn over an image from
+            // being read through it.
+            if !imageSlices.isEmpty { eraseImage(in: index ..< (index + 1)) }
+        }
+    }
+
+    /// Records a strip of a picture over the cells it covers.
+    public mutating func setImageSlice(_ slice: ImageSlice) {
+        eraseImage(in: slice.range)
+        imageSlices.append(slice)
+    }
+
+    public mutating func removeImageSlices(where predicate: (ImageSlice) -> Bool) {
+        guard !imageSlices.isEmpty else { return }
+        imageSlices.removeAll(where: predicate)
+    }
+
+    /// Removes the parts of any strip that overlap these columns, splitting one in two when
+    /// the write lands in its middle.
+    mutating func eraseImage(in columns: Range<Int>) {
+        guard !imageSlices.isEmpty, !columns.isEmpty else { return }
+        var result: [ImageSlice] = []
+        result.reserveCapacity(imageSlices.count)
+        for slice in imageSlices {
+            let range = slice.range
+            guard range.overlaps(columns) else {
+                result.append(slice)
+                continue
+            }
+            if range.lowerBound < columns.lowerBound {
+                var left = slice
+                left.columns = columns.lowerBound - range.lowerBound
+                result.append(left)
+            }
+            if range.upperBound > columns.upperBound {
+                var right = slice
+                right.imageColumn += columns.upperBound - range.lowerBound
+                right.column = columns.upperBound
+                right.columns = range.upperBound - columns.upperBound
+                result.append(right)
+            }
+        }
+        imageSlices = result
     }
 
     public mutating func resize(to width: Int) {
         if width < cells.count {
+            // The strips that were over the cells being cut go with them.
+            eraseImage(in: width ..< cells.count)
             cells.removeLast(cells.count - width)
         } else if width > cells.count {
             cells.append(contentsOf: Array(repeating: .blank, count: width - cells.count))
@@ -100,6 +156,7 @@ public struct TerminalLine: Sendable, Equatable {
         for index in max(0, start) ... min(end, cells.count - 1) {
             cells[index] = blank
         }
+        eraseImage(in: max(0, start) ..< (min(end, cells.count - 1) + 1))
     }
 
     /// The line's text, with trailing blanks trimmed. Used for selection and search.
@@ -157,6 +214,11 @@ public struct TerminalScreen: Sendable {
     /// immediately — is what makes writing exactly `columns` characters not scroll the
     /// screen, which is the behaviour every full-screen program depends on.
     public var pendingWrap = false
+
+    /// The pictures drawn into this screen, by the id the strips on its lines refer to
+    /// (D-065). Each screen has its own: a picture drawn by a full-screen program belongs
+    /// to the alternate screen and goes when the program does.
+    public internal(set) var images = TerminalImageStore()
 
     public init(columns: Int, rows: Int, scrollbackLimit: Int = 10000) {
         let width = max(1, columns)
@@ -312,6 +374,53 @@ public struct TerminalScreen: Sendable {
         )
     }
 
+    // MARK: - Pictures
+
+    /// Draws a picture at the cursor over whole cells, scrolling to make room, and leaves
+    /// the cursor on the picture's last row.
+    ///
+    /// Whole cells because the grid has no smaller unit: the picture is stretched to the
+    /// cells it was given, and each line it covers keeps a strip of it.
+    @discardableResult
+    public mutating func placeImage(id: Int, columns requested: Int, rows: Int) -> (columns: Int, rows: Int) {
+        let width = min(max(1, requested), max(1, columns - cursor.column))
+        let height = max(1, rows)
+        let start = cursor.column
+        for row in 0 ..< height {
+            if row > 0 {
+                if cursor.row >= scrollBottom {
+                    scrollUp(1)
+                    cursor.row = scrollBottom
+                } else {
+                    cursor.row += 1
+                }
+            }
+            lines[cursor.row].setImageSlice(ImageSlice(
+                imageID: id,
+                imageRow: row,
+                column: start,
+                columns: width,
+                totalColumns: width,
+                totalRows: height
+            ))
+        }
+        pendingWrap = false
+        return (width, height)
+    }
+
+    /// Forgets one picture, everywhere it was drawn.
+    public mutating func removeImage(_ id: Int) {
+        images.remove(id)
+        for index in lines.indices { lines[index].removeImageSlices { $0.imageID == id } }
+        for index in scrollback.indices { scrollback[index].removeImageSlices { $0.imageID == id } }
+    }
+
+    public mutating func removeAllImages() {
+        images.removeAll()
+        for index in lines.indices { lines[index].removeImageSlices { _ in true } }
+        for index in scrollback.indices { scrollback[index].removeImageSlices { _ in true } }
+    }
+
     public mutating func scrollDown(_ count: Int) {
         guard count > 0 else { return }
         let regionHeight = scrollBottom - scrollTop + 1
@@ -425,6 +534,12 @@ public struct TerminalScreen: Sendable {
         guard targetColumns != columns || targetRows != rows else { return }
 
         if reflowOnColumnChange, targetColumns != columns {
+            // Rewrapping rebuilds lines from their cells, and a picture's strips are tied to
+            // the columns they covered. Carrying them through a rewrap would mean re-slicing
+            // every picture against a grid it was never drawn for, so they are dropped — and
+            // the pixels go with them, rather than sitting in the store with nothing
+            // referring to them (D-065). This is what other terminals do on a width change.
+            removeAllImages()
             reflow(toColumns: targetColumns)
         } else {
             for index in lines.indices {

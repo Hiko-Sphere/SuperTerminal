@@ -105,6 +105,9 @@ extension TerminalEmulator {
             applyHyperlink(payload: payload)
         case 52:
             applyClipboard(payload: payload, emit: emit)
+        case 1337:
+            // iTerm2's inline images (D-065).
+            applyITerm2(payload)
         case 133:
             if let mark = Self.shellIntegrationMark(from: payload) {
                 emit(.shellIntegration(mark))

@@ -1397,5 +1397,6 @@ An index, so nothing has to be hunted for:
 | D-060 | `7f87801` | What a server may open towards the device, proved against one that tries |
 | D-061 | `088633f` | Links, Spotlight, Handoff and a third shortcut — and what a link is not allowed to do |
 | D-062 | `e2b14aa` | OSC 7, 52 and 133, DEC 2026 and 1004, and who is allowed to write the clipboard |
-| D-063 | this commit | A font to work in: any monospaced face, a line height, and ligatures off for a reason |
-| D-064 | this commit | One parameter per spoken phrase, checked in a second rather than at archive time |
+| D-063 | `c503865` | A font to work in: any monospaced face, a line height, and ligatures off for a reason |
+| D-064 | `0a24b51` | One parameter per spoken phrase, checked in a second rather than at archive time |
+| D-065 | this commit | Pictures in the grid: sixel, Kitty and iTerm2, and the transfers that cannot work over a network |

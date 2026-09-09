@@ -124,6 +124,10 @@ Screen sharing (VNC) shows a remote computer's screen and sends it your touches,
 
 A program on a server can ask this app to put something on your clipboard — the escape sequence `tmux` and `vim` use to make a yank reach you. It is refused until you turn it on in **Settings → Security**, and the reverse — a program *reading* your clipboard — is refused whatever that setting says: answering would hand whatever you last copied to whatever is running on the far side.
 
+## Pictures a program draws
+
+A program on a server can draw a picture into the terminal — sixel, the Kitty graphics protocol, or iTerm2's inline images. The picture is decoded and drawn on this device, held only while the session holds it, and never written to a file or sent anywhere. Two of these protocols also define ways to hand a picture over as a *file*: a path, a temporary file, or shared memory. Those describe the filesystem of whichever machine is running the program, and this app does not read or write files on your device on a server's instruction, so it refuses them and says so. The same goes for iTerm2's `File=` without `inline=1`, which is a request to save a file the server chose onto your device.
+
 ## App lock
 
 With App Lock on, the app asks for its own passcode — or Face ID or Touch ID, if you allow it — when it opens and when it comes back after the time you chose. The passcode is never stored: the device Keychain holds a salted PBKDF2 derivation of it, on this device only. Face ID and Touch ID are handled entirely by iOS; the app learns only whether the check passed. Wrong guesses are slowed down, never punished by deleting anything.

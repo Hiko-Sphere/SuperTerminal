@@ -39,6 +39,9 @@ public actor TmuxWorkspace {
     private let control: TmuxControlSession
     private let log: STLogger
     private var terminals: [TmuxPaneID: TerminalEmulator] = [:]
+    /// How big a cell is on screen, in pixels. Each pane's terminal is told, because it is
+    /// what decides how many cells a picture drawn into that pane covers (D-065).
+    private var cellSize = TerminalEmulator.CellSize.unmeasured
     /// Panes whose existing contents have already been fetched.
     ///
     /// Control mode sends `%output` only for what a pane writes *from now on*. Attaching
@@ -106,14 +109,16 @@ public actor TmuxWorkspace {
 
     /// A snapshot of what a pane is showing. A copy, because the emulator is a value and
     /// handing out a reference to a live one would let a caller see it change under them.
-    public func terminal(for pane: TmuxPaneID) -> TerminalEmulator? { terminals[pane] }
-
     /// The windows and every pane's terminal, read together.
     ///
     /// Two separate reads of an actor are two separate moments, and the state can move
     /// between them — a caller that asked for the panes and then for their terminals could
-    /// be handed a pane that no longer exists. Anything drawing the workspace should take
-    /// one of these instead.
+    /// be handed a pane that no longer exists. Everything that draws the workspace takes one
+    /// of these, and there is deliberately no way to ask the actor for a single pane's
+    /// terminal: returning one `TerminalEmulator` by value out of an actor crashed the test
+    /// suite twice, in `outlined destroy of TerminalEmulator?` under a `#expect` expansion,
+    /// each time the struct grew (D-058, D-065). A snapshot hands over a dictionary, which
+    /// is one retained buffer rather than a large value copied across a suspension.
     public func snapshot() -> Snapshot {
         Snapshot(windows: windows, terminals: terminals)
     }
@@ -407,9 +412,12 @@ public actor TmuxWorkspace {
                 wanted.insert(id)
                 if var existing = terminals[id] {
                     existing.resize(columns: frame.width, rows: frame.height)
+                    existing.cellSize = cellSize
                     terminals[id] = existing
                 } else {
-                    terminals[id] = TerminalEmulator(columns: frame.width, rows: frame.height)
+                    var made = TerminalEmulator(columns: frame.width, rows: frame.height)
+                    made.cellSize = cellSize
+                    terminals[id] = made
                 }
             }
         }
@@ -417,6 +425,15 @@ public actor TmuxWorkspace {
             terminals.removeValue(forKey: id)
             captured.remove(id)
         }
+    }
+
+    /// Tells every pane how big a cell is, so a picture drawn into one covers the right
+    /// number of them (D-065).
+    public func setCellSize(width: Int, height: Int) {
+        let size = TerminalEmulator.CellSize(width: width, height: height)
+        guard size != cellSize else { return }
+        cellSize = size
+        for id in terminals.keys { terminals[id]?.cellSize = size }
     }
 
     private func finish(reason: String?) {

@@ -103,8 +103,7 @@ struct TmuxWorkspaceTests {
         // what makes the pane's terminal the size of what the user is looking at.
         #expect(window.layout.frame.width == 100)
         #expect(window.layout.frame.height == 30)
-        let terminal = await workspace.terminal(for: window.panes[0])
-        #expect(terminal != nil, "every pane should have a terminal")
+        #expect(await workspace.snapshot().size(of: window.panes[0]) != nil, "every pane should have a terminal")
     }
 
     @Test("Reattaching finds windows that were already there", .timeLimit(.minutes(3)))
@@ -130,9 +129,10 @@ struct TmuxWorkspaceTests {
         let windows = await workspace.windows
         #expect(windows.count == 2, "both windows should be found, got \(windows.map(\.id))")
         #expect(windows.map(\.panes.count).sorted() == [1, 2], "the split should be seen as two panes")
+        let snapshot = await workspace.snapshot()
         for window in windows {
             for pane in window.panes {
-                #expect(await workspace.terminal(for: pane) != nil, "\(pane) has no terminal")
+                #expect(snapshot.size(of: pane) != nil, "\(pane) has no terminal")
             }
         }
     }
@@ -255,8 +255,9 @@ struct TmuxWorkspaceTests {
         try await workspace.send(Array("printf 'ROUND_%s\n' TRIP\n".utf8), to: pane)
 
         let arrived = await wait(on: workspace) { workspace in
-            guard let terminal = await workspace.terminal(for: pane) else { return false }
-            return terminal.activeScreen.visibleText.contains("ROUND_TRIP")
+            guard let text = await workspace.snapshot().terminal(for: pane)?.activeScreen.visibleText
+            else { return false }
+            return text.contains("ROUND_TRIP")
         }
         #expect(arrived, "the pane's terminal should show what the shell printed")
     }

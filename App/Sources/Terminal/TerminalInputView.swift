@@ -14,7 +14,9 @@ final class TerminalInputView: UIView, UIKeyInput {
     /// Called when the user scrolls the scrollback.
     var onScroll: ((Int) -> Void)?
     /// Called when the grid size changes because the view was resized.
-    var onGridSizeChange: ((Int, Int) -> Void)?
+    /// Columns, rows, and the same in pixels — the last two because a program that draws
+    /// pictures has no other way to know how big a cell is (D-065).
+    var onGridSizeChange: ((Int, Int, Int, Int) -> Void)?
     /// Called when the user asks to paste, so the session can apply bracketed paste.
     var onPaste: ((String) -> Void)?
     /// Called when a selection is made or cleared, so the UI can offer Copy.
@@ -131,7 +133,16 @@ final class TerminalInputView: UIView, UIKeyInput {
         let grid = renderView.gridSize(for: bounds.size)
         guard grid.columns != lastReportedGrid.columns || grid.rows != lastReportedGrid.rows else { return }
         lastReportedGrid = grid
-        onGridSizeChange?(grid.columns, grid.rows)
+        // The pixel size is the grid's, not the view's: a few points of slack at the right
+        // and bottom belong to no cell, and a program dividing the picture area by the
+        // number of columns must get the cell size back (D-065).
+        let metrics = renderView.metrics
+        onGridSizeChange?(
+            grid.columns,
+            grid.rows,
+            Int(metrics.cellWidth) * grid.columns,
+            Int(metrics.cellHeight) * grid.rows
+        )
     }
 
     // MARK: - Input method composition (D-039)

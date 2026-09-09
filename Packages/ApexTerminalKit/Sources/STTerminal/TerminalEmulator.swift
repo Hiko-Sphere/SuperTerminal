@@ -114,7 +114,13 @@ public struct TerminalEmulator: Sendable {
     public internal(set) var workingDirectory = ""
     public internal(set) var hyperlinks: [Int: TerminalHyperlink] = [:]
 
+    /// How big a cell is on screen, in pixels — set by whatever is drawing (D-065). It is
+    /// what decides how many cells a picture covers, and it is also what the app sends the
+    /// server in a window-change so that `img2sixel` and its like can size a picture at all.
+    public var cellSize = CellSize.unmeasured
+
     var parser = TerminalParser()
+    var kitty = KittyGraphicsSession()
     var savedCursor: TerminalCursor?
     var savedAttributes: CellAttributes?
     var tabStops: Set<Int>
@@ -193,11 +199,13 @@ public struct TerminalEmulator: Sendable {
             applyEscape(intermediates: intermediates, final: final, emit: emit)
         case let .osc(command, payload):
             applyOSC(command: command, payload: payload, emit: emit)
-        case .dcs:
-            // DCS carries device-control strings such as Sixel graphics and terminfo
-            // queries. Nothing here uses them yet, and silently discarding is the
-            // correct behaviour for a terminal that does not implement them.
-            break
+        case let .dcs(sequence):
+            // `q` is sixel (D-065). The rest of DCS is terminfo queries and DECRQSS, which
+            // this terminal does not answer; silently discarding is the correct behaviour
+            // for a device control string a terminal does not implement.
+            if sequence.final == UInt8(ascii: "q") { applySixel(sequence) }
+        case let .apc(payload):
+            applyKitty(payload, emit: emit)
         }
     }
 

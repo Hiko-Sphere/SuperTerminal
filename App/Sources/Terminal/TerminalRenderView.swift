@@ -152,6 +152,11 @@ final class TerminalRenderView: UIView {
     /// Hands the view a new screen to draw.
     func update(screen: TerminalScreen) {
         self.screen = screen
+        // Pictures the screen has forgotten must not be held here either: its store is
+        // bounded, and this cache would be the thing keeping the pixels alive (D-065).
+        if !imageCache.isEmpty, imageCache.count != screen.images.count {
+            imageCache = imageCache.filter { screen.images[$0.key] != nil }
+        }
         setNeedsDisplay()
     }
 
@@ -342,9 +347,9 @@ final class TerminalRenderView: UIView {
 
     private func drawLine(_ line: TerminalLine, row: Int, in context: CGContext) {
         let runs = coalesce(line)
-        guard !runs.isEmpty else { return }
         let top = CGFloat(row) * metrics.cellHeight
         let flippedTop = bounds.height - top - metrics.cellHeight
+        guard !runs.isEmpty || !line.imageSlices.isEmpty else { return }
 
         // Backgrounds first, as one fill per run: filling per cell would multiply the
         // draw calls by the column count for no visual difference.
@@ -361,11 +366,75 @@ final class TerminalRenderView: UIView {
             ))
         }
 
+        // Over the backgrounds and under everything else: a picture covers the cells it was
+        // given, and a selection drawn over it must still be visible (D-065).
+        if !line.imageSlices.isEmpty {
+            drawImageSlices(line, flippedTop: flippedTop, in: context)
+        }
+
         // Selection and search highlights are painted per cell over the run backgrounds,
         // because a selection boundary rarely lines up with an attribute boundary.
         drawHighlights(row: row, lineWidth: line.width, flippedTop: flippedTop, in: context)
 
         drawRuns(runs, atFlippedTop: flippedTop, in: context)
+    }
+
+    // MARK: - Pictures (D-065)
+
+    /// Decoded pictures as Core Graphics images, so a redraw does not copy pixels again.
+    /// Keyed by the id the screen's store filed them under.
+    private var imageCache: [Int: CGImage] = [:]
+
+    private func cachedImage(_ id: Int, in screen: TerminalScreen) -> CGImage? {
+        if let cached = imageCache[id] { return cached }
+        guard let image = screen.images[id],
+              let provider = CGDataProvider(data: Data(image.pixels) as CFData)
+        else { return nil }
+        let made = CGImage(
+            width: image.width,
+            height: image.height,
+            bitsPerComponent: 8,
+            bitsPerPixel: 32,
+            bytesPerRow: image.width * 4,
+            space: CGColorSpace(name: CGColorSpace.sRGB) ?? CGColorSpaceCreateDeviceRGB(),
+            // Premultiplied because that is the one arrangement Core Graphics draws, and the
+            // decoders premultiply once rather than the renderer doing it every frame.
+            bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue),
+            provider: provider,
+            decode: nil,
+            shouldInterpolate: true,
+            intent: .defaultIntent
+        )
+        imageCache[id] = made
+        return made
+    }
+
+    /// Draws the strips of any pictures this line carries.
+    ///
+    /// The whole picture is drawn each time, clipped to the one row being painted. That is
+    /// what makes a picture half-scrolled off the top show its lower half, without any of the
+    /// slicing arithmetic living in the emulator.
+    private func drawImageSlices(_ line: TerminalLine, flippedTop: CGFloat, in context: CGContext) {
+        guard let screen else { return }
+        for slice in line.imageSlices {
+            guard let image = cachedImage(slice.imageID, in: screen) else { continue }
+            let visible = CGRect(
+                x: CGFloat(slice.column) * metrics.cellWidth,
+                y: flippedTop,
+                width: CGFloat(slice.columns) * metrics.cellWidth,
+                height: metrics.cellHeight
+            )
+            let whole = CGRect(
+                x: visible.minX - CGFloat(slice.imageColumn) * metrics.cellWidth,
+                y: flippedTop - CGFloat(slice.totalRows - 1 - slice.imageRow) * metrics.cellHeight,
+                width: CGFloat(slice.totalColumns) * metrics.cellWidth,
+                height: CGFloat(slice.totalRows) * metrics.cellHeight
+            )
+            context.saveGState()
+            context.clip(to: visible)
+            context.draw(image, in: whole)
+            context.restoreGState()
+        }
     }
 
     private func drawRuns(_ runs: [Run], atFlippedTop flippedTop: CGFloat, in context: CGContext) {

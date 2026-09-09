@@ -645,11 +645,28 @@ final class TerminalSession: Identifiable {
         scrollbackOffset = min(max(0, desired), historyCount)
     }
 
-    func resize(columns: Int, rows: Int) async {
-        let newSize = TerminalSize(columns: columns, rows: rows)
+    /// The grid changed size. Pixels as well as cells: RFC 4254's window-change carries both,
+    /// and a program that draws pictures — `img2sixel`, `gnuplot`, anything using the Kitty
+    /// protocol — reads the pixel fields to know how big a cell is. Sending zeroes, which is
+    /// what this did until D-065, makes those programs guess or refuse.
+    func resize(columns: Int, rows: Int, pixelWidth: Int = 0, pixelHeight: Int = 0) async {
+        let newSize = TerminalSize(
+            columns: columns,
+            rows: rows,
+            pixelWidth: pixelWidth,
+            pixelHeight: pixelHeight
+        )
         guard newSize != size else { return }
         size = newSize
         emulator.resize(columns: columns, rows: rows)
+        if pixelWidth > 0, pixelHeight > 0 {
+            // The same arithmetic the view did, back the other way: this is what decides how
+            // many cells a picture covers.
+            emulator.cellSize = TerminalEmulator.CellSize(
+                width: max(1, pixelWidth / max(1, columns)),
+                height: max(1, pixelHeight / max(1, rows))
+            )
+        }
         screen = emulator.activeScreen
         try? await shell?.resize(to: newSize)
     }
