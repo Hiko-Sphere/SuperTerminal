@@ -11,18 +11,30 @@ final class BackupUITests: XCTestCase {
         app.launch()
     }
 
-    private func openBackupSection() {
+    /// Scrolls Settings until `identifier` is there.
+    ///
+    /// Scrolling to *one* row and assuming its neighbour is also in the tree does not hold:
+    /// a long list keeps only what is near the viewport, and Settings grew — so a run that
+    /// found "Export a backup…" could still fail to find "Restore from a backup…" a few
+    /// points below it.
+    @discardableResult
+    private func scrollToSettingsRow(_ identifier: String) -> XCUIElement {
         XCTAssertTrue(app.buttons["settings-open"].waitForExistence(timeout: 10))
-        app.buttons["settings-open"].tap()
-        let export = app.buttons["backup-export"]
+        if app.navigationBars["Settings"].exists == false { app.buttons["settings-open"].tap() }
+        let row = app.buttons[identifier]
         var attempts = 0
-        while !export.exists, attempts < 14 { app.swipeUp(); attempts += 1 }
-        XCTAssertTrue(export.waitForExistence(timeout: 5), "Settings should offer an export")
+        while !row.exists, attempts < 20 { app.swipeUp(); attempts += 1 }
+        XCTAssertTrue(row.waitForExistence(timeout: 5), "Settings should offer \(identifier)")
+        return row
+    }
+
+    private func openBackupSection() {
+        scrollToSettingsRow("backup-export")
     }
 
     func testBackupIsReachableAndAsksForAPasswordBeforeExportingKeys() throws {
         openBackupSection()
-        XCTAssertTrue(app.buttons["backup-import"].exists, "and a restore")
+        XCTAssertTrue(scrollToSettingsRow("backup-import").exists, "and a restore")
 
         // Without private keys there is nothing to protect, so nothing to type.
         XCTAssertFalse(app.secureTextFields["backup-password"].exists)
@@ -43,8 +55,7 @@ final class BackupUITests: XCTestCase {
     func testRestoreRefusesAFileThatIsNotABackup() throws {
         // The importer is the system's, so what this can prove without driving Files.app
         // is that the entry point exists and opens rather than doing nothing.
-        openBackupSection()
-        let restore = app.buttons["backup-import"]
+        let restore = scrollToSettingsRow("backup-import")
         XCTAssertTrue(restore.isEnabled)
         restore.tap()
         // The document picker is a separate process; its appearance is the evidence that

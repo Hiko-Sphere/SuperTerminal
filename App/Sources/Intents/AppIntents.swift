@@ -124,12 +124,107 @@ struct DisconnectAllIntent: AppIntent {
     }
 }
 
+/// A saved snippet as Shortcuts sees it (D-061). Its name and what it runs, because a
+/// shortcut that says "run Deploy" and does something else is worse than no shortcut.
+struct SnippetEntity: AppEntity {
+    static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "Snippet")
+    static let defaultQuery = SnippetQuery()
+
+    let id: UUID
+    let name: String
+    let command: String
+
+    var displayRepresentation: DisplayRepresentation {
+        DisplayRepresentation(title: "\(name)", subtitle: "\(command)")
+    }
+
+    init(snippet: Snippet) {
+        id = snippet.id
+        name = snippet.name
+        command = snippet.command
+    }
+}
+
+struct SnippetQuery: EntityQuery {
+    @MainActor private var container: AppContainer { get throws { try IntentContainer.live() } }
+
+    @MainActor
+    func entities(for identifiers: [UUID]) async throws -> [SnippetEntity] {
+        try container.snippetStore.snippets.filter { identifiers.contains($0.id) }.map(SnippetEntity.init)
+    }
+
+    @MainActor
+    func suggestedEntities() async throws -> [SnippetEntity] {
+        try container.snippetStore.snippets.map(SnippetEntity.init)
+    }
+}
+
+extension SnippetQuery: EntityStringQuery {
+    @MainActor
+    func entities(matching string: String) async throws -> [SnippetEntity] {
+        let needle = string.lowercased()
+        return try container.snippetStore.snippets
+            .filter { $0.name.lowercased().contains(needle) }
+            .map(SnippetEntity.init)
+    }
+}
+
+/// "Run <snippet> on <connection>": opens the session and puts the snippet in it.
+///
+/// Whether it *runs* is the snippet's own setting, not this intent's. A snippet marked to
+/// run immediately runs; one that is not is typed in and left for the person to press
+/// Return — which is the same thing that happens when they tap it in the app, and is the
+/// difference between automation and a surprise.
+struct RunSnippetIntent: AppIntent {
+    static let title: LocalizedStringResource = "Run Snippet on Server"
+    static let description = IntentDescription(
+        "Opens a connection and puts one of your saved snippets into it. Whether it runs straight away is the snippet's own setting."
+    )
+    static let openAppWhenRun = true
+
+    @Parameter(title: "Snippet")
+    var snippet: SnippetEntity
+
+    @Parameter(title: "Connection")
+    var connection: ConnectionEntity
+
+    @MainActor private var container: AppContainer { get throws { try IntentContainer.live() } }
+
+    static var parameterSummary: some ParameterSummary {
+        Summary("Run \(\.$snippet) on \(\.$connection)")
+    }
+
+    @MainActor
+    func perform() async throws -> some IntentResult {
+        let container = try container
+        guard let host = container.hostStore.hosts.first(where: { $0.id == connection.id }) else {
+            throw IntentError.connectionMissing
+        }
+        guard let saved = container.snippetStore.snippets.first(where: { $0.id == snippet.id }) else {
+            throw IntentError.snippetMissing
+        }
+        let session = container.sessionManager.sessions.first { $0.host.id == host.id }
+            ?? container.sessionManager.open(host)
+        container.hostStore.markConnected(host)
+        container.pendingIntentSessionID = session.id
+        container.activeScene?.selectedSessionID = session.id
+        // Inserted once the shell is there: a session opened by this intent has not
+        // connected yet, and sending into it would drop the text.
+        Task { @MainActor in
+            await session.insertWhenConnected(snippet: saved)
+        }
+        return .result()
+    }
+}
+
 enum IntentError: Error, CustomLocalizedStringResourceConvertible {
     case connectionMissing
+    case snippetMissing
     case appNotReady
     var localizedStringResource: LocalizedStringResource {
         switch self {
         case .connectionMissing: "That connection no longer exists."
+        case .snippetMissing: "That snippet no longer exists."
         case .appNotReady: "Apex Terminal is still starting. Try again in a moment."
         }
     }
@@ -147,6 +242,14 @@ struct ApexTerminalShortcuts: AppShortcutsProvider {
             ],
             shortTitle: "Connect",
             systemImageName: "terminal"
+        )
+        AppIntents.AppShortcut(
+            intent: RunSnippetIntent(),
+            phrases: [
+                "Run \(\.$snippet) on \(\.$connection) with \(.applicationName)",
+            ],
+            shortTitle: "Run Snippet",
+            systemImageName: "text.badge.plus"
         )
         AppIntents.AppShortcut(
             intent: DisconnectAllIntent(),

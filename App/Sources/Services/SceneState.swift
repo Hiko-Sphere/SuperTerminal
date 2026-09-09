@@ -27,6 +27,8 @@ final class SceneState {
     /// Per window, because ⌘N used to be a broadcast notification: with two windows open
     /// it opened the sheet in both, including the one the user was not looking at.
     var isCreatingConnection = false
+    /// Fields a link asked for, when the connection editor is opened from one (D-061).
+    var linkDraft: IncomingURL.SSHAddress?
     /// Whether this window is showing the new-screen sheet (D-027).
     var isCreatingScreen = false
 

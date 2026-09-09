@@ -341,6 +341,36 @@ final class TerminalSession: Identifiable {
         await send(Data(text.utf8))
     }
 
+    /// Sends once the shell is there, or gives up saying so.
+    ///
+    /// A session opened from a link (D-061) has not connected yet when the command to run
+    /// arrives; sending into it would drop the bytes, and a command that silently did not
+    /// run is worse than one that visibly did not.
+    func sendWhenConnected(_ text: String, timeout: Duration = .seconds(45)) async {
+        let deadline = ContinuousClock.now.advanced(by: timeout)
+        while ContinuousClock.now < deadline {
+            if shell != nil { await send(text); return }
+            if case .failed = state { break }
+            try? await Task.sleep(for: .milliseconds(100))
+        }
+        annotate(String(localized: "The command from the link was not sent: the session did not connect."))
+    }
+
+    /// Inserts a snippet once the shell is there (D-061).
+    ///
+    /// A session opened by a shortcut has not connected when the snippet arrives, and
+    /// sending into it would drop the text — a shortcut that silently did nothing is worse
+    /// than one that visibly failed.
+    func insertWhenConnected(snippet: Snippet, timeout: Duration = .seconds(45)) async {
+        let deadline = ContinuousClock.now.advanced(by: timeout)
+        while ContinuousClock.now < deadline {
+            if shell != nil { await insert(snippet: snippet); return }
+            if case .failed = state { break }
+            try? await Task.sleep(for: .milliseconds(100))
+        }
+        annotate(String(localized: "The snippet was not sent: the session did not connect."))
+    }
+
     /// Inserts a snippet's command, and optionally runs it.
     ///
     /// Multi-line snippets go through bracketed paste when the remote program supports

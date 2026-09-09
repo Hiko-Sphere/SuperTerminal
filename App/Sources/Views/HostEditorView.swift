@@ -44,10 +44,19 @@ struct HostEditorView: View {
     ///   Cloudflare Access" are different things to set up and burying the difference in a
     ///   toggle two thirds of the way down a form made the second one look like an
     ///   afterthought. Ignored when editing, where the record already says.
-    init(host: Host?, startsWithCloudflare: Bool = false) {
+    /// - Parameter draft: fields a link asked for (D-061). Filled in, never saved: a
+    ///   connection appears in the list when somebody chooses to put it there, and a link
+    ///   is not that choice.
+    init(host: Host?, startsWithCloudflare: Bool = false, draft: IncomingURL.SSHAddress? = nil) {
         existing = host
         if host == nil, startsWithCloudflare {
             _usesCloudflare = State(initialValue: true)
+        }
+        if host == nil, let draft {
+            _hostname = State(initialValue: draft.host)
+            _name = State(initialValue: draft.host)
+            if let port = draft.port { _port = State(initialValue: "\(port)") }
+            if let username = draft.username { _username = State(initialValue: username) }
         }
         if let host {
             _name = State(initialValue: host.name)

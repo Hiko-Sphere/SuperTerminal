@@ -3,6 +3,49 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-09 — after D-061 (links, Spotlight, Handoff and a third shortcut)
+
+| Command | Result |
+| --- | --- |
+| `bash scripts/app-integration-e2e.sh` | **320 tests in 61 suites passed** (300 in 58 before) |
+| `bash scripts/ui-terminal-e2e.sh` (iPhone 17 Pro) | **53 passed, 3 failed** — two are `ZZSearchProbeUITests`, another session's uncommitted work; the third was `BackupUITests`, fixed and re-run green (see below) |
+| `bash scripts/ui-terminal-e2e.sh` (iPad Pro 13-inch M5) | **55 passed, 2 failed** — the same two `ZZSearchProbeUITests` |
+| `cd Packages/ApexTerminalKit && swift test --no-parallel` | **333 tests in 49 suites, 4 failed** — the four `SecureEnclaveKeyTests` this machine's keychain will not run |
+| `bash scripts/localization-audit.sh` | **green**; 19 new strings translated into both Chinese variants |
+| Release archive | **ARCHIVE SUCCEEDED** — after failing first (see below) |
+
+### The archive caught two things every simulator build had passed
+
+This is the reason an archive is part of the regression rather than a release-day step.
+
+* **A DEBUG-only symbol referenced unconditionally.** `UITestSeeding` does not exist in a
+  Release build, and the link-delivery hook for UI runs referred to it from ordinary code.
+  Every Debug build compiled; the archive did not.
+* **A `body` the optimiser would no longer type-check.** "The compiler is unable to
+  type-check this expression in reasonable time" — Debug builds were fine. The link
+  handling is now one `ViewModifier` instead of six more modifiers on `RootView.body`,
+  which is also where the reason it exists is easiest to read.
+
+### A UI test made brittle by a longer Settings screen
+
+`BackupUITests.testRestoreRefusesAFileThatIsNotABackup` scrolled to *Export a backup…* and
+then looked for *Restore from a backup…* — adjacent rows. Settings grew a Help section
+(D-056) and a Spotlight switch (this change), and a long list keeps only what is near the
+viewport, so the run found the first and not the second. The helper now scrolls to whichever
+row a test needs; both tests pass.
+
+### What the links slice actually promises, and how it is checked
+
+* `IncomingURLTests` (6) — parsing, including that `URLComponents` hands back an IPv6 host
+  *with* its brackets, which would have become a hostname that never resolves.
+* `LinkCoordinatorTests` (6) — the authorisation rule: any command asks, any unsaved server
+  asks, refusing leaves nothing behind, and an unknown server is *offered* rather than added.
+* `ActivityTests` (5) — a Spotlight result opens what it stands for, a handover carries an
+  identifier and nothing else, and one naming a connection this device lacks opens nothing.
+* `AppIntentTests` (6) — including the new *Run Snippet on Server*.
+* `LinkUITests` (2) — the whole path on a real server: a link with a command asks first and
+  runs nothing when refused; allowed, the shell prints the marker.
+
 ## 2026-09-09 — after D-060 (what a server may open towards the device)
 
 | Command | Result |

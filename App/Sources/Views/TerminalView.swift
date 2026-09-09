@@ -197,6 +197,17 @@ struct TerminalView: View {
         .navigationTitle(session.displayName)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { toolbarContent }
+        // What another device can pick up: which connection this is, and nothing else
+        // (D-061). An SSH session cannot travel — the connection and its keys are here —
+        // so continuing elsewhere opens a new session to the same server.
+        .userActivity(SessionActivity.type, isActive: isDisplaying) { activity in
+            let made = SessionActivity.make(hostID: session.host.id, title: session.host.name)
+            activity.title = made.title
+            activity.userInfo = made.userInfo
+            activity.isEligibleForHandoff = true
+            activity.isEligibleForSearch = false
+            activity.isEligibleForPrediction = false
+        }
         .sheet(item: promptBinding) { prompt in
             PromptSheet(session: session, prompt: prompt)
         }

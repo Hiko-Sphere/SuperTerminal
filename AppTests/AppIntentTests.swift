@@ -51,6 +51,42 @@ struct AppIntentTests {
         container.sessionManager.closeAll()
     }
 
+    @Test("Run Snippet opens the connection and offers the snippet it names")
+    @MainActor func runSnippetOpensTheSession() async throws {
+        let (container, host) = try makeContainer()
+        let snippet = Snippet(id: UUID(), name: "Uptime", command: "uptime", runsImmediately: false)
+        container.snippetStore.add(snippet)
+
+        let intent = RunSnippetIntent()
+        intent.connection = ConnectionEntity(host: host)
+        intent.snippet = SnippetEntity(snippet: snippet)
+        _ = try await intent.perform()
+
+        #expect(container.sessionManager.sessions.count == 1)
+        #expect(container.sessionManager.sessions.first?.host.id == host.id)
+        #expect(container.pendingIntentSessionID == container.sessionManager.sessions.first?.id)
+        container.sessionManager.closeAll()
+    }
+
+    @Test("A shortcut naming a snippet that has gone says so rather than running something else")
+    @MainActor func runSnippetWithoutTheSnippet() async throws {
+        let (container, host) = try makeContainer()
+        let intent = RunSnippetIntent()
+        intent.connection = ConnectionEntity(host: host)
+        intent.snippet = SnippetEntity(snippet: Snippet(id: UUID(), name: "Gone", command: "true", runsImmediately: false))
+        await #expect(throws: IntentError.self) { _ = try await intent.perform() }
+        container.sessionManager.closeAll()
+    }
+
+    @Test("The snippet query exposes the command, because a shortcut must say what it runs")
+    @MainActor func snippetQuery() async throws {
+        let (container, _) = try makeContainer()
+        container.snippetStore.add(Snippet(id: UUID(), name: "Deploy", command: "make deploy", runsImmediately: true))
+        let matches = try await SnippetQuery().entities(matching: "dep")
+        #expect(matches.map(\.name) == ["Deploy"])
+        #expect(matches.first?.command == "make deploy")
+    }
+
     @Test("Disconnect All says what it did")
     @MainActor func disconnectAllDialog() async throws {
         let (container, host) = try makeContainer()

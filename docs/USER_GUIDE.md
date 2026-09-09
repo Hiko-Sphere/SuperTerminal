@@ -285,6 +285,32 @@ first result.
 back to you; turn it off and what was recorded is deleted. It is stored on this device
 only and is never synced.
 
+## Links, search and shortcuts
+
+Three ways to reach a connection without opening the app first.
+
+**Links.** `ssh://deploy@build.example.com:2222` opens that server; `apexterminal://open?host=Web`
+opens a saved connection by name. A link can also carry a command —
+`apexterminal://run?host=Web&command=uptime` — and that is where the app is careful: any link
+carrying a command, and any link naming a server you have not saved, is shown to you first
+with the server and the command spelled out. Nothing is sent until you allow it, and a link
+can never add a connection to your list on its own — it fills in the fields and leaves the
+saving to you.
+
+**Spotlight.** Turn on **Find connections in Spotlight** in Settings and your connections
+can be searched from the home screen. Only the name and address are indexed — the two lines
+the list already shows — and turning it off removes them again. It is off until you turn it
+on, because the index can be read without opening this app.
+
+**Shortcuts and Siri.** Three actions: *Connect to Server*, *Run Snippet on Server*, and
+*Disconnect All Sessions*. Whether a snippet runs the moment it arrives is the snippet's own
+setting, not the shortcut's, so an automation cannot make something run that would not have
+run from a tap.
+
+**Handoff.** With a session on screen, another of your devices offers to continue it. An SSH
+session cannot travel — the connection and its keys are here — so continuing opens a new
+session to the same server. What is handed over is which connection, and nothing else.
+
 ## Keyboard shortcuts
 
 With a hardware keyboard everything in the app is reachable without the screen.

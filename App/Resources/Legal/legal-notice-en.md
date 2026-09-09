@@ -21,6 +21,7 @@ This is what the app does with your keys, in plain words. It is not the Privacy 
 - It does not record what you type unless you turn command history on. Turning it off deletes the record, not hides it.
 - It does not filter secrets out of command history, because a filter that mostly works would be worse than none. If you turn history on and type a password on a command line, it is recorded, as your shell would record it.
 - It does not sync anything. iCloud sync is not available in this version; everything stays on the device it was created on.
+- It does not put your connections in Spotlight unless you turn that on, and it never runs what a link tells it to without showing you the command first.
 
 ## Where your keys live
 

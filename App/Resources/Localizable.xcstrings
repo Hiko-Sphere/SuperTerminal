@@ -715,6 +715,40 @@
         }
       }
     },
+    "A link wants to connect to a server you have not saved": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "有链接想连接到您尚未保存的服务器"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "有連結想連線至您尚未儲存的伺服器"
+          }
+        }
+      }
+    },
+    "A link wants to run a command": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "有链接想运行一条命令"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "有連結想執行一道指令"
+          }
+        }
+      }
+    },
     "A passcode cannot contain a line break.": {
       "extractionState": "manual",
       "localizations": {
@@ -3095,6 +3129,23 @@
         }
       }
     },
+    "Command history is stored only on this device and is off by default. Turning it off deletes what has been recorded. Spotlight is off too: turning it on gives the names and addresses of your connections to this device's search index, where they can be found without opening the app. Turning it off removes them again. Passwords, keys and host keys are never indexed.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "命令历史仅存储在本设备上，且默认关闭。关闭它会删除已记录的内容。Spotlight 同样默认关闭：开启后，本应用会把您各条连接的名称与地址交给本设备的搜索索引，使其无需打开应用即可被搜索到；关闭后会再次移除。密码、密钥与 host key 从不被索引。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "指令歷史僅儲存在本裝置上，且預設關閉。關閉它會刪除已記錄的內容。Spotlight 同樣預設關閉：開啟後，本應用程式會將您各條連線的名稱與位址交給本裝置的搜尋索引，使其不必開啟應用程式即可被搜尋到；關閉後會再次移除。密碼、金鑰與 host key 從不被索引。"
+          }
+        }
+      }
+    },
     "Commands": {
       "extractionState": "manual",
       "localizations": {
@@ -4863,6 +4914,23 @@
         }
       }
     },
+    "Find connections in Spotlight": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在 Spotlight 中查找连接"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在 Spotlight 中尋找連線"
+          }
+        }
+      }
+    },
     "Find in scrollback": {
       "extractionState": "manual",
       "localizations": {
@@ -6359,6 +6427,40 @@
         }
       }
     },
+    "Links can come from anywhere — a web page, a message, a code on a wall. Check the server below is one you meant to reach. Opening it adds nothing to your connections until you save it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "链接可能来自任何地方——网页、消息、墙上的二维码。请确认下方的服务器正是您想连接的那一台。打开它并不会向您的连接列表中添加任何内容，除非您自行保存。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "連結可能來自任何地方——網頁、訊息、牆上的二維條碼。請確認下方的伺服器正是您想連線的那一台。開啟它並不會向您的連線清單中新增任何內容，除非您自行儲存。"
+          }
+        }
+      }
+    },
+    "Links can come from anywhere — a web page, a message, a code on a wall. Nothing is sent to the server until you allow it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "链接可能来自任何地方——网页、消息、墙上的二维码。在您允许之前，不会向服务器发送任何内容。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "連結可能來自任何地方——網頁、訊息、牆上的二維條碼。在您允許之前，不會向伺服器送出任何內容。"
+          }
+        }
+      }
+    },
     "Linux": {
       "extractionState": "manual",
       "localizations": {
@@ -7260,6 +7362,23 @@
         }
       }
     },
+    "Not saved on this device": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未保存在本设备上"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未儲存於本裝置"
+          }
+        }
+      }
+    },
     "Not signed in to iCloud on this device.": {
       "extractionState": "manual",
       "localizations": {
@@ -7851,6 +7970,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "開啟此連線會接上伺服器上的 tmux 工作階段；若不存在則建立它。中斷連線後，其中執行的內容仍會繼續執行，而窗格的排列由 tmux 決定。伺服器上必須已安裝 tmux。"
+          }
+        }
+      }
+    },
+    "Opens a connection and puts one of your saved snippets into it. Whether it runs straight away is the snippet's own setting.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打开一条连接，并把您保存的某个片段放入其中。它是否立即运行，取决于该片段自身的设置。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "開啟一條連線，並將您儲存的某個指令片段放入其中。它是否立即執行，取決於該片段本身的設定。"
           }
         }
       }
@@ -9572,6 +9708,103 @@
         }
       }
     },
+    "Run": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "运行"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "執行"
+          }
+        }
+      }
+    },
+    "Run ${snippet} on ${connection}": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Run ${snippet} on ${connection}"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在${connection}上运行${snippet}"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在${connection}上執行${snippet}"
+          }
+        }
+      }
+    },
+    "Run ${snippet} on ${connection} with ${applicationName}": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Run ${snippet} on ${connection} with ${applicationName}"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用${applicationName}在${connection}上运行${snippet}"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用${applicationName}在${connection}上執行${snippet}"
+          }
+        }
+      }
+    },
+    "Run Snippet": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "运行片段"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "執行指令片段"
+          }
+        }
+      }
+    },
+    "Run Snippet on Server": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在服务器上运行片段"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在伺服器上執行指令片段"
+          }
+        }
+      }
+    },
     "Runs immediately": {
       "extractionState": "manual",
       "localizations": {
@@ -10112,6 +10345,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "用逗號分隔，寫法與 OpenSSH 相同：`*.example.com` 比對其下任意主機，`?` 比對一個字元。憑發機構只對比對到的主機受信任——`*` 等於信任它擔保世界上任何一台伺服器。"
+          }
+        }
+      }
+    },
+    "Server": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "伺服器"
           }
         }
       }
@@ -11544,6 +11794,23 @@
         }
       }
     },
+    "That snippet no longer exists.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "该片段已不存在。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "該指令片段已不存在。"
+          }
+        }
+      }
+    },
     "The Cloudflare edge answered.": {
       "extractionState": "manual",
       "localizations": {
@@ -11744,6 +12011,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "無法讀取該憑證。"
+          }
+        }
+      }
+    },
+    "The command from the link was not sent: the session did not connect.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未发送来自链接的命令：会话未能连接。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未送出來自連結的指令：工作階段未能連線。"
           }
         }
       }
@@ -12496,6 +12780,23 @@
         }
       }
     },
+    "The snippet was not sent: the session did not connect.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未发送该片段：会话未能连接。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未送出該指令片段：工作階段未能連線。"
+          }
+        }
+      }
+    },
     "The stored session could not be validated. Sign out and connect again.": {
       "extractionState": "manual",
       "localizations": {
@@ -13210,6 +13511,23 @@
         }
       }
     },
+    "This will be typed into the session as if you had typed it. Read it before you allow it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这会像您亲手键入一样被输入到会话中。允许之前请先读一遍。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這會像您親手輸入一樣被鍵入工作階段中。允許之前請先讀一遍。"
+          }
+        }
+      }
+    },
     "Three things worth knowing, and the documents behind them.": {
       "extractionState": "manual",
       "localizations": {
@@ -13869,6 +14187,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "使用另一台裝置的金鑰"
+          }
+        }
+      }
+    },
+    "User": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用户"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用者"
           }
         }
       }

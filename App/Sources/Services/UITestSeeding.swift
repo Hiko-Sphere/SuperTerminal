@@ -181,6 +181,23 @@ enum UITestSeeding {
         }
     }
 
+    /// A link for a UI run to deliver at launch (D-061).
+    ///
+    /// XCUITest cannot hand an app a URL without driving Safari, and what needs testing is
+    /// what the *app* does with one — the question it asks, and that nothing runs before
+    /// the answer. The system's part, routing `ssh://` and `apexterminal://` here at all,
+    /// is the declaration in `Config/Info.plist`.
+    static var linkFromEnvironment: URL? {
+        #if DEBUG
+        guard let text = ProcessInfo.processInfo.environment["ST_UITEST_OPEN_URL"], !text.isEmpty else {
+            return nil
+        }
+        return URL(string: text)
+        #else
+        return nil
+        #endif
+    }
+
     /// Whether host keys should be trusted without asking, so a UI run is not blocked by
     /// a sheet it cannot meaningfully answer.
     static var trustsHostKeysAutomatically: Bool {

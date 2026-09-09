@@ -17,6 +17,7 @@ final class AppSettings {
         static let clipboardExpirySeconds = "settings.clipboardExpirySeconds"
         static let keepAwakeWhileConnected = "settings.keepAwakeWhileConnected"
         static let commandHistoryEnabled = "settings.commandHistoryEnabled"
+        static let spotlightEnabled = "settings.spotlightEnabled"
         static let confirmMultilinePaste = "settings.confirmMultilinePaste"
         static let hideContentInAppSwitcher = "settings.hideContentInAppSwitcher"
         static let cursorBlink = "settings.cursorBlink"
@@ -36,7 +37,7 @@ final class AppSettings {
 
         static let all = [
             themeID, lightThemeID, followSystemAppearance, fontSize, scrollbackLimit, clipboardExpirySeconds,
-            keepAwakeWhileConnected, commandHistoryEnabled, confirmMultilinePaste,
+            keepAwakeWhileConnected, commandHistoryEnabled, spotlightEnabled, confirmMultilinePaste,
             hideContentInAppSwitcher, cursorBlink, bellEnabled, keyRowVisible,
             automaticReconnect, hapticsEnabled, iCloudSyncEnabled, acceptedTermsVersion, hasSeenTutorial,
             assistantPrefersOnDevice, assistantEndpoint, assistantModel,
@@ -62,6 +63,7 @@ final class AppSettings {
         clipboardExpirySeconds = defaults.integer(forKey: Key.clipboardExpirySeconds)
         keepAwakeWhileConnected = defaults.bool(forKey: Key.keepAwakeWhileConnected)
         commandHistoryEnabled = defaults.bool(forKey: Key.commandHistoryEnabled)
+        spotlightEnabled = defaults.bool(forKey: Key.spotlightEnabled)
         confirmMultilinePaste = defaults.bool(forKey: Key.confirmMultilinePaste)
         hideContentInAppSwitcher = defaults.bool(forKey: Key.hideContentInAppSwitcher)
         cursorBlink = defaults.bool(forKey: Key.cursorBlink)
@@ -101,6 +103,7 @@ final class AppSettings {
             // sensitive things a device can hold, and a feature that records it should be
             // something a person turns on knowingly.
             Key.commandHistoryEnabled: false,
+            Key.spotlightEnabled: false,
             Key.confirmMultilinePaste: true,
             Key.hideContentInAppSwitcher: true,
             Key.cursorBlink: true,
@@ -132,6 +135,7 @@ final class AppSettings {
         clipboardExpirySeconds = defaults.integer(forKey: Key.clipboardExpirySeconds)
         keepAwakeWhileConnected = defaults.bool(forKey: Key.keepAwakeWhileConnected)
         commandHistoryEnabled = defaults.bool(forKey: Key.commandHistoryEnabled)
+        spotlightEnabled = defaults.bool(forKey: Key.spotlightEnabled)
         confirmMultilinePaste = defaults.bool(forKey: Key.confirmMultilinePaste)
         hideContentInAppSwitcher = defaults.bool(forKey: Key.hideContentInAppSwitcher)
         cursorBlink = defaults.bool(forKey: Key.cursorBlink)
@@ -206,6 +210,17 @@ final class AppSettings {
 
     var commandHistoryEnabled: Bool {
         didSet { defaults.set(commandHistoryEnabled, forKey: Key.commandHistoryEnabled) }
+    }
+
+    /// Whether saved connections are offered in Spotlight (D-061).
+    ///
+    /// Off by default, and deliberately so: indexing hands the names and addresses of the
+    /// servers somebody administers to the system's search index, where they appear in a
+    /// list anybody holding the unlocked device can scroll. That is a reasonable trade for
+    /// somebody with twenty connections and a poor one for somebody with one they would
+    /// rather not name out loud, so it is theirs to make.
+    var spotlightEnabled: Bool {
+        didSet { defaults.set(spotlightEnabled, forKey: Key.spotlightEnabled) }
     }
 
     var confirmMultilinePaste: Bool {

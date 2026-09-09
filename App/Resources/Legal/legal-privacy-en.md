@@ -9,6 +9,7 @@ Apex Terminal collects nothing about you. The developer runs no server, so there
 - Your keys, passwords and connections stay on your device, in Apple's Keychain and the app's own protected storage.
 - The only network traffic is to the servers you connect to and, for tunnelled hosts, to Cloudflare on your behalf.
 - Nothing is stored anywhere else. iCloud sync is not available in this version, so this device is the only copy.
+- Spotlight is off until you turn it on; Handoff carries which connection a session is for, and nothing else.
 - There is no analytics, no crash reporter, no telemetry, no advertising, no account.
 
 ## What the app stores on your device
@@ -70,6 +71,34 @@ A connection you mark with **Show in the Files app** is published there through 
 ## Reused connections
 
 Opening a second thing on a server you are already connected to reuses the connection that is already open, when everything about it matches: the same host and port, the same user, the same key or password, the same jump hosts, the same tunnel and the same agent-forwarding choice. This means one authentication instead of several. It never merges two different identities: change any of those and a separate connection is made, because a connection authenticated as somebody else is not the same connection. Reuse stores nothing new.
+
+## Spotlight and Handoff
+
+Two ways the system can carry something outside this app. Both are described here because
+"nothing leaves the device" has to mean it.
+
+**Spotlight is off until you turn it on.** With it on, the app gives this device's search
+index the name and address of each saved connection — the same two lines the connection
+list shows — so they can be found from the home screen. Nothing else is indexed: no
+passwords, no keys, no host keys, no command history. The index is on the device, but it
+can be read without opening this app, which is why the switch exists and why it starts off.
+Turning it off removes what was indexed.
+
+**Handoff carries which connection, and nothing more.** While a session is on screen the
+app publishes an activity saying which saved connection it is, so another of your devices
+can offer to continue there. An SSH session cannot be moved — the connection and its keys
+are on this device — so continuing opens a new session to the same server. The activity
+holds an identifier and a name; it never holds a hostname, a user name, a password or a
+key. iOS advertises it to devices signed in to your Apple Account, and it is Apple's
+mechanism, described in Apple's privacy policy.
+
+## Links from outside the app
+
+A link — `ssh://` or `apexterminal://` — can ask the app to open a connection or to run a
+command. Nothing arrives with any authority: a link that names a server this device has not
+saved, and *any* link that carries a command, is shown to you first, with the server and the
+command spelled out, and nothing happens until you allow it. A link is never allowed to add
+a connection to your list; it can only fill in the fields and leave the saving to you.
 
 ## Command history
 

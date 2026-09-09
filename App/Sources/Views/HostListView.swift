@@ -193,7 +193,11 @@ struct HostListView: View {
             }
         }
         .sheet(isPresented: creatingBinding) {
-            HostEditorView(host: nil, startsWithCloudflare: creatingCloudflareConnection)
+            HostEditorView(
+                host: nil,
+                startsWithCloudflare: creatingCloudflareConnection,
+                draft: scene.linkDraft
+            )
         }
         .sheet(isPresented: creatingScreenBinding) {
             ScreenEditorView(screen: nil)
@@ -357,7 +361,12 @@ struct HostListView: View {
     private var creatingBinding: Binding<Bool> {
         Binding(
             get: { scene.isCreatingConnection },
-            set: { scene.isCreatingConnection = $0 }
+            set: { creating in
+                scene.isCreatingConnection = creating
+                // The draft belongs to one presentation of the editor; leaving it behind
+                // would fill in the *next* connection somebody adds by hand.
+                if !creating { scene.linkDraft = nil }
+            }
         )
     }
 

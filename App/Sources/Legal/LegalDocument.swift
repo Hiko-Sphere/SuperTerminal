@@ -27,8 +27,11 @@ enum LegalDocument: String, CaseIterable, Identifiable, Sendable {
     /// all three texts up to what the app now does — Secure Enclave keys, agent
     /// forwarding, port forwarding, the Files app, reused connections and the questions a
     /// server can ask — and replaced the iCloud sections, which described a switch this
-    /// version does not offer, with what is actually true: nothing leaves the device.
-    static let currentVersion = 7
+    /// version does not offer, with what is actually true: nothing leaves the device; 8
+    /// added Spotlight and Handoff, which are two ways the *system* can carry something
+    /// outside the app — one of them off by default, both of them limited, and neither of
+    /// them described before.
+    static let currentVersion = 8
 
     var title: String {
         switch self {

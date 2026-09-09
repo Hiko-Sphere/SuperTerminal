@@ -150,6 +150,7 @@ struct UserGuide: Equatable {
         "forwarding": "arrow.left.arrow.right",
         "screens": "display",
         "snippets": "command",
+        "links": "link",
         "shortcuts": "keyboard",
         "assistant": "sparkles",
         "privacy": "lock.shield",

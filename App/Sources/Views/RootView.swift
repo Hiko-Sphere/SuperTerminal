@@ -1,3 +1,4 @@
+import CoreSpotlight
 import SwiftUI
 
 /// The app's shell.
@@ -117,6 +118,18 @@ struct RootView: View {
         // The guide opens over whatever raised the question — ⌘/ from a terminal, or the
         // row in Settings — rather than replacing it (D-056).
         .sheet(isPresented: helpBinding) { HelpView() }
+        // Links, search results and handovers (D-061), in one modifier: a `body` this long
+        // stops type-checking in a Release build long before it stops compiling in a Debug
+        // one — measured, as an archive that failed while every simulator build passed.
+        .modifier(IncomingLinks(
+            receive: { container.links.receive($0) },
+            receiveActivity: { container.links.receive(activity: $0) },
+            pending: pendingLinkBinding,
+            approve: { container.links.approvePending() },
+            cancel: { container.links.dismissPending() },
+            isReady: container.links.ready != nil,
+            perform: performReadyLink
+        ))
         // Tells the menu commands which window they are acting on.
         .focusedSceneValue(\.sceneState, scene)
         .onAppear {
@@ -273,6 +286,56 @@ struct RootView: View {
                 .accessibilityValue("\(UIApplication.shared.connectedScenes.count)")
         }
         #endif
+    }
+
+    private var pendingLinkBinding: Binding<LinkCoordinator.Pending?> {
+        Binding(
+            get: { container.links.pending },
+            // Swiping the sheet away is a refusal, which for a link is the safe reading.
+            set: { if $0 == nil { container.links.dismissPending() } }
+        )
+    }
+
+    /// Carries out a link that has been authorised.
+    ///
+    /// Opening goes through the same path as a tap on the row — host key checks,
+    /// credentials, prompts — because a link is a way in, not a way around. A command is
+    /// typed into the session once it is connected, exactly as if the user had typed it.
+    private func performReadyLink() {
+        guard let outcome = container.links.consumeReady() else { return }
+        switch outcome {
+        case let .open(hostID):
+            openFromLink(hostID: hostID, command: nil)
+        case let .openAndRun(hostID, command):
+            openFromLink(hostID: hostID, command: command)
+        case let .offerToAdd(address):
+            // Filled in, not saved: the list must only ever contain what somebody chose to
+            // put there.
+            scene.linkDraft = address
+            scene.isCreatingConnection = true
+        case .ignored:
+            break
+        }
+    }
+
+    private func openFromLink(hostID: UUID, command: String?) {
+        guard let host = container.hostStore.hosts.first(where: { $0.id == hostID }) else { return }
+        if host.isUsingTmux, let session = container.tmux.open(host) {
+            scene.show(tmux: session.id)
+            if horizontalSizeClass == .compact { path.append(.tmux(session.id)) }
+            return
+        }
+        let session = container.sessionManager.open(host)
+        container.hostStore.markConnected(host)
+        scene.show(terminal: session.id)
+        if horizontalSizeClass == .compact { path.append(.terminal(session.id)) }
+        guard let command else { return }
+        Task { @MainActor in
+            // Waits for the shell before typing: sending into a session that has not
+            // connected drops the bytes, and a command that silently did not run is worse
+            // than one that visibly did not.
+            await session.sendWhenConnected(command + "\n")
+        }
     }
 
     private var helpBinding: Binding<Bool> {
@@ -496,5 +559,48 @@ enum SessionRoute: Hashable {
         case let .screen(id): .screen(id)
         case let .tmux(id): .tmux(id)
         }
+    }
+}
+
+
+/// Everything that arrives from outside the app: a link, a Spotlight result, a handover
+/// (D-061).
+///
+/// A modifier rather than another dozen lines on `RootView.body`. The body had grown past
+/// what the Release optimiser will type-check — the Debug builds were fine and the archive
+/// was not — and grouping this makes the reason it is here readable as well.
+private struct IncomingLinks: ViewModifier {
+    let receive: (URL) -> Void
+    let receiveActivity: (NSUserActivity) -> Void
+    let pending: Binding<LinkCoordinator.Pending?>
+    let approve: () -> Void
+    let cancel: () -> Void
+    let isReady: Bool
+    let perform: () -> Void
+
+    func body(content: Content) -> some View {
+        content
+            .onOpenURL { receive($0) }
+            .onContinueUserActivity(CSSearchableItemActionType) { activity in
+                receiveActivity(activity)
+                perform()
+            }
+            .onContinueUserActivity(SessionActivity.type) { activity in
+                receiveActivity(activity)
+                perform()
+            }
+            .sheet(item: pending) { pending in
+                LinkConfirmationSheet(pending: pending, onApprove: approve, onCancel: cancel)
+            }
+            .onChange(of: isReady) { _, _ in perform() }
+            .onAppear {
+                perform()
+                #if DEBUG
+                // A UI run's link arrives here rather than from the system, which cannot
+                // hand an app a URL without driving Safari. `UITestSeeding` does not exist
+                // in a Release build, so neither does this.
+                if let link = UITestSeeding.linkFromEnvironment { receive(link) }
+                #endif
+            }
     }
 }

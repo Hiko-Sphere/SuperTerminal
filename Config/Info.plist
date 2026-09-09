@@ -37,6 +37,47 @@
 			</dict>
 		</dict>
 	</array>
+	<!--
+	  The two link schemes this app answers (D-061). `ssh` is the one people already have
+	  in notes, wikis and READMEs; `apexterminal` is this app's own, for what a generic SSH
+	  URL cannot say — which saved connection, and what to run on it.
+
+	  Declaring a scheme means anything on the device, and any web page, can send this app
+	  a link. Nothing arriving this way runs without being shown first: see
+	  `IncomingURL.authorisation`.
+	-->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>CFBundleURLName</key>
+			<string>dev.apexterminal.ssh</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>ssh</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>CFBundleURLName</key>
+			<string>dev.apexterminal.link</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>apexterminal</string>
+			</array>
+		</dict>
+	</array>
+	<!--
+	  The activity a session publishes so another device can pick up the same connection
+	  (D-061). It carries which saved connection it is and nothing else — an SSH session
+	  cannot be moved, so continuing elsewhere opens a new one to the same server.
+	-->
+	<key>NSUserActivityTypes</key>
+	<array>
+		<string>dev.apexterminal.session</string>
+	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>

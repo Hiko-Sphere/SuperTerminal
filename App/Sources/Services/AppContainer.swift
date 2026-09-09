@@ -52,6 +52,10 @@ final class AppContainer {
     let screens: VNCSessionManager
     /// tmux sessions, one per connection that asked for tmux (D-059).
     let tmux: TmuxSessionManager
+    /// Links arriving from outside the app (D-061).
+    let links: LinkCoordinator
+    /// Saved connections in Spotlight, when that is turned on (D-061).
+    let spotlight: SpotlightIndexer
     /// The app lock (D-023) and the windows it is shown in.
     let appLock: AppLock
     let lockWindows = AppLockWindows()
@@ -99,6 +103,8 @@ final class AppContainer {
         self.assistant = assistant
         self.screens = screens
         self.tmux = tmux
+        links = LinkCoordinator(hosts: { [weak hostStore] in hostStore?.hosts ?? [] }, log: diagnostics.logger)
+        spotlight = SpotlightIndexer(log: diagnostics.logger)
         self.appLock = appLock
     }
 
@@ -207,6 +213,13 @@ final class AppContainer {
         hostStore.didChange = { [weak sync, weak container] in
             sync?.scheduleSync()
             Task { await container?.files.refresh() }
+            // Spotlight follows the connection list, and only while the switch is on
+            // (D-061): a connection that has been deleted must not be findable.
+            guard let container else { return }
+            container.spotlight.update(
+                hosts: container.hostStore.hosts,
+                enabled: container.settings.spotlightEnabled
+            )
         }
         #if DEBUG
         UITestSeeding.apply(to: container)

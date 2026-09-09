@@ -53,6 +53,14 @@ struct SettingsView: View {
                 Section {
                     Toggle("Confirm multi-line pastes", isOn: $settings.confirmMultilinePaste)
                     Toggle("Hide content in the App Switcher", isOn: $settings.hideContentInAppSwitcher)
+                    Toggle("Find connections in Spotlight", isOn: $settings.spotlightEnabled)
+                        .accessibilityIdentifier("settings-spotlight")
+                        .onChange(of: settings.spotlightEnabled) { _, enabled in
+                            // Turning it off removes what was indexed rather than leaving
+                            // it behind: the footer says the names stop being searchable,
+                            // and that has to be true the moment the switch moves.
+                            container.spotlight.update(hosts: container.hostStore.hosts, enabled: enabled)
+                        }
                     Toggle("Record command history", isOn: $settings.commandHistoryEnabled)
                         .onChange(of: settings.commandHistoryEnabled) { _, isEnabled in
                             // The footer promises that turning it off deletes what was
@@ -63,7 +71,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Privacy")
                 } footer: {
-                    Text("Command history is stored only on this device and is off by default. Turning it off deletes what has been recorded.")
+                    Text("Command history is stored only on this device and is off by default. Turning it off deletes what has been recorded. Spotlight is off too: turning it on gives the names and addresses of your connections to this device's search index, where they can be found without opening the app. Turning it off removes them again. Passwords, keys and host keys are never indexed.")
                 }
 
                 Section {
