@@ -12,11 +12,11 @@ delivered. What remains needs the owner: a live Cloudflare environment (B-2), tw
 devices and a production CloudKit schema for the live iCloud checks (B-4 — archiving and
 the entitlements are now proven), and the legal placeholders with counsel review (B-5).
 
-**Last full regression (2026-09-09, after D-054):** package **293 tests in 43 suites** on
+**Last full regression (2026-09-09, after D-055):** package **293 tests in 43 suites** on
 the host (the VNC suites against LibVNCServer); vendored NIOSSH **360 tests, 0 failures**;
-`ApexTerminalTests` **269 in 51 suites**, 0 failed, against a real `sshd` and a containerised
+`ApexTerminalTests` **283 in 52 suites**, 0 failed, against a real `sshd` and a containerised
 OpenSSH with PAM;
-`ApexTerminalUITests` **48 passed, 2 failed** on iPhone 17 Pro, both of them another
+`ApexTerminalUITests` **50 passed, 2 failed** on iPad Pro 13-inch (M5), both of them another
 session's `ZZSearchProbeUITests` (D-050); Release **archive succeeded**; localisation audit complete in every language. The per-commit record, with
 what each number was measured by, is `docs/RELEASE_EVIDENCE.md` — the figures in the tables
 further down this file were measured on the dates they name and are not all current.

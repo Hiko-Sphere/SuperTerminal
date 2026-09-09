@@ -407,6 +407,24 @@ struct TerminalView: View {
                     showsForwards = true
                 }
                 .accessibilityIdentifier("terminal-menu-forwards")
+                // Panes have to be reachable without a keyboard: on a touch device the
+                // shortcuts do not exist, and a feature only a hardware keyboard can start
+                // is a feature most people never find (D-055).
+                Button(String(localized: "Split Right"), systemImage: "rectangle.split.2x1") {
+                    container.shortcuts.perform(.splitRight)
+                }
+                .accessibilityIdentifier("terminal-menu-split-right")
+                Button(String(localized: "Split Down"), systemImage: "rectangle.split.1x2") {
+                    container.shortcuts.perform(.splitDown)
+                }
+                .accessibilityIdentifier("terminal-menu-split-down")
+                if scene.panes.paneCount >= 2 {
+                    Button(String(localized: "Close Pane"), systemImage: "rectangle.badge.minus", role: .destructive) {
+                        container.shortcuts.perform(.closePane)
+                    }
+                    .accessibilityIdentifier("terminal-menu-close-pane")
+                }
+                Divider()
                 Button(String(localized: "Find…"), systemImage: "magnifyingglass") {
                     isSearching = true
                 }

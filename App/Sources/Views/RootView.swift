@@ -65,6 +65,7 @@ struct RootView: View {
         })
         .onChange(of: container.appLock.isLocked, initial: true) { _, _ in syncLockWindow() }
         .overlay(alignment: .topLeading) { sceneCountProbe }
+        .overlay(alignment: .topTrailing) { paneCountProbe }
         .overlay(alignment: .bottomTrailing) { keyPressProbe }
         // The App Switcher snapshot is taken while the scene is inactive. Covering the
         // terminal then is what "Hide content in the App Switcher" means.
@@ -146,8 +147,33 @@ struct RootView: View {
                 container.sessionManager.claimDisplay(ofSessionWithID: current, by: scene.id)
             }
         }
+        // Every pane in this window displays its session, not just the selected one
+        // (D-055). Display ownership was written when a window showed exactly one session,
+        // and a second pane was therefore told its session was "showing in a different
+        // window" — the app refusing to draw a terminal it was already showing.
+        .onChange(of: scene.panes, initial: true) { previous, current in
+            let held = Set(previous.panes.compactMap { pane -> UUID? in
+                if case let .terminal(id) = pane.content { return id }
+                return nil
+            })
+            let wanted = Set(current.panes.compactMap { pane -> UUID? in
+                if case let .terminal(id) = pane.content { return id }
+                return nil
+            })
+            for id in held.subtracting(wanted) {
+                container.sessionManager.releaseDisplay(ofSessionWithID: id, by: scene.id)
+            }
+            for id in wanted {
+                container.sessionManager.claimDisplay(ofSessionWithID: id, by: scene.id)
+            }
+        }
         .onDisappear {
-            // The window itself is going away.
+            // The window itself is going away: everything it was showing is let go.
+            for pane in scene.panes.panes {
+                if case let .terminal(id) = pane.content {
+                    container.sessionManager.releaseDisplay(ofSessionWithID: id, by: scene.id)
+                }
+            }
             if let id = scene.selectedSessionID {
                 container.sessionManager.releaseDisplay(ofSessionWithID: id, by: scene.id)
             }
@@ -218,6 +244,22 @@ struct RootView: View {
         #endif
     }
 
+    /// How many panes this window is showing, for UI tests. Debug only.
+    ///
+    /// Counting terminals on screen is ambiguous — two panes on one server carry the same
+    /// accessibility label — so the layout says what it holds.
+    @ViewBuilder
+    private var paneCountProbe: some View {
+        #if DEBUG
+        if UITestSeeding.seedFromEnvironment != nil {
+            Color.clear
+                .frame(width: 1, height: 1)
+                .accessibilityIdentifier("pane-count")
+                .accessibilityValue("\(scene.panes.paneCount)")
+        }
+        #endif
+    }
+
     @ViewBuilder
     private var sceneCountProbe: some View {
         #if DEBUG
@@ -277,23 +319,65 @@ struct RootView: View {
             HostListView(onOpen: { _ in }, onOpenScreen: { _ in })
                 .navigationSplitViewColumnWidth(min: 260, ideal: 320, max: 420)
         } detail: {
-            if let screen = container.screens.session(withID: scene.selectedScreenID) {
-                NavigationStack {
-                    VNCView(session: screen)
+            // One pane or several, drawn the same way (D-055): with a single pane this is
+            // exactly what it was before, and an arrangement grows from there rather than
+            // being a separate mode to enter.
+            PaneContainerView(layout: paneBinding) { content in
+                paneContent(content)
+            }
+            .padding(DesignTokens.Spacing.xs)
+        }
+        .navigationSplitViewStyle(.balanced)
+    }
+
+    /// Keeps the pane tree and the list's selection in step: the list selects, the panes
+    /// display, and a session that has gone must not leave a pane pointing at nothing.
+    private var paneBinding: Binding<PaneLayout> {
+        Binding(
+            get: {
+                var layout = scene.panes
+                if layout.paneCount == 0 {
+                    if let screen = container.screens.session(withID: scene.selectedScreenID) {
+                        layout = PaneLayout(content: .screen(screen.id))
+                    } else if let session = container.sessionManager.session(withID: scene.selectedSessionID) {
+                        layout = PaneLayout(content: .terminal(session.id))
+                    }
                 }
-            } else if let session = container.sessionManager.session(withID: scene.selectedSessionID) {
-                NavigationStack {
-                    TerminalView(session: session)
-                }
+                return layout
+            },
+            set: { scene.panes = $0 }
+        )
+    }
+
+    private func paneContent(_ content: PaneLayout.Content) -> AnyView {
+        switch content {
+        case let .terminal(id):
+            if let session = container.sessionManager.session(withID: id) {
+                AnyView(NavigationStack { TerminalView(session: session) })
             } else {
-                EmptyStateView(
-                    title: String(localized: "No session"),
-                    message: String(localized: "Choose a connection to open a terminal."),
-                    systemImage: "terminal"
+                // The session ended while a pane was showing it. Saying so beats a blank
+                // rectangle, and the pane can still be closed.
+                AnyView(
+                    EmptyStateView(
+                        title: String(localized: "Session ended"),
+                        message: String(localized: "This session is no longer open. Close the pane, or choose a connection."),
+                        systemImage: "terminal"
+                    )
+                )
+            }
+        case let .screen(id):
+            if let screen = container.screens.session(withID: id) {
+                AnyView(NavigationStack { VNCView(session: screen) })
+            } else {
+                AnyView(
+                    EmptyStateView(
+                        title: String(localized: "Screen closed"),
+                        message: String(localized: "This screen is no longer open. Close the pane, or choose a connection."),
+                        systemImage: "display"
+                    )
                 )
             }
         }
-        .navigationSplitViewStyle(.balanced)
     }
 }
 

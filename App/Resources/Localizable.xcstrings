@@ -1242,6 +1242,23 @@
         }
       }
     },
+    "Adjust to resize the panes": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "调整以改变各分屏的大小"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "調整以改變各分割區的大小"
+          }
+        }
+      }
+    },
     "Advanced": {
       "extractionState": "manual",
       "localizations": {
@@ -2768,6 +2785,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "關閉"
+          }
+        }
+      }
+    },
+    "Close Pane": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "关闭分屏"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "關閉分割"
           }
         }
       }
@@ -5373,6 +5407,23 @@
         }
       }
     },
+    "Horizontal divider": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "水平分隔线"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "水平分隔線"
+          }
+        }
+      }
+    },
     "Host": {
       "extractionState": "manual",
       "localizations": {
@@ -6682,6 +6733,23 @@
         }
       }
     },
+    "Next Pane": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下一个分屏"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下一個分割"
+          }
+        }
+      }
+    },
     "Next Session": {
       "extractionState": "manual",
       "localizations": {
@@ -7838,6 +7906,40 @@
         }
       }
     },
+    "Pane": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "分屏"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "分割區"
+          }
+        }
+      }
+    },
+    "Pane, focused": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "分屏，当前焦点"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "分割區，目前焦點"
+          }
+        }
+      }
+    },
     "Passcode": {
       "extractionState": "manual",
       "localizations": {
@@ -8361,6 +8463,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "自動按下 Return 鍵"
+          }
+        }
+      }
+    },
+    "Previous Pane": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上一个分屏"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上一個分割"
           }
         }
       }
@@ -9929,6 +10048,23 @@
         }
       }
     },
+    "Session ended": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "会话已结束"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "工作階段已結束"
+          }
+        }
+      }
+    },
     "Set a Passcode": {
       "extractionState": "manual",
       "localizations": {
@@ -10469,6 +10605,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "代表"
+          }
+        }
+      }
+    },
+    "Split Down": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "向下分屏"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "向下分割"
+          }
+        }
+      }
+    },
+    "Split Right": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "向右分屏"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "向右分割"
           }
         }
       }
@@ -12530,6 +12700,23 @@
         }
       }
     },
+    "This screen is no longer open. Close the pane, or choose a connection.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "该屏幕已不再打开。请关闭此分屏，或选择一个连接。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "該螢幕已不再開啟。請關閉此分割區，或選擇一個連線。"
+          }
+        }
+      }
+    },
     "This screen needs a VNC password.": {
       "extractionState": "manual",
       "localizations": {
@@ -12645,6 +12832,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "此工作階段已經結束。"
+          }
+        }
+      }
+    },
+    "This session is no longer open. Close the pane, or choose a connection.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "该会话已不再打开。请关闭此分屏，或选择一个连接。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "該工作階段已不再開啟。請關閉此分割區，或選擇一個連線。"
           }
         }
       }
@@ -13512,6 +13716,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "有效期至 %@。"
+          }
+        }
+      }
+    },
+    "Vertical divider": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "垂直分隔线"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "垂直分隔線"
           }
         }
       }

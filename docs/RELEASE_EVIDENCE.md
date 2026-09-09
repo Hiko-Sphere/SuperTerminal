@@ -3,6 +3,45 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-09 — after D-055 (several things on screen at once)
+
+| Command | Result |
+| --- | --- |
+| `cd Packages/ApexTerminalKit && swift test --no-parallel` | **293 tests in 43 suites passed** — unchanged, and unchanged *by* this: the work is all in the app |
+| `bash scripts/app-integration-e2e.sh` | **283 tests in 52 suites passed** (269 before; 14 new) |
+| `bash scripts/ui-terminal-e2e.sh` (iPad Pro 13-inch M5) | **50 passed, 2 failed** — both `ZZSearchProbeUITests`, another session's uncommitted work |
+| `bash scripts/localization-audit.sh` | **green**, 13 new strings translated into both Chinese variants |
+| Release archive | **ARCHIVE SUCCEEDED** |
+
+**Two real defects found by making the UI test insist on what a user sees**, neither of which
+a passing model test would have caught.
+
+The first is an accessibility bug of the worst kind. Marking the focused pane with
+`.accessibilityLabel` on its container **collapsed the pane into a single element and hid
+everything inside it** — the accessibility dump showed the focused pane containing nothing at
+all, no terminal, no text. For VoiceOver that means the pane someone is typing into is the
+one pane they cannot read. Focus is now announced by a marker *inside* the pane, so the
+terminal stays in the tree.
+
+The second is architectural. Display ownership was written when a window showed exactly one
+session (`owner(ofSessionWithID:) == scene.id`), so the second pane was told **"Local Test
+Server is showing in a different window"** — the app refusing to draw a terminal it was
+already showing, in the same window. Every pane now claims its own session, and releases it
+when the pane goes.
+
+Both were found the same way: the test asserted two terminals were on screen, and when it
+failed the accessibility tree was read rather than the assertion loosened.
+
+**A pane count probe was added** because counting terminals is ambiguous: two panes on one
+server carry the same accessibility label, so the layout reports what it holds and the test
+checks both.
+
+**An assertion was strengthened rather than deleted.** `AppShortcutTests` asserted that no
+shortcut used Option — true only by accident until the pane commands needed it. It now checks
+that Option and Control agree between the SwiftUI and UIKit spellings in both directions, and
+a new test requires no two shortcuts to share a key combination at all, which is the invariant
+that assertion was reaching for.
+
 ## 2026-09-09 — after D-054 (one connection, many things on it)
 
 | Command | Result |

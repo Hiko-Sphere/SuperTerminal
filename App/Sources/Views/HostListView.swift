@@ -64,8 +64,9 @@ struct HostListView: View {
                 Section("Open sessions") {
                     ForEach(container.sessionManager.sessions) { session in
                         Button {
-                            scene.selectedScreenID = nil
-                            scene.selectedSessionID = session.id
+                            // Choosing from the list replaces the arrangement (D-055):
+                            // selecting is not the same gesture as splitting.
+                            scene.show(terminal: session.id)
                             onOpen(session)
                         } label: {
                             // The hit area goes on the label, not on the styled button:
@@ -101,8 +102,7 @@ struct HostListView: View {
                 Section("Open screens") {
                     ForEach(container.screens.sessions) { screen in
                         Button {
-                            scene.selectedSessionID = nil
-                            scene.selectedScreenID = screen.id
+                            scene.show(screen: screen.id)
                             onOpenScreen(screen)
                         } label: {
                             ScreenRow(screen: screen)
@@ -228,12 +228,12 @@ struct HostListView: View {
         ) {
             let session = container.sessionManager.open(host)
             container.hostStore.markConnected(host)
-            scene.selectedScreenID = nil
             // Selecting is this list's job in both layouts; `onOpen` only
             // tells a stack-based layout to push. Leaving selection to the
             // caller meant the iPad detail column never followed a newly
-            // opened session.
-            scene.selectedSessionID = session.id
+            // opened session. Selecting also replaces the pane arrangement
+            // (D-055), because choosing is not splitting.
+            scene.show(terminal: session.id)
             onOpen(session)
         }
         .swipeActions(edge: .trailing) {
@@ -271,8 +271,7 @@ struct HostListView: View {
         }
         let session = container.screens.open(screen, through: host)
         container.screenStore.markConnected(screen)
-        scene.selectedSessionID = nil
-        scene.selectedScreenID = session.id
+        scene.show(screen: session.id)
         onOpenScreen(session)
     }
 

@@ -26,8 +26,27 @@ import UIKit
             #expect(shortcut.input.count == 1, "\(shortcut.rawValue) must be a single key")
             #expect(shortcut.keyEquivalent.character == shortcut.input.first)
             #expect(shortcut.eventModifiers.contains(.command))
+            // Every modifier must agree between the two spellings, in both directions.
+            // This used to assert that nothing used Option, which was true only by
+            // accident until the pane commands needed it (D-055) — and an assertion that
+            // holds by accident stops being a check the moment the accident ends.
             #expect(shortcut.eventModifiers.contains(.shift) == shortcut.modifiers.contains(.shift))
-            #expect(!shortcut.eventModifiers.contains(.option) && !shortcut.eventModifiers.contains(.control))
+            #expect(shortcut.eventModifiers.contains(.option) == shortcut.modifiers.contains(.alternate))
+            #expect(shortcut.eventModifiers.contains(.control) == shortcut.modifiers.contains(.control))
+        }
+    }
+
+    /// Two shortcuts on the same key and modifiers would mean one of them never fires,
+    /// and which one is up to UIKit. The pane commands deliberately share letters with
+    /// their session-level twins, so the pairs are only distinct because of Option.
+    @Test func noTwoShortcutsShareAKeyCombination() {
+        var seen: [String: AppShortcut] = [:]
+        for shortcut in AppShortcut.allCases {
+            let combination = "\(shortcut.modifiers.rawValue):\(shortcut.input)"
+            if let clash = seen[combination] {
+                Issue.record("\(shortcut.rawValue) and \(clash.rawValue) both use \(combination)")
+            }
+            seen[combination] = shortcut
         }
     }
 

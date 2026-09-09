@@ -20,6 +20,9 @@ enum AppShortcut: String, CaseIterable, Sendable {
     case closeSession
     case increaseTextSize, decreaseTextSize, actualTextSize
     case assistant
+    /// Split panes (D-055). ⌘D and ⇧⌘D are what every tiling terminal uses, and ⌥⌘→ / ⌥⌘←
+    /// move between panes without disturbing the shell's own arrow keys.
+    case splitRight, splitDown, closePane, nextPane, previousPane
 
     var title: String {
         switch self {
@@ -28,6 +31,11 @@ enum AppShortcut: String, CaseIterable, Sendable {
         case .showSettings: String(localized: "Settings…")
         case .nextSession: String(localized: "Next Session")
         case .previousSession: String(localized: "Previous Session")
+        case .splitRight: String(localized: "Split Right")
+        case .splitDown: String(localized: "Split Down")
+        case .closePane: String(localized: "Close Pane")
+        case .nextPane: String(localized: "Next Pane")
+        case .previousPane: String(localized: "Previous Pane")
         case .closeSession: String(localized: "Close Session")
         case .increaseTextSize: String(localized: "Increase Text Size")
         case .decreaseTextSize: String(localized: "Decrease Text Size")
@@ -55,13 +63,21 @@ enum AppShortcut: String, CaseIterable, Sendable {
         case .decreaseTextSize: "-"
         case .actualTextSize: "0"
         case .assistant: "a"
+        case .splitRight: "d"
+        case .splitDown: "d"
+        case .closePane: "w"
+        case .nextPane: "]"
+        case .previousPane: "["
         default: "\(sessionNumber ?? 0)"
         }
     }
 
     var modifiers: UIKeyModifierFlags {
         switch self {
-        case .nextSession, .previousSession, .assistant: [.command, .shift]
+        case .nextSession, .previousSession, .assistant, .splitDown: [.command, .shift]
+        // Option for the pane commands, so each keeps the letter it shares with its
+        // session-level twin: ⌘W still closes the session, ⌥⌘W closes just this pane.
+        case .closePane, .nextPane, .previousPane: [.command, .alternate]
         default: .command
         }
     }
@@ -70,7 +86,10 @@ enum AppShortcut: String, CaseIterable, Sendable {
     var keyEquivalent: KeyEquivalent { KeyEquivalent(input.first ?? " ") }
 
     var eventModifiers: EventModifiers {
-        modifiers.contains(.shift) ? [.command, .shift] : .command
+        var result: EventModifiers = .command
+        if modifiers.contains(.shift) { result.insert(.shift) }
+        if modifiers.contains(.alternate) { result.insert(.option) }
+        return result
     }
 
     /// Key commands for the terminal view to return from `keyCommands`; `action` must be
@@ -124,6 +143,11 @@ final class AppShortcutRouter {
         case .nextSession, .previousSession: sessionManager.sessions.count >= 2
         case .closeSession, .assistant: displayedSession != nil
         case .newConnection, .commandPalette, .showSettings, .actualTextSize: scene != nil
+        // Splitting needs something to split, and the pane commands need more than one
+        // pane — a "Close Pane" that closes the only pane is just "Close Session" wearing
+        // the wrong name.
+        case .splitRight, .splitDown: displayedSession != nil || scene?.panes.paneCount ?? 0 > 0
+        case .closePane, .nextPane, .previousPane: (scene?.panes.paneCount ?? 0) >= 2
         case .increaseTextSize: settings.fontSize < AppSettings.fontSizeRange.upperBound
         case .decreaseTextSize: settings.fontSize > AppSettings.fontSizeRange.lowerBound
         default: shortcut.sessionNumber.map { sessionManager.session(atOneBasedIndex: $0) != nil } ?? false
@@ -147,6 +171,12 @@ final class AppShortcutRouter {
         case .decreaseTextSize: adjustFontSize(by: -1)
         case .actualTextSize: settings.fontSize = AppSettings.defaultFontSize
         case .assistant: scene?.isShowingAssistant = true
+        case .splitRight: splitFocusedPane(axis: .horizontal)
+        case .splitDown: splitFocusedPane(axis: .vertical)
+        case .closePane:
+            if let scene, let focused = scene.panes.focused { scene.panes.close(focused) }
+        case .nextPane: scene?.panes.focusNext()
+        case .previousPane: scene?.panes.focusNext(reverse: true)
         default:
             if let number = shortcut.sessionNumber, let scene, let session = sessionManager.session(atOneBasedIndex: number) {
                 scene.selectedSessionID = session.id
@@ -158,6 +188,22 @@ final class AppShortcutRouter {
     private func adjustFontSize(by delta: Double) {
         let range = AppSettings.fontSizeRange
         settings.fontSize = min(max(settings.fontSize + delta, range.lowerBound), range.upperBound)
+    }
+
+    /// Splits the focused pane, putting a *new session to the same server* in the new half.
+    ///
+    /// Splitting means "another one of these", which is what every tiling terminal does and
+    /// what someone reaching for ⌘D wants — a second shell on the machine they are already
+    /// looking at, not an empty pane asking them to pick a server again. Connection reuse
+    /// (D-054) makes that nearly free: the second shell is another channel on the transport
+    /// the first one already has.
+    private func splitFocusedPane(axis: PaneLayout.Axis) {
+        guard let scene else { return }
+        guard case let .terminal(id)? = scene.panes.focusedContent ?? displayedSession.map({ .terminal($0.id) }),
+              let existing = sessionManager.session(withID: id)
+        else { return }
+        let session = sessionManager.open(existing.host)
+        scene.panes.split(.terminal(session.id), axis: axis)
     }
 
     private func cycleSession(by delta: Int) {

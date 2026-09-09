@@ -34,8 +34,30 @@ final class SceneState {
     /// The assistant sheet over the displayed terminal (D-020).
     var isShowingAssistant = false
 
+    /// How this window's detail area is divided (D-055).
+    ///
+    /// The source of truth for what is on screen. `selectedSessionID` and
+    /// `selectedScreenID` remain what the *list* selected — choosing a connection replaces
+    /// the arrangement — but once panes exist, what is displayed is this.
+    var panes = PaneLayout()
+
+    /// Shows one thing, replacing whatever arrangement was there. What tapping a
+    /// connection does.
+    func show(terminal id: TerminalSession.ID) {
+        selectedSessionID = id
+        selectedScreenID = nil
+        panes.show(.terminal(id))
+    }
+
+    func show(screen id: VNCSession.ID) {
+        selectedScreenID = id
+        selectedSessionID = nil
+        panes.show(.screen(id))
+    }
+
     init(selectedSessionID: TerminalSession.ID? = nil) {
         self.selectedSessionID = selectedSessionID
+        if let selectedSessionID { panes = PaneLayout(content: .terminal(selectedSessionID)) }
     }
 }
 

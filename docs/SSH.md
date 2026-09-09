@@ -45,6 +45,26 @@ and one for a scratch VM does not. Enrolling a new face or finger invalidates th
 which is deliberate: someone who learns the passcode still cannot add a biometric and use
 your key.
 
+## Several things on screen at once
+
+A terminal can be split, so one screen shows more than one session: two shells side by side,
+a shell above a remote screen, or any arrangement built from those.
+
+* **Session menu → Split Right / Split Down**, or **⌘D** and **⇧⌘D**.
+* **⌥⌘]** and **⌥⌘[** move between panes; tapping one focuses it. The focused pane has an
+  accent border, and VoiceOver says which pane is focused.
+* **⌥⌘W** closes the focused pane — `⌘W` still closes the whole session, which is the more
+  drastic thing and keeps the plainer shortcut.
+* Drag the divider between panes to resize, or adjust it with VoiceOver and Voice Control:
+  it is an adjustable element, not only a drag target. Neither pane can be squeezed away.
+
+Splitting opens **another session on the same server**, which is what reaching for ⌘D
+usually means. That is nearly free: connection reuse means the second shell is another
+channel on the transport the first one already has, not a second login.
+
+Choosing a different connection from the list replaces the arrangement rather than adding to
+it — selecting is not the same gesture as splitting.
+
 ### One connection, many things on it
 
 SSH multiplexes by design: a single transport carries any number of channels, and a shell,

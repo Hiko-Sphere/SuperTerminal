@@ -34,6 +34,13 @@ from the first unfinished item rather than starting over.
 | 2.4 | Server-to-device channel | Not started |
 | 2.5 | Shortcuts, URL scheme, Handoff, Spotlight | Two App Intents ship (D-021); the rest not started |
 
+### Split panes (D-055)
+
+Asked for during Phase 2 and built alongside it: several terminals, several remote screens,
+or a mixture, on one screen. A recursive layout — splitting a pane replaces *it* with two —
+because a flat grid cannot express "a terminal on the left, and on the right a screen above a
+second terminal", which is what people build within a minute of being able to.
+
 ## Phase 3 — terminal fidelity
 
 | # | Item | State |

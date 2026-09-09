@@ -116,6 +116,9 @@ final class TerminalUITests: XCTestCase {
             ] {
                 if let value = environment[key] { app.launchEnvironment[key] = value }
             }
+            // The router records what it decided about the last shortcut, which is the
+            // only way to tell "the command did nothing" from "the command never ran".
+            app.launchEnvironment["ST_UITEST_KEY_PROBE"] = "1"
             app.launch()
         return app
     }()
@@ -127,6 +130,50 @@ final class TerminalUITests: XCTestCase {
             environment["ST_UITEST_SEED"] == "1",
             "run scripts/ui-terminal-e2e.sh to provide a server"
         )
+    }
+
+    /// Splitting the screen, through the menu a person would use (D-055).
+    ///
+    /// The keyboard shortcuts exist too, but a touch device has no keyboard, so the path
+    /// that must work is this one. What is checked is what the user sees: after splitting
+    /// there are two terminals on screen, and after closing a pane there is one again.
+    func testSplittingTheScreenShowsTwoTerminalsAndClosingRestoresOne() throws {
+        try openTerminal()
+
+        let terminals = app.otherElements.matching(NSPredicate(format: "label BEGINSWITH %@", "Terminal for"))
+        XCTAssertEqual(terminals.count, 1, "one terminal to begin with")
+
+        app.buttons["terminal-menu"].firstMatch.tap()
+        let split = app.buttons["terminal-menu-split-right"]
+        XCTAssertTrue(split.waitForExistence(timeout: 5), "the session menu should offer a split")
+        split.tap()
+
+        // A second terminal, on screen at the same time as the first — which is the whole
+        // feature. It has to connect before it renders, so this waits rather than asserting
+        // immediately.
+        let deadline = Date().addingTimeInterval(45)
+        while Date() < deadline, terminals.count < 2 { usleep(300_000) }
+        // The layout says what it holds: two panes on one server carry the same
+        // accessibility label, so counting elements alone cannot tell them apart.
+        let paneCount = app.descendants(matching: .any).matching(identifier: "pane-count").firstMatch
+        XCTAssertTrue(paneCount.waitForExistence(timeout: 5))
+        XCTAssertEqual(paneCount.value as? String, "2", "splitting should produce two panes")
+        XCTAssertEqual(terminals.count, 2, "and both should be on screen")
+
+        // And the divider between them is reachable, which is what makes the split
+        // adjustable rather than fixed.
+        let divider = app.otherElements["Vertical divider"].firstMatch
+        XCTAssertTrue(divider.waitForExistence(timeout: 5), "the split should have a divider")
+
+        app.buttons["terminal-menu"].firstMatch.tap()
+        let closePane = app.buttons["terminal-menu-close-pane"]
+        XCTAssertTrue(closePane.waitForExistence(timeout: 5), "with two panes the menu should offer to close one")
+        closePane.tap()
+
+        let closed = Date().addingTimeInterval(15)
+        while Date() < closed, (paneCount.value as? String) != "1" { usleep(300_000) }
+        XCTAssertEqual(paneCount.value as? String, "1", "closing a pane should leave one")
+        XCTAssertEqual(terminals.count, 1, "and the other should fill the screen")
     }
 
     /// Opens the seeded connection and waits until the shell has answered.
