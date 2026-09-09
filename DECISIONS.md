@@ -1406,4 +1406,4 @@ An index, so nothing has to be hunted for:
 | D-069 | `ca0a658` | The parser's claim that nothing can wedge it, tested by trying |
 | D-070 | `83b7c10` | The Mac, as itself: Catalyst with a real menu bar and the limits said out loud |
 | D-071 | `89e530e` | Several remote folders at once: a file browser is a session, not a sheet |
-| D-072 | this commit | visionOS as it actually stands: offered in compatibility mode, and never run |
+| D-072 | `548631d` | visionOS as it actually stands: offered in compatibility mode, and never run |

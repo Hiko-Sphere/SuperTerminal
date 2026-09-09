@@ -1,6 +1,6 @@
 # Project status
 
-**Updated:** 2026-09-08 · **Phase:** 5 of 7 in progress — the app is driven end to end
+**Updated:** 2026-09-10 · **Phase:** 5 of 7 in progress — the app is driven end to end
 through its own interface on iPhone and iPad; iCloud sync (opt-in, offline-verified), the
 legal texts with a consent gate, clipboard expiry, Access service tokens, hardware
 keyboard and pointer support (xterm modifiers, app shortcuts, wheel, clicks, drag),
@@ -12,14 +12,25 @@ delivered. What remains needs the owner: a live Cloudflare environment (B-2), tw
 devices and a production CloudKit schema for the live iCloud checks (B-4 — archiving and
 the entitlements are now proven), and the legal placeholders with counsel review (B-5).
 
-**Last full regression (2026-09-09, after D-055):** package **293 tests in 43 suites** on
-the host (the VNC suites against LibVNCServer); vendored NIOSSH **360 tests, 0 failures**;
-`ApexTerminalTests` **283 in 52 suites**, 0 failed, against a real `sshd` and a containerised
-OpenSSH with PAM;
-`ApexTerminalUITests` **50 passed, 2 failed** on iPad Pro 13-inch (M5), both of them another
-session's `ZZSearchProbeUITests` (D-050); Release **archive succeeded**; localisation audit complete in every language. The per-commit record, with
-what each number was measured by, is `docs/RELEASE_EVIDENCE.md` — the figures in the tables
-further down this file were measured on the dates they name and are not all current.
+**Where the plan stands (2026-09-10, after D-072):** every item in
+`docs/EXECUTION_PLAN.md` is either **done** or blocked on something only the owner can do.
+Phase 3 is complete — shell integration, synchronised output, sixel/Kitty/iTerm2 pictures, the
+font system, and a fuzz suite that was shown to catch a deliberately broken invariant. Phase
+1.1's last gap, several remote folders at once, is closed. Mac Catalyst builds, launches and
+runs 316 of its 324 unit tests on a Mac; visionOS is offered in Apple's iPad compatibility mode
+and has never been run; watchOS is not started and says why. What is left is H-1 to H-9 in
+`docs/HUMAN_ACTIONS.md`: a device for input methods and Files, a Mac Catalyst signing identity,
+biometrics, a real VNC server, a Cloudflare tenant, a CloudKit container, and the visionOS and
+watchOS simulator runtimes.
+
+**Last full regression (2026-09-10, after D-071):** `ApexTerminalTests` **340 in 65 suites**,
+0 failed, against a real `sshd` and a containerised OpenSSH with PAM; `ApexTerminalUITests`
+**57 passed on iPhone 17 Pro and 58 on iPad Pro 13-inch (M5)**, 2 failed on each — both of them
+another session's `ZZSearchProbeUITests`; localisation complete in every language; **0**
+warnings from the app, its unit tests and its UI tests; Release **archive succeeded**. The
+per-commit record, with what each number was measured by, is `docs/RELEASE_EVIDENCE.md` — the
+figures in the tables further down this file were measured on the dates they name and are not
+all current.
 
 Known failures, none in this change:
 

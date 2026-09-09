@@ -3,6 +3,34 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-10 — the round's closing regression, on the committed tree
+
+Everything, in one pass, on `548631d`:
+
+| Command | Result |
+| --- | --- |
+| `cd Packages/ApexTerminalKit && swift test --no-parallel` | **380 tests in 56 suites, 4 failed** — the four `SecureEnclaveKeyTests`; **0 segfaults** |
+| Package warning gate | **0** |
+| `cd Packages/swift-nio-ssh-rsa && swift test` | **360 tests, 0 failures** |
+| `bash scripts/app-integration-e2e.sh` | **340 tests in 65 suites passed**, no restarts |
+| `bash scripts/ui-terminal-e2e.sh` (iPhone 17 Pro) | **57 passed, 2 failed** |
+| `bash scripts/ui-terminal-e2e.sh` (iPad Pro 13-inch M5) | **58 passed, 2 failed** |
+| `bash scripts/localization-audit.sh` | **complete in every language** |
+| `./scripts/check-app-shortcut-phrases.py` | **every phrase names the app and at most one parameter** |
+| `TODO`/`FIXME` in shipping code | **0** |
+| App, unit-test and UI-test warnings | **0** |
+| `cmp THIRD_PARTY_NOTICES.md App/Resources/Legal/THIRD_PARTY_NOTICES.md` | **identical** |
+| Release archive | **ARCHIVE SUCCEEDED** |
+| Mac Catalyst build | **BUILD SUCCEEDED** |
+
+The six failures, and neither is a defect in this work:
+
+* **Four** `SecureEnclaveKeyTests`, with `-25308 unable to generate key`. This machine's Secure
+  Enclave refuses to create a key some evenings and not others — the same four passed earlier
+  in this same session. Recorded every time rather than filtered out.
+* **Two** `ZZSearchProbeUITests`, on both devices. Another session's uncommitted work, named in
+  `PROJECT_STATUS.md` since D-050 and never touched here.
+
 ## 2026-09-10 — after D-072 (visionOS as it actually stands)
 
 | Command | Result |
