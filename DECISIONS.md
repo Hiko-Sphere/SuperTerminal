@@ -1402,4 +1402,5 @@ An index, so nothing has to be hunted for:
 | D-065 | `0efe5e8` | Pictures in the grid: sixel, Kitty and iTerm2, and the transfers that cannot work over a network |
 | D-066 | `277e492` | A promise nobody would ever complete, on the path where a peer closes before the handshake |
 | D-067 | `ea35071` | A missing translation that says which build it came from |
-| D-068 | this commit | The app's own warnings, gone and gated — the claim in RELEASE.md made true |
+| D-068 | `aae6622` | The app's own warnings, gone and gated — the claim in RELEASE.md made true |
+| D-069 | this commit | The parser's claim that nothing can wedge it, tested by trying |

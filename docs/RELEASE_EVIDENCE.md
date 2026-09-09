@@ -3,6 +3,54 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-10 — after D-069 (the parser's claim, tested by trying)
+
+| Command | Result |
+| --- | --- |
+| `cd Packages/ApexTerminalKit && swift test --no-parallel` | **380 tests in 56 suites, 4 failed** — the four `SecureEnclaveKeyTests` this machine's enclave will not run |
+| Zero-warning gate | **0** |
+| `bash scripts/app-integration-e2e.sh` | **335 tests in 64 suites passed** |
+| Release archive | **ARCHIVE SUCCEEDED** |
+| The same fuzz suite, with `TerminalScreen.moveCursor`'s clamp removed | **`Fatal error: Index out of range`** |
+
+The UI suites were not re-run for this: nothing outside the package's *tests* changed, and both
+devices were green on the tree this sits on an hour earlier (D-068).
+
+### What is thrown at it
+
+`TerminalParser`'s documented contract is that no byte sequence can wedge it — every state has
+a defined transition for every byte, so hostile or corrupt output degrades to visible garbage
+rather than to a hang, an over-read or unbounded growth. That was reasoned about when it was
+written. Now it is attacked:
+
+* **A megabyte of noise per seed**, in chunks of 1 to 4096 bytes, three seeds.
+* **Sequences that look real** — assembled from the actual introducers (`CSI`, `OSC`, `DCS`,
+  `APC`, `SOS`, `PM`, bare `ESC`), random parameter bytes, a plausible final, and one of five
+  terminators including *no* terminator at all. Random bytes reach a CSI introducer once in
+  256 and a well-formed one far less often; this is where a parser actually breaks.
+* **Resizes interleaved with input**, including height-only ones, with the cursor parked in the
+  far corner first — because a change of width rewraps and decides the cursor's place itself,
+  so a screen that shrinks in height without bringing the cursor along is only reachable the
+  other way.
+* **Each picture protocol opened and then fed garbage** — a sixel introducer, a Kitty APC, an
+  iTerm2 OSC, followed by up to 400 random printable bytes and a terminator chosen at random.
+
+After every step: the screen is still the size it was told to be, every line is that wide, the
+cursor is inside it, the scrollback is within its limit, and the pictures are within their
+budget. The generator is a written-out xorshift with its seeds in the test, so a failure
+repeats rather than being a story about one run.
+
+### Made to fail, on purpose, twice
+
+A fuzz test that has never failed is a rumour. Two clamps were deleted in turn to see whether
+this one can tell:
+
+* `TerminalScreen.resize`'s `cursor.row = min(cursor.row, rows - 1)` — the suite stayed green,
+  and it turned out the line is genuinely redundant: the shrink path above it already brings
+  the cursor up by scrolling lines into history. Worth knowing, and worth leaving in.
+* `TerminalScreen.moveCursor`'s clamp — the suite died with `Fatal error: Index out of range`
+  inside the structured-noise case, which is exactly what a fuzz suite is for.
+
 ## 2026-09-10 — after D-068 (the app's own warnings, gone and gated)
 
 | Command | Result |
