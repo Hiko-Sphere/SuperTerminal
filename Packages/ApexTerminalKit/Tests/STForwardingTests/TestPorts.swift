@@ -15,7 +15,19 @@ import NIOCore
 /// well below that means these listeners cannot collide with anything the kernel hands
 /// out, and the race is not merely less likely but gone.
 enum TestPorts {
-    static let range = 21000 ..< 30000
+    /// For listeners that only need *a* port: echo servers, mostly.
+    static let range = 21000 ..< 29000
+
+    /// For forwarding rules, deliberately disjoint from ``range``.
+    ///
+    /// `stoppingFreesThePort` stops a forward and rebinds the same number, and it failed
+    /// once in a full run with "Port 24433 on this device is already in use" while passing
+    /// five times out of five on its own. `ForwardingSession.stop` awaits the listener's
+    /// `close()`, so the port really is released; what a shared pool allows is for another
+    /// listener in the same run — this suite makes hundreds of binds — to draw the same
+    /// number in between. Two disjoint pools remove the only mechanism by which that can
+    /// happen. If it ever recurs, a leak is back on the table with better evidence.
+    static let forwardRange = 29000 ..< 30000
 
     /// A port in the safe range, retried until something binds.
     static func bind(_ attempt: (Int) async throws -> Void) async throws -> Int {

@@ -3,6 +3,85 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-09 — after D-051 (keyboard-interactive, RFC 4256)
+
+| Command | Result |
+| --- | --- |
+| `cd Packages/ApexTerminalKit && swift test --no-parallel` | **279 tests in 41 suites passed** (275 before; 4 new) |
+| `cd Packages/swift-nio-ssh-rsa && swift test` | **360 tests, 0 failures** (349 before; 11 new). Required: this changes the vendored fork |
+| `bash scripts/app-integration-e2e.sh` | **260 tests in 49 suites passed** (258 before; 2 new) |
+| `bash scripts/ui-terminal-e2e.sh` | **48 passed, 2 failed** — both `ZZSearchProbeUITests`, another session's uncommitted work. Unchanged by this |
+| `bash scripts/localization-audit.sh` | **green**, 5 new strings translated into both Chinese variants |
+| Release archive | **ARCHIVE SUCCEEDED** |
+
+**Two failures on the way, both in the test scaffolding, both fixed rather than retried
+away.** The first full run failed the package suite on
+`ForwardingIntegrationTests.stoppingFreesThePort` — "Port 24433 on this device is already in
+use" — and failed the app harness outright with Docker's `failed to bind host port
+127.0.0.1:61174: address already in use`.
+
+The harness one was mine and plain: it asked the kernel for a free port and then handed the
+number to Docker, which is a race, and 61174 is in the ephemeral range this project already
+knows to avoid. It now walks a fixed low range and lets Docker itself be the arbiter.
+
+The forwarding one needed measuring rather than guessing. The test passed **five runs out of
+five** on its own, so it was not a regression from this change. `ForwardingSession.stop`
+awaits the listener's `close()`, so the port genuinely is released — which rules out the leak
+the test is written to catch. What remained is that the suite drew every listener from one
+9000-wide pool and makes hundreds of binds per run, so two listeners can draw the same
+number in the gap. Forwards now draw from a disjoint range. A first attempt at a cleverer
+fix — probing the port with a plain socket to tell a leak from a collision — was backed out:
+it made a passing test fail two runs in three, because the probe was stricter than the
+Network.framework listener it was meant to imitate. That is recorded here rather than
+quietly deleted, because "the oracle was wrong" is the kind of thing worth not repeating.
+
+**The verification problem, and how it was solved rather than waived.** The plan said this
+could not be verified here, and gave a real reason: macOS builds OpenSSH without PAM, so its
+`sshd` answers a keyboard-interactive attempt by falling through to BSD auth and asking for
+a real account's login password. That is true, and it is why the item had been sitting.
+
+It is not, however, the same as "cannot be verified". A Debian container runs stock OpenSSH
+with `AuthenticationMethods keyboard-interactive`, `UsePAM yes`, and a PAM stack of
+`pam_unix` then `pam_google_authenticator`. Public-key and password authentication are both
+turned off, so a login there is evidence about this method and nothing else. The server is
+real OpenSSH; nothing about the protocol is being asserted against something this project
+also wrote.
+
+**What the server actually does, measured.** The first run failed an assertion that there
+would be two rounds. There are three:
+
+```
+round 1: one prompt, "Password: ",          echo false
+round 2: one prompt, "Verification code: ", echo false
+round 3: no prompts at all
+```
+
+The third is RFC 4256 § 3.3's zero-prompt round, used to display a message, and the client
+must answer it with zero responses and keep waiting. It is the case an implementation that
+assumed "a round means a question" gets wrong — by hanging, or by answering a question
+nobody asked — so the test now asserts it by name instead of tolerating a looser count.
+
+**The one that was hard to get right.** Message number 60 belongs to *both*
+`SSH_MSG_USERAUTH_PK_OK` (RFC 4252 § 7) and `SSH_MSG_USERAUTH_INFO_REQUEST` (RFC 4256 § 3.2).
+The bodies cannot be told apart from the bytes. Guessing from the payload would be a parser
+a server could steer into the wrong branch, so the meaning comes from what this side sent:
+`SSHPacketParser.expectsKeyboardInteractiveInfoRequest` is set as the request is written and
+cleared the moment the exchange ends — on failure, on success, and on *any other* method
+being offered, so one forgotten path cannot leave the parser mis-reading for the rest of the
+connection. `KeyboardInteractiveMessagesTests` feeds the same bytes to both readings and
+requires them to disagree.
+
+**A hang the tests found.** Dismissing the sheet originally sent nothing and returned
+nothing, which is correct — blank answers would look like a wrong password and spend one of
+the server's few tries — but it left the connection sitting until `LoginGraceTime` expired:
+**31.1 seconds** of an apparently-frozen spinner, measured. Cancellation now fails the
+attempt immediately and is reported as a cancellation rather than as the server rejecting a
+credential. The same test measures **1.1 seconds**.
+
+**Bounds, because the peer is not trusted.** `num-prompts` and `num-responses` are capped at
+1024, OpenSSH's own client limit, and the number of rounds one attempt may produce is capped
+at 32. A server that exceeds either is refused rather than allocated for.
+
 ## 2026-09-08 — after D-050 (the hardware-keyboard failures, understood and fixed)
 
 | Command | Result |

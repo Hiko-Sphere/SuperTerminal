@@ -45,6 +45,29 @@ and one for a scratch VM does not. Enrolling a new face or finger invalidates th
 which is deliberate: someone who learns the passcode still cannot add a biometric and use
 your key.
 
+### When the server asks its own questions
+
+Some servers do not want a password; they want to ask. A one-time code, an expired password
+that must be changed, a challenge from a hardware token — all of these arrive as RFC 4256
+*keyboard-interactive* authentication, where the server sends questions and the client puts
+them to you.
+
+Apex Terminal offers this automatically. There is nothing to configure and nothing to save:
+if a connection's stored credentials do not get in and the server says it will ask
+questions, a sheet appears with them. What it shows is the server's own wording, never
+rewritten — the difference between "Password" and "Verification code" is the difference
+between typing the right secret and the wrong one, and RFC 4256 § 3.3 requires the client to
+leave it alone. A question the server marks as secret gets a secure field; one it marks as
+visible does not.
+
+A server may ask more than once — a password, then a code — and each round is its own sheet.
+It may also send a round with no questions at all, which the protocol uses to display a
+message; that one is answered without interrupting you.
+
+Dismissing a sheet cancels the sign-in immediately, and nothing is sent. That matters: blank
+answers would look to the server like a wrong password and would spend one of the few
+attempts `MaxAuthTries` allows.
+
 ### Secure Enclave keys
 
 Settings → Keys → Generate offers a second choice: **where the private key lives**. The
@@ -119,6 +142,7 @@ The SSH implementation is built on `swift-nio-ssh`, with RSA added
 | Key exchange | `curve25519-sha256`, `curve25519-sha256@libssh.org`, `ecdh-sha2-nistp256/384/521` |
 | Host keys | `ssh-ed25519`, `ecdsa-sha2-nistp256/384/521`, `rsa-sha2-512`, `rsa-sha2-256` |
 | User keys | `ssh-ed25519`, `ecdsa-sha2-nistp256` (including keys held in the Secure Enclave), `rsa-sha2-512`, `rsa-sha2-256` |
+| Authentication methods | `publickey` (including OpenSSH certificates), `keyboard-interactive` (RFC 4256), `password`, `none` |
 
 A P-384 or P-521 **host** key is accepted, but a P-384 or P-521 **user** key cannot be
 imported: the key-file parser handles Ed25519, ECDSA P-256 and RSA. If you have one, the

@@ -11612,6 +11612,23 @@
         }
       }
     },
+    "These questions come from the server, in its own words. Nothing typed here is saved.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这些问题来自服务器，措辞原样呈现。此处输入的内容不会被保存。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這些問題來自伺服器，措辭原樣呈現。此處輸入的內容不會被儲存。"
+          }
+        }
+      }
+    },
     "This backup could not be read: %@": {
       "extractionState": "manual",
       "localizations": {
@@ -13495,6 +13512,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "用於 %@@%@"
+          }
+        }
+      }
+    },
+    "from %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "来自 %@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "來自 %@"
           }
         }
       }

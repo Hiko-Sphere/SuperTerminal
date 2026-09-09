@@ -132,6 +132,26 @@ person took to answer. Evaluating `deviceOwnerAuthenticationWithBiometrics` — 
 passcode-fallback policy — matches the key's `.biometryCurrentSet` access control, so the
 fallback cannot be used to reach a key that was explicitly gated on biometrics.
 
+### T-6b · Answers to a server's own questions (D-051)
+
+*Threat:* keyboard-interactive hands the server control of what the user is asked. A client
+that rewrote the wording, echoed a secret, or saved the answers would turn that into a way
+to harvest credentials.
+
+*Defence:* the prompt text is shown exactly as the server wrote it, as RFC 4256 § 3.3
+requires — relabelling "Verification code" as "Password" is how someone is led to type the
+wrong secret. The `echo` flag decides the control: `false` gets a `SecureField`, and every
+such field opts out of iOS Password AutoFill (`textContentType(.oneTimeCode)`) so a one-time
+code is never offered to iCloud Keychain passwords. Nothing typed is stored anywhere: the
+answers go to the connection and are dropped. Dismissing the sheet sends nothing at all and
+fails the attempt at once, rather than sending blanks that the server would count as a wrong
+password against `MaxAuthTries`.
+
+*Bounds:* the peer decides how many prompts and how many rounds, so both are capped —
+1024 prompts (OpenSSH's own client limit) and 32 rounds per attempt. Message 60 is read as
+an info request only while this side has a keyboard-interactive exchange in flight, so a
+server cannot present a `PK_OK` body and have it parsed as prompts, or the reverse.
+
 ### T-7 · Log and diagnostics leakage
 
 *Defence:* redaction happens at construction, not by scrubbing afterwards. `Redacted<T>`

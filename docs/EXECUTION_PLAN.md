@@ -22,7 +22,7 @@ from the first unfinished item rather than starting over.
 | 1.1 | SFTP | **Done except multiple tabs** — D-041 protocol, D-042 interface, D-043 prompts, permissions, sharing and drag-and-drop. Several remote folders open at once is the one part not built; the iPad shows one browser at a time |
 | 1.2 | Files.app File Provider extension | **Implemented, awaiting a device** — D-044; a replicated extension, a per-connection switch, and 29 package tests against real OpenSSH plus 7 in the app host. The simulator downgrades a replicated domain because it has no FPFS, so the system actually serving Files is H-6 |
 | 1.3 | Port forwarding as a first-class object | **Done** — D-045; local, remote and dynamic (SOCKS5), saved with the connection, started by hand or with it, with real byte counters. 9 package tests move real bytes through a real OpenSSH server, 3 app tests through a real `TerminalSession`, 2 UI tests through the screen |
-| 1.4 | Authentication | **Certificates, jump hosts, post-quantum key exchange and Secure Enclave keys done** — D-046 certificates; D-047 jump chains; D-048 `mlkem768x25519-sha256`, negotiated with a real OpenSSH 10.2 and confirmed from the server's own log; D-049 Secure Enclave P-256 keys, generated in the Enclave and accepted by real OpenSSH, with the biometric policy device-only (H-7). keyboard-interactive, agent and FIDO2 are still ahead — see the note below |
+| 1.4 | Authentication | **Certificates, jump hosts, post-quantum key exchange, Secure Enclave keys and keyboard-interactive done** — D-046 certificates; D-047 jump chains; D-048 `mlkem768x25519-sha256`, negotiated with a real OpenSSH 10.2 and confirmed from the server's own log; D-049 Secure Enclave P-256 keys, generated in the Enclave and accepted by real OpenSSH, with the biometric policy device-only (H-7). D-051 RFC 4256 keyboard-interactive, multi-round, verified against a containerised OpenSSH with two PAM prompts. ssh-agent and FIDO2 are still ahead — see the note below |
 
 ## Phase 2 — moat
 
@@ -51,12 +51,13 @@ Mac Catalyst, visionOS, watchOS. Not started, and deliberately after Phase 0–3
 
 ProxyJump is done (D-047); what follows is the rest.
 
-* **keyboard-interactive** — the vendored NIOSSH does not implement it at all: no
-  `SSH_MSG_USERAUTH_INFO_REQUEST`, no `.keyboardInteractive` method, and message 60 is
-  parsed unconditionally as `PK_OK`. Adding it means context-sensitive message parsing and
-  a new delegate in the fork. It also cannot be verified against this machine's sshd, which
-  falls back to BSD auth and would need the login password of a real account — so it lands
-  as "implemented, awaiting verification" unless a server that offers it is available.
+* ~~**keyboard-interactive**~~ — **done, D-051.** The cost estimate was right about the
+  work and wrong about the verification. The fork did need context-sensitive parsing —
+  message 60 is `PK_OK` *or* `USERAUTH_INFO_REQUEST` depending on what was sent — and a new
+  offer type carrying a responder. But "cannot be verified against this machine's sshd" is
+  not the same as "cannot be verified": macOS builds OpenSSH without PAM, so a Linux
+  container was stood up with stock OpenSSH, `AuthenticationMethods keyboard-interactive`
+  and a PAM stack that asks twice. Every claim below is checked against it.
 * ~~**Secure Enclave keys**~~ — **done, D-049.** The estimate above was wrong in a way
   worth recording: it assumed signing would have to go through `SecKeyCreateSignature` and
   that NIOSSH would need a pluggable signer. It does not. `NIOSSHPrivateKey` already takes

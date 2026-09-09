@@ -19,6 +19,8 @@ actor PromptCoordinator: HostKeyApprovalDelegate {
         case password(String)
         case passphrase(String)
         case username(String)
+        /// One answer per prompt, in the order the server asked (D-051).
+        case answers([String])
     }
 
     private var pending: CheckedContinuation<Decision, Never>?
@@ -96,6 +98,30 @@ actor PromptCoordinator: HostKeyApprovalDelegate {
             throw STError(category: .cancelled, message: String(localized: "User name entry was cancelled."))
         }
         return value
+    }
+
+    /// Puts the server's own questions to the person and returns their answers, or `nil`
+    /// if they dismissed the sheet (D-051).
+    ///
+    /// Returning `nil` matters: it ends the attempt without sending anything, where blank
+    /// answers would look to the server like a wrong password and spend one of the few
+    /// tries `MaxAuthTries` allows.
+    func requestKeyboardInteractiveAnswers(
+        host: String,
+        challenge: SSHKeyboardInteractiveChallenge
+    ) async -> [String]? {
+        // A round with no prompts is RFC 4256 § 3.3's way of showing a message, and there
+        // is nothing to ask: answering it immediately keeps the exchange moving instead of
+        // putting an empty sheet in front of someone.
+        guard !challenge.prompts.isEmpty else { return [] }
+
+        let decision = await awaitDecision(
+            raising: .keyboardInteractive(host: host, challenge: challenge)
+        )
+        guard case let .answers(values) = decision, values.count == challenge.prompts.count else {
+            return nil
+        }
+        return values
     }
 
     /// The server takes a password and nothing stored is left: ask, or `nil` if the

@@ -24,6 +24,42 @@ struct UserAuthenticationStateMachine {
     /// disconnecting. Taken from `SSHServerConfiguration`; `.max` for clients, which never enforce it.
     private let maxAuthAttempts: Int
 
+    /// The responder from the most recent offer, held between the delegate producing it
+    /// and the request actually being written.
+    ///
+    /// A reference on purpose: this state machine is a value that is copied into the
+    /// connection state, and the delegate answers on its own schedule, so a stored property
+    /// would be written to a copy that the write path never sees.
+    private let offered = OfferedKeyboardInteractive()
+
+    private final class OfferedKeyboardInteractive: @unchecked Sendable {
+        /// Only ever touched on the connection's event loop.
+        var keyboardInteractive: NIOSSHUserAuthenticationOffer.Offer.KeyboardInteractive?
+    }
+
+    /// The answering side of a keyboard-interactive offer that is currently in flight.
+    ///
+    /// Held because the questions arrive after the offer, one round at a time, and each
+    /// round has to reach the same responder. Cleared the moment the exchange ends — which
+    /// is also what stops message 60 being read as an info request afterwards.
+    private var keyboardInteractive: NIOSSHUserAuthenticationOffer.Offer.KeyboardInteractive?
+
+    /// How many rounds of questions this exchange has answered.
+    ///
+    /// A server that keeps asking, forever, would otherwise keep a client answering
+    /// forever. OpenSSH's own client has the same bound.
+    private var keyboardInteractiveRounds: Int = 0
+
+    /// Whether message number 60 currently means `SSH_MSG_USERAUTH_INFO_REQUEST` rather
+    /// than `SSH_MSG_USERAUTH_PK_OK`. The parser is told this before it reads.
+    var expectsKeyboardInteractiveInfoRequest: Bool {
+        self.keyboardInteractive != nil
+    }
+
+    /// The bound OpenSSH's client applies to how many info requests one authentication
+    /// attempt may produce, in `sshconnect2.c`.
+    private static let maximumKeyboardInteractiveRounds = 32
+
     init(role: SSHConnectionRole, loop: EventLoop, sessionID: ByteBuffer) {
         self.state = .idle
         self.delegate = UserAuthDelegate(role: role)
@@ -123,7 +159,7 @@ extension UserAuthenticationStateMachine {
 
             // Cool, we can begin the auth dance.
             self.state = .awaitingNextRequest(attempts: 0)
-            return self.requestNextAuthRequest(methods: .all, delegate: delegate)
+            return self.requestNextAuthRequest(methods: .allClientMethods, delegate: delegate)
         case (.client, .authenticationSucceeded):
             // We should ignore all further auth messages in this state.
             return nil
@@ -208,6 +244,7 @@ extension UserAuthenticationStateMachine {
         switch (self.delegate, self.state) {
         case (.client, .awaitingResponses):
             // Great, we got a response, and it's a success! Disregard all future responses
+            self.keyboardInteractive = nil
             self.state = .authenticationSucceeded
         case (.client, .authenticationSucceeded):
             // We should ignore all further auth messages in this state.
@@ -239,6 +276,8 @@ extension UserAuthenticationStateMachine {
         switch (self.delegate, self.state) {
         case (.client(let delegate), .awaitingResponses(let attempts, let responseCount)):
             // Ok, the server didn't like that much. Let's try another one.
+            self.keyboardInteractive = nil
+            self.keyboardInteractiveRounds = 0
             self.state = .awaitingNextRequest(attempts: attempts)
             precondition(responseCount == 1, "We don't support parallel authentication attempts yet!")
             return self.requestNextAuthRequest(methods: .init(message), delegate: delegate)
@@ -263,6 +302,91 @@ extension UserAuthenticationStateMachine {
                 protocolName: Self.protocolName,
                 violation: "client sent user auth failure"
             )
+        }
+    }
+
+    /// The server has asked its questions. Answer them, or give up.
+    mutating func receiveUserAuthInfoRequest(
+        _ message: SSHMessage.UserAuthInfoRequestMessage
+    ) throws -> EventLoopFuture<SSHMessage.UserAuthInfoResponseMessage?>? {
+        switch (self.delegate, self.state) {
+        case (.client, .awaitingResponses):
+            guard let keyboardInteractive = self.keyboardInteractive else {
+                // 60 was read as an info request, so something offered keyboard-interactive;
+                // if nothing is holding the responder the state machine and the parser have
+                // disagreed, and continuing would mean answering a question nobody asked.
+                throw NIOSSHError.protocolViolation(
+                    protocolName: Self.protocolName,
+                    violation: "info request with no keyboard-interactive exchange in flight"
+                )
+            }
+
+            self.keyboardInteractiveRounds += 1
+            guard self.keyboardInteractiveRounds <= Self.maximumKeyboardInteractiveRounds else {
+                throw NIOSSHError.protocolViolation(
+                    protocolName: Self.protocolName,
+                    violation: "server asked more than \(Self.maximumKeyboardInteractiveRounds) rounds of questions"
+                )
+            }
+
+            let challenge = NIOSSHKeyboardInteractiveChallenge(
+                name: message.name,
+                instruction: message.instruction,
+                prompts: message.prompts.map { .init(prompt: $0.prompt, echo: $0.echo) }
+            )
+            let promise = self.loop.makePromise(of: [String]?.self)
+            keyboardInteractive.respond(challenge, promise)
+
+            let expected = message.prompts.count
+            return promise.futureResult.flatMapThrowing { answers -> SSHMessage.UserAuthInfoResponseMessage? in
+                guard let answers else {
+                    // Cancelled. Nothing is sent: the caller has to end the attempt, and
+                    // sending blanks would burn one of the server's few tries instead.
+                    return nil
+                }
+                guard answers.count == expected else {
+                    // One answer per prompt, in order, is the whole contract of RFC 4256
+                    // § 3.4. A miscount would silently answer the wrong questions.
+                    throw NIOSSHError.protocolViolation(
+                        protocolName: Self.protocolName,
+                        violation: "answered \(answers.count) of \(expected) prompts"
+                    )
+                }
+                return SSHMessage.UserAuthInfoResponseMessage(responses: answers)
+            }
+
+        case (.client, .authenticationSucceeded):
+            // Already in, nothing left to answer.
+            return nil
+
+        case (.client, .idle), (.client, .awaitingServiceAcceptance), (.client, .awaitingNextRequest),
+            (.client, .authenticationFailed):
+            throw NIOSSHError.protocolViolation(
+                protocolName: Self.protocolName,
+                violation: "unsolicited keyboard-interactive info request"
+            )
+
+        case (.server, _):
+            throw NIOSSHError.protocolViolation(
+                protocolName: Self.protocolName,
+                violation: "client sent a keyboard-interactive info request"
+            )
+        }
+    }
+
+    /// Sending the answers keeps the exchange open: the server may ask again, or decide.
+    mutating func sendUserAuthInfoResponse(_: SSHMessage.UserAuthInfoResponseMessage) {
+        switch (self.delegate, self.state) {
+        case (.client, .awaitingResponses):
+            // The state does not change. We are still waiting for the server to say
+            // whether this attempt worked, and it may ask more questions first.
+            break
+        case (.client, .authenticationSucceeded):
+            break
+        case (.client, _):
+            preconditionFailure("Sent an info response outside a keyboard-interactive exchange")
+        case (.server, _):
+            preconditionFailure("Servers never send info responses")
         }
     }
 
@@ -324,9 +448,19 @@ extension UserAuthenticationStateMachine {
         }
     }
 
-    mutating func sendUserAuthRequest(_: SSHMessage.UserAuthRequestMessage) {
+    mutating func sendUserAuthRequest(_ message: SSHMessage.UserAuthRequestMessage) {
         switch (self.delegate, self.state) {
         case (.client, .awaitingNextRequest(let attempts)):
+            // Anything that is not keyboard-interactive puts message 60 back to meaning
+            // PK_OK. Clearing it here rather than only on failure means one forgotten path
+            // cannot leave the parser reading the wrong message for the rest of the
+            // connection.
+            if case .keyboardInteractive = message.method {
+                self.keyboardInteractive = self.offered.keyboardInteractive
+                self.keyboardInteractiveRounds = 0
+            } else {
+                self.keyboardInteractive = nil
+            }
             self.state = .awaitingResponses(attempts: attempts, pending: 1)
         case (.client, .idle),
             (.client, .awaitingServiceAcceptance):
@@ -471,10 +605,21 @@ extension UserAuthenticationStateMachine {
         delegate.nextAuthenticationType(availableMethods: methods, nextChallengePromise: promise)
 
         // The explicit capture list is here to force a copy of the buffer, rather than capturing self.
-        return promise.futureResult.flatMapThrowing { [sessionID = self.sessionID] request in
-            try request.map { try SSHMessage.UserAuthRequestMessage(request: $0, sessionID: sessionID) }
+        return promise.futureResult.flatMapThrowing { [sessionID = self.sessionID, offered = self.offered] request in
+            if case .keyboardInteractive(let keyboardInteractive) = request?.offer {
+                // Kept until the message is actually written, which is where it becomes
+                // the exchange in flight. This has to survive the gap because the delegate
+                // answers asynchronously and the state machine is a value that gets copied
+                // in between.
+                offered.keyboardInteractive = keyboardInteractive
+            } else {
+                offered.keyboardInteractive = nil
+            }
+            return try request.map { try SSHMessage.UserAuthRequestMessage(request: $0, sessionID: sessionID) }
         }
     }
+
+
 }
 
 // MARK: Interacting with server delegate
@@ -536,6 +681,14 @@ extension UserAuthenticationStateMachine {
 
         case .publicKey(.unknown):
             // We don't known the algorithm, the auth attempt has failed.
+            return self.loop.makeSucceededFuture(
+                .failure(.init(authentications: delegate.supportedAuthenticationMethods.strings, partialSuccess: false))
+            )
+
+        case .keyboardInteractive:
+            // This library does not implement the *server* half: answering would mean
+            // asking the delegate questions it has no way to pose. Refusing names the
+            // methods that do work rather than leaving the client waiting.
             return self.loop.makeSucceededFuture(
                 .failure(.init(authentications: delegate.supportedAuthenticationMethods.strings, partialSuccess: false))
             )

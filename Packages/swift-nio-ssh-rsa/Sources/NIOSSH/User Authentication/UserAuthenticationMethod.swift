@@ -33,8 +33,25 @@ public struct NIOSSHAvailableUserAuthenticationMethods: OptionSet, Sendable {
     /// Host-based authentication is acceptable.
     public static let hostBased: NIOSSHAvailableUserAuthenticationMethods = .init(rawValue: 1 << 2)
 
+    /// RFC 4256 keyboard-interactive authentication is acceptable: the server asks
+    /// questions and the client answers them, which is how one-time codes, PAM stacks and
+    /// expired-password changes reach a user.
+    public static let keyboardInteractive: NIOSSHAvailableUserAuthenticationMethods = .init(rawValue: 1 << 3)
+
     /// A short-hand for all supported authentication types.
+    ///
+    /// Deliberately without `keyboardInteractive`: a server advertises this set, and this
+    /// library implements only the *client* half of RFC 4256. Offering a method that will
+    /// then be refused spends one of the client's few attempts for nothing.
     public static let all: NIOSSHAvailableUserAuthenticationMethods = [.publicKey, .password, .hostBased]
+
+    /// Everything a client may try before the server has said what it accepts.
+    ///
+    /// The first offer is made blind — the server does not list its methods until it has
+    /// refused something — so this is wider than ``all`` and includes keyboard-interactive.
+    static let allClientMethods: NIOSSHAvailableUserAuthenticationMethods = [
+        .publicKey, .password, .hostBased, .keyboardInteractive,
+    ]
 }
 
 extension NIOSSHAvailableUserAuthenticationMethods {
@@ -49,6 +66,8 @@ extension NIOSSHAvailableUserAuthenticationMethods {
                 self.insert(.password)
             case "hostbased":
                 self.insert(.hostBased)
+            case "keyboard-interactive":
+                self.insert(.keyboardInteractive)
             default:
                 // This is an unknown method, which we ignore.
                 break
@@ -63,7 +82,7 @@ extension NIOSSHAvailableUserAuthenticationMethods {
 
         // We need an array.
         var methods = [Substring]()
-        methods.reserveCapacity(3)
+        methods.reserveCapacity(4)
 
         if self.contains(.password) {
             methods.append("password")
@@ -73,6 +92,9 @@ extension NIOSSHAvailableUserAuthenticationMethods {
         }
         if self.contains(.hostBased) {
             methods.append("hostbased")
+        }
+        if self.contains(.keyboardInteractive) {
+            methods.append("keyboard-interactive")
         }
 
         return methods
@@ -185,8 +207,46 @@ extension NIOSSHUserAuthenticationOffer {
         /// This method is currently unsupported by ``NIOSSH``.
         case hostBased(HostBased)
 
+        /// The client would like to answer the server's questions (RFC 4256).
+        case keyboardInteractive(KeyboardInteractive)
+
         /// The client believes it does not need authentication.
         case none
+    }
+}
+
+/// One round of questions from a server doing keyboard-interactive authentication.
+///
+/// A round can carry no prompts at all — RFC 4256 § 3.3 uses that to display a message —
+/// and a server may send several rounds before deciding.
+public struct NIOSSHKeyboardInteractiveChallenge: Sendable, Hashable {
+    /// A heading for the exchange, often the PAM service name, often empty.
+    public var name: String
+
+    /// Text to show before the prompts, often empty.
+    public var instruction: String
+
+    public var prompts: [Prompt]
+
+    public struct Prompt: Sendable, Hashable {
+        /// The question, exactly as the server wrote it. RFC 4256 § 3.3 requires that the
+        /// client show it unchanged: a client that invents its own wording can turn "Enter
+        /// the code from your token" into "Password".
+        public var prompt: String
+
+        /// Whether what the user types may be shown. False means a secret.
+        public var echo: Bool
+
+        public init(prompt: String, echo: Bool) {
+            self.prompt = prompt
+            self.echo = echo
+        }
+    }
+
+    public init(name: String, instruction: String, prompts: [Prompt]) {
+        self.name = name
+        self.instruction = instruction
+        self.prompts = prompts
     }
 }
 
@@ -232,6 +292,34 @@ extension NIOSSHUserAuthenticationOffer.Offer {
             fatalError("PublicKeyRequest is currently unimplemented")
         }
     }
+
+    /// How the client answers the server's questions.
+    ///
+    /// Unlike the other offers this one carries no secret. It carries a way to *obtain*
+    /// answers, because the questions are not known until the server asks them and a
+    /// person usually has to read them — so `respond` is given a promise rather than being
+    /// expected to answer at once.
+    public struct KeyboardInteractive: Sendable {
+        /// Called for each round the server sends. Fulfil the promise with one answer per
+        /// prompt, in order, or with `nil` to abandon the attempt — which is what a
+        /// cancelled prompt means, and it fails the authentication rather than sending
+        /// empty strings the server would reject anyway.
+        public typealias Responder = @Sendable (
+            NIOSSHKeyboardInteractiveChallenge,
+            EventLoopPromise<[String]?>
+        ) -> Void
+
+        /// The submethods the client is willing to be asked for, as RFC 4256 § 3.1
+        /// describes. Empty — the usual value — means "whatever the server chooses".
+        public var submethods: String
+
+        public var respond: Responder
+
+        public init(submethods: String = "", respond: @escaping Responder) {
+            self.submethods = submethods
+            self.respond = respond
+        }
+    }
 }
 
 extension SSHMessage.UserAuthRequestMessage {
@@ -262,6 +350,9 @@ extension SSHMessage.UserAuthRequestMessage {
             self.method = .password(passwordRequest.password)
         case .hostBased:
             fatalError("Unsupported")
+        case .keyboardInteractive(let request):
+            // The language tag is deprecated by RFC 4256 § 3.1 and must be empty.
+            self.method = .keyboardInteractive(languageTag: "", submethods: request.submethods)
         case .none:
             self.method = .none
         }

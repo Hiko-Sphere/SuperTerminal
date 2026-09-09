@@ -35,6 +35,9 @@ final class TerminalSession: Identifiable {
         case keyPassphrase(keyName: String)
         /// The connection was saved without a user name (D-024).
         case username(host: String)
+        /// The server is asking its own questions, keyboard-interactive (D-051). One
+        /// round; a server may send several, and each raises this again.
+        case keyboardInteractive(host: String, challenge: SSHKeyboardInteractiveChallenge)
     }
 
     let id = UUID()

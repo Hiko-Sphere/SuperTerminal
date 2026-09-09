@@ -12,6 +12,8 @@ struct PromptSheet: View {
     let resolve: (PromptCoordinator.Decision) -> Void
 
     @State private var secret = ""
+    /// One field per prompt in a keyboard-interactive round (D-051).
+    @State private var answers: [String] = []
     @Environment(\.dismiss) private var dismiss
 
     init(prompt: TerminalSession.PendingPrompt, resolve: @escaping (PromptCoordinator.Decision) -> Void) {
@@ -45,6 +47,8 @@ struct PromptSheet: View {
                     )
                 case let .username(host):
                     usernameEntry(host: host)
+                case let .keyboardInteractive(host, challenge):
+                    keyboardInteractiveEntry(host: host, challenge: challenge)
                 }
             }
             .toolbar {
@@ -172,6 +176,100 @@ struct PromptSheet: View {
         }
         .navigationTitle(String(localized: "User name"))
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    // MARK: - The server's own questions (D-051)
+
+    /// Shows what the server asked, in its words, and collects one answer per prompt.
+    ///
+    /// The wording is the server's and is never rewritten: RFC 4256 § 3.3 requires it, and
+    /// a client that relabelled "Verification code" as "Password" would be telling someone
+    /// to type the wrong secret. `echo` decides the field: `false` means a secret, and it
+    /// gets a `SecureField`.
+    private func keyboardInteractiveEntry(
+        host: String,
+        challenge: SSHKeyboardInteractiveChallenge
+    ) -> some View {
+        Form {
+            if !challenge.instruction.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                Section {
+                    Text(challenge.instruction)
+                        .font(DesignTokens.Typography.body)
+                        .accessibilityIdentifier("prompt-kbdi-instruction")
+                }
+            }
+
+            Section {
+                ForEach(Array(challenge.prompts.enumerated()), id: \.element.id) { index, prompt in
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
+                        Text(prompt.prompt)
+                            .font(DesignTokens.Typography.caption)
+                            .foregroundStyle(DesignTokens.Color.labelSecondary)
+                        if prompt.echo {
+                            TextField(
+                                String(localized: "Answer"),
+                                text: binding(for: index, count: challenge.prompts.count)
+                            )
+                            .autocorrectionDisabled()
+                            .textInputAutocapitalization(.never)
+                            .accessibilityLabel(prompt.prompt)
+                            .accessibilityIdentifier("prompt-kbdi-\(index)")
+                        } else {
+                            SecureField(
+                                String(localized: "Answer"),
+                                text: binding(for: index, count: challenge.prompts.count)
+                            )
+                            // Opts out of iOS Password AutoFill's "Save Password?" sheet:
+                            // a one-time code kept in iCloud Keychain passwords is both
+                            // useless and a secret in the one place policy says none go.
+                            .textContentType(.oneTimeCode)
+                            .autocorrectionDisabled()
+                            .textInputAutocapitalization(.never)
+                            .accessibilityLabel(prompt.prompt)
+                            .accessibilityIdentifier("prompt-kbdi-\(index)")
+                        }
+                    }
+                    .padding(.vertical, DesignTokens.Spacing.xxs)
+                }
+            } header: {
+                Text(challenge.name.isEmpty ? String(localized: "from \(host)") : challenge.name)
+            } footer: {
+                Text(String(localized: "These questions come from the server, in its own words. Nothing typed here is saved."))
+            }
+
+            Button(String(localized: "Continue")) {
+                resolve(.answers(paddedAnswers(count: challenge.prompts.count)))
+                answers = []
+                dismiss()
+            }
+            .accessibilityIdentifier("prompt-kbdi-continue")
+        }
+        .navigationTitle(String(localized: "Sign in to \(host)"))
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    /// A binding into `answers`, growing the array on first use.
+    ///
+    /// The array starts empty because the number of fields is not known until the server
+    /// asks, and a round can arrive while a previous one's answers are still in there.
+    private func binding(for index: Int, count: Int) -> Binding<String> {
+        Binding(
+            get: { index < answers.count ? answers[index] : "" },
+            set: { newValue in
+                if answers.count != count { answers = Array(repeating: "", count: count) }
+                answers[index] = newValue
+            }
+        )
+    }
+
+    /// Exactly one answer per prompt, even for fields nobody touched: RFC 4256 § 3.4
+    /// requires the counts to match, and a short list is a protocol violation rather than
+    /// a partially answered form.
+    private func paddedAnswers(count: Int) -> [String] {
+        var padded = answers
+        if padded.count > count { padded = Array(padded.prefix(count)) }
+        while padded.count < count { padded.append("") }
+        return padded
     }
 
     // MARK: - Secrets

@@ -147,6 +147,12 @@ final class HostConnector {
                 // Nothing stored left and the server takes a password: ask the person.
                 passwordProvider: { username in
                     await prompts.requestPasswordIfWanted(username: username, host: hostname)
+                },
+                // And when the server would rather ask its own questions — a one-time
+                // code, an expired password — put them to the person as they were written
+                // (D-051).
+                keyboardInteractiveResponder: { challenge in
+                    await prompts.requestKeyboardInteractiveAnswers(host: hostname, challenge: challenge)
                 }
             ),
             hostKeyVerifier: verifier,

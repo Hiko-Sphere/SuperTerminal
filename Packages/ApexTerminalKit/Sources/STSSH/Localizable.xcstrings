@@ -154,6 +154,23 @@
         }
       }
     },
+    "Connect again and answer the server's questions.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请重新连接，并回答服务器的问题。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請重新連線，並回答伺服器的問題。"
+          }
+        }
+      }
+    },
     "Connect again and complete the Face ID or Touch ID check.": {
       "extractionState": "manual",
       "localizations": {
@@ -490,6 +507,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "請設定 Face ID、Touch ID 或密碼，或者選擇「裝置解鎖時」。"
+          }
+        }
+      }
+    },
+    "Signing in was cancelled.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "登录已取消。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "登入已取消。"
           }
         }
       }
@@ -1255,6 +1289,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "密碼"
+          }
+        }
+      }
+    },
+    "the server's questions": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器的提问"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "伺服器的提問"
           }
         }
       }

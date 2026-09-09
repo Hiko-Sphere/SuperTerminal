@@ -23,6 +23,9 @@ cleanup() {
       kill "$(cat "$pidfile")" 2>/dev/null || true
     fi
   done
+  if [[ -n "${KBDI_CONTAINER:-}" ]]; then
+    docker rm -f "$KBDI_CONTAINER" >/dev/null 2>&1 || true
+  fi
   rm -rf "$WORK"
 }
 trap cleanup EXIT
@@ -61,6 +64,66 @@ TrustedUserCAKeys $WORK/ca.pub
 # line of configuration.
 Subsystem sftp internal-sftp
 CONFIG
+
+# A third server, in a container, that accepts *only* keyboard-interactive and asks two
+# questions through PAM (D-051). macOS builds OpenSSH without PAM, so its own sshd cannot
+# offer a scriptable keyboard-interactive exchange at all. Skipped without Docker: the app
+# tests that need it check for the variables and skip too.
+KBDI_CONTAINER=""
+if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
+  # A fixed low range, not an ephemeral port: asking the kernel for one and then handing
+  # it to Docker is a race the run lost — "failed to bind host port 127.0.0.1:61174:
+  # address already in use" — and 49152+ is also where an OpenSSHTestServer elsewhere in
+  # the run may land. Docker itself is the arbiter here: the loop keeps trying until one
+  # container actually starts.
+  KBDI_CONTAINER="st-kbdi-app-$$"
+  # Built by the package tests; build it here too so either entry point works.
+  if ! docker image inspect apexterminal-kbdi:2 >/dev/null 2>&1; then
+    echo "building the keyboard-interactive image (first run only)…"
+    docker build -q -t apexterminal-kbdi:2 - > /dev/null <<'DOCKERFILE'
+FROM debian:bookworm-slim
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends openssh-server libpam-google-authenticator \
+ && rm -rf /var/lib/apt/lists/* \
+ && mkdir -p /run/sshd
+RUN useradd -m -s /bin/bash kbdtest \
+ && echo 'kbdtest:correct horse battery staple' | chpasswd
+RUN printf '%s\n' \
+      'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ' \
+      '" TOTP_AUTH' \
+      '" WINDOW_SIZE 17' \
+      '" DISALLOW_REUSE' \
+    > /home/kbdtest/.google_authenticator \
+ && chown kbdtest:kbdtest /home/kbdtest/.google_authenticator \
+ && chmod 400 /home/kbdtest/.google_authenticator
+RUN printf '%s\n' \
+      'auth required pam_unix.so' \
+      'auth required pam_google_authenticator.so' \
+      'account required pam_unix.so' \
+      'session required pam_unix.so' \
+    > /etc/pam.d/sshd
+RUN printf '%s\n' \
+      'Port 22' 'PermitRootLogin no' 'PubkeyAuthentication no' \
+      'PasswordAuthentication no' 'KbdInteractiveAuthentication yes' 'UsePAM yes' \
+      'AuthenticationMethods keyboard-interactive' 'LogLevel DEBUG1' \
+    > /etc/ssh/sshd_config.d/kbdi.conf
+RUN ssh-keygen -A
+CMD ["/usr/sbin/sshd", "-D", "-e"]
+DOCKERFILE
+  fi
+  KBDI_PORT=""
+  for candidate in $(seq 8400 8449); do
+    if docker run --rm -d --name "$KBDI_CONTAINER" -p "127.0.0.1:$candidate:22" apexterminal-kbdi:2 >/dev/null 2>&1; then
+      KBDI_PORT="$candidate"
+      break
+    fi
+    docker rm -f "$KBDI_CONTAINER" >/dev/null 2>&1 || true
+  done
+  if [[ -z "$KBDI_PORT" ]]; then
+    echo "could not start the keyboard-interactive container; its tests will skip"
+    KBDI_CONTAINER=""
+  fi
+fi
 
 /usr/sbin/sshd -f "$WORK/sshd_config" -D -e > "$WORK/sshd.log" 2>&1 &
 echo $! > "$WORK/sshd.pid"
@@ -123,6 +186,10 @@ env \
   TEST_RUNNER_ST_APP_TEST_SSH_CERT="$(cat "$WORK/certified-cert.pub")" \
   TEST_RUNNER_ST_APP_TEST_SSH_PORT2="$PORT2" \
   TEST_RUNNER_ST_APP_TEST_AUTHORIZED_KEYS="$WORK/authorized_keys" \
+  TEST_RUNNER_ST_APP_TEST_KBDI_PORT="${KBDI_PORT:-}" \
+  TEST_RUNNER_ST_APP_TEST_KBDI_USER="kbdtest" \
+  TEST_RUNNER_ST_APP_TEST_KBDI_PASSWORD="correct horse battery staple" \
+  TEST_RUNNER_ST_APP_TEST_KBDI_SECRET="GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ" \
   xcodebuild test \
     -project ApexTerminal.xcodeproj \
     -scheme ApexTerminal \

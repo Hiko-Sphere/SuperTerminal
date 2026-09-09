@@ -146,4 +146,21 @@ extension AcceptsUserAuthMessages {
     private static func transform(_ result: SSHMessage.UserAuthRequestMessage?) -> SSHMultiMessage? {
         result.map { SSHMultiMessage(.userAuthRequest($0)) }
     }
+
+    mutating func receiveUserAuthInfoRequest(
+        _ message: SSHMessage.UserAuthInfoRequestMessage
+    ) throws -> SSHConnectionStateMachine.StateMachineInboundProcessResult {
+        guard let future = try self.userAuthStateMachine.receiveUserAuthInfoRequest(message) else {
+            return .noMessage
+        }
+
+        return .possibleFutureMessage(
+            future.map { response in
+                // `nil` is a cancelled prompt. Nothing is written: the connection then
+                // ends the way any other abandoned authentication does, rather than
+                // sending blank answers the server would count as a failed try.
+                response.map { SSHMultiMessage(.userAuthInfoResponse($0)) }
+            }
+        )
+    }
 }

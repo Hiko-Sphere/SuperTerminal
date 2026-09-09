@@ -50,6 +50,16 @@ struct SSHPacketParser {
     /// string, bounded by `maximumPreambleLineCount`.
     private var preambleLineCount: Int
 
+    /// How to read message number 60, which the protocol gives to both
+    /// `SSH_MSG_USERAUTH_PK_OK` and `SSH_MSG_USERAUTH_INFO_REQUEST` (RFC 4252 § 7,
+    /// RFC 4256 § 3.2).
+    ///
+    /// The two bodies cannot be told apart from the bytes, so the meaning comes from what
+    /// this side sent: it is set when a keyboard-interactive request goes out and cleared
+    /// the moment that exchange ends. A parser that guessed from the payload would be one
+    /// a server could steer into the wrong branch.
+    var expectsKeyboardInteractiveInfoRequest: Bool = false
+
     /// Testing only: the number of bytes we can discard from this buffer.
     internal var _discardableBytes: Int {
         self.buffer.readerIndex
@@ -321,6 +331,7 @@ struct SSHPacketParser {
             )
         }
 
+        let expectsInfoRequest = self.expectsKeyboardInteractiveInfoRequest
         return try self.buffer.rewindReaderOnError { buffer in
             guard var buffer = buffer.readSlice(length: Int(length) + MemoryLayout<UInt32>.size) else {
                 return nil
@@ -330,7 +341,8 @@ struct SSHPacketParser {
             buffer.moveReaderIndex(forwardBy: MemoryLayout<UInt32>.size)
 
             var content = try buffer.sliceContentFromPadding()
-            guard let message = try content.readSSHMessage(), content.readableBytes == 0, buffer.readableBytes == 0
+            guard let message = try content.readSSHMessage(expectsKeyboardInteractiveInfoRequest: expectsInfoRequest),
+                content.readableBytes == 0, buffer.readableBytes == 0
             else {
                 // Throw this error if the content wasn't exactly the right length for the message.
                 throw NIOSSHError.invalidPacketFormat
@@ -341,13 +353,15 @@ struct SSHPacketParser {
     }
 
     private mutating func parseCiphertext(length: UInt32, protection: NIOSSHTransportProtection) throws -> SSHMessage? {
-        try self.buffer.rewindReaderOnError { buffer in
+        let expectsInfoRequest = self.expectsKeyboardInteractiveInfoRequest
+        return try self.buffer.rewindReaderOnError { buffer in
             guard var buffer = buffer.readSlice(length: Int(length) + MemoryLayout<UInt32>.size) else {
                 return nil
             }
 
             var content = try protection.decryptAndVerifyRemainingPacket(&buffer, sequenceNumber: self.sequenceNumber)
-            guard let message = try content.readSSHMessage(), content.readableBytes == 0, buffer.readableBytes == 0
+            guard let message = try content.readSSHMessage(expectsKeyboardInteractiveInfoRequest: expectsInfoRequest),
+                content.readableBytes == 0, buffer.readableBytes == 0
             else {
                 // Throw this error if the content wasn't exactly the right length for the message.
                 throw NIOSSHError.invalidPacketFormat

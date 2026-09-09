@@ -277,3 +277,42 @@ about one run in three, and
 failed every run. With the press spent deliberately, both suites pass three runs out of
 three, and the retry in `HardwareKeyboardUITests.press` is left to cover the rarer second
 loss rather than being what every one of those tests silently depended on.
+
+## The keyboard-interactive test server
+
+macOS builds OpenSSH **without PAM**. Its `sshd` will offer `keyboard-interactive`, but the
+exchange then falls through to BSD auth and asks for the login password of a real account —
+nothing a test may know, and nothing that can be scripted. So the tests for RFC 4256
+(D-051) use a container instead: stock OpenSSH on Debian, configured with
+
+```
+AuthenticationMethods keyboard-interactive
+KbdInteractiveAuthentication yes
+UsePAM yes
+PubkeyAuthentication no
+PasswordAuthentication no
+```
+
+and a PAM stack of `pam_unix` followed by `pam_google_authenticator`, so the login asks two
+questions — a password, then a one-time code — and nothing else can let a client in.
+
+`STTestSupport.KeyboardInteractiveTestServer` builds the image on first use and starts a
+container per test; `scripts/app-integration-e2e.sh` starts one of its own and publishes
+`ST_APP_TEST_KBDI_*` for the app-level tests. Both skip cleanly when Docker is not running,
+because a missing Docker is a property of the machine and a red test that means "install
+Docker" teaches nothing.
+
+The image is real OpenSSH, not a stand-in. That is the point: a hand-written server would
+prove only that this client agrees with something this project also wrote.
+
+What the server actually sends, measured, is worth knowing before reading the tests:
+
+```
+round 1: one prompt, "Password: ",          echo false
+round 2: one prompt, "Verification code: ", echo false
+round 3: no prompts at all
+```
+
+The third round is RFC 4256 § 3.3's zero-prompt case, used to display a message. It must be
+answered with zero responses, and it is the round an implementation that assumed "a round
+means a question" gets wrong.

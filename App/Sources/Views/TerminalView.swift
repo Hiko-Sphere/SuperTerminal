@@ -433,6 +433,10 @@ extension TerminalSession.PendingPrompt: Identifiable {
         case let .password(username, host): "password-\(username)@\(host)"
         case let .keyPassphrase(name): "passphrase-\(name)"
         case let .username(host): "username-\(host)"
+        case let .keyboardInteractive(host, challenge):
+            // The prompts are part of the identity: a second round is a different sheet,
+            // and one keyed only on the host would not be re-presented for it.
+            "kbdi-\(host)-\(challenge.prompts.map(\.prompt).joined(separator: "\u{1F}"))"
         }
     }
 }

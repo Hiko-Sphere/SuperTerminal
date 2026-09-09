@@ -73,7 +73,7 @@ struct ForwardingIntegrationTests {
         var lastState: PortForwardState = .stopped
         for _ in 0 ..< 40 {
             var attempt = rule
-            attempt.listenPort = Int.random(in: TestPorts.range)
+            attempt.listenPort = Int.random(in: TestPorts.forwardRange)
             lastState = await session.start(attempt)
             if case let .running(port) = lastState { return port }
             await session.stop(rule.id)

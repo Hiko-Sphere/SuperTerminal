@@ -24,6 +24,12 @@ public struct SSHConnectionConfiguration: Sendable {
     /// Asked for a password when the stored credentials are spent and the server takes
     /// one (D-024). `nil` means the attempt fails there instead.
     public var passwordProvider: SSHPasswordProvider?
+    /// Answers the server's own questions when it offers keyboard-interactive (D-051).
+    ///
+    /// Not a stored credential and not something the user configures: it is the method by
+    /// which a server *asks*, so a host with two-factor authentication works without
+    /// anything being set up for it. `nil` means the method is never offered.
+    public var keyboardInteractiveResponder: SSHKeyboardInteractiveResponder?
 
     public init(
         username: String,
@@ -31,7 +37,8 @@ public struct SSHConnectionConfiguration: Sendable {
         knownHostIdentity: KnownHostIdentity,
         keepAliveInterval: TimeAmount = .seconds(30),
         handshakeTimeout: TimeAmount = .seconds(30),
-        passwordProvider: SSHPasswordProvider? = nil
+        passwordProvider: SSHPasswordProvider? = nil,
+        keyboardInteractiveResponder: SSHKeyboardInteractiveResponder? = nil
     ) {
         self.username = username
         self.credentials = credentials
@@ -39,6 +46,7 @@ public struct SSHConnectionConfiguration: Sendable {
         self.keepAliveInterval = keepAliveInterval
         self.handshakeTimeout = handshakeTimeout
         self.passwordProvider = passwordProvider
+        self.keyboardInteractiveResponder = keyboardInteractiveResponder
     }
 }
 
@@ -119,6 +127,7 @@ public actor SSHConnection {
             username: configuration.username,
             credentials: configuration.credentials,
             passwordProvider: configuration.passwordProvider,
+            keyboardInteractiveResponder: configuration.keyboardInteractiveResponder,
             log: log
         )
         // The handler is constructed *inside* the event loop and never leaves it:
@@ -551,6 +560,10 @@ func classifyHandshakeFailure(
 ) -> STError {
     // The host key verifier's own error is already precise; never bury it.
     if let stError = error as? STError { return stError }
+
+    // Someone dismissed the server's questions. That is a choice, not a failure, and it
+    // must not be reported as the server rejecting a credential.
+    if let cancelled = error as? SSHKeyboardInteractiveCancelled { return cancelled.stError }
 
     if let authError = error as? SSHAuthenticationError {
         let attempted = authError.attempted.isEmpty
