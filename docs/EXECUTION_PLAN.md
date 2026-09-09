@@ -87,8 +87,8 @@ claimed anywhere in the interface.
 
 | # | Item | State |
 | --- | --- | --- |
-| 3.1 | OSC 7, 52, 133 | Not started — `applyOSC` handles 0/1/2 and 8 only |
-| 3.2 | DEC 2026, DEC 1004 | Not started |
+| 3.1 | OSC 7, 52, 133 | **Done (D-062)**: OSC 7 working directory (host ignored, path decoded and checked), OSC 52 clipboard *writes* reported to the app and performed only where the person allowed them — reads refused outright — and OSC 133 prompt/command/output/exit marks. Verified against a real shell over SSH |
+| 3.2 | DEC 2026, DEC 1004 | **Done (D-062)**: synchronised output and focus reporting as modes, and DECRQM (`CSI ? Ps $ p`) answers for every private mode this terminal has an opinion about — including 0 for the ones it does not implement, which is what tells a program not to send them |
 | 3.3 | Sixel (DCS), Kitty (APC), iTerm2 (OSC 1337) | Not started — DCS is parsed and discarded |
 | 3.4 | Font system | Not started — only point size is configurable |
 

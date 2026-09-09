@@ -284,10 +284,15 @@ struct TmuxWorkspaceTests {
         #expect(window.layout.frame.width == 132)
         #expect(window.layout.frame.height == 43)
 
-        let pane = try #require(await workspace.windows.first?.panes.first)
-        let terminal = try #require(await workspace.terminal(for: pane))
-        #expect(terminal.activeScreen.columns == 132)
-        #expect(terminal.activeScreen.rows == 43)
+        // Read through `snapshot()` rather than `#require(await …)` on the emulator: the
+        // macro wraps the awaited value in a `Result` and, with a struct this size, the
+        // toolchain releases it twice — a segfault in `swift_release_dealloc`, in the test,
+        // with the product path untouched. The size accessor exists for exactly this kind
+        // of read and does not hand a whole emulator across the boundary.
+        let pane = try #require(window.panes.first)
+        let size = await workspace.snapshot().size(of: pane)
+        #expect(size?.columns == 132)
+        #expect(size?.rows == 43)
     }
 }
 

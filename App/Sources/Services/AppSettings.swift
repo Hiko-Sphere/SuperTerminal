@@ -18,6 +18,7 @@ final class AppSettings {
         static let keepAwakeWhileConnected = "settings.keepAwakeWhileConnected"
         static let commandHistoryEnabled = "settings.commandHistoryEnabled"
         static let spotlightEnabled = "settings.spotlightEnabled"
+        static let remoteClipboardWrites = "settings.remoteClipboardWrites"
         static let confirmMultilinePaste = "settings.confirmMultilinePaste"
         static let hideContentInAppSwitcher = "settings.hideContentInAppSwitcher"
         static let cursorBlink = "settings.cursorBlink"
@@ -37,7 +38,8 @@ final class AppSettings {
 
         static let all = [
             themeID, lightThemeID, followSystemAppearance, fontSize, scrollbackLimit, clipboardExpirySeconds,
-            keepAwakeWhileConnected, commandHistoryEnabled, spotlightEnabled, confirmMultilinePaste,
+            keepAwakeWhileConnected, commandHistoryEnabled, spotlightEnabled, remoteClipboardWrites,
+            confirmMultilinePaste,
             hideContentInAppSwitcher, cursorBlink, bellEnabled, keyRowVisible,
             automaticReconnect, hapticsEnabled, iCloudSyncEnabled, acceptedTermsVersion, hasSeenTutorial,
             assistantPrefersOnDevice, assistantEndpoint, assistantModel,
@@ -64,6 +66,7 @@ final class AppSettings {
         keepAwakeWhileConnected = defaults.bool(forKey: Key.keepAwakeWhileConnected)
         commandHistoryEnabled = defaults.bool(forKey: Key.commandHistoryEnabled)
         spotlightEnabled = defaults.bool(forKey: Key.spotlightEnabled)
+        remoteClipboardWrites = defaults.bool(forKey: Key.remoteClipboardWrites)
         confirmMultilinePaste = defaults.bool(forKey: Key.confirmMultilinePaste)
         hideContentInAppSwitcher = defaults.bool(forKey: Key.hideContentInAppSwitcher)
         cursorBlink = defaults.bool(forKey: Key.cursorBlink)
@@ -104,6 +107,7 @@ final class AppSettings {
             // something a person turns on knowingly.
             Key.commandHistoryEnabled: false,
             Key.spotlightEnabled: false,
+            Key.remoteClipboardWrites: false,
             Key.confirmMultilinePaste: true,
             Key.hideContentInAppSwitcher: true,
             Key.cursorBlink: true,
@@ -136,6 +140,7 @@ final class AppSettings {
         keepAwakeWhileConnected = defaults.bool(forKey: Key.keepAwakeWhileConnected)
         commandHistoryEnabled = defaults.bool(forKey: Key.commandHistoryEnabled)
         spotlightEnabled = defaults.bool(forKey: Key.spotlightEnabled)
+        remoteClipboardWrites = defaults.bool(forKey: Key.remoteClipboardWrites)
         confirmMultilinePaste = defaults.bool(forKey: Key.confirmMultilinePaste)
         hideContentInAppSwitcher = defaults.bool(forKey: Key.hideContentInAppSwitcher)
         cursorBlink = defaults.bool(forKey: Key.cursorBlink)
@@ -210,6 +215,19 @@ final class AppSettings {
 
     var commandHistoryEnabled: Bool {
         didSet { defaults.set(commandHistoryEnabled, forKey: Key.commandHistoryEnabled) }
+    }
+
+    /// Whether a remote program may put things on this device's clipboard — OSC 52
+    /// (D-062).
+    ///
+    /// Off by default. `tmux`, `vim` and others use it to make "yank" reach the local
+    /// clipboard, which is genuinely useful over SSH; it is also a program on somebody
+    /// else's machine writing into the place this device keeps what was copied, and the
+    /// person may not be looking at the screen when it happens. The *read* half of OSC 52
+    /// is refused whatever this says: answering it would hand the far side whatever was
+    /// last copied here.
+    var remoteClipboardWrites: Bool {
+        didSet { defaults.set(remoteClipboardWrites, forKey: Key.remoteClipboardWrites) }
     }
 
     /// Whether saved connections are offered in Spotlight (D-061).

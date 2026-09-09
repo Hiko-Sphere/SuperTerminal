@@ -145,6 +145,10 @@ latches for the next key, so Control then C sends `^C`. Hold it to keep it down.
   cannot run a command you did not read. That check can be turned off.
 - **Text size** is ⌘+ (or ⌘=) and ⌘−, ⌘0 for the original.
 - **Themes** and light/dark following the system are in **Settings → Appearance**.
+- **Shell integration** is understood where a shell offers it: the app follows the working
+  directory a shell reports, and knows where a prompt and its output begin. A program can
+  also ask to copy to your clipboard — `tmux` and `vim` do — which is off until you allow
+  it in **Settings → Security**. Reading your clipboard is never allowed.
 
 If the connection drops and **Reconnect automatically** is on, it comes back on its own
 as soon as the network does. Your scrollback is kept and the new shell is marked in the

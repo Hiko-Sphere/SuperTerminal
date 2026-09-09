@@ -138,6 +138,8 @@ struct SettingsView: View {
                     NavigationLink("Trusted authorities") { CertificateAuthoritiesView() }
                         .accessibilityIdentifier("settings-authorities")
                         .accessibilityIdentifier("settings-known-hosts")
+                    Toggle("Let programs copy to my clipboard", isOn: $settings.remoteClipboardWrites)
+                        .accessibilityIdentifier("settings-remote-clipboard")
                     Picker("Clear copied text after", selection: $settings.clipboardExpirySeconds) {
                         Text("Never").tag(0)
                         Text("30 seconds").tag(30)
@@ -150,7 +152,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Security")
                 } footer: {
-                    Text("Text copied from the terminal is removed from the clipboard by iOS after this long. Public keys copied from the key list stay until replaced.")
+                    Text("Text copied from the terminal is removed from the clipboard by iOS after this long. Public keys copied from the key list stay until replaced.\n\nPrograms on a server can ask to copy to this device's clipboard — tmux and vim use it to make yank reach you. It is off until you turn it on, because it is somebody else's machine writing where your copied text lives. Reading your clipboard is never allowed, whatever this says.")
                 }
 
                 ICloudSyncSection()

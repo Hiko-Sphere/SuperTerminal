@@ -3,6 +3,49 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-09 — after D-062 (OSC 7, 52, 133; DEC 2026, 1004)
+
+| Command | Result |
+| --- | --- |
+| `cd Packages/ApexTerminalKit && swift test --no-parallel` | **345 tests in 51 suites, 4 failed** — the four `SecureEnclaveKeyTests` this machine's keychain will not run (unchanged all session) |
+| Zero-warning gate | **0** |
+| `bash scripts/app-integration-e2e.sh` | **324 tests in 62 suites passed** (320 in 61 before) |
+| `bash scripts/localization-audit.sh` | **green**; 3 new strings translated into both Chinese variants |
+| `bash scripts/ui-terminal-e2e.sh` (iPhone 17 Pro) | **54 passed, 2 failed** — both `ZZSearchProbeUITests`, another session's uncommitted work. An earlier run of the same suite stopped after 23 tests with no failure reported; repeating it ran all of them, so it is recorded as an unexplained truncation rather than explained away |
+| Release archive | **ARCHIVE SUCCEEDED** |
+
+### A segfault, and where it actually was
+
+The package suite died — signal 11, no failing test named — at `TmuxWorkspaceTests`'
+resize test, which had passed all session. It reproduced with this change and not without
+it (checked by stashing every change, including untracked files, and running the same test
+at the committed tree: it passed).
+
+The crash report put it in the *test*: `swift_release_dealloc` under an "outlined destroy of
+`Result<TerminalEmulator, Error>`" from a `#require` macro expansion — a double release of a
+large struct handed across an actor boundary by `try #require(await workspace.terminal(for:))`.
+Growing `TerminalEmulator` by a stored property is what tipped it over. The product path
+never does this: the app reads a `snapshot()`, which is what the test now does too, and the
+assertion is unchanged — the pane's terminal must be 132×43 after the client resized.
+
+Worth stating plainly because the temptation was to assume a real emulator bug: the other six
+workspace tests exercise the same product code and do not crash, and reading the same data
+through `snapshot()` is fine.
+
+### What is checked
+
+* `ShellIntegrationTests` (8): OSC 7 decoded and refused when it carries control characters
+  or is not a `file://` URL; OSC 133's four marks including a `D` with no status; an OSC 52
+  write reported; an OSC 52 **read** refused and *not* reported; payloads that are not
+  base64, or larger than 64 KiB, dropped.
+* `SynchronisedOutputTests` (4): DEC 2026 and 1004 as modes, and DECRQM answering `1`, `2`
+  and `0` — the last being "no such mode here", which is what stops a program sending
+  sequences this terminal would draw as text.
+* `ShellIntegrationSessionTests` (4), against the harness's real `sshd`: the working
+  directory arrives; a clipboard write is refused with a notice and the pasteboard is
+  untouched; the same write lands once the setting allows it; an OSC 133 exit status is
+  recorded.
+
 ## 2026-09-09 — after D-061 (links, Spotlight, Handoff and a third shortcut)
 
 | Command | Result |

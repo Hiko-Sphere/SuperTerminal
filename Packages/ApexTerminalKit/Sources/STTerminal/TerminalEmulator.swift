@@ -26,6 +26,16 @@ public struct TerminalModes: Sendable, Equatable {
     public var alternateScreen = false
     /// Reverse video for the whole screen (DECSCNM).
     public var reverseVideo = false
+    /// DEC 2026 — synchronised output (D-062).
+    ///
+    /// While a program holds this, it is part-way through drawing a frame and the screen
+    /// must not be shown: that is the whole point of the mode, and what stops a full-screen
+    /// program from tearing on a slow link. Held here rather than acted on in the emulator
+    /// because the drawing is the app's.
+    public var synchronisedOutput = false
+    /// DEC 1004 — focus reporting. While a program asks for it, the terminal sends `CSI I`
+    /// when it gains the keyboard and `CSI O` when it loses it.
+    public var focusReporting = false
 
     public enum MouseTracking: Sendable, Equatable {
         case off
@@ -60,6 +70,30 @@ public enum TerminalEvent: Sendable, Equatable {
     case alternateScreenChanged(Bool)
     /// A mode the UI must react to changed (mouse reporting, bracketed paste, …).
     case modesChanged(TerminalModes)
+    /// OSC 7 — the shell said which directory it is in, as a `file://` URL (D-062).
+    /// Carried as the path, already decoded.
+    case workingDirectory(String)
+    /// OSC 52 — the program asked to put something on the *user's* clipboard.
+    ///
+    /// Never acted on here: this is a remote host reaching for a local resource, so the
+    /// emulator reports the request and the app decides, according to what the person
+    /// allowed (D-062).
+    case clipboardWriteRequested(Data)
+    /// OSC 133 — a shell integration mark: where a prompt starts, where the command the
+    /// user typed starts, where its output starts, and what it exited with.
+    case shellIntegration(ShellIntegrationMark)
+}
+
+/// The four marks of the widely-implemented part of OSC 133 (FinalTerm's semantic prompts).
+public enum ShellIntegrationMark: Sendable, Equatable {
+    /// `A` — a prompt is about to be drawn.
+    case promptStart
+    /// `B` — the prompt has been drawn; what follows is what the user types.
+    case commandStart
+    /// `C` — the command is running; what follows is its output.
+    case outputStart
+    /// `D` — the command finished, with this status when the shell reported one.
+    case commandFinished(exitCode: Int?)
 }
 
 /// Applies parsed terminal actions to a screen.
@@ -76,6 +110,8 @@ public struct TerminalEmulator: Sendable {
     public internal(set) var alternateScreen: TerminalScreen
     public internal(set) var modes = TerminalModes()
     public internal(set) var title = ""
+    /// Where the shell says it is, from OSC 7 (D-062). Empty until a shell says.
+    public internal(set) var workingDirectory = ""
     public internal(set) var hyperlinks: [Int: TerminalHyperlink] = [:]
 
     var parser = TerminalParser()

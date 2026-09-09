@@ -111,6 +111,17 @@ final class TerminalSession: Identifiable {
         var isBracketed: Bool
     }
 
+    /// Where the shell says it is, from OSC 7 (D-062). Empty until a shell says.
+    private(set) var workingDirectory = ""
+    /// Whether this session's shell speaks OSC 133 — set the first time it does.
+    ///
+    /// Worth knowing rather than assuming: it is what separates an exact record of what
+    /// was run from a heuristic reading of the screen.
+    private(set) var shellIntegration = false
+    /// What the last command exited with, when the shell said (OSC 133 `D`).
+    private(set) var lastExitCode: Int?
+    /// So the refusal is said once per session rather than after every yank.
+    private var hasRefusedAClipboardWrite = false
     private var emulator: TerminalEmulator
     private var connection: SSHConnection?
     /// Gives the transport back rather than closing it (D-054). A connection shared with
@@ -695,6 +706,14 @@ final class TerminalSession: Identifiable {
                 // Scrollback is meaningless in a full-screen program's buffer, so any
                 // scrolled-back position is abandoned when one takes over.
                 if isAlternate { scrollbackOffset = 0 }
+            case let .workingDirectory(path):
+                // Where the shell says it is (D-062). Shown next to the session's name, so
+                // three tabs on one server are told apart by what they are doing.
+                workingDirectory = path
+            case let .clipboardWriteRequested(data):
+                handleClipboardRequest(data)
+            case let .shellIntegration(mark):
+                handle(mark)
             }
         }
         _ = emulator.flush()
@@ -704,6 +723,38 @@ final class TerminalSession: Identifiable {
         // Programs that query the terminal block until it answers.
         for response in responses {
             try? await shell?.send(response)
+        }
+    }
+
+    /// A program asked to put something on this device's clipboard — OSC 52 (D-062).
+    ///
+    /// Off unless the person turned it on, and the first refusal says so rather than
+    /// vanishing: a `vim` yank that silently does nothing teaches nothing, and the setting
+    /// it needs is two screens away.
+    private func handleClipboardRequest(_ data: Data) {
+        guard settings.remoteClipboardWrites else {
+            guard !hasRefusedAClipboardWrite else { return }
+            hasRefusedAClipboardWrite = true
+            annotate(String(localized: "A program on this server tried to copy to your clipboard. Settings → Security can allow it."))
+            return
+        }
+        guard let text = String(data: data, encoding: .utf8) else { return }
+        Clipboard.copy(text, expiringAfter: settings.clipboardExpirySeconds)
+        haptics?.play(.textInserted)
+    }
+
+    /// OSC 133 (D-062): where the prompt is, what was typed, and how it ended.
+    private func handle(_ mark: ShellIntegrationMark) {
+        switch mark {
+        case .promptStart:
+            shellIntegration = true
+        case .commandStart:
+            shellIntegration = true
+        case .outputStart:
+            shellIntegration = true
+        case let .commandFinished(exitCode):
+            shellIntegration = true
+            lastExitCode = exitCode
         }
     }
 

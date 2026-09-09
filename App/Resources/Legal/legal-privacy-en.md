@@ -120,6 +120,10 @@ The assistant answers questions about commands and terminal output. On a device 
 
 Screen sharing (VNC) shows a remote computer's screen and sends it your touches, keys and pointer. The picture exists only while it is shown; it is not stored or sent anywhere else. The VNC protocol itself is unencrypted and its password check is weak, so unless you turn the option off in the connection's settings the screen travels inside the SSH connection and is protected by its encryption. Text the remote computer copies is offered to you and goes on your clipboard only when you say so. A VNC password is kept in this device's Keychain and does not sync.
 
+## Programs copying to your clipboard
+
+A program on a server can ask this app to put something on your clipboard — the escape sequence `tmux` and `vim` use to make a yank reach you. It is refused until you turn it on in **Settings → Security**, and the reverse — a program *reading* your clipboard — is refused whatever that setting says: answering would hand whatever you last copied to whatever is running on the far side.
+
 ## App lock
 
 With App Lock on, the app asks for its own passcode — or Face ID or Touch ID, if you allow it — when it opens and when it comes back after the time you chose. The passcode is never stored: the device Keychain holds a salted PBKDF2 derivation of it, on this device only. Face ID and Touch ID are handled entirely by iOS; the app learns only whether the check passed. Wrong guesses are slowed down, never punished by deleting anything.

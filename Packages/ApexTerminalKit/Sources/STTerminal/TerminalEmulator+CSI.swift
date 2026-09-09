@@ -127,8 +127,46 @@ extension TerminalEmulator {
         }
     }
 
+    /// Answers DECRQM for the private modes this terminal has an opinion about.
+    ///
+    /// The reply is `CSI ? Ps ; Pv $ y`, where `Pv` is 1 for set, 2 for reset, and 0 for
+    /// "no such mode here". Reporting 0 for a mode this terminal does not implement is the
+    /// honest answer and the useful one: a program then knows not to use it, rather than
+    /// sending sequences into a terminal that will draw them as text.
+    private func reportMode(_ mode: Int, emit: (TerminalEvent) -> Void) {
+        let value: Int
+        switch mode {
+        case 1: value = modes.applicationCursorKeys ? 1 : 2
+        case 6: value = modes.originMode ? 1 : 2
+        case 7: value = modes.autoWrap ? 1 : 2
+        case 25: value = modes.cursorVisible ? 1 : 2
+        case 1000: value = modes.mouseTracking == .click ? 1 : 2
+        case 1002: value = modes.mouseTracking == .buttonEvent ? 1 : 2
+        case 1003: value = modes.mouseTracking == .anyEvent ? 1 : 2
+        case 1004: value = modes.focusReporting ? 1 : 2
+        case 1006: value = modes.sgrMouseEncoding ? 1 : 2
+        case 1049, 47, 1047: value = modes.alternateScreen ? 1 : 2
+        case 2004: value = modes.bracketedPaste ? 1 : 2
+        case 2026: value = modes.synchronisedOutput ? 1 : 2
+        default: value = 0
+        }
+        emit(.respond(Data("\u{1B}[?\(mode);\(value)$y".utf8)))
+    }
+
     mutating func applyPrivateCSI(_ sequence: CSISequence, emit: (TerminalEvent) -> Void) {
         guard sequence.privateMarker == 0x3F else { return } // only `?` is handled
+
+        // DECRQM — `CSI ? Ps $ p`: "do you support this mode, and is it on?" (D-062).
+        //
+        // Answering matters for the modes that change what a program *sends*: a program
+        // that cannot tell whether synchronised output is supported either does without it
+        // or uses it blindly, and a terminal that ignores the question is guessed about.
+        if sequence.intermediates == [0x24], sequence.final == 0x70 {
+            reportMode(sequence.parameter(0, default: 0), emit: emit)
+            return
+        }
+        guard sequence.intermediates.isEmpty else { return }
+
         let enable: Bool
         switch sequence.final {
         case 0x68: enable = true // h — SM
@@ -169,8 +207,20 @@ extension TerminalEmulator {
             case 1006:
                 modes.sgrMouseEncoding = enable
                 modesChanged = true
+            case 1004:
+                // Focus reporting: the program wants to know when the terminal has the
+                // keyboard, so it can dim a pane or stop animating (D-062).
+                modes.focusReporting = enable
+                modesChanged = true
             case 2004:
                 modes.bracketedPaste = enable
+                modesChanged = true
+            case 2026:
+                // Synchronised output: begin (`h`) means "do not draw what I am about to
+                // send until I say end" (`l`). A terminal that ignores it still shows the
+                // right thing eventually; one that honours it stops full-screen programs
+                // from tearing halfway through a frame on a slow link.
+                modes.synchronisedOutput = enable
                 modesChanged = true
             case 47, 1047:
                 switchAlternateScreen(to: enable, clearOnEnter: true, saveCursor: false)

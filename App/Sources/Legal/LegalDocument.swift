@@ -30,7 +30,9 @@ enum LegalDocument: String, CaseIterable, Identifiable, Sendable {
     /// version does not offer, with what is actually true: nothing leaves the device; 8
     /// added Spotlight and Handoff, which are two ways the *system* can carry something
     /// outside the app — one of them off by default, both of them limited, and neither of
-    /// them described before.
+    /// them described before — and, in the same version, that a program on a server can
+    /// ask to write this device's clipboard once the person allows it, while reading it is
+    /// refused whatever they allow.
     static let currentVersion = 8
 
     var title: String {

@@ -783,6 +783,23 @@
         }
       }
     },
+    "A program on this server tried to copy to your clipboard. Settings → Security can allow it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此服务器上的某个程序尝试复制到您的剪贴板。可在“设置 → 安全”中允许。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此伺服器上的某個程式嘗試複製到您的剪貼簿。可在「設定 → 安全性」中允許。"
+          }
+        }
+      }
+    },
     "A remote screen shows the whole desktop over VNC. Tap to click, hold to drag, two fingers to scroll, or use a keyboard and mouse. It can travel inside an SSH connection, so nothing need be exposed.": {
       "extractionState": "manual",
       "localizations": {
@@ -6393,6 +6410,23 @@
         }
       }
     },
+    "Let programs copy to my clipboard": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "允许程序复制到我的剪贴板"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "允許程式複製到我的剪貼簿"
+          }
+        }
+      }
+    },
     "Let this server use my key": {
       "extractionState": "manual",
       "localizations": {
@@ -11637,6 +11671,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "從終端機複製的文字會在這段時間後由 iOS 從剪貼簿移除。從金鑰清單複製的公開金鑰會一直保留，直到被取代。"
+          }
+        }
+      }
+    },
+    "Text copied from the terminal is removed from the clipboard by iOS after this long. Public keys copied from the key list stay until replaced.\n\nPrograms on a server can ask to copy to this device's clipboard — tmux and vim use it to make yank reach you. It is off until you turn it on, because it is somebody else's machine writing where your copied text lives. Reading your clipboard is never allowed, whatever this says.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "从终端复制的文本会在此时长之后由 iOS 从剪贴板移除。从密钥列表复制的公钥会一直保留，直到被替换。\n\n服务器上的程序可以请求复制到本设备的剪贴板——tmux 与 vim 用它把 yank 送到您这边。在您开启之前它处于关闭状态，因为那是别人的机器在向您存放复制内容的地方写入。无论此设置如何，读取您的剪贴板都不被允许。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "從終端機複製的文字會在此時長之後由 iOS 從剪貼簿移除。從金鑰清單複製的公開金鑰會一直保留，直到被取代。\n\n伺服器上的程式可以請求複製到本裝置的剪貼簿——tmux 與 vim 用它把 yank 送到您這邊。在您開啟之前它處於關閉狀態，因為那是別人的機器在向您存放複製內容的地方寫入。無論此設定為何，讀取您的剪貼簿都不被允許。"
           }
         }
       }
