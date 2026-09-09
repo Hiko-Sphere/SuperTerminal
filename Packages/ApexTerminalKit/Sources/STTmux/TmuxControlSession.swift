@@ -10,6 +10,19 @@ public protocol TmuxControlTransport: Sendable {
     func write(_ bytes: [UInt8]) async throws
 }
 
+/// A notification and where it sits in the order things arrived.
+///
+/// The stamp is what lets a consumer tell a notification it has already accounted for from
+/// one it has not. A client that asks tmux for the current arrangement gets an answer that
+/// reflects everything up to the moment it asked; replaying an older notification over that
+/// answer puts back an arrangement the server has already left — measured as a split that
+/// appeared and then vanished.
+public struct TmuxEvent: Sendable, Equatable {
+    public let notification: TmuxNotification
+    /// How many arrangement-changing notifications had arrived, this one included.
+    public let layoutSequence: Int
+}
+
 public enum TmuxError: Error, LocalizedError, Equatable {
     /// The command tmux refused, and what it said about it. tmux puts the message in the
     /// block *before* `%error`, which is why it can be reported at all.
@@ -54,22 +67,44 @@ public actor TmuxControlSession {
     private var parser = TmuxControlParser()
 
     private struct PendingCommand {
+        let id: Int
         let command: String
         let continuation: CheckedContinuation<[String], Error>
     }
 
     private var pending: [PendingCommand] = []
+    private var nextCommandID = 0
+    /// Writes happen in the order the commands were queued, one after another.
+    ///
+    /// tmux answers in the order it was asked and the protocol carries no request ids, so
+    /// the queue *is* the matching. Writing from an unordered task per command breaks that:
+    /// two commands sent at once can reach the wire in the other order, and then every
+    /// reply belongs to the wrong command. Measured — a workspace attached, asked tmux for
+    /// its windows, and got back the empty reply to a `refresh-client` that had been sent
+    /// first, so it showed no windows at all.
+    private var writes: Task<Void, Never> = Task {}
     private var collecting: [String]?
     private var isCollectingForACommand = false
     private var ended: String??
 
-    private var notificationContinuation: AsyncStream<TmuxNotification>.Continuation?
-    public nonisolated let notifications: AsyncStream<TmuxNotification>
+    private var notificationContinuation: AsyncStream<TmuxEvent>.Continuation?
+    public nonisolated let notifications: AsyncStream<TmuxEvent>
+
+    /// How many arrangement-changing notifications have *arrived*, counted as they are
+    /// parsed rather than as they are acted on.
+    ///
+    /// A client that asks tmux for the current arrangement and applies the answer needs to
+    /// know whether the arrangement moved while it was waiting. Counting when a consumer
+    /// gets round to handling the notification is too late: the answer to
+    /// `list-windows` and the `%layout-change` that overtook it are then both "unhandled",
+    /// the stale answer is applied last, and the client shows an arrangement the server
+    /// stopped having — measured as a split that appeared and then vanished again.
+    public private(set) var layoutSequence = 0
 
     public init(transport: TmuxControlTransport, log: STLogger = .disabled) {
         self.transport = transport
         self.log = log
-        var continuation: AsyncStream<TmuxNotification>.Continuation!
+        var continuation: AsyncStream<TmuxEvent>.Continuation!
         notifications = AsyncStream { continuation = $0 }
         notificationContinuation = continuation
     }
@@ -79,16 +114,21 @@ public actor TmuxControlSession {
     @discardableResult
     public func send(_ command: String) async throws -> [String] {
         if case let .some(reason) = ended { throw TmuxError.sessionEnded(reason: reason) }
+        let id = nextCommandID
+        nextCommandID += 1
         return try await withCheckedThrowingContinuation { continuation in
-            pending.append(PendingCommand(command: command, continuation: continuation))
-            // The write is its own task because the continuation must be handed back to
-            // the caller before anything can resume it. The task inherits this actor's
-            // isolation, so the failure path needs no hop.
-            Task {
+            // Queued and chained in the same actor step, so the order on the wire is the
+            // order in the queue. The write cannot be awaited here: the continuation has to
+            // reach the caller before anything can resume it.
+            pending.append(PendingCommand(id: id, command: command, continuation: continuation))
+            let previous = writes
+            let transport = transport
+            writes = Task { [weak self] in
+                await previous.value
                 do {
                     try await transport.write(Array((command + "\n").utf8))
                 } catch {
-                    self.failFirstPending(with: error)
+                    await self?.fail(commandWithID: id, with: error)
                 }
             }
         }
@@ -122,9 +162,11 @@ public actor TmuxControlSession {
         notificationContinuation = nil
     }
 
-    private func failFirstPending(with error: Error) {
-        guard !pending.isEmpty else { return }
-        let item = pending.removeFirst()
+    /// Fails one command by identity rather than by position: a write that failed is not
+    /// necessarily the oldest command outstanding.
+    private func fail(commandWithID id: Int, with error: Error) {
+        guard let index = pending.firstIndex(where: { $0.id == id }) else { return }
+        let item = pending.remove(at: index)
         item.continuation.resume(throwing: error)
     }
 
@@ -169,12 +211,21 @@ public actor TmuxControlSession {
                 item.continuation.resume(returning: lines)
             }
         case let .notification(notification):
+            switch notification {
+            case .layoutChange, .windowAdd, .windowClose, .windowRenamed, .windowPaneChanged,
+                 .sessionChanged, .sessionWindowChanged, .sessionsChanged,
+                 .unlinkedWindowAdd, .unlinkedWindowClose, .unlinkedWindowRenamed:
+                layoutSequence += 1
+            default:
+                break
+            }
+            let event = TmuxEvent(notification: notification, layoutSequence: layoutSequence)
             if case let .exit(reason) = notification {
-                notificationContinuation?.yield(notification)
+                notificationContinuation?.yield(event)
                 finish(reason: reason)
                 return
             }
-            notificationContinuation?.yield(notification)
+            notificationContinuation?.yield(event)
         }
     }
 }

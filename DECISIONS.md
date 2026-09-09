@@ -1391,4 +1391,5 @@ An index, so nothing has to be hunted for:
 | D-054 | `5f2e1e6` | One SSH transport shared by everything that wants the same server |
 | D-055 | `4af75ed` | Split panes: several terminals and screens at once |
 | D-056 | `f33d5eb` | The guide, the legal texts and the third-party notices brought back to what the app actually does |
-| D-057 | this commit | tmux control mode: the protocol, against a real tmux |
+| D-057 | `9ccb306` | tmux control mode: the protocol, against a real tmux |
+| D-058 | this commit | The tmux workspace: windows, panes, and a terminal for each |

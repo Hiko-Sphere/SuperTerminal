@@ -3,6 +3,62 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-09 — after D-058 (the tmux workspace: windows, panes and terminals)
+
+| Command | Result |
+| --- | --- |
+| `cd Packages/ApexTerminalKit && swift test --no-parallel` | **327 tests in 48 suites passed**, twice in a row (322 in 47 before) |
+| `swift test --filter STTmuxTests` | **34 tests passed**, six runs in a row — including five that drive a real tmux over a real SSH connection |
+| Zero-warning gate | **0** |
+
+### Three defects, each found by a test against a real server
+
+None of these would have been found by a test against a stand-in, and none was visible in
+the protocol layer on its own.
+
+**1. Two commands could reach the wire in the other order.** tmux answers in the order it
+was asked and the protocol carries no request ids, so the queue *is* the matching.
+`send` appended to the queue and then wrote from a task of its own — and two commands
+issued at once could be written in either order, after which every reply belonged to the
+wrong command. Seen as a workspace that attached, asked for its windows, and got back the
+empty reply to the `refresh-client` sent before it: no windows at all. Writes are now
+chained so the order on the wire is the order in the queue, and a failed write fails its own
+command by identity rather than failing whichever is oldest.
+
+**2. `reload()` could return before the state existed.** Coalescing concurrent reloads by
+telling the second caller "someone else is doing it" is wrong when the caller is `attach()`
+and its caller reads the windows on the next line. Three tests failed on an empty workspace
+over a live session. A second caller now waits for the answer.
+
+**3. An older layout change could be replayed over a newer reload.** This is the one worth
+writing down. The workspace's notification pump can fall behind — it awaits a reload of its
+own — and tmux's `%layout-change` notifications then sit unprocessed while a reload runs
+ahead and applies fresher state. The pump then replayed the stale ones. Traced:
+
+```
+TRACE reload applied seq=6 lines=["@0 c08a,100x30,0,0[100x15,0,0,0,100x14,0,16,1] bash"]   <- two panes
+TRACE layout-change @0 a87d,100x30,0,0,0                                                    <- one pane, older
+```
+
+A split appeared and then vanished; a resize snapped back to the old size. The first fix —
+comparing state *generations* — did not work, because the stale notification had arrived
+before the reload's answer and simply had not been handled yet, so the guard called it
+fresh. Notifications now carry the arrival order they were parsed at (`TmuxEvent`), a reload
+records the order its answer accounts for, and anything at or below that is skipped. Six
+consecutive clean runs of the tmux suite followed; before the fix it failed roughly one run
+in three.
+
+### An assertion that had to change shape
+
+`TmuxIntegrationTests` required the client to see `%exit` after `kill-session`. tmux writes
+that line and then closes the channel, and the two race — measured, twice in six runs the
+close won and the stream ended with no `%exit` in it. Requiring the notification would have
+made the test flaky over something that is not a defect: both mean the session ended. The
+test now drains the stream to its end — reaching the next line is the assertion, since a
+client that never noticed would hang and fail on the time limit — and then requires that
+nothing can be sent afterwards. `%exit` itself is covered by the parser tests, where it
+cannot race with anything.
+
 ## 2026-09-09 — after D-057 (tmux control mode: the protocol)
 
 | Command | Result |

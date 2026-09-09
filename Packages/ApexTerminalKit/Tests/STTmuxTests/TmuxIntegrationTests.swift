@@ -69,15 +69,15 @@ struct TmuxIntegrationTests {
     /// command replies race by nature — tmux does not wait for a client to be ready — so
     /// this waits on the stream rather than sleeping and hoping.
     private func waitFor(
-        _ stream: AsyncStream<TmuxNotification>.Iterator,
+        _ stream: AsyncStream<TmuxEvent>.Iterator,
         timeout: Duration = .seconds(30),
         matching: @escaping @Sendable (TmuxNotification) -> Bool
-    ) async -> (TmuxNotification?, AsyncStream<TmuxNotification>.Iterator) {
+    ) async -> (TmuxNotification?, AsyncStream<TmuxEvent>.Iterator) {
         var iterator = stream
         let deadline = ContinuousClock.now.advanced(by: timeout)
         while ContinuousClock.now < deadline {
-            guard let notification = await iterator.next() else { return (nil, iterator) }
-            if matching(notification) { return (notification, iterator) }
+            guard let event = await iterator.next() else { return (nil, iterator) }
+            if matching(event.notification) { return (event.notification, iterator) }
         }
         return (nil, iterator)
     }
@@ -216,12 +216,21 @@ struct TmuxIntegrationTests {
         let (_, afterAdd) = await waitFor(iterator) { if case .windowAdd = $0 { return true }; return false }
         iterator = afterAdd
 
-        // `kill-session` answers first and then the server goes away, so this is not an
-        // error; what matters is that the client notices the exit rather than waiting.
+        // `kill-session` answers first and then the server goes away, so a failure here is
+        // not the point; what matters is that the client notices rather than waiting.
         _ = try? await control.send("kill-session")
-        let (exit, _) = await waitFor(iterator) { if case .exit = $0 { return true }; return false }
-        #expect(exit != nil, "the client should see %exit")
 
+        // Not "the client sees `%exit`": tmux writes that line and then closes the channel,
+        // and the two race — measured, twice in six runs the close won and the stream ended
+        // with no `%exit` in it. Both mean the same thing, and the thing that matters is
+        // what the client does next, so that is what is asserted. `%exit` itself is covered
+        // by the parser tests, where it cannot race with anything.
+        // Draining to the end *is* the assertion: a client that did not notice would never
+        // reach the next line, and the suite's time limit would fail the test.
+        while await iterator.next() != nil {}
+
+        // And nothing can be sent afterwards, rather than waiting for a reply that cannot
+        // come.
         await #expect(throws: TmuxError.self) {
             _ = try await control.send("list-windows")
         }

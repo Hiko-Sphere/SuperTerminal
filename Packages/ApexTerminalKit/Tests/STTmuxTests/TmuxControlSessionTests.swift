@@ -125,13 +125,21 @@ struct TmuxControlSessionTests {
         """.utf8))
 
         var received: [TmuxNotification] = []
-        for await notification in stream { received.append(notification) }
+        var stamps: [Int] = []
+        for await event in stream {
+            received.append(event.notification)
+            stamps.append(event.layoutSequence)
+        }
         #expect(received == [
             .windowAdd(window: TmuxWindowID(0)),
             .sessionChanged(session: TmuxSessionID(0), name: "main"),
             .output(pane: TmuxPaneID(0), bytes: Array("hi".utf8)),
             .exit(reason: nil),
         ])
+        // Each notification carries how many arrangement-changing ones had arrived by then,
+        // itself included. Output does not move the count, which is what keeps a busy pane
+        // from invalidating every reload.
+        #expect(stamps == [1, 2, 2, 2])
     }
 
     @Test("A session that ends fails what was waiting rather than hanging")

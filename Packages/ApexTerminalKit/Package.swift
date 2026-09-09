@@ -160,6 +160,7 @@ let package = Package(
             name: "STTmux",
             dependencies: [
                 "STCore",
+                "STTerminal",
                 .product(name: "NIOConcurrencyHelpers", package: "swift-nio"),
             ],
             resources: [.process("Localizable.xcstrings")]
