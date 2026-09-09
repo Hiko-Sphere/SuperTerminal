@@ -67,12 +67,51 @@ ProxyJump is done (D-047); what follows is the rest.
   Enclave, so a key created there authenticates to a real OpenSSH server in the automated
   suite. What is genuinely device-only is the *biometric* policy, which LocalAuthentication
   refuses in the Simulator; that is H-7 and is not claimed as done.
-* **ssh-agent and agent forwarding** — `auth-agent-req@openssh.com` is a channel type the
-  fork does not implement, and iOS has no agent ecosystem to talk to. Honest scope is
-  probably forwarding *to* a server from keys held in this app, not being an agent client.
-* **FIDO2 (`*-sk`)** — needs a security-key middleware iOS does not have; what iOS offers is
-  passkeys through `ASAuthorization`, which is not the same protocol. Likely not honestly
-  deliverable.
+* **Using a local ssh-agent** — not deliverable, and not for want of effort. iOS has no
+  system SSH agent, and no way for one app to publish a Unix domain socket another app can
+  connect to: the sandbox gives each app its own container, and `SSH_AUTH_SOCK` has no
+  meaning where there are no processes to inherit it. There is nothing to talk to. The
+  useful half of the idea is the other direction, below.
+* **Agent forwarding** — deliverable, and the next slice. The app would be the agent: the
+  session asks for `auth-agent-req@openssh.com`, the server opens an `auth-agent@openssh.com`
+  channel back, and the app answers `SSH_AGENTC_REQUEST_IDENTITIES` and `SSH_AGENTC_SIGN_REQUEST`
+  from the keys it holds — including Secure Enclave keys, which is the interesting part, since
+  those can then sign a `git push` on a server without existing anywhere but the phone. What
+  the fork lacks is narrow and known: `SSHMessage.ChannelOpenMessage.ChannelType` has exactly
+  three cases (`session`, `forwarded-tcpip`, `direct-tcpip`) and its parser has no branch for
+  anything else, so an inbound agent channel currently fails to parse. Verifiable end to end:
+  connect with forwarding on, then run `ssh-add -l` on the server and require it to list the
+  phone's key.
+* **FIDO2 (`sk-ssh-ed25519@openssh.com`, `sk-ecdsa-sha2-nistp256@openssh.com`)** — **not
+  deliverable against stock OpenSSH, with a specific missing layer rather than a shrug.**
+
+  iOS does expose security keys, through
+  `ASAuthorizationSecurityKeyPublicKeyCredentialProvider`. Two things about it settle the
+  question, both read from the iOS 26.5 SDK headers rather than from articles:
+
+  1. The provider is created with
+     `- (instancetype)initWithRelyingPartyIdentifier:(NSString *)relyingPartyIdentifier`.
+     WebAuthn requires that to be a **domain** the app is associated with through
+     `webcredentials:` associated domains. OpenSSH's `sk-` keys are scoped by an
+     *application* string, conventionally `ssh:` — not a domain, and not something an
+     associated-domains entitlement can name.
+  2. An assertion comes back as `rawAuthenticatorData`, `signature` and `rawClientDataJSON`
+     (`ASAuthorizationPublicKeyCredentialAssertion.h`, `ASPublicKeyCredential.h`). WebAuthn
+     signs `authenticatorData ‖ SHA-256(clientDataJSON)`. OpenSSH's `PROTOCOL.u2f` says an
+     `sk-` signature is over `SHA-256(application) ‖ flags ‖ counter ‖ SHA-256(challenge)`.
+     The `clientDataJSON` wrapper sits *inside* the signed bytes and the public API gives no
+     way to remove it, so a signature obtained this way is over a different message than any
+     OpenSSH server will verify. It is not a formatting difference that can be repacked.
+
+  There is no public raw CTAP2 API on iOS either. `CryptoTokenKit` ships `TKSmartCard` and
+  `TKSmartCardSlotNFCSession` — ISO 7816 smart cards, not CTAP2 HID — and selecting the FIDO
+  applet over NFC is not exposed.
+
+  **The deployable alternative already exists and is shipped: Secure Enclave keys (D-049).**
+  They give the property people actually want from a security key — a private key that cannot
+  be extracted, gated on biometrics — and they work with unmodified OpenSSH today. What they
+  do not give is a credential that can be carried between devices, which is the one thing a
+  hardware key is for. The app says so rather than offering a switch that cannot work.
 
 ## Standing corrections found while auditing
 

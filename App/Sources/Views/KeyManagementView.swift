@@ -307,6 +307,14 @@ struct GenerateKeySheet: View {
                     if storage == .keychain {
                         ICloudKeyChoice(requireBiometrics: requireBiometrics, storeSecretInICloud: $storeSecretInICloud)
                     }
+
+                    Section {
+                    } footer: {
+                        // Said here rather than left to be discovered: someone looking for
+                        // a hardware key will look on this screen, and "no option for it"
+                        // is not an answer.
+                        Text("Hardware security keys (FIDO2, the sk-ssh-… key types) are not supported. iOS exposes security keys only through WebAuthn, which signs a different message than OpenSSH verifies, and offers no raw CTAP2 API to work around it. A Secure Enclave key gives the same non-extractable private key, on this device.")
+                    }
                 }
 
                 if let errorMessage {

@@ -5016,6 +5016,23 @@
         }
       }
     },
+    "Hardware security keys (FIDO2, the sk-ssh-… key types) are not supported. iOS exposes security keys only through WebAuthn, which signs a different message than OpenSSH verifies, and offers no raw CTAP2 API to work around it. A Secure Enclave key gives the same non-extractable private key, on this device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不支持硬件安全密钥（FIDO2，即 sk-ssh-… 系列密钥类型）。iOS 只通过 WebAuthn 暴露安全密钥，而 WebAuthn 签名的消息与 OpenSSH 校验的并不相同，且没有可用的原始 CTAP2 接口可以绕开这一点。Secure Enclave 密钥同样提供不可导出的私钥，只是仅限本设备。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不支援硬體安全金鑰（FIDO2，即 sk-ssh-… 系列金鑰類型）。iOS 只透過 WebAuthn 揭露安全金鑰，而 WebAuthn 簽章的訊息與 OpenSSH 驗證的並不相同，且沒有可用的原始 CTAP2 介面可以繞過這一點。Secure Enclave 金鑰同樣提供不可匯出的私密金鑰，只是僅限本裝置。"
+          }
+        }
+      }
+    },
     "Held in the Secure Enclave. Its private half has no exportable form and cannot be backed up or moved.": {
       "extractionState": "manual",
       "localizations": {
