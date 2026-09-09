@@ -3,6 +3,32 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-10 — after D-072 (visionOS as it actually stands)
+
+| Command | Result |
+| --- | --- |
+| `xcodebuild -showsdks` | visionOS 26.5 and watchOS 26.5 SDKs are **installed** |
+| `xcrun simctl list runtimes` | **only iOS 26.5** — no runtime for either |
+| `xcodebuild … -destination 'generic/platform=visionOS' build` | *"Unable to find a destination matching the provided destination specifier"* — the project cannot name that destination at all today |
+| `xcodebuild … -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build` | **0 errors** |
+| Release archive | **ARCHIVE SUCCEEDED** |
+
+This commit changes one build setting and three documents. What it is really doing is refusing
+to claim a platform.
+
+`SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD` was never set, so the app is offered on visionOS in
+Apple's *Designed for iPad* compatibility mode by default — which is real availability that
+nobody had decided on. It is now set explicitly to `YES`, which makes it a decision, and the
+plan says the rest: **it has never been run there**. There is no runtime on this machine to run
+it on, and downloading a platform is several gigabytes that should not be started on somebody's
+machine unasked. That is H-9.
+
+A *native* visionOS target is not started. It could be made to compile — that is a matter of
+`SUPPORTED_PLATFORMS`, the package's `platforms:`, and however many API guards fell out — but
+nothing could be run, and a platform that has never executed a line is not something to add to
+one that is green. watchOS is not started for a further reason that a runtime would not fix: a
+terminal does not fit a watch, and what would fit has not been designed.
+
 ## 2026-09-10 — after D-071 (several remote folders at once)
 
 | Command | Result |

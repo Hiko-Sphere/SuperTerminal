@@ -258,3 +258,32 @@ machine has no Apple Developer team with a Mac Catalyst provisioning profile for
 
 **Blocks.** Any claim that Apex Terminal *works* on the Mac beyond "it builds, launches and its
 logic passes its tests there". The plan says exactly that and no more.
+
+## H-9 · The visionOS and watchOS simulator runtimes
+
+**Why this is here.** Both SDKs are installed on this machine — `xcodebuild -showsdks` lists
+visionOS 26.5 and watchOS 26.5 — and **no simulator runtime for either is**:
+`xcrun simctl list runtimes` shows iOS 26.5 and nothing else. Neither platform could be run
+even if the app compiled for it, so neither is started (Phase 4.2 and 4.3). Downloading a
+platform is several gigabytes and is not something to start on somebody's machine unasked.
+
+**Steps.**
+
+1. `xcodebuild -downloadPlatform visionOS` and `xcodebuild -downloadPlatform watchOS`, or
+   Xcode → Settings → Components.
+2. Confirm with `xcrun simctl list runtimes` that a runtime for each appears.
+
+**What it unblocks, and what it does not.**
+
+* **visionOS.** The app is offered there today in Apple's *Designed for iPad* compatibility
+  mode — `SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD` is now set explicitly rather than left to a
+  default, so it is a decision. It has **never been run** on visionOS by this project. With a
+  runtime the first question is whether the iPad layout is usable in that mode; the second, and
+  much larger, is whether a native visionOS target is worth building.
+* **watchOS.** A runtime makes it buildable and testable, but not designed. A terminal does not
+  fit a watch, and what would fit — a session's status, a stop button, a notification when a
+  long command finishes — is a product question nobody has answered. It should not be started
+  because the SDK is present.
+
+**Blocks.** Every claim about visionOS or watchOS beyond "an iPad app is offered on visionOS in
+compatibility mode, untried".
