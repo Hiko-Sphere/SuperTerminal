@@ -90,35 +90,67 @@ service token. Unchanged from `PROJECT_STATUS.md`; the variables are documented 
 
 ## H-5 · iCloud sync container
 
-**Why a person.** Every push is refused by the container with `CKErrorDomain 15` and
-HTTP 500, no server description and no per-record errors, while pulling works — the
-container's own state, which is fixed in the CloudKit Console (D-037). Sync is withdrawn
-behind `SyncAvailability.isAvailable` until it is.
+**Corrected 2026-09-10 (D-081). The previous version of this entry was wrong about what is
+blocking, and it sent you to the CloudKit Console first.** Three things were found, and two of
+them live in this repository:
 
-**Steps.** CloudKit Console → `iCloud.dev.apexterminal.app` → confirm the Development
-environment exists and holds the `SyncRecord` type and the `ApexTerminal` zone; then
-Deploy Schema to Production before any TestFlight build syncs.
+1. **Every build that has ever been on a device declared the Production CloudKit database.**
+   `codesign -d --entitlements -` on the archive returns
+   `com.apple.developer.icloud-container-environment = Production` on a build whose
+   `get-task-allow` is `true`. It comes from `ST_ICLOUD_ENVIRONMENT = Production` in the Release
+   configuration, and `-configuration Release` was the only device build this project ever
+   documented. Production does not create record types on first write the way Development does,
+   and the schema has never been deployed there — so every push was refused before the container
+   was consulted at all.
+2. **The recorded failure was measured against a different container.** The dump in D-036 was
+   taken while the code named `iCloud.dev.superterminal.app`; the rename commit rewrote the
+   `ContainerID` line in that dump. Nothing has ever pushed to `iCloud.dev.apexterminal.app`.
+3. **The instrument could not report a failure on either side.** `pullChanges` cannot tell a
+   healthy empty pull from a fetch against a database with no zone, and at the time of the dump
+   a refused *zone creation* fell into `default:` and vanished.
 
-**Verification afterwards.** Set `SyncAvailability.isAvailable = true`, run
-`ApexTerminalTests`, then sync between two signed devices.
+Four client defects that would each have broken sync on their own were fixed in D-081: no
+`zoneNotFound` recovery, `.accountChange` as a no-op while the engine clears the pending zone
+save on it, `purgeAll` restoring the zone only when the send succeeded, and the change tag never
+kept from a *fetch* — which is the second device in any two-device test.
 
-**What changed under this since it was written (D-075).** Two client-side defects were found
-and fixed, and *neither was the cause* — but both were invisible, and both would have bitten
-the moment the container started accepting writes:
+**Why a person is still needed.** Signing a build to a real device, and reading a real CloudKit
+Console, cannot be done from here.
 
-* No write carried CloudKit's change tag, because every `CKRecord` was built fresh. The first
-  write of a record would have succeeded and every write after it would have been refused with
-  `serverRecordChanged`, permanently.
-* `CKSyncEngine` reports per-record and per-zone failures on its *events*, not on the error
-  thrown by `sendChanges()`. The transport read only the success halves, so a push the server
-  refused returned the same empty list as a push with nothing to send.
+**Steps, in this order.**
 
-The second one bears on this entry directly: while it stood, a refused push was reported as a
-clean one. The HTTP 500 in the diagnosis was read off a real device (D-036) and is a
-request-level status, so it stands — but when the container is fixed, re-measure rather than
-assuming the rest of the picture is still accurate. `push` now throws when the server refused
-everything, and records each failure through `SyncDiagnostics` in DEBUG, so the next
-measurement will have something to read.
+1. **Build with Debug, not Release.** `ST_ICLOUD_ENVIRONMENT = Development` there
+   (`project.pbxproj:645`). Open Settings → iCloud in the running app: it now states which
+   database the build uses, and warns when that is Production. Do not go further until it says
+   **Development**.
+2. Set `SyncAvailability.isAvailable = true` (`App/Sources/Sync/SyncAvailability.swift`).
+3. Delete `cloudkit-sync-state.json` from the app's Application Support directory first — it
+   survives a container change and an account change, and it holds tokens belonging to whatever
+   was there before.
+4. Install on a device signed into iCloud, add one connection, and sync once.
+5. Read `sync-failure.log` from the same directory. It now **appends** and labels each entry
+   with the operation (`fetch`, `send`, `zoneSave`, `recordSave`, `accountStatus`), so a fetch
+   failure can no longer be read as a push failure — which is exactly how the previous diagnosis
+   went wrong.
+6. **Only now** open CloudKit Console → `iCloud.dev.apexterminal.app` → **Development** →
+   Data → Zones. If `ApexTerminal` is there, the client's zone creation landed. Schema → Record
+   Types: `SyncRecord` with `kind` (String), `payload` (Bytes), `modifiedAt` (Date/Timestamp).
+   Development creates these on the first successful save, so their absence means no save has
+   ever succeeded — which is a client story, not a container one.
+7. Repeat on a second device signed into the same account, and edit a record that arrived by
+   sync. That is the path the fetch-side change tag fix is about, and it is the only way to
+   verify sync at all.
+8. **Deploy Schema to Production** before any TestFlight or App Store build syncs — Release
+   builds talk to Production, and nothing is deployed there yet.
+
+**If a bare `CKError 15` / HTTP 500 with no `ServerErrorDescription` still comes back after all
+of that**, note that it does not match a missing record type — Apple's forums record that as
+CKError 12 / BAD_REQUEST 400 with a server message. A bare 15/500 matches a service outage.
+File it in Feedback Assistant with the container name and the request UUID rather than treating
+it as a fixed property of the container.
+
+**Verification afterwards.** Two signed devices sync connections, snippets and known hosts both
+ways, `sync-failure.log` is empty, and `ApexTerminalTests` pass with `isAvailable = true`.
 
 **Blocks.** iCloud sync, which is currently not offered at all.
 

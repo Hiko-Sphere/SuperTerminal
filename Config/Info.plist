@@ -82,5 +82,22 @@
 	<array>
 		<string>remote-notification</string>
 	</array>
+	<!--
+	  Which CloudKit database this build talks to, carried into the product so the running
+	  app can say it out loud (D-081).
+
+	  It is the same build setting that fills `com.apple.developer.icloud-container-environment`
+	  in the entitlements, and that entitlement is the one thing that decides whether a push
+	  lands in Development — where CloudKit creates record types on first write — or in
+	  Production, where it does not and a type nobody deployed is simply refused.
+
+	  It was invisible, and being invisible it was wrong for months: the only documented way to
+	  put this app on a device is `-configuration Release`, Release sets Production, and the
+	  schema has never been deployed there. Every push from every device build was refused, and
+	  the failure was recorded as the container's own fault. An entitlement nothing reads back
+	  is an assumption, not a fact.
+	-->
+	<key>STCloudKitEnvironment</key>
+	<string>$(ST_ICLOUD_ENVIRONMENT)</string>
 </dict>
 </plist>

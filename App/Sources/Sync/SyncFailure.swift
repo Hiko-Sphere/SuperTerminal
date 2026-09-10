@@ -61,7 +61,11 @@ enum SyncFailure {
         case .serverRecordChanged:
             String(localized: "Another device changed the same item. The newer change wins; try again.")
         case .limitExceeded:
-            String(localized: "Too much changed at once for one sync. This retries in smaller pieces.")
+            // Not "this retries in smaller pieces": `limitExceeded` also arrives for a
+            // single record that is over CloudKit's own size limit, and no amount of
+            // splitting makes one record smaller. Promising a retry that cannot work
+            // leaves the app looping under a reassuring sentence.
+            String(localized: "One change was too large for iCloud to accept. Smaller changes still sync.")
         case .constraintViolation, .serverRejectedRequest, .invalidArguments:
             // Nothing the user did, and nothing they can do; say so rather than blame
             // them — but carry the code, because this is the branch a developer has to

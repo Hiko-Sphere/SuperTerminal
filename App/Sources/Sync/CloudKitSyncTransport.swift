@@ -39,7 +39,7 @@ final class CloudKitSyncTransport: SyncTransport, @unchecked Sendable {
         database = container.privateCloudDatabase
         zoneID = CKRecordZone.ID(zoneName: Self.zoneName, ownerName: CKCurrentUserDefaultName)
         stateURL = stateDirectory.appendingPathComponent("cloudkit-sync-state.json")
-        delegate = Delegate(inbox: inbox, outbox: outbox, failures: failures, stateURL: stateURL)
+        delegate = Delegate(inbox: inbox, outbox: outbox, failures: failures, stateURL: stateURL, zoneID: zoneID)
         var configuration = CKSyncEngine.Configuration(
             database: database,
             stateSerialization: Self.loadState(from: stateURL),
@@ -84,8 +84,8 @@ final class CloudKitSyncTransport: SyncTransport, @unchecked Sendable {
         // the ones it hands back.
         if !refused.records.isEmpty || !refused.zones.isEmpty {
             #if DEBUG
-            for failure in refused.records { SyncDiagnostics.record(failure.error, in: stateURL.deletingLastPathComponent()) }
-            for failure in refused.zones { SyncDiagnostics.record(failure.error, in: stateURL.deletingLastPathComponent()) }
+            for failure in refused.records { SyncDiagnostics.record(failure.error, doing: .recordSave, in: stateURL.deletingLastPathComponent()) }
+            for failure in refused.zones { SyncDiagnostics.record(failure.error, doing: .zoneSave, in: stateURL.deletingLastPathComponent()) }
             #endif
             if accepted.isEmpty, let first = (refused.zones.first?.error ?? refused.records.first?.error) {
                 throw first
@@ -96,13 +96,24 @@ final class CloudKitSyncTransport: SyncTransport, @unchecked Sendable {
 
     func purgeAll() async throws {
         guard let engine else { return }
+        // The cleanup and the zone's re-creation happen whether or not the send throws.
+        // They used to sit after `sendChanges()` in a straight line, so a purge that failed
+        // — the very case a purge is reached in — left the process with the zone deleted,
+        // the outbox uncleared and nothing anywhere that would ever queue the zone again.
+        // Every later push then failed on a missing zone, permanently and quietly.
+        defer {
+            engine.state.add(pendingDatabaseChanges: [.saveZone(CKRecordZone(zoneID: zoneID))])
+        }
         engine.state.add(pendingDatabaseChanges: [.deleteZone(zoneID)])
-        try await engine.sendChanges()
+        do {
+            try await engine.sendChanges()
+        } catch {
+            await outbox.removeAll()
+            try? FileManager.default.removeItem(at: stateURL)
+            throw error
+        }
         await outbox.removeAll()
         try? FileManager.default.removeItem(at: stateURL)
-        // The zone is recreated lazily on the next push, so a purge followed by re-enabling
-        // sync starts clean rather than failing on a missing zone.
-        engine.state.add(pendingDatabaseChanges: [.saveZone(CKRecordZone(zoneID: zoneID))])
     }
 
     // MARK: Mapping (unit-tested)
@@ -237,12 +248,16 @@ final class CloudKitSyncTransport: SyncTransport, @unchecked Sendable {
         private let outbox: Outbox
         private let failures: Failures
         private let stateURL: URL
+        /// Needed here, not only in the transport: an account change clears the engine's
+        /// pending database changes, and this is where the zone has to be asked for again.
+        private let zoneID: CKRecordZone.ID
 
-        init(inbox: Inbox, outbox: Outbox, failures: Failures, stateURL: URL) {
+        init(inbox: Inbox, outbox: Outbox, failures: Failures, stateURL: URL, zoneID: CKRecordZone.ID) {
             self.inbox = inbox
             self.outbox = outbox
             self.failures = failures
             self.stateURL = stateURL
+            self.zoneID = zoneID
         }
 
         func handleEvent(_ event: CKSyncEngine.Event, syncEngine: CKSyncEngine) async {
@@ -263,6 +278,15 @@ final class CloudKitSyncTransport: SyncTransport, @unchecked Sendable {
                         records.append(SyncRecord(kind: key.kind, id: key.id, payload: Data(), modifiedAt: Date(), deleted: true))
                     }
                 }
+                // The server's copy of everything that just arrived, kept for the same reason
+                // an accepted save is kept: the change tag. Without this the *second* device
+                // has no server copy of a record it only ever pulled, so its first local edit
+                // builds a fresh `CKRecord` that tells the server "this is new" — and is
+                // refused with `serverRecordChanged` for ever. D-075 fixed that on the save
+                // path and the doc comment on `lastKnown` claimed the fetch path too; the
+                // fetch path was never wired, which is exactly the two-device case.
+                await outbox.remember(changes.modifications.map(\.record))
+                await outbox.forget(changes.deletions.map(\.recordID))
                 await inbox.add(records)
             case let .sentRecordZoneChanges(sent):
                 await inbox.addAccepted(sent.savedRecords.map(\.recordID) + sent.deletedRecordIDs)
@@ -277,6 +301,17 @@ final class CloudKitSyncTransport: SyncTransport, @unchecked Sendable {
                 // server refused was indistinguishable from one it never saw.
                 for failure in sent.failedRecordSaves {
                     await failures.record(id: failure.record.recordID, error: failure.error)
+                    // The zone is gone — deleted from another device, or removed with the
+                    // account's iCloud data. Apple's own guidance is to put it back and send
+                    // the record again; without that branch a send into a missing zone fails
+                    // permanently and silently, and `SyncFailure` tells the user the zone "is
+                    // recreated on the next sync" while nothing recreates it.
+                    if failure.error.code == .zoneNotFound || failure.error.code == .userDeletedZone {
+                        await outbox.put(failure.record, for: failure.record.recordID)
+                        syncEngine.state.add(pendingDatabaseChanges: [.saveZone(CKRecordZone(zoneID: failure.record.recordID.zoneID))])
+                        syncEngine.state.add(pendingRecordZoneChanges: [.saveRecord(failure.record.recordID)])
+                        continue
+                    }
                     guard let serverRecord = failure.error.serverRecord else { continue }
                     // The documented resolution: take the server's record, put our fields
                     // back on it, and queue it again. Without this a conflict is permanent.
@@ -302,10 +337,28 @@ final class CloudKitSyncTransport: SyncTransport, @unchecked Sendable {
                 for failure in sent.failedZoneDeletes {
                     await failures.record(zone: failure.key, error: failure.value)
                 }
-            case .accountChange:
-                // Sign-out or a switched account: the engine drops its state itself; the
-                // app's own toggle decides whether to keep syncing. Nothing to do here.
-                break
+            case let .accountChange(change):
+                // Not a no-op, and the header says why: "When the logged-in account changes,
+                // the sync engine resets its internal state. This means that it clears any
+                // pending database or record zone changes that you may have added."
+                //
+                // The zone save is queued in `init` and at the tail of `purgeAll`, and
+                // nowhere else — so a sign-in, a sign-out or a switch silently threw away the
+                // only request this app would ever make to create its zone, and every push
+                // afterwards failed on a zone that nothing would put back. The change tags
+                // and the change tokens belong to the account that has just gone, too.
+                await outbox.removeAll()
+                try? FileManager.default.removeItem(at: stateURL)
+                switch change.changeType {
+                case .signIn, .switchAccounts:
+                    syncEngine.state.add(pendingDatabaseChanges: [.saveZone(CKRecordZone(zoneID: zoneID))])
+                case .signOut:
+                    // Nothing to create for an account that is no longer there. The next
+                    // sign-in queues it.
+                    break
+                @unknown default:
+                    syncEngine.state.add(pendingDatabaseChanges: [.saveZone(CKRecordZone(zoneID: zoneID))])
+                }
             default:
                 break
             }

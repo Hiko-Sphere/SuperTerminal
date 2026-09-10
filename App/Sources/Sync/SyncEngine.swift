@@ -57,13 +57,22 @@ final class SyncEngine {
             // made within the same second, and every record from a device whose clock ran
             // behind. A test caught it on the third sync.
             let sentAt = Dictionary(uniqueKeysWithValues: outgoing.map { ($0.key, $0.modifiedAt) })
-            for key in accepted { pushed[key] = sentAt[key] }
+            // `if let`, not a bare subscript assignment. Assigning a nil `Optional` through a
+            // dictionary subscript *removes* the entry, and `accepted` can carry keys this
+            // call never sent — the transport's accepted list is filled from every send the
+            // engine makes, including its own automatic ones, and drained only here. So a key
+            // that was not in `outgoing` used to un-mark a record as pushed, and
+            // `pendingLocalChanges()` offered it again on the next sync, for ever: a
+            // client-side resend loop that looks exactly like a server refusing everything.
+            for key in accepted {
+                if let modifiedAt = sentAt[key] { pushed[key] = modifiedAt }
+            }
             lastSynced = Date()
             status = .idle
         } catch {
             status = .failed(SyncFailure.describe(error))
             #if DEBUG
-            if let directory = diagnosticsDirectory { SyncDiagnostics.record(error, in: directory) }
+            if let directory = diagnosticsDirectory { SyncDiagnostics.record(error, doing: .send, in: directory) }
             #endif
         }
     }

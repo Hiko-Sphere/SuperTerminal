@@ -27,6 +27,7 @@ struct ICloudSyncSection: View {
                 Label(removalError, systemImage: "exclamationmark.triangle")
                     .foregroundStyle(DesignTokens.Color.danger)
             }
+            environmentRow
         } header: {
             Text("iCloud")
         } footer: {
@@ -53,6 +54,35 @@ struct ICloudSyncSection: View {
             }
         } message: {
             Text("Everything this app stored in your iCloud account is deleted. Data on this device stays. Other devices keep their copies until they sync.")
+        }
+    }
+
+    /// Which CloudKit database this build talks to, and what that costs (D-081).
+    ///
+    /// Shown rather than left in a build setting, because it was left in a build setting and
+    /// it was wrong: every device build declared **Production**, where a record type nobody
+    /// has deployed is refused outright, and months of refusals were written down as the
+    /// container's own fault. A value that decides whether the feature can work at all should
+    /// be readable from inside the app.
+    @ViewBuilder
+    private var environmentRow: some View {
+        if let environment = CloudKitEnvironment.declared() {
+            LabeledContent("iCloud database") { Text(environment.title) }
+                .font(DesignTokens.Typography.caption)
+                .accessibilityIdentifier("icloud-environment")
+            if let caution = environment.caution {
+                Label(caution, systemImage: "exclamationmark.triangle")
+                    .font(DesignTokens.Typography.caption)
+                    .foregroundStyle(DesignTokens.Color.warning)
+                    .accessibilityIdentifier("icloud-environment-caution")
+            }
+        } else {
+            // The key is missing or unrecognised, which is itself a defect worth seeing
+            // rather than a reason to guess.
+            Label("This build does not say which iCloud database it uses.", systemImage: "questionmark.circle")
+                .font(DesignTokens.Typography.caption)
+                .foregroundStyle(DesignTokens.Color.warning)
+                .accessibilityIdentifier("icloud-environment-unknown")
         }
     }
 

@@ -1294,6 +1294,13 @@ CKErrorDomain 15   CKHTTPStatus = 500   CKInternalErrorDomain: 2000
 ContainerID = iCloud.dev.apexterminal.app
 ```
 
+> **Corrected 2026-09-10 (D-081).** That `ContainerID` line is not what was dumped. The dump
+> read `iCloud.dev.superterminal.app`; the rename commit `3f00822` rewrote it here, in the same
+> commit that renamed the constant in `CloudKitSyncTransport.swift`. `git show 3f00822 --
+> DECISIONS.md` shows the substitution. The failure was measured against the *old* container,
+> two days before Xcode's automatic signing created the current one — nothing has ever pushed
+> to `iCloud.dev.apexterminal.app`. `docs/RELEASE_EVIDENCE.md` later cited the rewritten line as
+> proof that it had, which was circular; that entry is corrected too.
 
 No `ServerErrorDescription`, no per-item errors, an HTTP 500 — the request never reached
 record validation. The app's entitlements had no `aps-environment` and the bundle no
@@ -1414,5 +1421,6 @@ An index, so nothing has to be hunted for:
 | D-076 | `882f586` | The pane that lost its session offers to show something else |
 | D-077 | `6c85b70` | A picture behind the terminal, dimmed by a measured contract rather than by a slider |
 | D-078 | `a122d57` | The themes a restore put back, kept — they were being lost on the next launch |
-| D-079 | this commit | A theme workshop, and a connection that opens in its own colours |
-| D-080 | this commit | One Help section instead of two, a guide with pictures — and the iPad crash a row in Settings could cause |
+| D-079 | `29a2bd1` | A theme workshop, and a connection that opens in its own colours |
+| D-080 | `29a2bd1` | One Help section instead of two, a guide with pictures — and the iPad crash a row in Settings could cause |
+| D-081 | `2b664a6` | The iCloud diagnosis was wrong: the build was pointed at the wrong database |

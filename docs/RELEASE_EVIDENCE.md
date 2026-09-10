@@ -3,6 +3,105 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-11 — after D-081 (the iCloud diagnosis was wrong)
+
+| Command | Result |
+| --- | --- |
+| `bash scripts/app-integration-e2e.sh` | **422 tests in 79 suites passed**, no restarts |
+| `bash scripts/ui-terminal-e2e.sh` (iPhone 17 Pro) | **92 passed, 2 failed** — both `ZZSearchProbeUITests` |
+| `bash scripts/ui-terminal-e2e.sh` (iPad Pro 13-inch M5) | **93 passed, 2 failed** — both `ZZSearchProbeUITests` |
+| `bash scripts/localization-audit.sh` | **green**, 0 orphans |
+| `bash scripts/generate-user-guide-doc.sh` | regenerates `docs/USER_GUIDE.md` byte-identically |
+| App warning gate | **0** |
+| Release archive | **ARCHIVE SUCCEEDED** |
+
+### What was recorded, and what is actually true
+
+For months `SyncAvailability.swift` said sync was blocked by the container: every push refused
+with `CKErrorDomain 15` and HTTP 500, fixable only in the CloudKit Console. Three independent
+adversarial readings were run against that claim, each told to refute it. All three did, on
+different axes, and each finding was then re-verified here by hand.
+
+**The build was pointed at the wrong database.** Read off the archive the project itself builds:
+
+```
+$ codesign -d --entitlements - --xml build/ApexTerminal.xcarchive/Products/Applications/ApexTerminal.app
+com.apple.developer.icloud-container-environment = Production
+aps-environment                                  = development
+get-task-allow                                   = true
+```
+
+A development-signed build declaring the **Production** CloudKit database. It comes from
+`ST_ICLOUD_ENVIRONMENT = Production` in the Release configuration (`project.pbxproj:399`), and
+`-configuration Release` was the only device build this project ever documented
+(`PROJECT_STATUS.md:213`). Production does not create record types on first write the way
+Development does, and the schema has never been deployed there. So every push from every build
+that has ever been on a device was refused before the container was consulted at all.
+
+**The 500 was measured against a different container.** `git show
+fd7efcb:App/Sources/Sync/CloudKitSyncTransport.swift` reads `iCloud.dev.superterminal.app` at
+the moment the diagnosis was written. The rename commit `3f00822` changed the constant *and*
+rewrote the recorded device dump in `DECISIONS.md`:
+
+```
+-ContainerID = iCloud.dev.superterminal.app
++ContainerID = iCloud.dev.apexterminal.app
+```
+
+Nothing has ever pushed to `iCloud.dev.apexterminal.app`.
+
+**And the rebuttal in this very document was circular.** The D-075 entry dismissed a reading
+that said exactly this, citing "D-036's own device dump, which reads `ContainerID =
+iCloud.dev.apexterminal.app`" — the line the rename had rewritten. That entry now carries a
+retraction. The reading it dismissed was right; the check that dismissed it verified an edit.
+
+**The instrument could not see the answer either way.** `pullChanges` returns whatever the inbox
+drained, and a fetch against a database with no zone succeeds and yields nothing —
+indistinguishable from a healthy empty pull. "Pulling works, so the account and the entitlements
+are fine" was never a measurement.
+
+### Five client defects, each enough on its own
+
+| Where | What |
+| --- | --- |
+| `CloudKitSyncTransport.swift` `.sentRecordZoneChanges` | No `zoneNotFound` branch at all. A send into a missing zone failed permanently and silently — while `SyncFailure` told the user the zone "is recreated on the next sync" and a test pinned that sentence |
+| `.accountChange` | An explicit `break`. `CKSyncEngineEvent.h` states the engine clears pending database changes on an account change, and `.saveZone` is queued in exactly two places — so a sign-in or a switch destroyed the only zone-creation request the app would ever make |
+| `purgeAll` | The compensating `.saveZone` sat after `sendChanges()` with no `defer`, so a purge that threw — the case a purge is reached in — left the process permanently zone-less |
+| `.fetchedRecordZoneChanges` | Never called `outbox.remember`, though `lastKnown`'s own doc comment claimed the fetch path. D-075 fixed the change tag on the save path only, so the *second* device's first edit of a pulled record was refused for ever — the two-device path is the only way to verify sync |
+| `SyncEngine.sync()` | `pushed[key] = sentAt[key]` — assigning a nil `Optional` through a dictionary subscript **removes** the entry, so a record un-marked itself as pushed and was re-offered for ever |
+
+The last one was reproduced rather than reasoned about. With the fix removed the new test fails
+(`pushedBatches.count → 2` where 1 is correct: an unchanged record offered again); with it in
+place it passes, and the companion test — "a record that really did change is still sent again"
+— passes both ways, so the fix is not "never send anything twice". The first attempt at that
+test passed *with the bug in place*, because a stray key that was never in `pushed` removes
+nothing; watching it fail is what showed the test was wrong before the code was.
+
+### So it cannot hide again
+
+`STCloudKitEnvironment` is carried into `Info.plist` from the same build setting that fills the
+entitlement, `CloudKitEnvironment` reads it back, Settings → iCloud states which database the
+build uses and warns when that is Production, and four tests hold it — including one that fails
+if a Debug build claims Production. An entitlement nothing reads back is an assumption.
+
+`sync-failure.log` now appends and labels each entry with the operation (`fetch`, `send`,
+`zoneSave`, `recordSave`, `accountStatus`). The single dump this project ever took had no such
+label, which is how a failure that could have been a fetch, a zone save or an account check came
+to be read as proof about pushes.
+
+### The switch is on, by the owner's decision
+
+`SyncAvailability.isAvailable` is `true`. The concern was raised — nothing has been measured
+against this container from a build with the right environment, so the first person to turn it on
+takes the first real measurement — and the owner asked for it anyway. That is their call.
+
+What the app does about it: it says which database it is talking to, it warns when that is
+Production, a refused push throws instead of returning the same empty list as a clean one, and
+the status line carries CloudKit's own reason. What it does **not** do is imply a copy exists
+elsewhere. Until two devices have been seen to sync, the only copy of a connection is on the
+device that made it, and `docs/HUMAN_ACTIONS.md` H-5 has the steps for establishing otherwise —
+in the corrected order, a Debug build first and the Console last.
+
 ## 2026-09-11 — after D-079 and D-080 (themes, one Help section, and a crash)
 
 | Command | Result |
@@ -345,6 +444,20 @@ device dump, which reads `ContainerID = iCloud.dev.apexterminal.app`, and the cl
 per-record validation failures as a partial failure on an otherwise successful response, and
 the container is still H-5's business.
 
+> **Retracted 2026-09-10 (D-081). The paragraph above is wrong, and the reading it dismissed was
+> right.** The `ContainerID` line it cites as proof was itself rewritten from `superterminal` to
+> `apexterminal` by the rename commit `3f00822`, two days after the measurement — so the check
+> "verified against D-036's own dump" verified an edit, not an observation. The failure was
+> measured against `iCloud.dev.superterminal.app`; nothing has ever pushed to the container the
+> code names now. The correct answer was available at the time from `git show
+> fd7efcb:App/Sources/Sync/CloudKitSyncTransport.swift`, which was not consulted.
+>
+> Three further things this paragraph got wrong: an HTTP 500 with no per-item errors is the
+> expected shape of *any* non-item operation, including a refused zone creation, so it excludes
+> nothing; the delegate of that day could not have carried per-item errors under any
+> circumstances, since it read only the success halves; and the signed product declares the
+> **Production** CloudKit environment, where no schema was ever deployed — so every push from
+> every device build was refused before the container was consulted at all. See D-081.
 
 Two real client-side defects were found underneath it, and neither is the cause:
 

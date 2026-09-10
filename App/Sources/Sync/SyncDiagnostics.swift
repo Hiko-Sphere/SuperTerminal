@@ -10,11 +10,32 @@ import Foundation
 /// refused" can be read in full during development, and it is compiled out of anything
 /// that could reach a user.
 enum SyncDiagnostics {
-    static func record(_ error: Error, in directory: URL) {
+    /// What was being attempted. Without it the log is one unlabelled error and a fetch
+    /// failure cannot be told from a send failure — which is how the one dump this project
+    /// ever took came to be read as proof about pushes when nothing in it said so.
+    enum Operation: String {
+        case fetch
+        case send
+        case purge
+        case accountStatus
+        case zoneSave
+        case recordSave
+    }
+
+    static func record(_ error: Error, doing operation: Operation, in directory: URL) {
         let text = describe(error, depth: 0)
         let url = directory.appendingPathComponent("sync-failure.log")
-        let stamped = "\(Date().formatted(.iso8601))\n\(text)\n\n"
-        try? stamped.write(to: url, atomically: true, encoding: .utf8)
+        let stamped = "\(Date().formatted(.iso8601)) operation=\(operation.rawValue)\n\(text)\n\n"
+        // Appended, not overwritten. A run produces a fetch, a zone save and a series of
+        // record saves; keeping only the last of them throws away the sequence, which is the
+        // part that says which one failed first.
+        if let handle = try? FileHandle(forWritingTo: url) {
+            defer { try? handle.close() }
+            _ = try? handle.seekToEnd()
+            try? handle.write(contentsOf: Data(stamped.utf8))
+        } else {
+            try? stamped.write(to: url, atomically: true, encoding: .utf8)
+        }
     }
 
     private static func describe(_ error: Error, depth: Int) -> String {
