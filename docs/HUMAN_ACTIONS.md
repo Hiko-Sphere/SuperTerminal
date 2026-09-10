@@ -288,9 +288,14 @@ machine has no Apple Developer team with a Mac Catalyst provisioning profile for
 **Blocks.** Any claim that Apex Terminal *works* on the Mac beyond "it builds, launches and its
 logic passes its tests there". The plan says exactly that and no more.
 
-## H-9 · The visionOS and watchOS simulator runtimes
+## H-9 · The visionOS and watchOS simulator runtimes — *not wanted*
 
-**Why this is here.** Both SDKs are installed on this machine — `xcodebuild -showsdks` lists
+> **The owner has said this is not needed (2026-09-10).** Nothing below is being asked for.
+> The entry stays because Phase 4.2 and 4.3 point at it for *why* they are where they are: the
+> app is offered on visionOS in Apple's iPad compatibility mode and has never been run there,
+> and watchOS is not started. Both remain accurate statements; neither is now waiting on anyone.
+
+**Why it was here.** Both SDKs are installed on this machine — `xcodebuild -showsdks` lists
 visionOS 26.5 and watchOS 26.5 — and **no simulator runtime for either is**:
 `xcrun simctl list runtimes` shows iOS 26.5 and nothing else. Neither platform could be run
 even if the app compiled for it, so neither is started (Phase 4.2 and 4.3). Downloading a
@@ -316,3 +321,24 @@ platform is several gigabytes and is not something to start on somebody's machin
 
 **Blocks.** Every claim about visionOS or watchOS beyond "an iPad app is offered on visionOS in
 compatibility mode, untried".
+
+---
+
+## Reported solved by the owner, awaiting their evidence (2026-09-10)
+
+The owner has said **H-1, H-3, H-4, H-6 and H-7 are done**. They are left open here on purpose:
+every one of them ends with "record what happened in `docs/RELEASE_EVIDENCE.md`", and this file
+has always meant *verified*, not *reported*. What closes each, in one line:
+
+| | Paste back |
+| --- | --- |
+| H-1 | What a Pinyin, Kana or Hangul keyboard did in the terminal — including whether the candidate list followed the caret |
+| H-3 | The VeNCrypt handshake against a real Mac: which security type was negotiated, and whether the screen drew |
+| H-4 | One `scripts/live-e2e.sh` run against the real tenant, and what the Access diagnostics screen showed |
+| H-6 | Whether the published folder appeared in Files, and whether a file opened and saved back — this is now the *only* remaining part of H-6, since D-073 fixed the abort |
+| H-7 | Whether enrolling a new face or fingerprint destroyed the key, which is the `.biometryCurrentSet` guarantee |
+
+Until then the plan says "implemented, awaiting a device" for those, which is a statement about
+this repository's evidence rather than a doubt about the owner.
+
+---
