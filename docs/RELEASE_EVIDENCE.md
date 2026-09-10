@@ -3,6 +3,37 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-10 — after D-078 (custom themes were being lost silently)
+
+| Command | Result |
+| --- | --- |
+| `bash scripts/app-integration-e2e.sh` | **382 tests in 72 suites passed**, no restarts |
+| `bash scripts/ui-terminal-e2e.sh` (iPad Pro 13-inch M5) | **59 passed, 2 failed** — both `ZZSearchProbeUITests` |
+| `bash scripts/localization-audit.sh` | **green**, 0 orphans |
+| App warning gate | **0** |
+| Release archive | **ARCHIVE SUCCEEDED** |
+| The same five tests, with the fix removed | **4 of 5 fail** — every theme empty after the "next launch" |
+
+### Data loss, not a missing feature
+
+`AppSettings.customThemes` was a plain stored array — the only setting in that file with no
+`didSet` writing it back to defaults, and easy to miss precisely because everything around it has
+one. `BackupService` restores into it (`BackupService.swift:315`) and reads it when exporting
+(`:299`).
+
+So the sequence a user could actually perform was: restore a backup carrying themes → the themes
+appear in the picker and work → quit → they are gone, with nothing said. And a connection whose
+`themeID` pointed at one silently changed appearance at the same time, because
+`TerminalThemeResolver` falls back when the id no longer resolves.
+
+Confirmed by removing the fix and re-running: four of the five tests fail, each reporting an empty
+array where a theme should have been. That is the difference between a defect that was reasoned
+about and one that was reproduced.
+
+The key is in `Key.all` too, so `resetToDefaults()` takes the themes with it — a key missing from
+that list survives a reset and decides the next run's appearance. The test drives that through
+`resetToDefaults()` rather than asserting the private list, which is the behaviour worth pinning.
+
 ## 2026-09-10 — after D-077 (a picture behind the terminal)
 
 | Command | Result |

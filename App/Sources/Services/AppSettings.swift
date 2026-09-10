@@ -17,6 +17,7 @@ final class AppSettings {
         static let lineHeightMultiple = "settings.lineHeightMultiple"
         static let fontLigatures = "settings.fontLigatures"
         static let backdrop = "settings.backdrop"
+        static let customThemes = "settings.customThemes"
         static let scrollbackLimit = "settings.scrollbackLimit"
         static let clipboardExpirySeconds = "settings.clipboardExpirySeconds"
         static let keepAwakeWhileConnected = "settings.keepAwakeWhileConnected"
@@ -42,7 +43,7 @@ final class AppSettings {
 
         static let all = [
             themeID, lightThemeID, followSystemAppearance, fontSize, fontFamily, lineHeightMultiple,
-            fontLigatures, backdrop, scrollbackLimit, clipboardExpirySeconds,
+            fontLigatures, backdrop, customThemes, scrollbackLimit, clipboardExpirySeconds,
             keepAwakeWhileConnected, commandHistoryEnabled, spotlightEnabled, remoteClipboardWrites,
             confirmMultilinePaste,
             hideContentInAppSwitcher, cursorBlink, bellEnabled, keyRowVisible,
@@ -70,6 +71,7 @@ final class AppSettings {
         lineHeightMultiple = defaults.double(forKey: Key.lineHeightMultiple)
         fontLigatures = defaults.bool(forKey: Key.fontLigatures)
         backdrop = Self.decodeBackdrop(defaults.data(forKey: Key.backdrop))
+        customThemes = Self.decodeThemes(defaults.data(forKey: Key.customThemes))
         scrollbackLimit = defaults.integer(forKey: Key.scrollbackLimit)
         clipboardExpirySeconds = defaults.integer(forKey: Key.clipboardExpirySeconds)
         keepAwakeWhileConnected = defaults.bool(forKey: Key.keepAwakeWhileConnected)
@@ -154,6 +156,7 @@ final class AppSettings {
         lineHeightMultiple = defaults.double(forKey: Key.lineHeightMultiple)
         fontLigatures = defaults.bool(forKey: Key.fontLigatures)
         backdrop = Self.decodeBackdrop(defaults.data(forKey: Key.backdrop))
+        customThemes = Self.decodeThemes(defaults.data(forKey: Key.customThemes))
         scrollbackLimit = defaults.integer(forKey: Key.scrollbackLimit)
         clipboardExpirySeconds = defaults.integer(forKey: Key.clipboardExpirySeconds)
         keepAwakeWhileConnected = defaults.bool(forKey: Key.keepAwakeWhileConnected)
@@ -316,8 +319,27 @@ final class AppSettings {
     var cursorBlink: Bool { didSet { defaults.set(cursorBlink, forKey: Key.cursorBlink) } }
     var bellEnabled: Bool { didSet { defaults.set(bellEnabled, forKey: Key.bellEnabled) } }
 
-    /// Themes the user has defined, in addition to the built-ins.
-    var customThemes: [TerminalTheme] = []
+    /// Themes the user has defined, in addition to the built-ins (D-078).
+    ///
+    /// Persisted, which it was not: this was the one setting in this file with no `didSet`, and
+    /// `BackupService` restores into it. So a backup containing themes restored them, the picker
+    /// showed them, and the next launch lost them without a word — and any connection whose
+    /// `themeID` pointed at one silently changed appearance too.
+    var customThemes: [TerminalTheme] = [] {
+        didSet {
+            guard customThemes != oldValue else { return }
+            if customThemes.isEmpty {
+                defaults.removeObject(forKey: Key.customThemes)
+            } else if let data = try? JSONEncoder().encode(customThemes) {
+                defaults.set(data, forKey: Key.customThemes)
+            }
+        }
+    }
+
+    private static func decodeThemes(_ data: Data?) -> [TerminalTheme] {
+        guard let data else { return [] }
+        return (try? JSONDecoder().decode([TerminalTheme].self, from: data)) ?? []
+    }
 
     var allThemes: [TerminalTheme] { TerminalTheme.builtIn + customThemes }
 

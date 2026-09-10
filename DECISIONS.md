@@ -1412,3 +1412,4 @@ An index, so nothing has to be hunted for:
 | D-075 | `2dad271` | The change tag CloudKit needs, and the failures nobody was reading |
 | D-076 | `882f586` | The pane that lost its session offers to show something else |
 | D-077 | `6c85b70` | A picture behind the terminal, dimmed by a measured contract rather than by a slider |
+| D-078 | `a122d57` | The themes a restore put back, kept — they were being lost on the next launch |
