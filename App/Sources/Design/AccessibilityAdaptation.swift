@@ -63,13 +63,18 @@ struct TerminalThemeResolver {
         increaseContrast: Bool,
         hostOverride: String?
     ) -> TerminalTheme {
-        // An explicit per-host choice always wins: someone who picked a theme for a
+        // Contrast first, and this order is the whole point of the type: someone who has turned
+        // Increase Contrast on should not have to discover a terminal-specific setting to be
+        // obeyed. It used to be the other way round — the per-host override returned before this
+        // check — which quietly contradicted the docstring above and meant that anyone who had
+        // ever set a theme for one server stopped getting high contrast on it (D-077).
+        if increaseContrast || differentiateWithoutColor {
+            return .highContrast
+        }
+        // Otherwise an explicit per-host choice wins: someone who picked a theme for a
         // particular server meant it.
         if let hostOverride, let match = settings.allThemes.first(where: { $0.id == hostOverride }) {
             return match
-        }
-        if increaseContrast || differentiateWithoutColor {
-            return .highContrast
         }
         return settings.theme(for: colorScheme == .dark, hostOverride: nil)
     }

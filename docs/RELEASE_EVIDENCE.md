@@ -3,6 +3,93 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-10 — after D-077 (a picture behind the terminal)
+
+| Command | Result |
+| --- | --- |
+| `bash scripts/app-integration-e2e.sh` | **377 tests in 71 suites passed**, no restarts (353 in 67 before; 24 of the new ones are this slice) |
+| `bash scripts/ui-terminal-e2e.sh` (iPhone 17 Pro) | **58 passed, 2 failed** — both `ZZSearchProbeUITests`, another session's work |
+| `bash scripts/ui-terminal-e2e.sh` (iPad Pro 13-inch M5) | **58 passed, 3 failed** — the same two, plus `TutorialUITests`, explained and fixed below |
+| `bash scripts/localization-audit.sh` | **green**, 0 orphans; 24 new strings translated into both Chinese variants |
+| App warning gate | **0** |
+| Release archive | **ARCHIVE SUCCEEDED** |
+| `ApexTerminalFileProvider-*.ips` before / after | **11 / 11** |
+
+### The control this does not have
+
+A free opacity slider is the shortcut every competing terminal took, and it is why the feature has
+a bad name: it makes illegibility the user's own fault. Here the dimming is **solved**, from the
+picture's own measured extremes and the theme's background, and the person chooses only how much
+contrast they are prepared to spend — Subtle, Balanced or Bold, each stating what it costs.
+
+The contract is on the *ground*, not on the text. With `b = Lbg + 0.05` for the theme background
+and `c = Lg + 0.05` for a tile of the finished ground, require `max(c/b, b/c) ≤ T`. Then for any
+ink at all the contrast ratio falls by at most `T` — one bound covering all 16 ANSI colours, the
+whole 256-cube and the default foreground, without enumerating any of them.
+
+### The design's own algebra was wrong, and the test found it
+
+The contract arrived as an **additive** band: `|Lg − Lbg| ≤ (T − 1)(Lbg + 0.05)`. That is what
+anyone would write down, and it is asymmetric — it permits `c` as low as `b(2 − T)`, so a ground
+*darker* than the theme costs `1/(2 − T)`, which at `T = 1.25` is **1.33**, not 1.25.
+
+`BackdropLegibilityTests` swept every ink of three themes at three strengths and recorded **137
+violations**, all on the dark side. The band is multiplicative now, and one of the ten tests is
+there purely to keep the additive form from coming back.
+
+The measured constants, worst case (a picture containing both pure white and pure black):
+
+| Theme | Subtle | Balanced | Bold |
+| --- | --- | --- | --- |
+| Midnight | 0.9597 | 0.9131 | 0.8792 |
+| Daylight | 0.9582 | **0.9024** | 0.8546 |
+
+Midnight matches the figures the design computed (0.9131 against 0.9138) because a dark theme is
+bound by the *ceiling*, where both bands agree. Daylight does not (0.9024 against 0.877) because a
+light theme is bound by the *floor*, which is exactly the side the additive band got wrong.
+
+A real photograph is nothing like that worst case: a picture whose tiles sit in a narrow band
+solves below 0.6 and shows plainly. That is the argument for measuring each picture instead of
+assuming, and it is a test too.
+
+### A defect found on the way, unrelated to pictures
+
+`TerminalThemeResolver`'s docstring says the high-contrast theme is chosen automatically when the
+system asks for increased contrast, "because someone who has turned that on should not also have
+to discover a terminal-specific setting". The code returned the per-host theme override *first*,
+so anyone who had ever set a theme for one server stopped getting high contrast on that server.
+The ordering is fixed and `BackdropSuppressionTests` pins it — that test failed against the code
+as it stood.
+
+### Never on the drawing path
+
+A terminal redraws on every arriving chunk and every cursor blink. So: decode once through
+ImageIO's thumbnail path (the full-resolution bitmap never exists, and EXIF orientation is applied
+— a portrait photograph does not arrive on its side); blur once on import, from an unblurred
+master kept beside the blurred copy, so moving Softness back towards zero is possible at all;
+and bake one **opaque** bitmap at exactly the window's pixel size, with the dimming already
+composited in. `draw(_:)` scales nothing, blurs nothing and composites nothing.
+
+Two structural tests hold that shape, rather than a stopwatch — `RenderPerformanceTests` already
+records that a with-versus-without comparison measured within 1% and proved nothing:
+
+* **Drawing never bakes.** Sixty frames, a counting provider, every ask identical.
+* **The ground does not follow the dirty rectangle.** The cursor blink invalidates two cells every
+  0.53 seconds; derive the ground's rectangle from that and the whole photograph is squeezed into
+  two character cells, twice a second, for ever.
+
+One picture per *window*, not per pane: panes offset into it, so a split screen is one wallpaper
+rather than one crop each. And the ground reaches past the grid, or a phone shows a flat band
+under the notch and above the home indicator.
+
+### The failure that was mine
+
+`TutorialUITests` passed on the iPhone and failed on the iPad: the new Backdrop section pushed
+*Show the tour again* far enough down that the row entered the accessibility tree while still half
+off the bottom, and the tap landed elsewhere. It now scrolls until the row is **hittable**, not
+merely present — the fourth time this project has learned that, and the comment now lists the four
+sections that caused it.
+
 ## 2026-09-10 — after D-076 (the pane that lost its session)
 
 | Command | Result |

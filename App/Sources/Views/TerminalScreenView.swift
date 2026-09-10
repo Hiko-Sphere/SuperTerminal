@@ -11,6 +11,8 @@ struct TerminalScreenView: UIViewRepresentable {
     let fontFamily: String
     let lineHeightMultiple: CGFloat
     let ligaturesEnabled: Bool
+    /// The wallpaper, already resolved against the system's accessibility settings (D-077).
+    let backdrop: Backdrop?
     let blinkCursor: Bool
     let confirmMultilinePaste: Bool
     /// Called when ⌘K is pressed while the terminal has the keyboard.
@@ -40,6 +42,8 @@ struct TerminalScreenView: UIViewRepresentable {
         view.renderView.fontFamily = fontFamily
         view.renderView.lineHeightMultiple = lineHeightMultiple
         view.renderView.ligaturesEnabled = ligaturesEnabled
+        view.renderView.groundProvider = container.grounds
+        view.renderView.groundInputs = backdrop.map { .init(backdrop: $0, background: theme.background) }
         view.renderView.fontSize = fontSize
         context.coordinator.attach(
             to: view,
@@ -78,6 +82,8 @@ struct TerminalScreenView: UIViewRepresentable {
         view.renderView.fontFamily = fontFamily
         view.renderView.lineHeightMultiple = lineHeightMultiple
         view.renderView.ligaturesEnabled = ligaturesEnabled
+        view.renderView.groundProvider = container.grounds
+        view.renderView.groundInputs = backdrop.map { .init(backdrop: $0, background: theme.background) }
         view.renderView.fontSize = fontSize
         // A different font means a different number of cells in the same bounds, and the
         // remote program has to be told before it draws anything else.

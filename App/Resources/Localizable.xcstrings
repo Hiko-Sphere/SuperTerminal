@@ -800,6 +800,23 @@
         }
       }
     },
+    "A picture behind the terminal. How much of it shows is worked out from the picture itself and the theme you are using, so the text keeps the contrast the strength below promises — rather than leaving you to find a readable setting by eye.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "终端后面的一张图片。透出多少是根据图片本身与您正在使用的主题算出来的，因此文字会保留下方强度所承诺的对比度——而不是让您自己一点点试出一个看得清的设置。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "終端機後面的一張圖片。透出多少是根據圖片本身與您正在使用的佈景主題算出來的，因此文字會保留下方強度所承諾的對比度——而不是讓您自己一點點試出一個看得清的設定。"
+          }
+        }
+      }
+    },
     "A program on this server tried to copy to your clipboard. Settings → Security can allow it.": {
       "extractionState": "manual",
       "localizations": {
@@ -932,6 +949,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "API 金鑰（已儲存 — 輸入以取代）"
+          }
+        }
+      }
+    },
+    "About %lld%% of the picture shows through with this theme.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在本主题下约有 %lld%% 的画面透出。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在本佈景主題下約有 %lld%% 的畫面透出。"
           }
         }
       }
@@ -2109,6 +2143,23 @@
         }
       }
     },
+    "Backdrop": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "背景图"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "背景圖"
+          }
+        }
+      }
+    },
     "Backup": {
       "extractionState": "manual",
       "localizations": {
@@ -2122,6 +2173,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "備份"
+          }
+        }
+      }
+    },
+    "Balanced": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "均衡"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "均衡"
           }
         }
       }
@@ -2224,6 +2292,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "游標閃爍"
+          }
+        }
+      }
+    },
+    "Blurring a picture flattens it, which usually lets more of it show.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "模糊会让画面更平坦，通常也就能透出更多。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "模糊會讓畫面更平坦，通常也就能透出更多。"
+          }
+        }
+      }
+    },
+    "Bold": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "浓重"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "濃重"
           }
         }
       }
@@ -2632,6 +2734,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "正在檢查…"
+          }
+        }
+      }
+    },
+    "Choose a Different Picture…": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更换图片…"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更換圖片…"
+          }
+        }
+      }
+    },
+    "Choose a Picture…": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "选择图片…"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "選擇圖片…"
           }
         }
       }
@@ -4132,6 +4268,23 @@
         }
       }
     },
+    "Differentiate Without Colour is on, so the picture is not shown. The terminal uses its theme colour instead.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已开启「不使用颜色区分」，因此不显示图片，终端改用主题颜色。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已開啟「不使用顏色區分」，因此不顯示圖片，終端機改用佈景主題顏色。"
+          }
+        }
+      }
+    },
     "Direct": {
       "extractionState": "manual",
       "localizations": {
@@ -4863,6 +5016,23 @@
         }
       }
     },
+    "Fill": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "填满"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "填滿"
+          }
+        }
+      }
+    },
     "Find": {
       "extractionState": "manual",
       "localizations": {
@@ -4978,6 +5148,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "首次見到 %@"
+          }
+        }
+      }
+    },
+    "Fit": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "完整显示"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "完整顯示"
           }
         }
       }
@@ -5896,6 +6083,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "已包含"
+          }
+        }
+      }
+    },
+    "Increase Contrast is on, so the picture is not shown. The terminal uses its theme colour instead.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已开启「增强对比度」，因此不显示图片，终端改用主题颜色。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已開啟「增強對比度」，因此不顯示圖片，終端機改用佈景主題顏色。"
           }
         }
       }
@@ -8552,6 +8756,23 @@
         }
       }
     },
+    "Placement": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "填充方式"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "填充方式"
+          }
+        }
+      }
+    },
     "Port": {
       "extractionState": "manual",
       "localizations": {
@@ -9249,6 +9470,23 @@
         }
       }
     },
+    "Reduce Transparency is on, so the picture is not shown. The terminal uses its theme colour instead.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已开启「降低透明度」，因此不显示图片，终端改用主题颜色。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已開啟「降低透明度」，因此不顯示圖片，終端機改用佈景主題顏色。"
+          }
+        }
+      }
+    },
     "Refresh the folder to see what is.": {
       "extractionState": "manual",
       "localizations": {
@@ -9313,6 +9551,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "移除憑證"
+          }
+        }
+      }
+    },
+    "Remove Picture": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "移除图片"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "移除圖片"
           }
         }
       }
@@ -11012,6 +11267,23 @@
         }
       }
     },
+    "Softness": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "柔化"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "柔化"
+          }
+        }
+      }
+    },
     "Sort by": {
       "extractionState": "manual",
       "localizations": {
@@ -11348,6 +11620,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "已儲存在本裝置上。"
+          }
+        }
+      }
+    },
+    "Strength": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "强度"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "強度"
+          }
+        }
+      }
+    },
+    "Subtle": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "轻微"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "輕微"
           }
         }
       }
@@ -11692,6 +11998,23 @@
         }
       }
     },
+    "Text keeps about %lld%% of this theme's contrast.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "文字保留本主题约 %lld%% 的对比度。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "文字保留本佈景主題約 %lld%% 的對比度。"
+          }
+        }
+      }
+    },
     "That certificate was issued for a different key.": {
       "extractionState": "manual",
       "localizations": {
@@ -11841,6 +12164,74 @@
           "stringUnit": {
             "state": "translated",
             "value": "該密碼打不開這份備份。"
+          }
+        }
+      }
+    },
+    "That picture could not be read.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法读取该图片。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法讀取該圖片。"
+          }
+        }
+      }
+    },
+    "That picture could not be saved.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法保存该图片。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法儲存該圖片。"
+          }
+        }
+      }
+    },
+    "That picture could not be used.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法使用该图片。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法使用該圖片。"
+          }
+        }
+      }
+    },
+    "That picture is no longer on this device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "该图片已不在本设备上。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "該圖片已不在本裝置上。"
           }
         }
       }
@@ -13171,23 +13562,6 @@
         }
       }
     },
-    "This file browser is no longer open. Close the pane, or open a server's files again.": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "该文件浏览器已不再打开。请关闭此分窗，或重新打开某台服务器的文件。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "該檔案瀏覽器已不再開啟。請關閉此分割窗格，或重新開啟某台伺服器的檔案。"
-          }
-        }
-      }
-    },
     "This folder is empty": {
       "extractionState": "manual",
       "localizations": {
@@ -13426,23 +13800,6 @@
         }
       }
     },
-    "This session is no longer open. Close the pane, or choose a connection.": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "该会话已不再打开。请关闭此分屏，或选择一个连接。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "該工作階段已不再開啟。請關閉此分割區，或選擇一個連線。"
-          }
-        }
-      }
-    },
     "This system cannot serve a server through the Files app: it has no file-provider storage to put the files in, so the system takes the connection back as soon as it is added. Everything in the app's own file browser still works. On a device this does not happen.": {
       "extractionState": "manual",
       "localizations": {
@@ -13507,23 +13864,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "此 tmux 工作階段已不再接上。"
-          }
-        }
-      }
-    },
-    "This tmux session is no longer attached. Open the connection again to attach to it.": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "此 tmux 会话已不再接入。再次打开此连接即可重新接入。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "此 tmux 工作階段已不再接上。再次開啟此連線即可重新接上。"
           }
         }
       }
@@ -13779,6 +14119,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "重試"
+          }
+        }
+      }
+    },
+    "Try a different photo, or export it as JPEG or PNG first.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请换一张照片，或先导出为 JPEG 或 PNG。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請換一張照片，或先匯出為 JPEG 或 PNG。"
           }
         }
       }

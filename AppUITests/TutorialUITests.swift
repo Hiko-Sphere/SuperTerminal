@@ -71,8 +71,12 @@ final class TutorialUITests: XCTestCase {
         // …and it is found again where someone looking for help would look.
         app.buttons["settings-open"].tap()
         let entry = app.buttons["settings-tutorial"]
+        // Until it is *hittable*, not merely present. Settings grows a section every few
+        // changes — Help in D-056, Spotlight in D-061, the font rows in D-063, Backdrop in
+        // D-077 — and a row that has entered the accessibility tree but is still half off the
+        // bottom takes a tap that lands somewhere else.
         var attempts = 0
-        while !entry.exists, attempts < 10 {
+        while !entry.exists || !entry.isHittable, attempts < 12 {
             app.swipeUp()
             attempts += 1
         }

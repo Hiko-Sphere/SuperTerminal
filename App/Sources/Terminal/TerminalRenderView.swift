@@ -60,6 +60,36 @@ final class TerminalRenderView: UIView {
         didSet { if ligaturesEnabled != oldValue { setNeedsDisplay() } }
     }
 
+    /// Where a baked wallpaper comes from (D-077).
+    ///
+    /// Supplied rather than decoded here: `imageCache` below is per-view, so four panes would
+    /// otherwise hold four copies of the same screen-sized photograph.
+    weak var groundProvider: (any BackdropGroundProviding)?
+
+    /// The wallpaper and the colour it was measured against, or nil for the flat theme.
+    var groundInputs: GroundInputs? {
+        didSet { if groundInputs != oldValue { setNeedsDisplay() } }
+    }
+
+    /// What the ground depends on, and nothing else — in particular not this pane's rectangle.
+    struct GroundInputs: Equatable {
+        var backdrop: Backdrop
+        var background: RGBColor
+    }
+
+    /// This view's origin in its window, recomputed on layout rather than per frame.
+    ///
+    /// The ground is anchored to the *window*: one picture with panes offsetting into it. Anchor
+    /// it to the view and a split screen shows one crop per pane, which reads as a rendering
+    /// fault rather than as a wallpaper.
+    private var groundOrigin: CGPoint = .zero
+
+    #if DEBUG
+    /// Where the ground was last drawn, so a test can assert it does not move with the dirty
+    /// rectangle. The cursor blink invalidates two cells twice a second.
+    private(set) var lastGroundDrawRect: CGRect?
+    #endif
+
     /// Rows scrolled back from the live screen. Zero means the bottom.
     var scrollbackOffset: Int = 0 {
         didSet { if scrollbackOffset != oldValue { setNeedsDisplay() } }
@@ -274,17 +304,34 @@ final class TerminalRenderView: UIView {
 
     // MARK: - Drawing
 
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        let origin = window.map { convert(CGPoint.zero, to: $0) } ?? .zero
+        if origin != groundOrigin {
+            groundOrigin = origin
+            setNeedsDisplay()
+        }
+    }
+
     override func draw(_ rect: CGRect) {
         guard let context = UIGraphicsGetCurrentContext(), let screen else { return }
 
-        context.setFillColor(theme.background.cgColor)
-        context.fill(rect)
+        let ground = currentGround()
+        // The flat fill runs before the flip, where `rect` is in UIKit's coordinates and names
+        // the region it actually covers. It is skipped only when an exactly-sized opaque ground
+        // is about to cover every pixel of it.
+        if ground == nil {
+            context.setFillColor(theme.background.cgColor)
+            context.fill(rect)
+        }
 
         // Core Text draws in a bottom-up coordinate space; flipping once here keeps every
         // coordinate below in UIKit's top-down space.
         context.textMatrix = .identity
         context.translateBy(x: 0, y: bounds.height)
         context.scaleBy(x: 1, y: -1)
+
+        if let ground { draw(ground, in: context) }
 
         let displayed = displayedLines(from: screen)
         let firstVisibleRow = max(0, Int(rect.minY / metrics.cellHeight))
@@ -301,6 +348,48 @@ final class TerminalRenderView: UIView {
         if !composition.isEmpty, scrollbackOffset == 0 {
             drawComposition(screen: screen, in: context)
         }
+    }
+
+    /// The wallpaper for this window, if there is one and it has finished baking.
+    private func currentGround() -> BakedGround? {
+        guard let inputs = groundInputs, let provider = groundProvider else { return nil }
+        let points = window?.bounds.size ?? bounds.size
+        guard points.width > 0, points.height > 0 else { return nil }
+        let scale = window?.screen.scale ?? contentScaleFactor
+        return provider.ground(
+            for: inputs.backdrop,
+            background: inputs.background,
+            windowPixelSize: CGSize(width: points.width * scale, height: points.height * scale)
+        )
+    }
+
+    /// Blits the baked ground, positioned by this view's place in the window.
+    ///
+    /// The rectangle is derived from the window, never from the dirty rectangle. Derive it from
+    /// `rect` and the cursor blink — which invalidates two cells every 0.53 seconds — squeezes the
+    /// whole photograph into those two cells, twice a second, for ever.
+    ///
+    /// Called after the flip, where the context is Quartz-native and y runs upwards, so a
+    /// `CGImage` draws the right way up. The same reason `drawImageSlices` needs no correction.
+    private func draw(_ ground: BakedGround, in context: CGContext) {
+        let target = CGRect(
+            x: -groundOrigin.x,
+            y: bounds.height + groundOrigin.y - ground.pointSize.height,
+            width: ground.pointSize.width,
+            height: ground.pointSize.height
+        )
+        // Nothing to resample when the bake matched the backing store, which is the usual case.
+        context.interpolationQuality = ground.pixelSize == backingStorePixelSize ? .none : .low
+        context.draw(ground.image, in: target)
+        #if DEBUG
+        lastGroundDrawRect = target
+        #endif
+    }
+
+    /// The size of this view's own backing store, in pixels.
+    private var backingStorePixelSize: CGSize {
+        let scale = window?.screen.scale ?? contentScaleFactor
+        return CGSize(width: bounds.width * scale, height: bounds.height * scale)
     }
 
     /// Draws what an input method is still assembling, over the cells the cursor sits on

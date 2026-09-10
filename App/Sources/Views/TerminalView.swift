@@ -17,9 +17,20 @@ struct TerminalView: View {
 
     @State private var isSearching = false
     @State private var showsSnippets = false
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @State private var showsForwards = false
     @State private var searchQuery = ""
     @State private var searchCaseSensitive = false
+
+    /// The wallpaper, once the system's accessibility settings have had their say (D-077).
+    private var backdrop: Backdrop? {
+        BackdropResolver().backdrop(
+            container.settings.backdrop,
+            reduceTransparency: reduceTransparency,
+            increaseContrast: colorSchemeContrast == .increased,
+            differentiateWithoutColor: differentiateWithoutColor
+        )
+    }
 
     private var theme: TerminalTheme {
         TerminalThemeResolver(settings: container.settings).theme(
@@ -112,7 +123,14 @@ struct TerminalView: View {
 
     private var connectedTerminal: some View {
         ZStack {
-            theme.background.swiftUIColor.ignoresSafeArea()
+            // The ground reaches past the grid, or a phone shows a flat band under the notch and
+            // above the home indicator — which is precisely where the eye goes (D-077).
+            if let backdrop {
+                BackdropSurface(backdrop: backdrop, background: theme.background, provider: container.grounds)
+                    .ignoresSafeArea()
+            } else {
+                theme.background.swiftUIColor.ignoresSafeArea()
+            }
 
             VStack(spacing: 0) {
                 if let reconnection = session.reconnection {
@@ -151,6 +169,7 @@ struct TerminalView: View {
                     fontFamily: container.settings.fontFamily,
                     lineHeightMultiple: container.settings.lineHeightMultiple,
                     ligaturesEnabled: container.settings.fontLigatures,
+                    backdrop: backdrop,
                     blinkCursor: container.settings.cursorBlink,
                     confirmMultilinePaste: container.settings.confirmMultilinePaste,
                     onCommandPalette: { scene.isShowingPalette = true },

@@ -84,6 +84,11 @@ struct SettingsView: View {
                     Text("Only fonts where every character is the same width are offered: a terminal draws a grid, and a font that does not measure evenly draws a screen that does not line up. Ligatures are off by default because a font that draws != as one glyph is drawing two cells as one.")
                 }
 
+                // Its own section rather than appended to Appearance, which already runs long
+                // enough that new rows would land below the fold on a phone — and a row below
+                // the fold is not in the accessibility tree at all (D-068).
+                BackdropSettingsSection()
+
                 AppLockSettingsSection()
 
                 Section {

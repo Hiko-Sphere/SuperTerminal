@@ -56,7 +56,7 @@ enum UITestSeeding {
                 portForwards: environment["ST_UITEST_FORWARD_PORT"].flatMap { Int($0) }.map { listenPort in
                     [PortForward(
                         id: UUID(uuidString: "00000000-0000-4000-A000-000000000004")!,
-                        name: "Seeded forward",
+                        name: environment["ST_UITEST_FORWARD_NAME"] ?? "Seeded forward",
                         kind: .local,
                         listenPort: listenPort,
                         targetHost: "127.0.0.1",
@@ -69,7 +69,9 @@ enum UITestSeeding {
             screen: environment["ST_UITEST_VNC_PORT"].flatMap { Int($0) }.map { port in
                 ScreenConnection(
                     id: UUID(uuidString: "00000000-0000-4000-A000-000000000003")!,
-                    name: "Test Screen",
+                    // Named by the run where one is given. A capture for the store cannot
+                    // show a row called "Test Screen"; every other run keeps the default.
+                    name: environment["ST_UITEST_SCREEN_NAME"] ?? "Test Screen",
                     address: "127.0.0.1",
                     port: port,
                     route: .throughSSH(hostID: UUID(uuidString: "00000000-0000-4000-A000-000000000002")!)
@@ -78,8 +80,8 @@ enum UITestSeeding {
             tmuxHost: environment["ST_UITEST_TMUX_PORT"].flatMap { Int($0) }.map { port in
                 Host(
                     id: UUID(uuidString: "00000000-0000-4000-A000-000000000005")!,
-                    name: "tmux Test Server",
-                    hostname: "127.0.0.1",
+                    name: environment["ST_UITEST_TMUX_NAME"] ?? "tmux Test Server",
+                    hostname: environment["ST_UITEST_TMUX_HOST"] ?? "127.0.0.1",
                     port: port,
                     username: environment["ST_UITEST_TMUX_USER"] ?? "tmuxtest",
                     transport: .directTCP,
@@ -154,6 +156,11 @@ enum UITestSeeding {
         container.snippetStore.removeAll()
         container.hostStore.removeAll()
         container.screenStore.removeAll()
+        // The wallpaper's record *and* its files: a preference cleared without the pixels leaves
+        // a picture nothing points at, and files kept without the preference leave one run's
+        // photograph deciding the next run's appearance (D-077).
+        container.settings.backdrop = nil
+        container.backdrops.removeAll()
         // Sessions left open by the previous run would otherwise be offered for reopening
         // at the top of the list. A run that tests that offer across its own relaunch
         // asks to keep it.

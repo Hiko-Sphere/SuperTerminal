@@ -38,6 +38,16 @@ final class AppContainer {
         hostStore: hostStore, vault: vault, knownHosts: knownHosts, log: diagnostics.logger
     )
 
+    /// The wallpaper's pixels, and the grounds baked from them (D-077). Lazy for the same
+    /// reason as the two above: most launches never look at a photograph.
+    @ObservationIgnored lazy var backdrops: BackdropStore = BackdropStore(
+        directory: HostStore.defaultDirectory(), log: diagnostics.logger
+    )
+
+    @ObservationIgnored lazy var grounds: BackdropGroundCache = BackdropGroundCache(
+        store: backdrops, log: diagnostics.logger
+    )
+
     @ObservationIgnored lazy var backup: BackupService = BackupService(
         hosts: hostStore, screens: screenStore, snippets: snippetStore,
         knownHosts: knownHosts, settings: settings, vault: vault, log: diagnostics.logger

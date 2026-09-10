@@ -1411,3 +1411,4 @@ An index, so nothing has to be hunted for:
 | D-074 | `a3272e2` | A split screen holds anything: another server, a screen, a folder, or one you have not added yet |
 | D-075 | `2dad271` | The change tag CloudKit needs, and the failures nobody was reading |
 | D-076 | `882f586` | The pane that lost its session offers to show something else |
+| D-077 | `6c85b70` | A picture behind the terminal, dimmed by a measured contract rather than by a slider |

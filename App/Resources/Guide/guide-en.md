@@ -157,6 +157,12 @@ latches for the next key, so Control then C sends `^C`. Hold it to keep it down.
   that is not in your list yet, which opens the editor and puts what you save straight into the
   pane. ⌥⌘[ and ⌥⌘] move between panes, ⌥⌘W closes one.
 - **Themes** and light/dark following the system are in **Settings → Appearance**.
+- **A picture behind the terminal** is in **Settings → Backdrop**. How much of it shows is not a
+  slider you have to find a readable setting on: it is worked out from the picture itself and the
+  theme you are using, so the text keeps the share of contrast the strength you chose promises.
+  Softening a picture flattens it, which usually lets more of it through. Turning on **Reduce
+  Transparency**, **Increase Contrast** or **Differentiate Without Colour** hides the picture
+  entirely and the setting says which one did it.
 - **Shell integration** is understood where a shell offers it: the app follows the working
   directory a shell reports, and knows where a prompt and its output begin. A program can
   also ask to copy to your clipboard — `tmux` and `vim` do — which is off until you allow

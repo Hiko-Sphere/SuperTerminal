@@ -15,9 +15,20 @@ struct TmuxWindowView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.colorSchemeContrast) private var colorSchemeContrast
     @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     let session: TmuxSession
     /// Whether this view should hold the keyboard.
     let wantsKeyboard: Bool
+
+    /// The wallpaper, resolved the same way the terminal resolves it (D-077).
+    private var backdrop: Backdrop? {
+        BackdropResolver().backdrop(
+            container.settings.backdrop,
+            reduceTransparency: reduceTransparency,
+            increaseContrast: colorSchemeContrast == .increased,
+            differentiateWithoutColor: differentiateWithoutColor
+        )
+    }
 
     private var theme: TerminalTheme {
         TerminalThemeResolver(settings: container.settings).theme(
@@ -58,7 +69,14 @@ struct TmuxWindowView: View {
                 )
             }
         }
-        .background(theme.background.swiftUIColor)
+        .background {
+                if let backdrop {
+                    BackdropSurface(backdrop: backdrop, background: theme.background, provider: container.grounds)
+                        .ignoresSafeArea()
+                } else {
+                    theme.background.swiftUIColor
+                }
+            }
         .navigationTitle(session.host.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { toolbar }
@@ -147,6 +165,7 @@ struct TmuxWindowView: View {
                 fontFamily: container.settings.fontFamily,
                 lineHeightMultiple: container.settings.lineHeightMultiple,
                 ligaturesEnabled: container.settings.fontLigatures,
+                backdrop: backdrop,
                 blinkCursor: container.settings.cursorBlink,
                 scrollbackOffset: session.scrollOffsets[pane] ?? 0,
                 wantsKeyboard: wantsKeyboard && isActive,

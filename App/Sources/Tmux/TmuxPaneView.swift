@@ -18,6 +18,9 @@ struct TmuxPaneView: UIViewRepresentable {
     let fontFamily: String
     let lineHeightMultiple: CGFloat
     let ligaturesEnabled: Bool
+    /// The wallpaper (D-077). A second `UIViewRepresentable` over the same input view: miss it
+    /// and a tmux window is the one place in the app with no picture behind it.
+    let backdrop: Backdrop?
     let blinkCursor: Bool
     /// How far back this pane is scrolled, in lines.
     let scrollbackOffset: Int
@@ -33,6 +36,8 @@ struct TmuxPaneView: UIViewRepresentable {
         view.renderView.fontFamily = fontFamily
         view.renderView.lineHeightMultiple = lineHeightMultiple
         view.renderView.ligaturesEnabled = ligaturesEnabled
+        view.renderView.groundProvider = container.grounds
+        view.renderView.groundInputs = backdrop.map { .init(backdrop: $0, background: theme.background) }
         view.renderView.fontSize = fontSize
         context.coordinator.attach(to: view, session: session, pane: pane, onHaptic: onHaptic, onCopy: onCopy)
         return view
@@ -52,6 +57,8 @@ struct TmuxPaneView: UIViewRepresentable {
         view.renderView.fontFamily = fontFamily
         view.renderView.lineHeightMultiple = lineHeightMultiple
         view.renderView.ligaturesEnabled = ligaturesEnabled
+        view.renderView.groundProvider = container.grounds
+        view.renderView.groundInputs = backdrop.map { .init(backdrop: $0, background: theme.background) }
         view.renderView.fontSize = fontSize
         if fontChanged { view.reportGridSizeIfChanged() }
         view.renderView.update(screen: screen)

@@ -16,6 +16,7 @@ final class AppSettings {
         static let fontFamily = "settings.fontFamily"
         static let lineHeightMultiple = "settings.lineHeightMultiple"
         static let fontLigatures = "settings.fontLigatures"
+        static let backdrop = "settings.backdrop"
         static let scrollbackLimit = "settings.scrollbackLimit"
         static let clipboardExpirySeconds = "settings.clipboardExpirySeconds"
         static let keepAwakeWhileConnected = "settings.keepAwakeWhileConnected"
@@ -41,7 +42,7 @@ final class AppSettings {
 
         static let all = [
             themeID, lightThemeID, followSystemAppearance, fontSize, fontFamily, lineHeightMultiple,
-            fontLigatures, scrollbackLimit, clipboardExpirySeconds,
+            fontLigatures, backdrop, scrollbackLimit, clipboardExpirySeconds,
             keepAwakeWhileConnected, commandHistoryEnabled, spotlightEnabled, remoteClipboardWrites,
             confirmMultilinePaste,
             hideContentInAppSwitcher, cursorBlink, bellEnabled, keyRowVisible,
@@ -68,6 +69,7 @@ final class AppSettings {
         fontFamily = defaults.string(forKey: Key.fontFamily) ?? ""
         lineHeightMultiple = defaults.double(forKey: Key.lineHeightMultiple)
         fontLigatures = defaults.bool(forKey: Key.fontLigatures)
+        backdrop = Self.decodeBackdrop(defaults.data(forKey: Key.backdrop))
         scrollbackLimit = defaults.integer(forKey: Key.scrollbackLimit)
         clipboardExpirySeconds = defaults.integer(forKey: Key.clipboardExpirySeconds)
         keepAwakeWhileConnected = defaults.bool(forKey: Key.keepAwakeWhileConnected)
@@ -151,6 +153,7 @@ final class AppSettings {
         fontFamily = defaults.string(forKey: Key.fontFamily) ?? ""
         lineHeightMultiple = defaults.double(forKey: Key.lineHeightMultiple)
         fontLigatures = defaults.bool(forKey: Key.fontLigatures)
+        backdrop = Self.decodeBackdrop(defaults.data(forKey: Key.backdrop))
         scrollbackLimit = defaults.integer(forKey: Key.scrollbackLimit)
         clipboardExpirySeconds = defaults.integer(forKey: Key.clipboardExpirySeconds)
         keepAwakeWhileConnected = defaults.bool(forKey: Key.keepAwakeWhileConnected)
@@ -187,6 +190,29 @@ final class AppSettings {
     /// makes long output easier to read, less fits more on a phone.
     var lineHeightMultiple: Double {
         didSet { defaults.set(lineHeightMultiple, forKey: Key.lineHeightMultiple) }
+    }
+
+    /// The picture behind the terminal, or nothing (D-077).
+    ///
+    /// A few hundred bytes of JSON in defaults; the photograph itself is a file in
+    /// ``BackdropStore``. One wallpaper, one record — no second store to keep in step.
+    var backdrop: Backdrop? {
+        didSet {
+            guard backdrop != oldValue else { return }
+            if let backdrop, let data = try? JSONEncoder().encode(backdrop) {
+                defaults.set(data, forKey: Key.backdrop)
+            } else {
+                defaults.removeObject(forKey: Key.backdrop)
+            }
+        }
+    }
+
+    /// A record written by an older build decodes through ``Backdrop``'s own forgiving
+    /// initialiser; anything it cannot read at all is treated as no wallpaper rather than as a
+    /// reason to fail launching.
+    private static func decodeBackdrop(_ data: Data?) -> Backdrop? {
+        guard let data else { return nil }
+        return try? JSONDecoder().decode(Backdrop.self, from: data)
     }
 
     /// Whether the chosen font's ligatures are drawn.
