@@ -19,6 +19,25 @@
 		-->
 		<key>NSExtensionFileProviderDocumentGroup</key>
 		<string>group.dev.apexterminal.app</string>
+		<!--
+		  Required, even though this extension implements only the *replicated* protocol —
+		  and its absence is what aborted the extension process eleven times in one night
+		  (D-073). `fileproviderd` reads this key into `FPDProviderDescriptor.supportsEnumeration`;
+		  `-[FPDProvider supportsFPFS]` returns NO the moment that is NO; and `addDomain:`
+		  answers `isReplicated && !supportsFPFS` by logging "was asked with FPFS, but it's
+		  not supported, will fallback" and calling `setReplicated:NO`. The domain the app
+		  registered as replicated is then served through the pre-replicated API, which this
+		  extension does not implement, and the framework's answer is `abort()` in
+		  `__FILEPROVIDER_V2_EXTENSION_WITHOUT_IMPL`.
+
+		  The decision code is identical in the simulator runtime and in the arm64e device
+		  one — there is no simulator conditional in it — so this was never "the simulator
+		  has no FPFS". Apple's own File Provider Extension template ships this key beside a
+		  replicated principal class; this hand-written plist reproduced every key of that
+		  template except this one.
+		-->
+		<key>NSExtensionFileProviderSupportsEnumeration</key>
+		<true/>
 		<key>NSExtensionPointIdentifier</key>
 		<string>com.apple.fileprovider-nonui</string>
 		<key>NSExtensionPrincipalClass</key>

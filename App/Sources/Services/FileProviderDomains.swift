@@ -54,6 +54,15 @@ final class FileProviderDomains {
         String(localized: "On the Mac, servers cannot be added to Finder from this app. The system's replicated File Provider is not available to a Mac Catalyst app, so this switch would do nothing. The app's own file browser works here in full.")
     }
 
+    /// What a person is told where the system refuses to keep a domain replicated.
+    static var notReplicatedNote: String {
+        String(localized: "This system cannot serve a server through the Files app: it has no file-provider storage to put the files in, so the system takes the connection back as soon as it is added. Everything in the app's own file browser still works. On a device this does not happen.")
+    }
+
+    /// Set once the system has been seen to downgrade a domain. Nothing is published after
+    /// that, for as long as the app is running (D-073).
+    private var systemRefusesReplicatedDomains = false
+
     /// Whether a server can be put in the system's file browser at all.
     ///
     /// False on Mac Catalyst, and not as an omission: `NSFileProviderManager` and everything
@@ -64,7 +73,7 @@ final class FileProviderDomains {
         #if targetEnvironment(macCatalyst)
         false
         #else
-        store != nil
+        store != nil && !systemRefusesReplicatedDomains
         #endif
     }
 
@@ -151,7 +160,37 @@ final class FileProviderDomains {
             ))
             log.info("published a domain", ["domain": record.displayName])
         }
+        try await withdrawDomainsTheSystemWouldNotKeepReplicated()
         #endif
+    }
+
+    /// Takes back any domain the system did not actually make replicated (D-073).
+    ///
+    /// This is a guard, not the fix. The reason domains were being downgraded was a missing
+    /// `NSExtensionFileProviderSupportsEnumeration` in the extension's Info.plist, and that
+    /// is fixed there — but the consequence of a downgrade is severe enough to be worth
+    /// catching whatever causes it: the system serves a downgraded domain through the
+    /// pre-replicated API, this extension implements only the replicated one, and the
+    /// framework's answer to being asked anyway is `abort()`, in
+    /// `__FILEPROVIDER_V2_EXTENSION_WITHOUT_IMPL`. A server left in the Files sidebar in that
+    /// state cannot be opened and kills the extension process on every attempt.
+    ///
+    /// So a domain that comes back non-replicated is taken away again and the switch says
+    /// why. The framework's own header names this read-back as the supported way to ask:
+    /// *"users are advised to rely on the output of `getDomainsForProviderIdentifier:`"*.
+    private func withdrawDomainsTheSystemWouldNotKeepReplicated() async throws {
+        let downgraded = try await NSFileProviderManager.domains().filter { !$0.isReplicated }
+        guard !downgraded.isEmpty else { return }
+        // Before removing anything: nothing more is published this launch, so a second
+        // reconcile cannot put the same domain back and start the cycle again.
+        systemRefusesReplicatedDomains = true
+        unavailableReason = Self.notReplicatedNote
+        for domain in downgraded {
+            try? await NSFileProviderManager.remove(domain)
+            log.error("withdrew a domain the system would not keep replicated", [
+                "domain": domain.identifier.rawValue,
+            ])
+        }
     }
 
     /// Tells the system a folder's contents changed, so Files notices work the app did.

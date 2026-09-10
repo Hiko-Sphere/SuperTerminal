@@ -102,11 +102,40 @@ Deploy Schema to Production before any TestFlight build syncs.
 **Verification afterwards.** Set `SyncAvailability.isAvailable = true`, run
 `ApexTerminalTests`, then sync between two signed devices.
 
+**What changed under this since it was written (D-075).** Two client-side defects were found
+and fixed, and *neither was the cause* — but both were invisible, and both would have bitten
+the moment the container started accepting writes:
+
+* No write carried CloudKit's change tag, because every `CKRecord` was built fresh. The first
+  write of a record would have succeeded and every write after it would have been refused with
+  `serverRecordChanged`, permanently.
+* `CKSyncEngine` reports per-record and per-zone failures on its *events*, not on the error
+  thrown by `sendChanges()`. The transport read only the success halves, so a push the server
+  refused returned the same empty list as a push with nothing to send.
+
+The second one bears on this entry directly: while it stood, a refused push was reported as a
+clean one. The HTTP 500 in the diagnosis was read off a real device (D-036) and is a
+request-level status, so it stands — but when the container is fixed, re-measure rather than
+assuming the rest of the picture is still accurate. `push` now throws when the server refused
+everything, and records each failure through `SyncDiagnostics` in DEBUG, so the next
+measurement will have something to read.
+
 **Blocks.** iCloud sync, which is currently not offered at all.
 
 ---
 
 ## H-6 · Browse a server in the Files app on a real device
+
+> **Corrected in D-073.** This entry used to say the extension aborting on the simulator was
+> expected and unfixable, because "the simulator has no FPFS". That was wrong. The domain was
+> being downgraded because `NSExtensionFileProviderSupportsEnumeration` was missing from the
+> extension's Info.plist; `fileproviderd` refuses FPFS for a provider without it, and a
+> non-replicated domain is served through an API this extension does not implement — `abort()`.
+> The daemon's decision code is byte-for-byte the same in the simulator and the arm64e device
+> runtime, so it would have aborted on a phone too. With the key in place the domain stays
+> replicated here, the extension is no longer killed, and the end-to-end suite *runs* — it then
+> times out waiting for the published folder to appear in the domain root, which is the real
+> and much smaller thing this entry is now for.
 
 **Why a person.** Not a matter of judgement this time — a matter of hardware. A replicated
 File Provider domain is backed by FPFS, and the iOS Simulator does not have it.

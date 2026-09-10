@@ -185,21 +185,36 @@ struct FileProviderDomainTests {
         #expect(record.transport == .directTCP)
 
         // And the domain the system knows about, which is what puts it in the sidebar.
+        //
+        // A domain is asked for as a replicated one, because the extension implements only
+        // the replicated protocol — and it has to *stay* replicated, here as much as on a
+        // device.
+        //
+        // This assertion used to read `isReplicated == !runsInSimulator`, with a paragraph
+        // explaining that the simulator has no FPFS and that nothing could be concluded from
+        // the extension aborting. That explanation was wrong, and it hid a real defect for
+        // as long as it stood: `NSExtensionFileProviderSupportsEnumeration` was missing from
+        // the extension's Info.plist, `fileproviderd` answers a missing key by refusing FPFS
+        // and downgrading the domain, and a downgraded domain is served through an API this
+        // extension does not implement — `abort()`. The daemon's decision code is identical
+        // in the simulator and in the arm64e device runtime, so it would have aborted on a
+        // phone too (D-073).
+        //
+        // So: no `runsInSimulator`, and no availability check either — `isReplicated` is
+        // marked `ios(16.0)`, below this app's deployment target.
         let domains = try await NSFileProviderManager.domains()
         let published = domains.first { $0.identifier.rawValue == host.id.uuidString }
         #expect(published != nil, "the domain was not registered; Files would show nothing")
         #expect(published?.displayName == host.name)
-        // The domain is created as a replicated one, because the extension implements
-        // only the replicated protocol. On a device it stays that way. The simulator has
-        // no FPFS to back it, so `fileproviderd` logs "was asked with FPFS, but it's not
-        // supported, will fallback" and quietly drops the flag — after which it tries to
-        // serve the domain through the older API, finds no implementation, and aborts the
-        // extension process. That is why the end-to-end suite runs on hardware only
-        // (H-6). Asserting the downgrade rather than skipping the check keeps the day
-        // this was diagnosed from having to be spent again.
-        if #available(iOS 18.0, *) {
-            #expect(published?.isReplicated == !runsInSimulator)
-        }
+        #expect(
+            published?.isReplicated == true,
+            "the domain was downgraded — check NSExtensionFileProviderSupportsEnumeration in Config/FileProviderInfo.plist"
+        )
+        #expect(
+            domains.allSatisfy { $0.isReplicated },
+            "no downgraded domain may survive: being asked about one aborts the extension"
+        )
+        #expect(app.files.isAvailable, "and the feature stays available")
 
         // Turning it off has to take it away again, or a deleted server haunts Files.
         await app.files.setPublished(false, for: host)

@@ -1407,3 +1407,4 @@ An index, so nothing has to be hunted for:
 | D-070 | `83b7c10` | The Mac, as itself: Catalyst with a real menu bar and the limits said out loud |
 | D-071 | `89e530e` | Several remote folders at once: a file browser is a session, not a sheet |
 | D-072 | `548631d` | visionOS as it actually stands: offered in compatibility mode, and never run |
+| D-073 | this commit | The File Provider crash: one missing Info.plist key, not the simulator |

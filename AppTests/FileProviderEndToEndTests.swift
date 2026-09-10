@@ -24,25 +24,27 @@ import Testing
 ///
 /// It needs the SSH server `scripts/app-integration-e2e.sh` starts, and a real device.
 ///
-/// **The simulator cannot run this, and that is not a defect in the code.** A replicated
-/// provider is backed by FPFS, the file system the system materialises items into, and the
-/// simulator has no FPFS. `fileproviderd` says so and then downgrades the domain:
+/// **What the simulator can and cannot show, measured rather than assumed.** This comment used
+/// to say that the simulator has no FPFS, that the domain is therefore downgraded, that the
+/// extension therefore aborts, and that nothing could be concluded from any of it. The first
+/// clause was never checked and the rest followed from it. The downgrade had a cause the app
+/// owned: `NSExtensionFileProviderSupportsEnumeration` was missing from the extension's
+/// Info.plist, `fileproviderd` answers a missing key by refusing FPFS, and a domain it refuses
+/// FPFS for is served through an API this extension does not implement — `abort()` (D-073).
 ///
-/// ```
-/// domain <NSFileProviderDomain: … (disabled,replicated,…)> was asked with FPFS,
-/// but it's not supported, will fallback
-/// Adding domain <NSFileProviderDomain: … (disabled,syncTrash,userInfo)>   ← no longer replicated
-/// ```
-///
-/// The downgraded domain is then served through the older, non-replicated API, which this
-/// extension deliberately does not implement — so the extension process aborts in
-/// `__FILEPROVIDER_V2_EXTENSION_WITHOUT_IMPL`. Nothing can be concluded about the feature
-/// from that. On a device the domain stays replicated and this test is the proof; see H-6
-/// in `docs/HUMAN_ACTIONS.md`.
+/// With the key in place the domain stays `(disabled,replicated,…)` here, the "will fallback"
+/// line is gone, and this suite runs instead of killing the extension. It then **times out
+/// after 60 seconds waiting for the published folder to appear in the domain root**, which is
+/// the real and much narrower thing the simulator does not do. H-6 is now for that.
 @Suite(
     "Files app end to end",
     .enabled(if: AppIntegrationEnvironment.current != nil, "run scripts/app-integration-e2e.sh"),
-    .enabled(if: !runsInSimulator, "the simulator has no FPFS, so replicated domains are downgraded"),
+    // Measured after D-073, not assumed: with the domain staying replicated the extension is
+    // no longer aborted here, and this suite *runs* — it then times out after 60 seconds
+    // waiting for the published folder to appear in the domain root. That is a smaller and
+    // much more specific claim than the one this skip used to carry, and it is what H-6 is
+    // now for.
+    .enabled(if: !runsInSimulator, "the domain is replicated here, but the folder never appears in the domain root"),
     .serialized
 )
 @MainActor
