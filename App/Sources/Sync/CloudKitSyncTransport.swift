@@ -31,12 +31,15 @@ final class CloudKitSyncTransport: SyncTransport, @unchecked Sendable {
     /// asks for them from whatever executor it is on; a plain dictionary read there would
     /// be a data race, and Swift 6 refuses to compile it rather than let it happen.
     private let outbox = Outbox()
+    /// What the server refused. Read by `push`, so a failure reaches the caller instead of
+    /// being dropped (D-075).
+    private let failures = Failures()
 
     init(container: CKContainer = CKContainer(identifier: CloudKitSyncTransport.containerIdentifier), stateDirectory: URL) {
         database = container.privateCloudDatabase
         zoneID = CKRecordZone.ID(zoneName: Self.zoneName, ownerName: CKCurrentUserDefaultName)
         stateURL = stateDirectory.appendingPathComponent("cloudkit-sync-state.json")
-        delegate = Delegate(inbox: inbox, outbox: outbox, stateURL: stateURL)
+        delegate = Delegate(inbox: inbox, outbox: outbox, failures: failures, stateURL: stateURL)
         var configuration = CKSyncEngine.Configuration(
             database: database,
             stateSerialization: Self.loadState(from: stateURL),
@@ -64,15 +67,30 @@ final class CloudKitSyncTransport: SyncTransport, @unchecked Sendable {
             if record.deleted {
                 changes.append(.deleteRecord(id))
             } else {
-                await outbox.put(Self.ckRecord(from: record, id: id), for: id)
+                let known = await outbox.serverCopy(of: id)
+                await outbox.put(Self.ckRecord(from: record, id: id, basedOn: known), for: id)
                 changes.append(.saveRecord(id))
             }
         }
         engine.state.add(pendingRecordZoneChanges: changes)
         try await engine.sendChanges()
-        // Whatever the engine reported as saved or deleted is accepted; failures stay
-        // pending in the engine's own state and are retried by it.
         let accepted = await inbox.drainAccepted()
+        let refused = await failures.drain()
+
+        // A push where the server refused everything used to return an empty list, which the
+        // caller reads as "nothing to do" — the same answer as a clean sync with no changes.
+        // That is how a feature that never worked once can look like one with nothing to say
+        // (D-075). Transient failures are still the engine's business to retry; this is about
+        // the ones it hands back.
+        if !refused.records.isEmpty || !refused.zones.isEmpty {
+            #if DEBUG
+            for failure in refused.records { SyncDiagnostics.record(failure.error, in: stateURL.deletingLastPathComponent()) }
+            for failure in refused.zones { SyncDiagnostics.record(failure.error, in: stateURL.deletingLastPathComponent()) }
+            #endif
+            if accepted.isEmpty, let first = (refused.zones.first?.error ?? refused.records.first?.error) {
+                throw first
+            }
+        }
         return accepted.compactMap { Self.syncKey(from: $0) }
     }
 
@@ -123,8 +141,14 @@ final class CloudKitSyncTransport: SyncTransport, @unchecked Sendable {
         return SyncKey(kind: kind, id: parts[1])
     }
 
-    static func ckRecord(from record: SyncRecord, id: CKRecord.ID) -> CKRecord {
-        let ck = CKRecord(recordType: recordType, recordID: id)
+    /// Builds the record to send.
+    ///
+    /// `basedOn` is the server's own copy when one is known, so that an update carries the
+    /// change tag CloudKit uses to detect conflicts. Sending a freshly built `CKRecord` for a
+    /// record the server already has is a write that says "this is new", and CloudKit refuses
+    /// it with `serverRecordChanged` every time (D-075).
+    static func ckRecord(from record: SyncRecord, id: CKRecord.ID, basedOn known: CKRecord? = nil) -> CKRecord {
+        let ck = known ?? CKRecord(recordType: recordType, recordID: id)
         ck["kind"] = record.kind.rawValue as CKRecordValue
         ck["payload"] = record.payload as CKRecordValue
         ck["modifiedAt"] = record.modifiedAt as CKRecordValue
@@ -147,10 +171,55 @@ final class CloudKitSyncTransport: SyncTransport, @unchecked Sendable {
     }
 
     actor Outbox {
-        private var records: [CKRecord.ID: CKRecord] = [:]
-        func put(_ record: CKRecord, for id: CKRecord.ID) { records[id] = record }
-        func take(_ id: CKRecord.ID) -> CKRecord? { records[id] }
-        func removeAll() { records.removeAll() }
+        /// Queued to send. Taking one removes it: leaving it behind meant every record ever
+        /// pushed stayed in memory for the life of the process, and a later batch could hand
+        /// the engine a record it had already sent.
+        private var pending: [CKRecord.ID: CKRecord] = [:]
+        /// The server's own copy of each record, as it last came back — from a save that
+        /// succeeded, from a fetch, or from the `serverRecord` on a conflict. This is what
+        /// carries CloudKit's system fields, and above all the change tag (D-075).
+        ///
+        /// Without it every `CKRecord` is built fresh, which tells the server "I am writing
+        /// this for the first time"; the second write of the same record is then refused with
+        /// `serverRecordChanged`, for ever. Apple calls this the last-known-record pattern and
+        /// `CKSyncEngineEvent.h` asks for it in as many words.
+        private var lastKnown: [CKRecord.ID: CKRecord] = [:]
+
+        func put(_ record: CKRecord, for id: CKRecord.ID) { pending[id] = record }
+        func take(_ id: CKRecord.ID) -> CKRecord? { pending.removeValue(forKey: id) }
+        func remember(_ records: [CKRecord]) {
+            for record in records { lastKnown[record.recordID] = record }
+        }
+        func forget(_ ids: [CKRecord.ID]) {
+            for id in ids { lastKnown[id] = nil }
+        }
+        func serverCopy(of id: CKRecord.ID) -> CKRecord? { lastKnown[id] }
+        func removeAll() {
+            pending.removeAll()
+            lastKnown.removeAll()
+        }
+    }
+
+    /// Everything the server refused, which used to be nothing because nobody looked (D-075).
+    ///
+    /// `CKSyncEngine` reports per-record and per-zone failures on its events, not on the error
+    /// thrown by `sendChanges()`. A transport that reads only the success halves reports a
+    /// push as clean whatever the server thought of it, and that is how a sync that never
+    /// worked can look like a sync with nothing to do.
+    actor Failures {
+        private(set) var records: [(id: CKRecord.ID, error: Error)] = []
+        private(set) var zones: [(id: CKRecordZone.ID, error: Error)] = []
+
+        func record(id: CKRecord.ID, error: Error) { records.append((id, error)) }
+        func record(zone: CKRecordZone.ID, error: Error) { zones.append((zone, error)) }
+
+        /// Takes what has accumulated, so a caller reports each failure once.
+        func drain() -> (records: [(id: CKRecord.ID, error: Error)], zones: [(id: CKRecordZone.ID, error: Error)]) {
+            defer { records.removeAll(); zones.removeAll() }
+            return (records, zones)
+        }
+
+        var isEmpty: Bool { records.isEmpty && zones.isEmpty }
     }
 
     /// What the engine fetched and what it confirmed, collected off the delegate.
@@ -166,11 +235,13 @@ final class CloudKitSyncTransport: SyncTransport, @unchecked Sendable {
     final class Delegate: CKSyncEngineDelegate, Sendable {
         private let inbox: Inbox
         private let outbox: Outbox
+        private let failures: Failures
         private let stateURL: URL
 
-        init(inbox: Inbox, outbox: Outbox, stateURL: URL) {
+        init(inbox: Inbox, outbox: Outbox, failures: Failures, stateURL: URL) {
             self.inbox = inbox
             self.outbox = outbox
+            self.failures = failures
             self.stateURL = stateURL
         }
 
@@ -195,6 +266,42 @@ final class CloudKitSyncTransport: SyncTransport, @unchecked Sendable {
                 await inbox.add(records)
             case let .sentRecordZoneChanges(sent):
                 await inbox.addAccepted(sent.savedRecords.map(\.recordID) + sent.deletedRecordIDs)
+                // The server's copy of everything it accepted, kept so the *next* write of
+                // the same record carries its change tag (D-075).
+                await outbox.remember(sent.savedRecords)
+                await outbox.forget(sent.deletedRecordIDs)
+
+                // And the halves that used to be dropped on the floor. `CKSyncEngine` does
+                // not put per-record failures on the error thrown by `sendChanges()`; it
+                // delivers them here. Reading only `savedRecords` meant a record that the
+                // server refused was indistinguishable from one it never saw.
+                for failure in sent.failedRecordSaves {
+                    await failures.record(id: failure.record.recordID, error: failure.error)
+                    guard let serverRecord = failure.error.serverRecord else { continue }
+                    // The documented resolution: take the server's record, put our fields
+                    // back on it, and queue it again. Without this a conflict is permanent.
+                    await outbox.remember([serverRecord])
+                    if let mine = await outbox.serverCopy(of: failure.record.recordID) {
+                        for key in ["kind", "payload", "modifiedAt"] {
+                            mine[key] = failure.record[key]
+                        }
+                        await outbox.put(mine, for: mine.recordID)
+                        syncEngine.state.add(pendingRecordZoneChanges: [.saveRecord(mine.recordID)])
+                    }
+                }
+                for failure in sent.failedRecordDeletes {
+                    await failures.record(id: failure.key, error: failure.value)
+                }
+            case let .sentDatabaseChanges(sent):
+                // A refused zone creation used to fall into `default:` and vanish. It is the
+                // one failure that makes every record push fail afterwards, so it is the last
+                // one that should be silent.
+                for failure in sent.failedZoneSaves {
+                    await failures.record(zone: failure.zone.zoneID, error: failure.error)
+                }
+                for failure in sent.failedZoneDeletes {
+                    await failures.record(zone: failure.key, error: failure.value)
+                }
             case .accountChange:
                 // Sign-out or a switched account: the engine drops its state itself; the
                 // app's own toggle decides whether to keep syncing. Nothing to do here.

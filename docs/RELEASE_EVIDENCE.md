@@ -3,6 +3,131 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-10 — after D-073, D-074, D-075
+
+| Command | Result |
+| --- | --- |
+| `cd Packages/ApexTerminalKit && swift test --no-parallel` | **380 tests in 56 suites passed** — including the four `SecureEnclaveKeyTests` this machine's enclave refuses on some evenings and not others |
+| `bash scripts/app-integration-e2e.sh` | **353 tests in 67 suites passed**, no restarts (340 in 65 before) |
+| `bash scripts/ui-terminal-e2e.sh` (iPhone 17 Pro) | **57 passed, 3 failed** — two `ZZSearchProbeUITests`, another session's work, and the new `SplitWithUITests`, fixed and re-run green on both devices (see below) |
+| `bash scripts/ui-terminal-e2e.sh` (iPad Pro 13-inch M5) | **59 passed, 2 failed** — the same two `ZZSearchProbeUITests` |
+| `bash scripts/localization-audit.sh` | **green**, and **0** orphaned strings — the "31 translated string(s) no longer in the source" line is gone |
+| App warning gate | **0** |
+| Release archive | **ARCHIVE SUCCEEDED** |
+| **`ApexTerminalFileProvider-*.ips` before / after the whole run** | **11 / 11** — a full regression, and for the first time not one new crash |
+
+### The one failure that was mine
+
+`SplitWithUITests` passed on the iPad and failed on the iPhone, on *Add a Screen…* — the picker
+opens at its medium detent there, so the last rows are below the fold, and a row below the
+viewport is not merely off-screen but absent from the accessibility tree. The same thing the
+Settings tests learned in D-068. It scrolls for the row it needs now, and passes on both.
+
+### D-073 · Eleven crash reports, and a diagnosis that was wrong for weeks
+
+`~/Library/Logs/DiagnosticReports` held **11** identical crash reports, one per app test run:
+
+    EXC_CRASH (SIGABRT) · com.apple.NSXPCConnection.user.endpoint
+    __assert_rtn
+    FileProvider  __FILEPROVIDER_V2_EXTENSION_WITHOUT_IMPL
+    FileProvider  -[FPXExtensionContext beginRequestWithDomain:…]
+
+The project's own explanation, written into `FileProviderEndToEndTests`, H-6 and the plan, was
+"the simulator has no FPFS, so the domain is downgraded and the extension aborts; nothing can
+be concluded from it, and on a device it does not happen." **All three clauses were wrong**,
+and the first was never checked.
+
+The cause is one missing key. `fileproviderd` reads
+`NSExtension["NSExtensionFileProviderSupportsEnumeration"]` into
+`FPDProviderDescriptor.supportsEnumeration`; `-[FPDProvider supportsFPFS]` returns NO the
+moment that is NO; `addDomain:` answers `isReplicated && !supportsFPFS` by logging *"was asked
+with FPFS, but it's not supported, will fallback"* and calling `setReplicated:NO`; and a
+non-replicated domain is served through the pre-replicated API, which this extension does not
+implement — `abort()`. The key was absent from `Config/FileProviderInfo.plist`, which otherwise
+reproduces every key of Apple's own File Provider Extension template.
+
+It was **not** a simulator artefact: the decision code was read out of both the iOS 26.5
+simulator `FileProviderDaemon` and the arm64e **device** one from Xcode's DeviceSupport, and it
+is the same instructions with no simulator conditional anywhere in it. This would have aborted
+on a phone.
+
+Measured after the four-line plist change, on the same simulator:
+
+| | Before | After |
+| --- | --- | --- |
+| `will fallback` in the daemon log | present | **absent** |
+| the registered domain | `(disabled,syncTrash,userInfo)` | **`(disabled,replicated,…)`** |
+| new crash reports per run | 1 | **0** |
+| `FileProviderEndToEndTests` | extension killed | **runs**, then times out waiting for the folder to appear in the domain root |
+
+`FileProviderDomainTests` now asserts `isReplicated == true` unconditionally, with the plist key
+named in the failure message. It used to assert `isReplicated == !runsInSimulator`, which is an
+assertion that the bug is present — the reason it survived. H-6 keeps only the smaller claim
+that is still true, and says what it used to say and why that was wrong.
+
+### D-074 · A split screen holds anything
+
+⌘D means "another shell on this same server", which is what every tiling terminal does and what
+someone reaching for it wants. It is also the *only* thing a split could hold, which is not what
+a split screen is for. ⌥⌘D, and *Split With…* in the Session menu, now ask:
+
+* anything already open — a shell, a tmux session, a screen, a file browser — shown in the pane
+  rather than opened a second time;
+* any saved connection (attaching to tmux where the connection asked for it) or saved screen;
+* **a server or screen that is not in the list yet**, which opens the editor and puts what you
+  save straight into the pane.
+
+`PaneLayout.replace(_:with:)` is new, for the pane whose session ended: splitting there would
+leave the dead one on screen beside the new one.
+
+`SplitWithUITests` drives it on an iPad against the harness's own `sshd`: menu → picker → both
+"not in the list yet" rows present and the list searchable → choose the saved connection →
+**two panes, two terminals**. Eight unit tests cover the resolution, including that a tmux
+connection attaches instead of opening a plain shell and that showing something already open
+does not start a second one.
+
+### D-075 · The change tag CloudKit needs, and the failures nobody was reading
+
+Three independent readings of the CloudKit push path were run against the recorded diagnosis in
+`SyncAvailability.swift`, each told to doubt it. One of the three claimed the failure had never
+been observed against the container the code now names; that was checked against D-036's own
+device dump, which reads `ContainerID = iCloud.dev.apexterminal.app`, and the claim is false.
+**The recorded diagnosis stands**: an HTTP 500 is a request-level status, CloudKit reports
+per-record validation failures as a partial failure on an otherwise successful response, and
+the container is still H-5's business.
+
+Two real client-side defects were found underneath it, and neither is the cause:
+
+* **No write ever carried CloudKit's change tag.** `ckRecord(from:id:)` built a fresh `CKRecord`
+  every time, which tells the server "this is new". The first write of a record would have
+  worked and every write after it would have been refused with `serverRecordChanged`, for ever.
+  The transport now keeps the server's own copy of each record — from a save that succeeded, a
+  fetch, or the `serverRecord` on a conflict — and writes updates on top of it.
+* **Per-record and per-zone failures were dropped.** `CKSyncEngine` delivers them on its events,
+  not on the error thrown by `sendChanges()`. The delegate read only `savedRecords` and
+  `deletedRecordIDs`; `failedRecordSaves`, `failedRecordDeletes` and the whole
+  `.sentDatabaseChanges` event — which is where a refused *zone creation* is reported — went
+  nowhere. A push the server refused returned the same empty list as a push with nothing to
+  send. It now collects them, resolves `serverRecordChanged` the documented way, records each
+  through `SyncDiagnostics` in DEBUG, and throws when the server refused everything.
+
+`Outbox.take` also did not remove what it took, so every record ever pushed stayed in memory
+for the life of the process.
+
+Five offline tests pin all of it (`CKRecord` can be built without a container, which is the only
+reason any of this is testable here). H-5 now records what changed underneath it, and warns that
+the finer-grained half of the diagnosis was measured with an instrument that could not see a
+per-record refusal.
+
+### The 31 orphaned translations
+
+Every one was classified against the source before anything was deleted: **22 reworded** (a
+stale copy of a string that still exists with different wording — 11 of them fallout from D-027
+moving a screen out of the SSH connection's editor), **9 with no trace in source at all**, and
+**none conditionally compiled**. That last check is the one that mattered: a string used only
+under `#if targetEnvironment(macCatalyst)` is invisible to the simulator build the audit
+measures, which is exactly the trap D-070 hit. The audit now reports no orphans at all.
+
 ## 2026-09-10 — the round's closing regression, on the committed tree
 
 Everything, in one pass, on `548631d`:
