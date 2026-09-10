@@ -1,0 +1,17 @@
+Port 22
+ListenAddress 0.0.0.0
+ListenAddress ::
+PermitRootLogin no
+# Password authentication is on because one of the screens is a tmux connection, and the
+# app seeds that connection with a password credential. It is a genuine OpenSSH password
+# login — the capability itself is one the product claims. The account is fictional, the
+# password is set by the capture script at run time, and the container listens on the
+# loopback address only.
+PasswordAuthentication yes
+KbdInteractiveAuthentication no
+PubkeyAuthentication yes
+AuthorizedKeysFile .ssh/authorized_keys
+PrintMotd no
+AcceptEnv LANG LC_*
+Subsystem sftp /usr/lib/ssh/sftp-server
+# `openssh-sftp-server` installs it at this path on Alpine; the line above is the check.

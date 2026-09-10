@@ -276,7 +276,9 @@ struct GenerateKeySheet: View {
                         Section {
                             Picker("Private key", selection: $storage) {
                                 Text("In the Keychain").tag(KeyStorageChoice.keychain)
+                                    .accessibilityIdentifier("key-storage-keychain")
                                 Text("In the Secure Enclave").tag(KeyStorageChoice.secureEnclave)
+                                    .accessibilityIdentifier("key-storage-enclave")
                             }
                             .pickerStyle(.inline)
                             .labelsHidden()

@@ -31,3 +31,8 @@ __pycache__/
 # it authorises inside the fixture containers. The key is regenerated on every run and
 # must never be committed.
 Marketing/AppStore/build/
+
+# The 2026-09 rebuild's capture scratch: xcresult bundles and the throwaway SSH key each
+# run generates. That key authorises nothing but the run's own containers, and must still
+# never be committed.
+Marketing/Rebuild-2026-09-10/automation/build/

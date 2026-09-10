@@ -1,0 +1,200 @@
+{
+  "en-US": [
+    {
+      "name": "terminal",
+      "index": "01",
+      "title": "A real terminal, over SSH",
+      "subtitle": "True colour, a real PTY, and full-screen programs that put your shell back exactly as it was.",
+      "titleIpad": "A real terminal, over SSH",
+      "subtitleIpad": "True colour, a real PTY, and full-screen programs that leave your shell as it was."
+    },
+    {
+      "name": "one-connection",
+      "index": "02",
+      "title": "One connection. Everything on it.",
+      "subtitle": "A shell, your files and a desktop — one server, one SSH connection, one authentication.",
+      "titleIpad": "One connection. Everything on it.",
+      "subtitleIpad": "A shell, your files and a desktop — one server, one connection, one authentication."
+    },
+    {
+      "name": "panes",
+      "index": "03",
+      "title": "Every server, one tap away",
+      "subtitle": "Keep several machines connected and move between them. What you type goes where you are looking.",
+      "titleIpad": "Two terminals, one screen",
+      "subtitleIpad": "Split a pane and watch a log while you work. Each pane is a full session with its own controls."
+    },
+    {
+      "name": "files",
+      "index": "04",
+      "title": "Your server's files, right here",
+      "subtitle": "Browse, upload and download over the same SSH connection — no second sign-in, no separate app.",
+      "titleIpad": "Your server's files, right here",
+      "subtitleIpad": "Browse, upload and download over the same SSH connection — no second sign-in."
+    },
+    {
+      "name": "forwards",
+      "index": "05",
+      "title": "Tunnels you can see",
+      "subtitle": "Local, remote and SOCKS5 forwards saved with a connection and started with it — with live byte and connection counts.",
+      "titleIpad": "Tunnels you can see",
+      "subtitleIpad": "Forwards saved with a connection, started with it, and counted while they run."
+    },
+    {
+      "name": "tmux",
+      "index": "06",
+      "title": "Detach. Come back. Still there.",
+      "subtitle": "tmux over its own control protocol — the panes and their output are exactly where you left them.",
+      "titleIpad": "Detach. Come back. Still there.",
+      "subtitleIpad": "tmux over its own control protocol — the panes are where you left them."
+    },
+    {
+      "name": "security",
+      "index": "07",
+      "title": "A key that cannot leave",
+      "subtitle": "Create it inside the Secure Enclave. No copy of the private half exists — and it still logs in to an ordinary OpenSSH server.",
+      "titleIpad": "A key that cannot leave",
+      "subtitleIpad": "Made inside the Secure Enclave. No copy of the private half exists anywhere."
+    },
+    {
+      "name": "desktop",
+      "index": "08",
+      "title": "The desktop, too",
+      "subtitle": "A remote screen over VNC, reached through the same SSH connection — nothing exposed to the internet.",
+      "titleIpad": "The desktop, too",
+      "subtitleIpad": "A remote screen over VNC, reached through the same SSH connection."
+    }
+  ],
+  "zh-Hans": [
+    {
+      "name": "terminal",
+      "index": "01",
+      "title": "真正的终端，跑在 SSH 上",
+      "subtitle": "真彩色、真实 PTY，全屏程序退出后，shell 原样还在。",
+      "titleIpad": "真正的终端，跑在 SSH 上",
+      "subtitleIpad": "真彩色、真实 PTY，全屏程序退出后 shell 原样还在。"
+    },
+    {
+      "name": "one-connection",
+      "index": "02",
+      "title": "一条连接，全部承载",
+      "subtitle": "终端、文件、远程桌面——同一台服务器，同一条 SSH 连接，只认证一次。",
+      "titleIpad": "一条连接，全部承载",
+      "subtitleIpad": "终端、文件、桌面——同一条连接，只认证一次。"
+    },
+    {
+      "name": "panes",
+      "index": "03",
+      "title": "每台服务器，一点即达",
+      "subtitle": "同时连着多台机器，随时切换。你敲的字，永远进你正看着的那个终端。",
+      "titleIpad": "一屏两个终端",
+      "subtitleIpad": "分屏之后，一边盯日志一边干活。每个窗格都是完整会话，各有各的控制。"
+    },
+    {
+      "name": "files",
+      "index": "04",
+      "title": "服务器上的文件，就在手边",
+      "subtitle": "浏览、上传、下载，全走同一条 SSH 连接——不必再登录一次，也不必换个应用。",
+      "titleIpad": "服务器上的文件，就在手边",
+      "subtitleIpad": "浏览、上传、下载，全走同一条 SSH 连接，不必再登录一次。"
+    },
+    {
+      "name": "forwards",
+      "index": "05",
+      "title": "看得见的隧道",
+      "subtitle": "本地、远程、SOCKS5 转发随连接保存并自动启动，运行时实时显示流量与连接数。",
+      "titleIpad": "看得见的隧道",
+      "subtitleIpad": "转发规则随连接保存并启动，运行时实时计数。"
+    },
+    {
+      "name": "tmux",
+      "index": "06",
+      "title": "断开、回来，一切照旧",
+      "subtitle": "通过 tmux 自己的控制协议接入——窗格和输出，都停在你离开时的样子。",
+      "titleIpad": "断开、回来，一切照旧",
+      "subtitleIpad": "通过 tmux 自己的控制协议接入，窗格停在你离开时的样子。"
+    },
+    {
+      "name": "security",
+      "index": "07",
+      "title": "一把带不走的密钥",
+      "subtitle": "在 Secure Enclave 里生成，私钥不存在任何副本——却照样登录标准 OpenSSH 服务器。",
+      "titleIpad": "一把带不走的密钥",
+      "subtitleIpad": "在 Secure Enclave 里生成，私钥不存在任何副本。"
+    },
+    {
+      "name": "desktop",
+      "index": "08",
+      "title": "连桌面也一起",
+      "subtitle": "通过同一条 SSH 连接访问远程桌面，无需向公网暴露任何端口。",
+      "titleIpad": "连桌面也一起",
+      "subtitleIpad": "通过同一条 SSH 连接访问远程桌面。"
+    }
+  ],
+  "zh-Hant": [
+    {
+      "name": "terminal",
+      "index": "01",
+      "title": "貨真價實的終端機，走 SSH",
+      "subtitle": "真彩色、真正的 PTY；全螢幕程式關掉之後，shell 還是原來的樣子。",
+      "titleIpad": "貨真價實的終端機，走 SSH",
+      "subtitleIpad": "真彩色、真正的 PTY，全螢幕程式關掉後 shell 原樣還在。"
+    },
+    {
+      "name": "one-connection",
+      "index": "02",
+      "title": "一條連線，全部搞定",
+      "subtitle": "終端機、檔案、遠端桌面——同一台主機、同一條 SSH 連線，只驗證一次。",
+      "titleIpad": "一條連線，全部搞定",
+      "subtitleIpad": "終端機、檔案、桌面——同一條連線，只驗證一次。"
+    },
+    {
+      "name": "panes",
+      "index": "03",
+      "title": "每台主機，一點就到",
+      "subtitle": "同時連著好幾台機器，隨時切換。你打的字，永遠送到你正在看的那個終端機。",
+      "titleIpad": "一個畫面，兩個終端機",
+      "subtitleIpad": "分割之後，一邊盯著日誌一邊做事。每個窗格都是完整的工作階段。"
+    },
+    {
+      "name": "files",
+      "index": "04",
+      "title": "主機上的檔案，就在手邊",
+      "subtitle": "瀏覽、上傳、下載，全都走同一條 SSH 連線——不必再登入一次，也不用換一個 App。",
+      "titleIpad": "主機上的檔案，就在手邊",
+      "subtitleIpad": "瀏覽、上傳、下載都走同一條 SSH 連線，不必再登入一次。"
+    },
+    {
+      "name": "forwards",
+      "index": "05",
+      "title": "看得見的通道",
+      "subtitle": "本機、遠端與 SOCKS5 轉送隨連線儲存、隨連線啟動，執行時即時顯示流量與連線數。",
+      "titleIpad": "看得見的通道",
+      "subtitleIpad": "轉送規則隨連線儲存並啟動，執行時即時計數。"
+    },
+    {
+      "name": "tmux",
+      "index": "06",
+      "title": "離開、回來，原封不動",
+      "subtitle": "以 tmux 自己的控制協定接上——窗格和輸出，都還停在你離開時的樣子。",
+      "titleIpad": "離開、回來，原封不動",
+      "subtitleIpad": "以 tmux 自己的控制協定接上，窗格停在你離開時的樣子。"
+    },
+    {
+      "name": "security",
+      "index": "07",
+      "title": "一把帶不走的金鑰",
+      "subtitle": "在 Secure Enclave 裡產生，私鑰不存在任何副本——卻照樣登入標準的 OpenSSH 主機。",
+      "titleIpad": "一把帶不走的金鑰",
+      "subtitleIpad": "在 Secure Enclave 裡產生，私鑰不存在任何副本。"
+    },
+    {
+      "name": "desktop",
+      "index": "08",
+      "title": "連桌面也一起",
+      "subtitle": "透過同一條 SSH 連線存取遠端桌面，不必對外開放任何連接埠。",
+      "titleIpad": "連桌面也一起",
+      "subtitleIpad": "透過同一條 SSH 連線存取遠端桌面。"
+    }
+  ]
+}
