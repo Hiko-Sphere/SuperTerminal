@@ -435,6 +435,13 @@ struct TerminalView: View {
                         container.shortcuts.perform(.splitDown)
                     }
                     .accessibilityIdentifier("terminal-menu-split-down")
+                    // The two above mean "another shell on this same server". This one is the
+                    // other half of what a split screen is for: a different server, a screen
+                    // over VNC, or one that has not been added yet (D-074).
+                    Button(String(localized: "Split With…"), systemImage: "rectangle.split.2x1.slash") {
+                        container.shortcuts.perform(.splitWith)
+                    }
+                    .accessibilityIdentifier("terminal-menu-split-with")
                     if scene.panes.paneCount >= 2 {
                         Button(String(localized: "Close Pane"), systemImage: "rectangle.badge.minus", role: .destructive) {
                             container.shortcuts.perform(.closePane)

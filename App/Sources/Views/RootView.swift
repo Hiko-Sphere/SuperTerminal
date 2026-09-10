@@ -118,6 +118,11 @@ struct RootView: View {
         // The guide opens over whatever raised the question — ⌘/ from a terminal, or the
         // row in Settings — rather than replacing it (D-056).
         .sheet(isPresented: helpBinding) { HelpView() }
+        // Choosing what goes in a pane: a different server, a screen, or one that is not in
+        // the list yet (D-074).
+        .modifier(ChoosesSplitContent(scene: scene) { route in
+            if horizontalSizeClass == .compact, path.last != route { path.append(route) }
+        })
         // Links, search results and handovers (D-061), in one modifier: a `body` this long
         // stops type-checking in a Release build long before it stops compiling in a Debug
         // one — measured, as an archive that failed while every simulator build passed.

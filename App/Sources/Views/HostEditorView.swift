@@ -47,8 +47,18 @@ struct HostEditorView: View {
     /// - Parameter draft: fields a link asked for (D-061). Filled in, never saved: a
     ///   connection appears in the list when somebody chooses to put it there, and a link
     ///   is not that choice.
-    init(host: Host?, startsWithCloudflare: Bool = false, draft: IncomingURL.SSHAddress? = nil) {
+    /// Told what was saved, for a caller that wants to do something with it — putting a
+    /// newly added server straight into the pane that asked for it (D-074).
+    private let onSaved: (Host) -> Void
+
+    init(
+        host: Host?,
+        startsWithCloudflare: Bool = false,
+        draft: IncomingURL.SSHAddress? = nil,
+        onSaved: @escaping (Host) -> Void = { _ in }
+    ) {
         existing = host
+        self.onSaved = onSaved
         if host == nil, startsWithCloudflare {
             _usesCloudflare = State(initialValue: true)
         }
@@ -341,6 +351,7 @@ struct HostEditorView: View {
         } else {
             container.hostStore.update(host)
         }
+        onSaved(host)
         dismiss()
     }
 }

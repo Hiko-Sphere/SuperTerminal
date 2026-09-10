@@ -40,8 +40,13 @@ struct ScreenEditorView: View {
     @State private var password = ""
     @State private var hasStoredPassword = false
 
-    init(screen: ScreenConnection?) {
+    /// Told what was saved, so a pane that asked for a screen it did not have yet can show
+    /// the one that was just added (D-074).
+    private let onSaved: (ScreenConnection) -> Void
+
+    init(screen: ScreenConnection?, onSaved: @escaping (ScreenConnection) -> Void = { _ in }) {
         existing = screen
+        self.onSaved = onSaved
         if let screen {
             _name = State(initialValue: screen.name)
             _address = State(initialValue: screen.address)
@@ -274,6 +279,7 @@ struct ScreenEditorView: View {
         } else {
             container.screenStore.update(screen)
         }
+        onSaved(screen)
         dismiss()
     }
 }

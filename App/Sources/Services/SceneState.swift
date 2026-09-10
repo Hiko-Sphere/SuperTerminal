@@ -21,6 +21,10 @@ final class SceneState {
 
     /// The tmux session this window is showing, if it is showing one (D-059).
     var selectedTmuxSessionID: UUID?
+    /// A split whose content has not been chosen yet (D-074). Set by ⌥⌘D, by a pane's own
+    /// menu, and by a pane whose session ended; cleared when the picker closes.
+    var pendingSplit: PendingSplit?
+
     /// The file browser the list is pointing at, when one is what is shown (D-071).
     var selectedFilesSessionID: UUID?
 

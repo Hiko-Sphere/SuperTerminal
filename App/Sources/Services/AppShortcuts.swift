@@ -26,7 +26,7 @@ enum AppShortcut: String, CaseIterable, Sendable {
     case assistant
     /// Split panes (D-055). ⌘D and ⇧⌘D are what every tiling terminal uses, and ⌥⌘→ / ⌥⌘←
     /// move between panes without disturbing the shell's own arrow keys.
-    case splitRight, splitDown, closePane, nextPane, previousPane
+    case splitRight, splitDown, splitWith, closePane, nextPane, previousPane
     /// ⌘/ opens the guide — the Help key on every platform that has one, and reachable
     /// with one hand from the terminal (D-056).
     case help
@@ -40,6 +40,7 @@ enum AppShortcut: String, CaseIterable, Sendable {
         case .previousSession: String(localized: "Previous Session")
         case .splitRight: String(localized: "Split Right")
         case .splitDown: String(localized: "Split Down")
+        case .splitWith: String(localized: "Split With…")
         case .closePane: String(localized: "Close Pane")
         case .nextPane: String(localized: "Next Pane")
         case .previousPane: String(localized: "Previous Pane")
@@ -75,6 +76,7 @@ enum AppShortcut: String, CaseIterable, Sendable {
         case .help: "/"
         case .splitRight: "d"
         case .splitDown: "d"
+        case .splitWith: "d"
         case .closePane: "w"
         case .nextPane: "]"
         case .previousPane: "["
@@ -87,7 +89,7 @@ enum AppShortcut: String, CaseIterable, Sendable {
         case .nextSession, .previousSession, .assistant, .splitDown, .increaseTextSizeShifted: [.command, .shift]
         // Option for the pane commands, so each keeps the letter it shares with its
         // session-level twin: ⌘W still closes the session, ⌥⌘W closes just this pane.
-        case .closePane, .nextPane, .previousPane: [.command, .alternate]
+        case .closePane, .nextPane, .previousPane, .splitWith: [.command, .alternate]
         default: .command
         }
     }
@@ -163,6 +165,10 @@ final class AppShortcutRouter {
         // pane — a "Close Pane" that closes the only pane is just "Close Session" wearing
         // the wrong name.
         case .splitRight, .splitDown: displayedSession != nil || scene?.panes.paneCount ?? 0 > 0
+        // Available wherever there is a pane to divide — including one showing a screen or a
+        // file browser, which ⌘D cannot split because "another one of these" has no meaning
+        // for them.
+        case .splitWith: scene?.panes.paneCount ?? 0 > 0
         case .closePane, .nextPane, .previousPane: (scene?.panes.paneCount ?? 0) >= 2
         case .increaseTextSize, .increaseTextSizeShifted: settings.fontSize < AppSettings.fontSizeRange.upperBound
         case .decreaseTextSize: settings.fontSize > AppSettings.fontSizeRange.lowerBound
@@ -190,6 +196,10 @@ final class AppShortcutRouter {
         case .help: scene?.isShowingHelp = true
         case .splitRight: splitFocusedPane(axis: .horizontal)
         case .splitDown: splitFocusedPane(axis: .vertical)
+        case .splitWith:
+            // ⌘D is "another one of these"; ⌥⌘D is "and something else here" — a different
+            // server, a screen, or one that has not been added yet (D-074).
+            scene?.pendingSplit = PendingSplit(placement: .split(.horizontal))
         case .closePane:
             if let scene, let focused = scene.panes.focused { scene.panes.close(focused) }
         case .nextPane: scene?.panes.focusNext()

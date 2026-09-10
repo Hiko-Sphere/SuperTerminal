@@ -749,6 +749,23 @@
         }
       }
     },
+    "A machine whose screen you want to see": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "您想查看其屏幕的机器"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "您想檢視其螢幕的機器"
+          }
+        }
+      }
+    },
     "A passcode cannot contain a line break.": {
       "extractionState": "manual",
       "localizations": {
@@ -813,6 +830,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "遠端螢幕透過 VNC 顯示整個桌面。點一下即點按，長按可拖曳，兩指捲動，也可以使用鍵盤和滑鼠。它可以走在 SSH 連線內部，因此無需對外開放任何連接埠。"
+          }
+        }
+      }
+    },
+    "A server that is not in the list yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "尚未加入列表的服务器"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "尚未加入列表的伺服器"
           }
         }
       }
@@ -1055,6 +1089,40 @@
         }
       }
     },
+    "Add a Connection…": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加连接…"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加入連線…"
+          }
+        }
+      }
+    },
+    "Add a Screen…": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加屏幕…"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加入螢幕…"
+          }
+        }
+      }
+    },
     "Add a certificate": {
       "extractionState": "manual",
       "localizations": {
@@ -1123,23 +1191,6 @@
         }
       }
     },
-    "Add a server to get started. Apex Terminal supports plain SSH and servers published through Cloudflare Tunnel.": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "添加一台服务器即可开始。Apex Terminal 支持普通 SSH，也支持通过 Cloudflare Tunnel 发布的服务器。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "新增一台伺服器即可開始。Apex Terminal 支援一般 SSH，也支援透過 Cloudflare Tunnel 發布的伺服器。"
-          }
-        }
-      }
-    },
     "Add a starter set": {
       "extractionState": "manual",
       "localizations": {
@@ -1187,23 +1238,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "請先加入一個 SSH 連線，或改用其他方式連線螢幕。"
-          }
-        }
-      }
-    },
-    "Add an SSH connection first, or connect to the screen directly.": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "请先添加一个 SSH 连接，或改为直接连接屏幕。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "請先加入一個 SSH 連線，或改為直接連線螢幕。"
           }
         }
       }
@@ -1408,6 +1442,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "演算法"
+          }
+        }
+      }
+    },
+    "Already open": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已打开"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已開啟"
           }
         }
       }
@@ -2483,23 +2534,6 @@
         }
       }
     },
-    "Check the VNC password in this connection's settings. It is separate from the SSH password.": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "请检查此连接设置中的 VNC 密码。它与 SSH 密码是分开的。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "請檢查此連線設定中的 VNC 密碼。它與 SSH 密碼是分開的。"
-          }
-        }
-      }
-    },
     "Check the VNC password in this screen's settings. It is separate from the SSH password.": {
       "extractionState": "manual",
       "localizations": {
@@ -2666,23 +2700,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "請先在上方選擇一把私密金鑰。代理轉送只提供該連線本身正在使用的金鑰，不會提供其他任何金鑰。"
-          }
-        }
-      }
-    },
-    "Choose at least one way to authenticate.": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "请至少选择一种身份验证方式。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "請至少選擇一種身分驗證方式。"
           }
         }
       }
@@ -3044,23 +3061,6 @@
         }
       }
     },
-    "Closes every open terminal session.": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "关闭所有打开的终端会话。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "關閉所有開啟的終端機工作階段。"
-          }
-        }
-      }
-    },
     "Closes the tour. You can reopen it from Settings.": {
       "extractionState": "manual",
       "localizations": {
@@ -3159,23 +3159,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "指令歷史紀錄預設關閉，因為終端機的歷史紀錄屬於裝置上最敏感的內容之一。若有需要，可在設定中開啟；它僅保留在本裝置上，並可隨時清除。"
-          }
-        }
-      }
-    },
-    "Command history is stored only on this device and is off by default. Turning it off deletes what has been recorded.": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "命令历史记录仅存储在本设备上，且默认关闭。关闭后将删除已记录的内容。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "指令歷史紀錄僅儲存在本裝置上，且預設關閉。關閉後將刪除已記錄的內容。"
           }
         }
       }
@@ -3741,23 +3724,6 @@
         }
       }
     },
-    "Credentials are stored in the Keychain, never in the connection list. Leave the password empty to be asked each time.": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "凭据存储在 Keychain 中，绝不会存入连接列表。将密码留空，则每次都会询问。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "憑據儲存在 Keychain 中，絕不會存入連線列表。將密碼留空，則每次都會詢問。"
-          }
-        }
-      }
-    },
     "Credentials are stored in the Keychain, never in the connection list. Leave the password empty to be asked each time. With no key and no password chosen, the server is asked what it takes and you are asked for a password only if it takes one.": {
       "extractionState": "manual",
       "localizations": {
@@ -4060,23 +4026,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "刪除「%@」？"
-          }
-        }
-      }
-    },
-    "Destination": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "目标"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "目標"
           }
         }
       }
@@ -4523,23 +4472,6 @@
         }
       }
     },
-    "Edit the connection and enter the VNC password under Screen Sharing.": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "请编辑此连接，在“屏幕共享”下输入 VNC 密码。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "請編輯此連線，在「螢幕共享」下輸入 VNC 密碼。"
-          }
-        }
-      }
-    },
     "Edit the connection and enter the service token's client ID and secret. Service tokens stay on the device they were entered on.": {
       "extractionState": "manual",
       "localizations": {
@@ -4655,23 +4587,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "請輸入主機名稱。"
-          }
-        }
-      }
-    },
-    "Enter a username.": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "请输入用户名。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "請輸入使用者名稱。"
           }
         }
       }
@@ -5645,23 +5560,6 @@
         }
       }
     },
-    "Host": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "主机"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "主機"
-          }
-        }
-      }
-    },
     "Host key changed": {
       "extractionState": "manual",
       "localizations": {
@@ -6134,23 +6032,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "保留回捲紀錄"
-          }
-        }
-      }
-    },
-    "Kept in this device's Keychain, never synced and never in the screen's record. Leave it empty to be asked when the screen opens.": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "保存在本设备的钥匙串中，不会同步，也不会写入屏幕的记录。留空则在打开屏幕时询问。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "儲存在本裝置的鑰匙圈中，不會同步，也不會寫入螢幕的記錄。留空則在開啟螢幕時詢問。"
           }
         }
       }
@@ -7685,23 +7566,6 @@
         }
       }
     },
-    "Off until you turn it on": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "默认关闭，由你开启"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "預設關閉，由你開啟"
-          }
-        }
-      }
-    },
     "Off. Opening this connection starts an ordinary shell, and what is running in it ends when the connection does.": {
       "extractionState": "manual",
       "localizations": {
@@ -7817,23 +7681,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "在 Mac 上，請開啟「螢幕共享」並允許你的帳號，或設定「VNC 檢視器可以使用密碼控制螢幕」。在其他伺服器上，請啟用 VNC 或 VeNCrypt 密碼驗證。"
-          }
-        }
-      }
-    },
-    "On a Mac, turn on “VNC viewers may control screen with password” in Screen Sharing settings. On other servers, enable VNC password authentication.": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "在 Mac 上，请在“屏幕共享”设置中开启“VNC 显示程序可以使用密码控制屏幕”。在其他服务器上，请启用 VNC 密码验证。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "在 Mac 上，請在「螢幕共享」設定中開啟「VNC 檢視器可以使用密碼控制螢幕」。在其他伺服器上，請啟用 VNC 密碼驗證。"
           }
         }
       }
@@ -9096,57 +8943,6 @@
         }
       }
     },
-    "Private keys live in Apple's Keychain and are never sent to a server. iCloud sync is off until you turn it on, and even then only keys you choose go to iCloud Keychain.": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "私钥存放在 Apple 的 Keychain 中，从不发送到服务器。iCloud 同步在您开启之前处于关闭状态；即使开启，也只有您选择的密钥才会进入 iCloud Keychain。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "私密金鑰存放在 Apple 的 Keychain 中，絕不會傳送至伺服器。iCloud 同步在您開啟之前處於關閉狀態；即使開啟，也只有您選擇的金鑰才會進入 iCloud Keychain。"
-          }
-        }
-      }
-    },
-    "Private keys stay in this device's Keychain and never reach a server. There is no account and no analytics. Nothing is synced anywhere yet, and a passcode or Face ID is there if you want the app itself locked.": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "私钥保存在本设备的钥匙串中，绝不会发送到任何服务器。没有账户，也没有任何统计分析。目前不会同步到任何地方；如果你想锁住应用本身，可以设置密码或 Face ID。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "私密金鑰儲存在本裝置的鑰匙圈中，絕不會傳送到任何伺服器。沒有帳號，也沒有任何統計分析。目前不會同步到任何地方；若你想鎖住 App 本身，可以設定密碼或 Face ID。"
-          }
-        }
-      }
-    },
-    "Private keys stay in this device's Keychain and never reach a server. There is no account and no analytics. Turn on iCloud sync, or a passcode and Face ID, only if you want them.": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "私钥保存在本设备的钥匙串中，绝不会发送到任何服务器。没有账户，也没有任何统计分析。iCloud 同步、密码锁和 Face ID 都由你自行决定是否开启。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "私密金鑰儲存在本裝置的鑰匙圈中，絕不會傳送到任何伺服器。沒有帳號，也沒有任何統計分析。iCloud 同步、密碼鎖和 Face ID 都由你自行決定是否開啟。"
-          }
-        }
-      }
-    },
     "Private keys stay in this device's Keychain, or inside the Secure Enclave where they cannot be extracted at all. There is no account and no analytics. A passcode or Face ID can lock the app itself, and the guide is under Settings whenever you want it.": {
       "extractionState": "manual",
       "localizations": {
@@ -10179,23 +9975,6 @@
         }
       }
     },
-    "Screen address as the server sees it (optional)": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "服务器所见的屏幕地址（可选）"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "伺服器所見的螢幕位址（選填）"
-          }
-        }
-      }
-    },
     "Screen closed": {
       "extractionState": "manual",
       "localizations": {
@@ -10328,6 +10107,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "搜尋連線"
+          }
+        }
+      }
+    },
+    "Search connections and screens": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "搜索连接与屏幕"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "搜尋連線與螢幕"
           }
         }
       }
@@ -10842,23 +10638,6 @@
         }
       }
     },
-    "Show and control the server's desktop with touch, keyboard and pointer.": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "用触控、键盘和指针显示并控制服务器的桌面。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "用觸控、鍵盤和指標顯示並控制伺服器的桌面。"
-          }
-        }
-      }
-    },
     "Show hidden files": {
       "extractionState": "manual",
       "localizations": {
@@ -10872,6 +10651,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "顯示隱藏檔案"
+          }
+        }
+      }
+    },
+    "Show in This Pane": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在此分窗中显示"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在此分割窗格中顯示"
           }
         }
       }
@@ -10910,23 +10706,6 @@
         }
       }
     },
-    "Show the server's screen (VNC)": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "显示服务器的屏幕（VNC）"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "顯示伺服器的螢幕（VNC）"
-          }
-        }
-      }
-    },
     "Show the tour again": {
       "extractionState": "manual",
       "localizations": {
@@ -10940,6 +10719,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "重新查看新手教學"
+          }
+        }
+      }
+    },
+    "Showing one of these here moves it into this pane; it is not opened twice.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在此显示其中一项会把它移入该分窗，而不会重复打开。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在此顯示其中一項會把它移入該分割窗格，而不會重複開啟。"
           }
         }
       }
@@ -11250,6 +11046,23 @@
         }
       }
     },
+    "Split Below": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "向下分屏"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "向下分割"
+          }
+        }
+      }
+    },
     "Split Down": {
       "extractionState": "manual",
       "localizations": {
@@ -11268,6 +11081,40 @@
       }
     },
     "Split Right": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "向右分屏"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "向右分割"
+          }
+        }
+      }
+    },
+    "Split With…": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "分屏并选择…"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "分割並選擇…"
+          }
+        }
+      }
+    },
+    "Split to the Right": {
       "extractionState": "manual",
       "localizations": {
         "zh-Hans": {
@@ -11811,23 +11658,6 @@
         }
       }
     },
-    "Text copied from the terminal is removed from the clipboard by iOS after this long. Public keys copied from the key list stay until replaced.": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "从终端复制的文本会在这段时间后由 iOS 从剪贴板移除。从密钥列表复制的公钥会一直保留，直到被替换。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "從終端機複製的文字會在這段時間後由 iOS 從剪貼簿移除。從金鑰清單複製的公開金鑰會一直保留，直到被取代。"
-          }
-        }
-      }
-    },
     "Text copied from the terminal is removed from the clipboard by iOS after this long. Public keys copied from the key list stay until replaced.\n\nPrograms on a server can ask to copy to this device's clipboard — tmux and vim use it to make yank reach you. It is off until you turn it on, because it is somebody else's machine writing where your copied text lives. Reading your clipboard is never allowed, whatever this says.": {
       "extractionState": "manual",
       "localizations": {
@@ -12062,23 +11892,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Secure Enclave 會在每次簽章前要求生物辨識或密碼驗證；若裝置的生物辨識登錄發生變更，金鑰將被銷毀。"
-          }
-        }
-      }
-    },
-    "The Secure Enclave destroys its copy. There is no backup anywhere, so this key can never be recovered and any connection using it will stop working.": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Secure Enclave 会销毁它保存的副本。任何地方都没有备份，因此这把密钥永远无法恢复，使用它的连接都将无法继续工作。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Secure Enclave 會銷毀它保存的副本。任何地方都沒有備份，因此這把金鑰永遠無法復原，使用它的連線都將無法繼續運作。"
           }
         }
       }
@@ -12797,23 +12610,6 @@
         }
       }
     },
-    "The screen sharing port must be between 1 and 65535.": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "屏幕共享端口必须在 1 到 65535 之间。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "螢幕共享連接埠必須在 1 到 65535 之間。"
-          }
-        }
-      }
-    },
     "The screen sharing server refused the password.": {
       "extractionState": "manual",
       "localizations": {
@@ -12861,23 +12657,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "畫面在該連線內部傳輸，因此 VNC 伺服器可以只繫結伺服器自己的 localhost，無需額外暴露任何連接埠。其加密即 SSH 的加密。"
-          }
-        }
-      }
-    },
-    "The screen travels inside the SSH connection, so nothing extra is exposed and the VNC server can stay bound to localhost. Leave the address empty for the server itself.": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "画面在 SSH 连接内传输，因此无需额外暴露任何端口，VNC 服务器可以只绑定 localhost。地址留空即表示服务器本身。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "畫面在 SSH 連線內傳輸，因此無需額外暴露任何連接埠，VNC 伺服器可以只繫結 localhost。位址留空即表示伺服器本身。"
           }
         }
       }
@@ -13443,23 +13222,6 @@
         }
       }
     },
-    "This removes your connections, private keys and Cloudflare sessions from this device. It cannot be undone.": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "这将从本设备移除你的连接、私钥和 Cloudflare 会话。此操作无法撤销。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "這將從本裝置移除你的連線、私密金鑰和 Cloudflare 工作階段。此操作無法復原。"
-          }
-        }
-      }
-    },
     "This removes your connections, private keys, host keys and Cloudflare sessions from this device and from iCloud. It cannot be undone.": {
       "extractionState": "manual",
       "localizations": {
@@ -13664,6 +13426,23 @@
         }
       }
     },
+    "This system cannot serve a server through the Files app: it has no file-provider storage to put the files in, so the system takes the connection back as soon as it is added. Everything in the app's own file browser still works. On a device this does not happen.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本系统无法通过「文件」App 提供服务器：它没有可用于存放文件的文件提供程序存储，因此连接刚添加就会被系统收回。本应用自带的文件浏览器仍完全可用。在真机上不会出现这种情况。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本系統無法透過「檔案」App 提供伺服器：它沒有可用於存放檔案的檔案提供者儲存空間，因此連線剛加入就會被系統收回。本應用程式自帶的檔案瀏覽器仍完全可用。在實機上不會出現這種情況。"
+          }
+        }
+      }
+    },
     "This text contains newlines and the remote program does not support bracketed paste, so each line will run as soon as it arrives.": {
       "extractionState": "manual",
       "localizations": {
@@ -13817,36 +13596,19 @@
         }
       }
     },
-    "Through an SSH connection": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "经由 SSH 连接"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "經由 SSH 連線"
-          }
-        }
-      }
-    },
     "Through the SSH connection": {
       "extractionState": "manual",
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "经由 SSH 连接"
+            "value": "通过该 SSH 连接"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "經由 SSH 連線"
+            "value": "透過該 SSH 連線"
           }
         }
       }
@@ -14565,23 +14327,6 @@
         }
       }
     },
-    "VNC password (optional, saved to Keychain)": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "VNC 密码（可选，保存到钥匙串）"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "VNC 密碼（選填，儲存到鑰匙圈）"
-          }
-        }
-      }
-    },
     "VNC password (stored — enter to replace)": {
       "extractionState": "manual",
       "localizations": {
@@ -14595,23 +14340,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "VNC 密碼（已儲存——輸入以取代）"
-          }
-        }
-      }
-    },
-    "VNC port": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "VNC 端口"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "VNC 連接埠"
           }
         }
       }
@@ -14646,23 +14374,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "垂直分隔線"
-          }
-        }
-      }
-    },
-    "View": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "显示"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "顯示"
           }
         }
       }
@@ -15377,23 +15088,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "iCloud 拒絕了此次變更（CloudKit %lld）。這是本 App 的問題，與你的操作無關。"
-          }
-        }
-      }
-    },
-    "iCloud rejected the change. This is a fault in the app, not something you did.": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "iCloud 拒绝了此次更改。这是本应用的问题，与你的操作无关。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "iCloud 拒絕了此次變更。這是本 App 的問題，與你的操作無關。"
           }
         }
       }

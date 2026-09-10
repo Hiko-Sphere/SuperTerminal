@@ -116,6 +116,16 @@ struct PaneLayout: Equatable, Sendable {
 
     /// Removes a pane. Its sibling takes the space, which is what makes closing feel like
     /// the inverse of splitting rather than a rearrangement.
+    /// Puts different content in a pane that already exists (D-074).
+    ///
+    /// What a pane whose session ended needs: splitting there would leave the dead one on
+    /// screen beside the new one, which is not what "show something else here" means.
+    mutating func replace(_ paneID: UUID, with content: Content) {
+        guard let root else { return }
+        self.root = Self.replacing(paneID, in: root) { _ in .leaf(id: paneID, content: content) }
+        focused = paneID
+    }
+
     mutating func close(_ paneID: UUID) {
         guard let root else { return }
         let before = panes.map(\.id)

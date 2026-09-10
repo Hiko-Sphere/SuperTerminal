@@ -151,6 +151,11 @@ latches for the next key, so Control then C sends `^C`. Hold it to keep it down.
   programs stay the right size. A sample under the controls is drawn with the same face and
   the same row height the terminal will use, so a zero can be told from an `O` before you
   leave the screen.
+- **Split the screen** with ⌘D (to the right) or ⇧⌘D (below) for another shell on the same
+  server. **⌥⌘D — or *Split With…* in the Session menu — asks what to put there instead**: a
+  different server, a folder, a machine's screen over VNC, something already open, or a server
+  that is not in your list yet, which opens the editor and puts what you save straight into the
+  pane. ⌥⌘[ and ⌥⌘] move between panes, ⌥⌘W closes one.
 - **Themes** and light/dark following the system are in **Settings → Appearance**.
 - **Shell integration** is understood where a shell offers it: the app follows the working
   directory a shell reports, and knows where a prompt and its output begin. A program can
