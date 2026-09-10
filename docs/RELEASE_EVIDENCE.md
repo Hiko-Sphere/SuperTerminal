@@ -3,6 +3,119 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-11 — after D-079 and D-080 (themes, one Help section, and a crash)
+
+| Command | Result |
+| --- | --- |
+| `bash scripts/app-integration-e2e.sh` | **422 tests in 79 suites passed**, no restarts |
+| `bash scripts/ui-terminal-e2e.sh` (iPhone 17 Pro) | **92 passed, 2 failed** — both `ZZSearchProbeUITests` |
+| `bash scripts/ui-terminal-e2e.sh` (iPad Pro 13-inch M5) | **93 passed, 2 failed** — both `ZZSearchProbeUITests` |
+| `bash scripts/localization-audit.sh` | **green**, 0 orphans |
+| `bash scripts/generate-user-guide-doc.sh` | regenerates `docs/USER_GUIDE.md` byte-identically |
+| App warning gate | **0** |
+| Release archive | **ARCHIVE SUCCEEDED** |
+
+### Two features that existed and could not be reached
+
+`AppSettings.customThemes` is read by `allThemes`, carried by a backup, and — since D-078 —
+survives a relaunch. Nothing in the app could create one, so for every user who has ever run it
+`allThemes` was the three built-ins. `Host.themeID` is read by `TerminalView` and
+`TmuxWindowView` and written by nothing at all. Both halves were finished; neither had a door.
+
+`.itermcolors` is the one palette format every terminal already produces, so a palette somebody
+has comes across as it is and one made here leaves for their laptop. Nothing is bundled: shipping
+a collection of other people's palettes would be shipping other people's work. The reader is
+driven by the XML a terminal actually writes — components as `<string>`, files from before
+`Color Space` existed, Display P3 through Core Graphics rather than a matrix written here. The P3
+test is driven backwards so it cannot be tautological: Core Graphics is asked what a P3 file
+would have to contain to *mean* a known sRGB colour, and the reader has to hand that colour back,
+while the same numbers labelled sRGB must give a different answer.
+
+### What the measured readout found in the app's own default theme
+
+Every terminal with a theme editor lets a person build a palette they cannot read and says
+nothing. The contrast of the text and of each of the sixteen colours against that theme's own
+background is shown while the colour is being chosen. The claim is narrow on purpose — the ratio
+itself, and a caution under 3:1, where the guidelines stop treating anything as legible. Not
+"passes AA": WCAG's thresholds were written for body text and a terminal cell is not that.
+
+Run over the built-ins, it failed. **Midnight's colour 8 was `#4B5263` on `#11131A` — 2.37:1.**
+Colour 8 is the dim colour: `git` prints hashes in it, `delta` numbers lines with it, prompts
+separate with it. It is read. Raised to `#5D667B` — the same hue scaled until it clears the line,
+3.23:1, still the dimmest colour in the palette by a distance (the next is 5.81:1). The smallest
+change that makes the default theme pass the check the app now applies to everyone else's.
+
+Colour 0 is excluded from the weakest reading, and that is a judgement rather than an oversight:
+it is the background colour by convention, nothing prints text in it against itself, and counting
+it would make every well-formed dark theme report a failure it cannot act on. A test pins the
+exclusion so it cannot quietly widen.
+
+### A crash in Settings, caused by a screen nobody had opened
+
+`AccessibilityUITests.testSettingsRemainUsableWithReduceTransparencyAndBoldText` began dying on
+iPad with `SIGABRT` in `-[_UIFocusContainerGuideFallbackItemsContainer initWithParentEnvironment:childItems:]`
+— the focus engine, while the Settings form was being scrolled.
+
+Three discriminating runs, not a guess. Remove the new `NavigationLink("Themes")` row: passes.
+Keep the row, point it at `Text("probe")`: passes. Point it back at `ThemeWorkshopView()`: crashes.
+So a closure-based `NavigationLink` in a `List` builds its destination as soon as the row appears
+— which is why `navigationDestination(for:)` exists — and the workshop had a `Section` whose only
+content was a `ContentUnavailableView`, which is not focusable. A focus container with no items,
+asserted on, from a screen the test never opened.
+
+Both halves are fixed. The empty state is carried by the "Start from" section's footer instead,
+which is the better design anyway — the section that says what to do is the one to read. And
+`LazyDestination` defers building a destination until it is shown, so the next screen with a
+quirk in it cannot reach out of the row that merely links to it.
+
+Two more things the repository had already measured once and forgotten: a value-based
+`NavigationLink` inside the Settings stack does not open (`HelpTopicsView` documents exactly
+this), and `app.swipeUp()` on an iPad scrolls the connection list *behind* the form sheet. Both
+were hit again here; the forms now carry identifiers and the tests swipe the form.
+
+### Four tests that had been passing by luck
+
+Settings gained rows — the theme workshop's, then iCloud's — and four pieces of UI-test
+scrolling stopped working at once. None was a defect these commits introduced; each had been
+wrong all along and had been getting away with it while the form was short enough.
+
+| Where | What was wrong |
+| --- | --- |
+| `BackupUITests.scrollToSettingsRow` | Swiped `app`. On an iPad, Settings is a form sheet and that scrolls the connection list *behind* it |
+| the same helper | Searched downwards only, so a row reached by scrolling past another was above the viewport and unreachable |
+| `BackupUITests`, three call sites | Referenced `app.buttons["backup-export"]` directly after scrolling elsewhere — the assumption the file's own docstring warns about, applied to a row visited a moment earlier rather than to a neighbour |
+| `XCUIElement.switchOn(in:)` (shared) | Used `app.collectionViews.firstMatch`, which on an iPad is again the list behind the sheet, and again swiped one way only |
+
+All four are fixed the way this repository had already worked out once: swipe the form named by
+its own identifier, and search both directions. No assertion was relaxed.
+
+### And one that depended on a setting nothing set
+
+`HardwareKeyboardStateUITests` failed on `⌘F should open the find bar`. It is not in the app:
+the simulator only delivers `typeKey`/`typeText` when its own **Connect Hardware Keyboard**
+setting is on, that setting is a per-device preference of the Simulator app kept outside this
+repository, and nothing anywhere set it. So the same code passed or failed depending on what the
+machine happened to have, and the failure read as a broken shortcut rather than as nothing being
+typed.
+
+Measured both ways: with the preference removed the suite fails reproducibly; with it on, it
+passes. `scripts/ui-terminal-e2e.sh` now sets it before xcodebuild boots the device, and that was
+verified by deleting the preference and watching the script put it back.
+
+### Two sections both headed "Help"
+
+The tour's (D-033) and the guide's (D-056), one directly above the other, each right on its own
+and together reading as a rendering fault. One section, two rows, the tour first because the
+person who wants it is newer.
+
+The guide now carries pictures: nine, in all three languages, driven by an
+`<!-- illustration: … -->` marker. Written as an HTML comment on purpose — the guide files are
+also read as plain Markdown, and a marker that showed up there as literal text would be a wart in
+the prose. The pictures are drawn from the same design tokens as the interface they describe
+rather than screenshotted, so they cannot drift from it; `files` and `forwarding` were drawn for
+the guide, because what a folder on a server looks like and which way a forwarded port points are
+the two things hardest to say in words.
+
 ## 2026-09-10 — after D-078 (custom themes were being lost silently)
 
 | Command | Result |
@@ -231,6 +344,7 @@ device dump, which reads `ContainerID = iCloud.dev.apexterminal.app`, and the cl
 **The recorded diagnosis stands**: an HTTP 500 is a request-level status, CloudKit reports
 per-record validation failures as a partial failure on an otherwise successful response, and
 the container is still H-5's business.
+
 
 Two real client-side defects were found underneath it, and neither is the cause:
 

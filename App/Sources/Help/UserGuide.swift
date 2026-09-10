@@ -101,7 +101,10 @@ struct UserGuide: Equatable {
             case let .bullets(items): items
             case let .numbered(items): items
             case let .table(header, rows): header + rows.flatMap { $0 }
-            case .rule: []
+            // A picture carries no words to search for, and the name is a marker rather
+            // than prose — "keychain" in the search box must not match a topic because of
+            // an illustration nobody can read.
+            case .rule, .illustration: []
             }
         }
     }

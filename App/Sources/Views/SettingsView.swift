@@ -76,6 +76,8 @@ struct SettingsView: View {
                         lineHeightMultiple: settings.lineHeightMultiple,
                         ligaturesEnabled: settings.fontLigatures
                     )
+                    NavigationLink("Themes") { LazyDestination { ThemeWorkshopView() } }
+                        .accessibilityIdentifier("settings-themes")
                     Toggle("Blink the cursor", isOn: $settings.cursorBlink)
                     Toggle("Haptic feedback", isOn: $settings.hapticsEnabled)
                 } header: {
@@ -212,12 +214,7 @@ struct SettingsView: View {
 
                 BackupSettingsSection()
 
-                TutorialSettingsSection()
-
-                Section("Help") {
-                    NavigationLink("User Guide") { HelpTopicsView() }
-                        .accessibilityIdentifier("settings-guide")
-                }
+                HelpSettingsSection()
 
                 Section("Legal") {
                     ForEach([LegalDocument.terms, .privacy, .notice, .licences]) { document in

@@ -36,7 +36,8 @@ import Testing
             name: "server", hostname: "example.com", port: 22, username: "deploy",
             transport: .directTCP, credentials: [], folder: nil, terminalType: "xterm-256color",
             accessAuthentication: nil, platformOverride: nil, showsInFiles: false,
-            jumpHosts: [], forwardsAgent: false, usesTmux: true, tmuxSessionName: " work "
+            jumpHosts: [], forwardsAgent: false, usesTmux: true, tmuxSessionName: " work ",
+            themeID: nil
         )
         let withTmux = host.applying(fields)
         #expect(withTmux.isUsingTmux)

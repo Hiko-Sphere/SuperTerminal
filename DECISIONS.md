@@ -1294,6 +1294,7 @@ CKErrorDomain 15   CKHTTPStatus = 500   CKInternalErrorDomain: 2000
 ContainerID = iCloud.dev.apexterminal.app
 ```
 
+
 No `ServerErrorDescription`, no per-item errors, an HTTP 500 — the request never reached
 record validation. The app's entitlements had no `aps-environment` and the bundle no
 `remote-notification` background mode. `CKSyncEngine` keeps a database subscription so
@@ -1413,3 +1414,5 @@ An index, so nothing has to be hunted for:
 | D-076 | `882f586` | The pane that lost its session offers to show something else |
 | D-077 | `6c85b70` | A picture behind the terminal, dimmed by a measured contract rather than by a slider |
 | D-078 | `a122d57` | The themes a restore put back, kept — they were being lost on the next launch |
+| D-079 | this commit | A theme workshop, and a connection that opens in its own colours |
+| D-080 | this commit | One Help section instead of two, a guide with pictures — and the iPad crash a row in Settings could cause |

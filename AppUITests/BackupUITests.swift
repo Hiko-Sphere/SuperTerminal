@@ -22,15 +22,37 @@ final class BackupUITests: XCTestCase {
     /// a long list keeps only what is near the viewport, and Settings grew — so a run that
     /// found "Export a backup…" could still fail to find "Restore from a backup…" a few
     /// points below it.
+    ///
+    /// It searches **both** directions, which the first version did not. Having scrolled down
+    /// to the neighbour, the first row is no longer near the viewport either, so asking about
+    /// it again looks for something that is now *above* — and swiping further down can never
+    /// bring it back. Settings gained rows when iCloud did, and that is the run where the
+    /// one-directional version stopped working.
     @discardableResult
     private func scrollToSettingsRow(_ identifier: String) -> XCUIElement {
         XCTAssertTrue(app.buttons["settings-open"].waitForExistence(timeout: 10))
         if app.navigationBars["Settings"].exists == false { app.buttons["settings-open"].tap() }
         let row = app.buttons[identifier]
-        var attempts = 0
-        while !row.exists, attempts < 20 { app.swipeUp(); attempts += 1 }
+        // Down first: a row being looked for is usually below the one just visited.
+        for up in [true, false] {
+            for _ in 0 ..< 20 {
+                if row.exists { return row }
+                if up { settingsForm().swipeUp() } else { settingsForm().swipeDown() }
+            }
+        }
         XCTAssertTrue(row.waitForExistence(timeout: 5), "Settings should offer \(identifier)")
         return row
+    }
+
+    /// The Settings form itself, by the identifier it carries.
+    ///
+    /// Not `app`. On an iPad, Settings is a form sheet with the connection list still visible
+    /// behind it, and a swipe aimed at the application scrolls that list instead — the sheet
+    /// never moves and the row never arrives. This worked by luck while Backup sat high enough
+    /// in the form to be in the tree already; iCloud gained rows above it and the luck ran out.
+    private func settingsForm() -> XCUIElement {
+        let named = app.descendants(matching: .any).matching(identifier: "settings-form").firstMatch
+        return named.exists ? named : app.collectionViews.firstMatch
     }
 
     private func openBackupSection() {
@@ -43,18 +65,23 @@ final class BackupUITests: XCTestCase {
 
         // Without private keys there is nothing to protect, so nothing to type.
         XCTAssertFalse(app.secureTextFields["backup-password"].exists)
-        XCTAssertTrue(app.buttons["backup-export"].isEnabled, "a plain export needs no password")
+        // Through the scrolling helper every time, never `app.buttons[…]` directly. Having
+        // scrolled down to the restore row, the export button is no longer near the viewport
+        // and so is no longer in the tree at all — the same rule this file's own docstring
+        // states about neighbours applies just as much to a row visited a moment ago.
+        XCTAssertTrue(scrollToSettingsRow("backup-export").isEnabled, "a plain export needs no password")
 
         try app.switches["backup-include-keys"].firstMatch.switchOn(in: app)
         let password = app.secureTextFields["backup-password"]
         XCTAssertTrue(password.waitForExistence(timeout: 5),
                       "asking for private keys must ask for a password")
-        XCTAssertFalse(app.buttons["backup-export"].isEnabled,
+        XCTAssertFalse(scrollToSettingsRow("backup-export").isEnabled,
                        "and export stays unavailable until one is typed")
 
-        password.tap()
-        password.typeText("a strong one")
-        XCTAssertTrue(app.buttons["backup-export"].isEnabled, "once there is a password, it can be exported")
+        let field = app.secureTextFields["backup-password"]
+        field.tap()
+        field.typeText("a strong one")
+        XCTAssertTrue(scrollToSettingsRow("backup-export").isEnabled, "once there is a password, it can be exported")
     }
 
     func testRestoreRefusesAFileThatIsNotABackup() throws {

@@ -1,6 +1,7 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "": {},
     "%@": {
       "extractionState": "manual",
       "localizations": {
@@ -31,6 +32,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@（CloudKit %lld）"
+          }
+        }
+      }
+    },
+    "%@ Copy": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 副本"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 副本"
           }
         }
       }
@@ -184,6 +202,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@ · %@ · Secure Enclave"
+          }
+        }
+      }
+    },
+    "%@ · colour %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · 第 %lld 号"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · 第 %lld 號"
           }
         }
       }
@@ -358,6 +393,23 @@
         }
       }
     },
+    "%lld connections": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 个连接"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 個連線"
+          }
+        }
+      }
+    },
     "%lld new": {
       "extractionState": "manual",
       "localizations": {
@@ -405,6 +457,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "第 %lld 項，共 %lld 項"
+          }
+        }
+      }
+    },
+    "%lld of the sixteen colours are below %@, the weakest being colour %lld at %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "十六个颜色里有 %lld 个低于 %@，最弱的是第 %lld 号，%@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "十六個顏色裡有 %lld 個低於 %@，最弱的是第 %lld 號，%@"
           }
         }
       }
@@ -902,6 +971,40 @@
         }
       }
     },
+    "A terminal palette needs all sixteen ANSI colours. Export it again from the terminal it came from.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "终端配色需要全部十六个 ANSI 颜色。请从它来自的那个终端重新导出。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "終端機配色需要全部十六個 ANSI 顏色。請從它來自的那個終端機重新匯出。"
+          }
+        }
+      }
+    },
+    "A theme stays on this device and travels in a backup. It does not sync: a connection set to a theme the other device does not have opens in the default theme there, and says so.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "主题留在这台设备上，随备份一起走。它不会同步：一个连接如果被设为另一台设备没有的主题，在那边会用默认主题打开，并且会告诉你。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "主題留在這部裝置上，隨備份一起走。它不會同步：一個連線如果被設為另一部裝置沒有的主題，在那邊會用預設主題開啟，並且會告訴你。"
+          }
+        }
+      }
+    },
     "A user name is only needed for a screen that signs in to an account — a Mac sharing its screen, or a server using VeNCrypt. Leave it empty otherwise. The password is kept in this device's Keychain, never synced and never in the screen's record; leave it empty to be asked when the screen opens.": {
       "extractionState": "manual",
       "localizations": {
@@ -915,6 +1018,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "只有需要登入帳號的螢幕才需要使用者名稱——例如開啟了螢幕共享的 Mac，或使用 VeNCrypt 的伺服器。其他情況留空即可。密碼儲存在本裝置的鑰匙圈中，不會同步，也不會寫入螢幕的記錄；留空則在開啟螢幕時詢問。"
+          }
+        }
+      }
+    },
+    "ANSI colours": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ANSI 颜色"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ANSI 顏色"
           }
         }
       }
@@ -1446,6 +1566,23 @@
         }
       }
     },
+    "Against this background %@. Small text in those colours will be hard to read.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在这个背景上，%@。用这些颜色写的小字会很难读。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在這個背景上，%@。用這些顏色寫的小字會很難讀。"
+          }
+        }
+      }
+    },
     "Agent forwarding": {
       "extractionState": "manual",
       "localizations": {
@@ -1493,6 +1630,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "已開啟"
+          }
+        }
+      }
+    },
+    "Also in the Files app": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "也在“文件”App 里"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "也在「檔案」App 裡"
           }
         }
       }
@@ -2160,6 +2314,23 @@
         }
       }
     },
+    "Background": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "背景"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "背景"
+          }
+        }
+      }
+    },
     "Backup": {
       "extractionState": "manual",
       "localizations": {
@@ -2279,6 +2450,23 @@
         }
       }
     },
+    "Black": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "黑"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "黑"
+          }
+        }
+      }
+    },
     "Blink the cursor": {
       "extractionState": "manual",
       "localizations": {
@@ -2292,6 +2480,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "游標閃爍"
+          }
+        }
+      }
+    },
+    "Blue": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "蓝"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "藍"
           }
         }
       }
@@ -2326,6 +2531,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "濃重"
+          }
+        }
+      }
+    },
+    "Bright %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "亮%@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "亮%@"
           }
         }
       }
@@ -2802,6 +3024,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "請選擇由 Apex Terminal 匯出、以 .apexbackup 結尾的檔案。"
+          }
+        }
+      }
+    },
+    "Choose a file exported from a terminal as .itermcolors.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请选择一个由终端导出的 .itermcolors 文件。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請選擇一個由終端機匯出的 .itermcolors 檔案。"
           }
         }
       }
@@ -3673,6 +3912,23 @@
         }
       }
     },
+    "Contrast ratios against this theme's own background, from 1:1 to 21:1. A colour under 3:1 is called out because that is the point below which the accessibility guidelines stop treating anything as legible — not because a terminal cell is body text.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "相对这个主题自己背景的对比度，范围从 1:1 到 21:1。低于 3:1 的颜色会被单独指出，因为那是无障碍准则不再把任何东西当作可读的界线——不是因为终端字符是正文。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "相對這個主題自己背景的對比度，範圍從 1:1 到 21:1。低於 3:1 的顏色會被單獨指出，因為那是無障礙準則不再把任何東西當作可讀的界線——不是因為終端機字元是內文。"
+          }
+        }
+      }
+    },
     "Control": {
       "extractionState": "manual",
       "localizations": {
@@ -3703,6 +3959,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Control、Esc、Tab 與方向鍵"
+          }
+        }
+      }
+    },
+    "Copies the palette so you can change it. The built-in ones themselves are never altered.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "复制一份配色供你修改。内置的那几个本身永远不会被改动。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "複製一份配色供你修改。內建的那幾個本身永遠不會被改動。"
           }
         }
       }
@@ -3928,6 +4201,40 @@
         }
       }
     },
+    "Cursor": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "光标"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "游標"
+          }
+        }
+      }
+    },
+    "Cyan": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "青"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "青"
+          }
+        }
+      }
+    },
     "Dark theme": {
       "extractionState": "manual",
       "localizations": {
@@ -4081,6 +4388,23 @@
         }
       }
     },
+    "Delete Theme": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除主题"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "刪除主題"
+          }
+        }
+      }
+    },
     "Delete all data": {
       "extractionState": "manual",
       "localizations": {
@@ -4145,6 +4469,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "刪除金鑰"
+          }
+        }
+      }
+    },
+    "Delete this theme?": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除这个主题？"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "刪除這個主題？"
           }
         }
       }
@@ -4230,6 +4571,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "已中離但保留"
+          }
+        }
+      }
+    },
+    "Development": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "开发"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "開發"
           }
         }
       }
@@ -4965,6 +5323,23 @@
         }
       }
     },
+    "Export as .itermcolors…": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "导出为 .itermcolors…"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "匯出為 .itermcolors…"
+          }
+        }
+      }
+    },
     "Export diagnostics": {
       "extractionState": "manual",
       "localizations": {
@@ -4978,6 +5353,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "匯出診斷資訊"
+          }
+        }
+      }
+    },
+    "Export it again from the terminal it came from.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请从它来自的那个终端重新导出。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "請從它來自的那個終端機重新匯出。"
           }
         }
       }
@@ -5492,6 +5884,23 @@
         }
       }
     },
+    "Green": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "绿"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "綠"
+          }
+        }
+      }
+    },
     "Group": {
       "extractionState": "manual",
       "localizations": {
@@ -5951,6 +6360,40 @@
         }
       }
     },
+    "Import a .itermcolors File…": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "导入 .itermcolors 文件…"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "匯入 .itermcolors 檔案…"
+          }
+        }
+      }
+    },
+    "Imported Theme": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "导入的主题"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "匯入的主題"
+          }
+        }
+      }
+    },
     "Import…": {
       "extractionState": "manual",
       "localizations": {
@@ -6151,6 +6594,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "「插入」只會把指令放到提示字元上，不會執行。"
+          }
+        }
+      }
+    },
+    "Inside the SSH connection — nothing new is exposed": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "走在 SSH 连接内部——不额外暴露任何端口"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "走在 SSH 連線內部——不額外暴露任何連接埠"
+          }
+        }
+      }
+    },
+    "It is no longer in your themes.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "它已经不在你的主题里了。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "它已經不在你的主題裡了。"
           }
         }
       }
@@ -6406,6 +6883,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "已知主機"
+          }
+        }
+      }
+    },
+    "LOCAL": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本地"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本機"
           }
         }
       }
@@ -6750,6 +7244,23 @@
         }
       }
     },
+    "Magenta": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "品红"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "洋紅"
+          }
+        }
+      }
+    },
     "Match case": {
       "extractionState": "manual",
       "localizations": {
@@ -6797,6 +7308,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "相符 —— 已記住"
+          }
+        }
+      }
+    },
+    "Measured": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "实测"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "實測"
           }
         }
       }
@@ -7086,6 +7614,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "新增指令片段"
+          }
+        }
+      }
+    },
+    "New Theme": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新建主题"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新增主題"
           }
         }
       }
@@ -7549,6 +8094,23 @@
         }
       }
     },
+    "Not on this device": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不在这台设备上"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不在這部裝置上"
+          }
+        }
+      }
+    },
     "Not only a terminal": {
       "extractionState": "manual",
       "localizations": {
@@ -7681,6 +8243,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "這份備份與本裝置上的內容沒有衝突。"
+          }
+        }
+      }
+    },
+    "Nothing is using this theme.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "没有任何东西在使用这个主题。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "沒有任何東西在使用這個主題。"
           }
         }
       }
@@ -7821,6 +8400,40 @@
         }
       }
     },
+    "Offered as a dark theme: its background is dark. Which side a theme belongs on is measured from the background rather than taken from its name.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "作为深色主题提供：它的背景是深的。一个主题属于哪一边，是从背景色量出来的，不是从名字看出来的。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "作為深色主題提供：它的背景是深的。一個主題屬於哪一邊，是從背景色量出來的，不是從名字看出來的。"
+          }
+        }
+      }
+    },
+    "Offered as a light theme: its background is pale. Which side a theme belongs on is measured from the background rather than taken from its name.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "作为浅色主题提供：它的背景是浅的。一个主题属于哪一边，是从背景色量出来的，不是从名字看出来的。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "作為淺色主題提供：它的背景是淺的。一個主題屬於哪一邊，是從背景色量出來的，不是從名字看出來的。"
+          }
+        }
+      }
+    },
     "Offered together with the key. The server checks it against its own authority instead of looking the key up in a file.": {
       "extractionState": "manual",
       "localizations": {
@@ -7936,6 +8549,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "在伺服器上執行："
+          }
+        }
+      }
+    },
+    "One change was too large for iCloud to accept. Smaller changes still sync.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "有一项改动太大，iCloud 不接受。较小的改动仍会同步。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "有一項變更太大，iCloud 不接受。較小的變更仍會同步。"
           }
         }
       }
@@ -8994,6 +9624,23 @@
         }
       }
     },
+    "Preview of %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 的预览"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 的預覽"
+          }
+        }
+      }
+    },
     "Previous Pane": {
       "extractionState": "manual",
       "localizations": {
@@ -9198,6 +9845,23 @@
         }
       }
     },
+    "Production": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "生产"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "生產"
+          }
+        }
+      }
+    },
     "Protected by %@.": {
       "extractionState": "manual",
       "localizations": {
@@ -9262,6 +9926,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "快速查看"
+          }
+        }
+      }
+    },
+    "REMOTE": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "远程"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "遠端"
           }
         }
       }
@@ -9470,6 +10151,23 @@
         }
       }
     },
+    "Red": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "红"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "紅"
+          }
+        }
+      }
+    },
     "Reduce Transparency is on, so the picture is not shown. The terminal uses its theme colour instead.": {
       "extractionState": "manual",
       "localizations": {
@@ -9517,6 +10215,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "遠端"
+          }
+        }
+      }
+    },
+    "Remote programs ask for these by number and expect the classic meanings — colour 1 is the red every diagnostic has ever been printed in. The bright half is what bold text uses.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "远端程序按编号取用这些颜色，并且指望它们保持经典含义——第 1 号就是所有报错信息一直以来用的那个红。右边这一半是加粗文字用的亮色。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "遠端程式按編號取用這些顏色，並且指望它們保持經典含義——第 1 號就是所有錯誤訊息一直以來用的那個紅。右邊這一半是粗體文字用的亮色。"
           }
         }
       }
@@ -10077,6 +10792,23 @@
         }
       }
     },
+    "Same as Settings": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "跟随设置"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "跟隨設定"
+          }
+        }
+      }
+    },
     "Sample of %@": {
       "extractionState": "manual",
       "localizations": {
@@ -10515,6 +11247,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "選取的文字"
+          }
+        }
+      }
+    },
+    "Selection": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "选中"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "選取"
           }
         }
       }
@@ -11165,23 +11914,6 @@
         }
       }
     },
-    "Six things worth knowing: pasting an address, the first fingerprint, the key row, snippets and the palette, remote screens, and where your keys live.": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "六件值得知道的事：粘贴地址、第一次核对指纹、按键行、片段与命令面板、远程屏幕，以及你的密钥存放在哪里。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "六件值得知道的事：貼上位址、第一次核對指紋、按鍵列、片段與命令面板、遠端螢幕，以及你的金鑰存放在哪裡。"
-          }
-        }
-      }
-    },
     "Size": {
       "extractionState": "manual",
       "localizations": {
@@ -11433,6 +12165,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "啟動"
+          }
+        }
+      }
+    },
+    "Start from": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "从这些开始"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "從這些開始"
           }
         }
       }
@@ -11981,6 +12730,23 @@
         }
       }
     },
+    "Text": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "文字"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "文字"
+          }
+        }
+      }
+    },
     "Text copied from the terminal is removed from the clipboard by iOS after this long. Public keys copied from the key list stay until replaced.\n\nPrograms on a server can ask to copy to this device's clipboard — tmux and vim use it to make yank reach you. It is off until you turn it on, because it is somebody else's machine writing where your copied text lives. Reading your clipboard is never allowed, whatever this says.": {
       "extractionState": "manual",
       "localizations": {
@@ -12015,6 +12781,23 @@
         }
       }
     },
+    "Text on background": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "文字对背景"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "文字對背景"
+          }
+        }
+      }
+    },
     "That certificate was issued for a different key.": {
       "extractionState": "manual",
       "localizations": {
@@ -12028,6 +12811,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "該憑證是為另一把金鑰簽發的。"
+          }
+        }
+      }
+    },
+    "That colour scheme has no background colour.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这份配色没有背景色。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這份配色沒有背景色。"
+          }
+        }
+      }
+    },
+    "That colour scheme is missing colour %lld.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这份配色缺少第 %lld 号颜色。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這份配色缺少第 %lld 號顏色。"
           }
         }
       }
@@ -12062,6 +12879,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "無法以文字形式讀取該檔案。"
+          }
+        }
+      }
+    },
+    "That file could not be read.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这个文件读不了。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這個檔案讀不了。"
           }
         }
       }
@@ -12113,6 +12947,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "這是一張主機憑證。金鑰認證要用使用者憑證；主機憑證屬於伺服器。"
+          }
+        }
+      }
+    },
+    "That is not a colour-scheme file.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这不是一个配色文件。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這不是一個配色檔案。"
           }
         }
       }
@@ -12249,6 +13100,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "該指令片段已不存在。"
+          }
+        }
+      }
+    },
+    "That theme was deleted": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这个主题已被删除"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這個主題已被刪除"
           }
         }
       }
@@ -13069,6 +13937,23 @@
         }
       }
     },
+    "The selection colour is drawn behind text, so it needs to differ from the background without hiding what it is highlighting.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "选中色画在文字后面，所以它既要区别于背景，又不能盖住它正在标出的内容。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "選取色畫在文字後面，所以它既要區別於背景，又不能蓋住它正在標出的內容。"
+          }
+        }
+      }
+    },
     "The server could not %@.": {
       "extractionState": "manual",
       "localizations": {
@@ -13222,6 +14107,23 @@
         }
       }
     },
+    "The tour is six things worth knowing: pasting an address, the first fingerprint, the key row, snippets and the palette, remote screens, and where your keys live. The guide is the whole of it, searchable, with a picture on the topics that are easier shown than described.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "导览是六件值得知道的事：粘贴地址、第一次核对指纹、辅助键行、代码片段与命令面板、远程屏幕，以及你的密钥存放在哪里。用户指南是全部内容，可搜索，并在那些画出来比说出来更清楚的主题上配了图。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "導覽是六件值得知道的事：貼上位址、第一次核對指紋、輔助鍵列、程式碼片段與命令選擇區、遠端螢幕，以及你的金鑰存放在哪裡。使用指南是全部內容，可搜尋，並在那些畫出來比說出來更清楚的主題上配了圖。"
+          }
+        }
+      }
+    },
     "The two entries do not match.": {
       "extractionState": "manual",
       "localizations": {
@@ -13235,6 +14137,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "兩次輸入不一致。"
+          }
+        }
+      }
+    },
+    "Theme": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "主题"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "主題"
+          }
+        }
+      }
+    },
+    "Themes": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "主题"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "主題"
           }
         }
       }
@@ -13392,6 +14328,40 @@
         }
       }
     },
+    "This build does not say which iCloud database it uses.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这个构建没有说明它使用哪个 iCloud 数据库。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這個建置沒有說明它使用哪個 iCloud 資料庫。"
+          }
+        }
+      }
+    },
+    "This build syncs with the Production iCloud database. A record type that has not been deployed there is refused, which looks exactly like iCloud being broken. Development builds should be built with the Debug configuration.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这个构建同步到 Production（生产）iCloud 数据库。没有部署到那里的记录类型会被直接拒绝，看起来和 iCloud 坏掉一模一样。开发用的构建应当使用 Debug 配置。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這個建置同步到 Production（生產）iCloud 資料庫。沒有部署到那裡的記錄類型會被直接拒絕，看起來和 iCloud 壞掉一模一樣。開發用的建置應當使用 Debug 組態。"
+          }
+        }
+      }
+    },
     "This cannot be undone.": {
       "extractionState": "manual",
       "localizations": {
@@ -13426,6 +14396,40 @@
         }
       }
     },
+    "This connection always opens in this theme, whichever one Settings is set to. Increase Contrast still overrides it: an accessibility setting is not a preference to be outvoted by a colour.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无论设置里选的是哪个主题，这个连接都用这个主题打开。「增强对比度」仍然优先：辅助功能设置不是可以被一种配色否决的偏好。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無論設定裡選的是哪個主題，這個連線都用這個主題開啟。「增強對比」仍然優先：輔助使用設定不是可以被一種配色否決的偏好。"
+          }
+        }
+      }
+    },
+    "This connection follows the theme in Settings. Give the servers you would rather not confuse their own colours — the window you are about to type into then says which one it is before you read the prompt.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这个连接跟随设置里的主题。给那些你不想弄混的服务器各自的颜色——你正要输入的那个窗口，在你读提示符之前就已经告诉你它是哪一台。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這個連線跟隨設定裡的主題。給那些你不想弄混的伺服器各自的顏色——你正要輸入的那個視窗，在你讀提示字元之前就已經告訴你它是哪一台。"
+          }
+        }
+      }
+    },
     "This connection has no user name saved. Edit the connection to save one.": {
       "extractionState": "manual",
       "localizations": {
@@ -13456,6 +14460,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "此連線設定為使用 Cloudflare Access 服務權杖，但本裝置上未儲存任何權杖。"
+          }
+        }
+      }
+    },
+    "This connection was set to a theme that is not on this device. It opens in the default theme here. Choosing another replaces the choice everywhere this connection syncs.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这个连接被设为一个不在这台设备上的主题，在这里会用默认主题打开。改选其它主题会覆盖这个连接同步到的所有设备上的选择。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這個連線被設為一個不在這部裝置上的主題，在這裡會用預設主題開啟。改選其他主題會覆蓋這個連線同步到的所有裝置上的選擇。"
           }
         }
       }
@@ -13830,6 +14851,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "此文字包含換行字元，且遠端程式不支援 bracketed paste，因此每一行送達後會立即執行。"
+          }
+        }
+      }
+    },
+    "This theme is in use by %@. Deleting it puts them back on the default theme.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这个主题正在被%@使用。删除它会把它们放回默认主题。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這個主題正在被%@使用。刪除它會把它們放回預設主題。"
           }
         }
       }
@@ -14803,6 +15841,23 @@
         }
       }
     },
+    "Weakest colour": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最弱的颜色"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最弱的顏色"
+          }
+        }
+      }
+    },
     "What do you want to do on this server?": {
       "extractionState": "manual",
       "localizations": {
@@ -14939,6 +15994,23 @@
         }
       }
     },
+    "White": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "白"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "白"
+          }
+        }
+      }
+    },
     "Wi-Fi": {
       "extractionState": "manual",
       "localizations": {
@@ -15003,6 +16075,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "有線"
+          }
+        }
+      }
+    },
+    "Writes the palette in the format terminals on the Mac, Windows and Linux read, so this theme can follow you to the machine you sit at.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "以 Mac、Windows 和 Linux 上的终端都能读的格式写出这份配色，让这个主题跟着你到你真正坐在前面的那台机器上。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "以 Mac、Windows 和 Linux 上的終端機都能讀的格式寫出這份配色，讓這個主題跟著你到你真正坐在前面的那台機器上。"
+          }
+        }
+      }
+    },
+    "Yellow": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "黄"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "黃"
+          }
+        }
+      }
+    },
+    "You have no themes of your own yet. Pick one of these to copy and change, or bring in a .itermcolors file exported from a terminal on your computer.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你还没有自己的主题。从这些里挑一个复制来改，或者导入一个从你电脑上的终端导出的 .itermcolors 文件。"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你還沒有自己的主題。從這些裡挑一個複製來改，或者匯入一個從你電腦上的終端機匯出的 .itermcolors 檔案。"
           }
         }
       }
@@ -15194,6 +16317,23 @@
         }
       }
     },
+    "Your themes": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你的主题"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你的主題"
+          }
+        }
+      }
+    },
     "an error the system did not explain": {
       "extractionState": "manual",
       "localizations": {
@@ -15241,6 +16381,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "修改這些權限"
+          }
+        }
+      }
+    },
+    "colour %lld is at %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "第 %lld 号颜色只有 %@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "第 %lld 號顏色只有 %@"
           }
         }
       }
@@ -15377,6 +16534,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "本 App 的 iCloud 雲碟已關閉。請在「設定」→ 你的名字 →「iCloud」中開啟。"
+          }
+        }
+      }
+    },
+    "iCloud database": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud 数据库"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud 資料庫"
           }
         }
       }
@@ -15619,6 +16793,57 @@
         }
       }
     },
+    "the app's dark theme": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App 的深色主题"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App 的深色主題"
+          }
+        }
+      }
+    },
+    "the app's light theme": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App 的浅色主题"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App 的淺色主題"
+          }
+        }
+      }
+    },
+    "the connection “%@”": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "连接“%@”"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "連線「%@」"
+          }
+        }
+      }
+    },
     "the model declined to answer": {
       "extractionState": "manual",
       "localizations": {
@@ -15734,6 +16959,74 @@
           "stringUnit": {
             "state": "translated",
             "value": "要求被模型的安全規則拒絕"
+          }
+        }
+      }
+    },
+    "the server listens": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器在听"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "伺服器在聽"
+          }
+        }
+      }
+    },
+    "the server’s network": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器那侧的网络"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "伺服器那側的網路"
+          }
+        }
+      }
+    },
+    "the text colour is at %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正文颜色只有 %@"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "內文顏色只有 %@"
+          }
+        }
+      }
+    },
+    "this device": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这台设备"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "這部裝置"
           }
         }
       }

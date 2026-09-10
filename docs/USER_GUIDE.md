@@ -15,6 +15,8 @@ Tap **+** on the connection list and paste the address. It is taken apart for yo
 work. A blank port means 22. A blank user name is asked for each time the connection
 opens, which is what you want on a machine you sign in to as more than one person.
 
+> **In the app:** a drawn illustration of address appears here.
+
 The first time you connect, the server shows you its host key fingerprint and nothing
 happens until you accept it. That check is yours to make — see **Host keys**. After that
 it is remembered.
@@ -85,6 +87,8 @@ nothing to compare against, so you are shown the fingerprint and you decide — 
 against what the server's operator published, or what `ssh-keyscan` printed on a machine
 you already trust.
 
+> **In the app:** a drawn illustration of fingerprint appears here.
+
 After that, the key is remembered in **Settings → Known hosts**, and a server whose key
 has changed is **refused**. The connection stops before your password or your key is
 offered. There is no setting to skip this check.
@@ -136,6 +140,8 @@ intermediate.
 Full xterm-256color emulation, true colour, wide characters and combining marks, with a
 scrollback you set in **Settings → Terminal**.
 
+> **In the app:** a drawn illustration of key row appears here.
+
 On a phone or an iPad without a hardware keyboard, the row above the keyboard has the
 keys a touch keyboard does not: Control, Escape, Tab, the arrows. Tap **Control** and it
 latches for the next key, so Control then C sends `^C`. Hold it to keep it down.
@@ -158,7 +164,18 @@ latches for the next key, so Control then C sends `^C`. Hold it to keep it down.
   different server, a folder, a machine's screen over VNC, something already open, or a server
   that is not in your list yet, which opens the editor and puts what you save straight into the
   pane. ⌥⌘[ and ⌥⌘] move between panes, ⌥⌘W closes one.
-- **Themes** and light/dark following the system are in **Settings → Appearance**.
+- **Themes** and light/dark following the system are in **Settings → Appearance**. **Settings →
+  Appearance → Themes** is where you make your own: start from a built-in palette, or bring in a
+  `.itermcolors` file exported from a terminal on your computer — the format every terminal reads,
+  so a palette you already use comes across as it is. While you edit, the contrast of the text and
+  of each of the sixteen colours against your own background is measured and shown, and a colour
+  under 3:1 is named, so a palette that cannot be read is caught where it is made rather than in a
+  session at night. A theme made here can be exported in the same format and taken back to your
+  computer. Themes stay on the device and travel in a backup; they do not sync.
+- **A theme for one connection** is in that connection's editor, under **Appearance**. It always
+  wins over the theme in Settings, which is the point: give the servers you would rather not
+  confuse their own colours, and the window you are about to type into says which one it is before
+  you read the prompt. **Increase Contrast** still overrides both.
 - **A picture behind the terminal** is in **Settings → Backdrop**. How much of it shows is not a
   slider you have to find a readable setting on: it is worked out from the picture itself and the
   theme you are using, so the text keeps the share of contrast the strength you chose promises.
@@ -189,6 +206,8 @@ looks like it lost your work did not: that work was on the old connection, which
 
 A session can be split so more than one thing is visible at once — two shells, a shell
 and a remote screen, four shells, whatever the space allows.
+
+> **In the app:** a drawn illustration of panes appears here.
 
 | Action | Keys |
 | --- | --- |
@@ -251,6 +270,8 @@ closes, it is kept briefly in case you come straight back, then closed.
 Every connection has a file browser: SFTP over the same connection, with no separate
 sign-in.
 
+> **In the app:** a drawn illustration of files appears here.
+
 - Browse, sort by name, size or date, and go up with the toolbar.
 - **Several folders at once.** Each browser is a session of its own, listed under *Open file
   browsers*, so you can have two open on the same server or on different ones — and on an iPad
@@ -270,6 +291,8 @@ extension gets no more access than it needs.
 ## Port forwarding
 
 **Forwards** on a connection carries the three kinds `ssh` has, with the same meanings:
+
+> **In the app:** a drawn illustration of forwarding appears here.
 
 | Kind | What it does |
 | --- | --- |
@@ -294,6 +317,8 @@ nothing needs to be exposed to the network. **How it connects** offers three rou
 **Through SSH** (a channel inside a connection you already have), **Cloudflare** (through
 a tunnel, the same as a terminal), or **Direct** for a server you can already reach.
 
+> **In the app:** a drawn illustration of screen appears here.
+
 Touch is mapped the way you would expect: tap to click, hold to drag, two fingers to
 scroll, pinch to zoom into a corner of a large desktop — once zoomed, two fingers pan
 instead. A hardware keyboard and a trackpad or mouse work as themselves.
@@ -311,6 +336,8 @@ screen says so rather than falling back to something weaker.
 
 A snippet is a command you stop retyping. Save it in **Settings → Snippets** and it is
 one tap away in any session.
+
+> **In the app:** a drawn illustration of palette appears here.
 
 ⌘K opens the command palette, which searches your open sessions, your connections, your
 snippets and every action at once. Type a few letters of any of them; Return runs the
@@ -385,6 +412,8 @@ Nothing is sent until you ask a question, and what is sent is what you selected.
 
 There is no account, no sign-up and no analytics. Nothing is uploaded, and the app has no
 server to upload to.
+
+> **In the app:** a drawn illustration of keychain appears here.
 
 - **Private keys and passwords** live in this device's Keychain, or inside the Secure
   Enclave for keys generated there. They are never written into the connection list, a

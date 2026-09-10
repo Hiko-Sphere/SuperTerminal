@@ -15,6 +15,12 @@ struct MarkdownDocument: Equatable {
         case numbered([String])
         case table(header: [String], rows: [[String]])
         case rule
+        /// A drawn picture, named by an ``TutorialPage/Illustration`` raw value (D-080).
+        ///
+        /// A block rather than an image URL because there is no image: the pictures are
+        /// drawn from the same design tokens as the interface they describe, so they cannot
+        /// go stale the way a screenshot of the app inside the app does.
+        case illustration(String)
     }
 
     let blocks: [Block]
@@ -42,7 +48,10 @@ struct MarkdownDocument: Equatable {
         for rawLine in Self.stripComments(source).components(separatedBy: "\n") {
             let line = rawLine.trimmingCharacters(in: .whitespaces)
             if line.isEmpty { flush(); continue }
-            if line.hasPrefix("#") {
+            if let name = Self.illustrationName(line) {
+                flush()
+                blocks.append(.illustration(name))
+            } else if line.hasPrefix("#") {
                 flush()
                 let level = line.prefix { $0 == "#" }.count
                 blocks.append(.heading(level: level, text: line.dropFirst(level).trimmingCharacters(in: .whitespaces)))
@@ -74,13 +83,38 @@ struct MarkdownDocument: Equatable {
         self.blocks = blocks
     }
 
-    /// Drops HTML comments, which the sources use for editorial notes.
+    /// Drops HTML comments, which the sources use for editorial notes — except the one
+    /// form that is not a note.
+    ///
+    /// `<!-- illustration: fingerprint -->` is content, and it is written as a comment on
+    /// purpose: the guide files are also read as plain Markdown, on GitHub and in any editor,
+    /// and a marker that showed up there as literal text would be a wart in the prose. A
+    /// comment is invisible everywhere except to the one reader that is looking for it.
     static func stripComments(_ source: String) -> String {
-        var result = source
-        while let start = result.range(of: "<!--"), let end = result.range(of: "-->", range: start.upperBound..<result.endIndex) {
-            result.removeSubrange(start.lowerBound..<end.upperBound)
+        var result = ""
+        var rest = Substring(source)
+        while let start = rest.range(of: "<!--") {
+            guard let end = rest.range(of: "-->", range: start.upperBound ..< rest.endIndex) else { break }
+            result += rest[rest.startIndex ..< start.lowerBound]
+            let comment = rest[start.lowerBound ..< end.upperBound]
+            if illustrationName(String(comment)) != nil { result += comment }
+            rest = rest[end.upperBound...]
         }
+        result += rest
         return result
+    }
+
+    /// `<!-- illustration: fingerprint -->` and nothing else. Strict for the same reason the
+    /// topic marker is: a marker that nearly matches would vanish silently, and a picture that
+    /// is simply absent is not something anybody notices is missing.
+    static func illustrationName(_ line: String) -> String? {
+        let trimmed = line.trimmingCharacters(in: .whitespaces)
+        guard trimmed.hasPrefix("<!-- illustration:"), trimmed.hasSuffix("-->") else { return nil }
+        let name = trimmed
+            .dropFirst("<!-- illustration:".count)
+            .dropLast("-->".count)
+            .trimmingCharacters(in: .whitespaces)
+        return name.isEmpty ? nil : name
     }
 
     private static func numberedItem(_ line: String) -> String? {

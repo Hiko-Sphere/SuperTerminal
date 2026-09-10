@@ -22,6 +22,8 @@ struct TutorialIllustration: View {
             case .screen: screen
             case .panes: panes
             case .keychain: keychain
+            case .files: files
+            case .forwarding: forwarding
             }
         }
         .frame(maxWidth: 360)
@@ -340,4 +342,134 @@ struct TutorialIllustration: View {
         }
         .modifier(entrance(step))
     }
+
+    /// A folder on a server, as the browser draws it. The claim worth picturing is that
+    /// these are the *server's* files with the server's own permissions and owners — not a
+    /// copy of them on the phone — so the mode column is what the picture is built around.
+    private var files: some View {
+        card {
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
+                HStack(spacing: DesignTokens.Spacing.xs) {
+                    Image(systemName: "folder")
+                        .font(.caption)
+                        .foregroundStyle(DesignTokens.Color.accent)
+                    Text(verbatim: "/srv/www")
+                        .font(.system(.caption, design: .monospaced))
+                    Spacer()
+                    Text(verbatim: "SFTP")
+                        .font(.system(size: 9, weight: .semibold))
+                        .foregroundStyle(DesignTokens.Color.labelTertiary)
+                }
+                .modifier(entrance(0))
+                Divider()
+                fileRow("folder.fill", "releases", "drwxr-xr-x", DesignTokens.Color.info, 1)
+                fileRow("doc.text", "nginx.conf", "-rw-r--r--", DesignTokens.Color.labelSecondary, 2)
+                fileRow("gearshape", "deploy.sh", "-rwxr-xr-x", DesignTokens.Color.success, 3)
+                HStack(spacing: DesignTokens.Spacing.xs) {
+                    Image(systemName: "arrow.up.circle.fill")
+                    Text("Also in the Files app")
+                }
+                .font(.system(size: 10, weight: .medium))
+                .foregroundStyle(DesignTokens.Color.accent)
+                .modifier(entrance(4))
+            }
+        }
+    }
+
+    private func fileRow(_ symbol: String, _ name: String, _ mode: String, _ tint: Color, _ step: Int) -> some View {
+        HStack(spacing: DesignTokens.Spacing.sm) {
+            Image(systemName: symbol)
+                .font(.caption)
+                .foregroundStyle(tint)
+                .frame(width: 16)
+            Text(verbatim: name)
+                .font(.system(size: 12))
+            Spacer()
+            Text(verbatim: mode)
+                .font(.system(size: 9, design: .monospaced))
+                .foregroundStyle(DesignTokens.Color.labelTertiary)
+        }
+        .modifier(entrance(step))
+    }
+
+    /// Which way a forwarded port points, which is the whole difficulty: "local" and
+    /// "remote" name the end the *listener* is on, and everyone gets it backwards once. The
+    /// two rows are drawn as mirror images so the difference is the arrow, not the words.
+    private var forwarding: some View {
+        VStack(spacing: DesignTokens.Spacing.sm) {
+            card {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.sm) {
+                    forwardingRow(
+                        kind: String(localized: "LOCAL"),
+                        left: String(localized: "this device"),
+                        leftPort: "5432",
+                        right: String(localized: "the server’s network"),
+                        rightPort: "db:5432",
+                        tint: DesignTokens.Color.info,
+                        reversed: false,
+                        step: 0
+                    )
+                    Divider()
+                    forwardingRow(
+                        kind: String(localized: "REMOTE"),
+                        left: String(localized: "this device"),
+                        leftPort: "3000",
+                        right: String(localized: "the server listens"),
+                        rightPort: "8080",
+                        tint: DesignTokens.Color.warning,
+                        reversed: true,
+                        step: 2
+                    )
+                }
+            }
+            HStack(spacing: DesignTokens.Spacing.xs) {
+                Image(systemName: "lock.fill")
+                Text("Inside the SSH connection — nothing new is exposed")
+            }
+            .font(.system(size: 10, weight: .medium))
+            .foregroundStyle(DesignTokens.Color.success)
+            .multilineTextAlignment(.center)
+            .modifier(entrance(4))
+        }
+    }
+
+    private func forwardingRow(
+        kind: String,
+        left: String,
+        leftPort: String,
+        right: String,
+        rightPort: String,
+        tint: Color,
+        reversed: Bool,
+        step: Int
+    ) -> some View {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.xs) {
+            Text(kind)
+                .font(.system(size: 9, weight: .semibold))
+                .foregroundStyle(tint)
+            HStack(spacing: DesignTokens.Spacing.sm) {
+                endpoint(left, leftPort, tint)
+                Image(systemName: reversed ? "arrow.left" : "arrow.right")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(tint)
+                endpoint(right, rightPort, DesignTokens.Color.labelSecondary)
+            }
+        }
+        .modifier(entrance(step))
+    }
+
+    private func endpoint(_ label: String, _ port: String, _ tint: Color) -> some View {
+        VStack(alignment: .leading, spacing: 1) {
+            Text(verbatim: port)
+                .font(.system(size: 11, design: .monospaced))
+                .foregroundStyle(DesignTokens.Color.label)
+            Text(label)
+                .font(.system(size: 9))
+                .foregroundStyle(tint)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
 }

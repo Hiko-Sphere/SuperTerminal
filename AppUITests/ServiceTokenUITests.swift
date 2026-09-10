@@ -109,13 +109,29 @@ extension XCUIElement {
         // A form row scrolled out of view does not exist yet — on the iPad's form sheet the
         // password toggle sits below the fold once the token section expands — so scroll
         // the form until the row exists, then until it is hittable.
-        let form = app.collectionViews.firstMatch
-        var attempts = 0
-        while !exists, attempts < 8 { form.swipeUp(); attempts += 1 }
+        //
+        // The form is found by the identifier it carries, and searched in both directions.
+        // `app.collectionViews.firstMatch` is the *connection list behind the sheet* on an
+        // iPad, so swiping it moved nothing; and a row reached by scrolling past another one
+        // is above the viewport, where swiping further down can never bring it back. Both
+        // showed up when Settings grew.
+        let form = Self.scrollableForm(in: app)
+        for up in [true, false] {
+            for _ in 0 ..< 8 {
+                if exists { break }
+                if up { form.swipeUp() } else { form.swipeDown() }
+            }
+            if exists { break }
+        }
         XCTAssertTrue(waitForExistence(timeout: 5), "the switch should exist")
         guard (value as? String) != "1" else { return }
-        attempts = 0
-        while !(exists && isHittable), attempts < 8 { form.swipeUp(); attempts += 1 }
+        for up in [true, false] {
+            for _ in 0 ..< 8 {
+                if exists, isHittable { break }
+                if up { form.swipeUp() } else { form.swipeDown() }
+            }
+            if exists, isHittable { break }
+        }
         // Let the scroll settle: a tap dispatched mid-momentum lands wherever the row
         // has moved to by then.
         var frame = self.frame
@@ -128,5 +144,14 @@ extension XCUIElement {
         coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
         for _ in 0 ..< 20 where (value as? String) != "1" { usleep(150_000) }
         XCTAssertEqual(value as? String, "1", "\(label) should be on after tapping the switch")
+    }
+
+    /// The scrollable the row actually lives in, innermost first.
+    private static func scrollableForm(in app: XCUIApplication) -> XCUIElement {
+        for identifier in ["host-editor-form", "settings-form"] {
+            let named = app.descendants(matching: .any).matching(identifier: identifier).firstMatch
+            if named.exists { return named }
+        }
+        return app.collectionViews.firstMatch
     }
 }

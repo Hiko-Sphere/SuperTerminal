@@ -86,7 +86,8 @@ struct HostEditingTests {
             jumpHosts: [],
             forwardsAgent: false,
             usesTmux: false,
-            tmuxSessionName: ""
+            tmuxSessionName: "",
+            themeID: nil
         )
     }
 
@@ -113,7 +114,6 @@ struct HostEditingTests {
         host.environment = ["LANG": "en_GB.UTF-8"]
         host.detectedPlatform = .linux
         host.lastConnected = Date(timeIntervalSince1970: 1_700_000_000)
-        host.themeID = "solarized"
 
         let edited = host.applying(fields)
 
@@ -129,7 +129,27 @@ struct HostEditingTests {
         #expect(edited.environment == host.environment)
         #expect(edited.detectedPlatform == host.detectedPlatform)
         #expect(edited.lastConnected == host.lastConnected)
-        #expect(edited.themeID == host.themeID)
+    }
+
+    @Test("A connection's own theme is set, cleared and never stored blank")
+    func appearancePerConnection() {
+        // The field has been read since the terminal had themes and written by nothing at
+        // all, so nothing held this until D-079 gave it an editor.
+        var host = Host(name: "production", hostname: "prod.example", username: "deploy")
+
+        var chosen = fields
+        chosen.themeID = "custom.7C7E2A0E-0000-4000-A000-000000000001"
+        #expect(host.applying(chosen).themeID == chosen.themeID)
+
+        // Chosen, then put back to "Same as Settings".
+        host.themeID = chosen.themeID
+        #expect(host.applying(fields).themeID == nil)
+
+        // Blank is not a theme. Two states that look identical on screen and differ in the
+        // record are how a preference stops meaning what it says.
+        var blank = fields
+        blank.themeID = "   "
+        #expect(host.applying(blank).themeID == nil)
     }
 
     @Test("An empty jump chain is stored as nothing rather than an empty list")

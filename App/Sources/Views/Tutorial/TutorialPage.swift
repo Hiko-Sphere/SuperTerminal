@@ -11,8 +11,23 @@ import Foundation
 /// Separated from the view so the content is testable and the order is a fact about the
 /// app rather than a fact about a layout.
 struct TutorialPage: Identifiable, Equatable {
-    enum Illustration: Equatable {
-        case address, fingerprint, keyRow, palette, screen, panes, keychain
+    /// The drawn pictures. Raw values are stable names, because the user guide addresses
+    /// them by name from its Markdown (D-080) — renaming a case renames a marker in three
+    /// prose files, and a test holds the two sides together.
+    ///
+    /// `files` and `forwarding` are not on any page of the tour: they exist for the guide,
+    /// where the two topics hardest to picture from words are what a folder on a server
+    /// looks like and which way a forwarded port actually points.
+    enum Illustration: String, Equatable, CaseIterable {
+        case address
+        case fingerprint
+        case keyRow = "key-row"
+        case palette
+        case screen
+        case panes
+        case keychain
+        case files
+        case forwarding
     }
 
     let id: Int

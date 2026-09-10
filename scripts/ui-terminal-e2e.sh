@@ -23,6 +23,36 @@ for part in "${ONLY_TESTING_PARTS[@]}"; do
 done
 WORK="$(mktemp -d)"
 
+# The hardware keyboard has to be connected, and nothing else connects it.
+#
+# `HardwareKeyboardStateUITests` and `HardwareKeyboardUITests` send ⌘F, ⌘K and plain text
+# with `typeKey`/`typeText`, and the simulator only delivers those when its own
+# "Connect Hardware Keyboard" setting is on. That setting is a per-device preference of the
+# Simulator app, kept outside the repository and outside the destination string — so the same
+# code passed or failed depending on what the machine happened to have, and a run that failed
+# read as "⌘F should open the find bar" rather than as "nothing was typed". Measured: with it
+# off the suite fails reproducibly; with it on, it passes.
+#
+# Set before xcodebuild boots the device, since the preference is read at boot.
+DEVICE_NAME="$(sed -n 's/.*name=\([^,]*\).*/\1/p' <<< "$DESTINATION")"
+if [[ -n "$DEVICE_NAME" ]]; then
+  UDID="$(xcrun simctl list devices available | grep -F "$DEVICE_NAME (" | grep -oE '[0-9A-F-]{36}' | head -1 || true)"
+  if [[ -n "${UDID:-}" ]]; then
+    xcrun simctl shutdown "$UDID" >/dev/null 2>&1 || true
+    /usr/bin/python3 - "$UDID" <<'PREF'
+import os, plistlib, sys
+path = os.path.expanduser("~/Library/Preferences/com.apple.iphonesimulator.plist")
+try:
+    prefs = plistlib.load(open(path, "rb"))
+except Exception:
+    prefs = {}
+prefs.setdefault("DevicePreferences", {}).setdefault(sys.argv[1], {})["ConnectHardwareKeyboard"] = True
+plistlib.dump(prefs, open(path, "wb"))
+PREF
+    killall -u "$USER" cfprefsd >/dev/null 2>&1 || true
+  fi
+fi
+
 XCODEBUILD_PID=""
 cleanup() {
   if [[ -n "$XCODEBUILD_PID" ]]; then kill "$XCODEBUILD_PID" 2>/dev/null || true; fi

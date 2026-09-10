@@ -38,6 +38,8 @@ struct HostEditorView: View {
     @State private var platformOverride: HostPlatform?
     @State private var showsInFiles = false
     @State private var jumpHosts: [UUID] = []
+    /// nil is "Same as Settings" (D-079).
+    @State private var themeID: String?
 
     /// - Parameter startsWithCloudflare: how a *new* connection opens. The add menu asks
     ///   which kind is being made (D-053), because "SSH server" and "hostname behind
@@ -89,6 +91,7 @@ struct HostEditorView: View {
             _folder = State(initialValue: host.folder ?? "")
             _terminalType = State(initialValue: host.terminalType)
             _platformOverride = State(initialValue: host.platformOverride)
+            _themeID = State(initialValue: host.themeID)
         }
     }
 
@@ -220,6 +223,8 @@ struct HostEditorView: View {
                     }
                 }
 
+                HostAppearanceSection(themeID: $themeID)
+
                 // Only for a direct connection: a Cloudflare tunnel *is* the transport,
                 // and it has its own bastion setting above.
                 if !usesCloudflare {
@@ -259,6 +264,9 @@ struct HostEditorView: View {
                     }
                 }
             }
+            // Named for the same reason the Settings form is: on an iPad this is a sheet, and a
+            // swipe aimed at the application scrolls the connection list behind it instead.
+            .accessibilityIdentifier("host-editor-form")
             .task {
                 if let existing {
                     hasStoredServiceToken = container.vault.hasServiceToken(hostID: existing.id)
@@ -317,7 +325,8 @@ struct HostEditorView: View {
             jumpHosts: jumpHosts,
             forwardsAgent: forwardsAgent,
             usesTmux: usesTmux,
-            tmuxSessionName: tmuxSessionName.trimmingCharacters(in: .whitespacesAndNewlines)
+            tmuxSessionName: tmuxSessionName.trimmingCharacters(in: .whitespacesAndNewlines),
+            themeID: themeID
         )
         return (existing ?? Host(name: "", hostname: "", username: "")).applying(fields)
     }

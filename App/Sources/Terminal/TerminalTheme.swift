@@ -127,7 +127,7 @@ public extension TerminalTheme {
             RGBColor(hex: 0x1B1E27), RGBColor(hex: 0xE06C75), RGBColor(hex: 0x76C08A),
             RGBColor(hex: 0xD8A657), RGBColor(hex: 0x6FA8FF), RGBColor(hex: 0xC08BE0),
             RGBColor(hex: 0x56B6C2), RGBColor(hex: 0xABB2BF),
-            RGBColor(hex: 0x4B5263), RGBColor(hex: 0xFF8189), RGBColor(hex: 0x8CE0A0),
+            RGBColor(hex: 0x5D667B), RGBColor(hex: 0xFF8189), RGBColor(hex: 0x8CE0A0),
             RGBColor(hex: 0xF0C070), RGBColor(hex: 0x8CBCFF), RGBColor(hex: 0xD5A5F0),
             RGBColor(hex: 0x6FD2DE), RGBColor(hex: 0xE6E9F0),
         ],

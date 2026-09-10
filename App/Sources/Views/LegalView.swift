@@ -110,6 +110,14 @@ struct MarkdownDocumentView: View {
             }
         case .rule:
             Divider()
+        case let .illustration(name):
+            // A name nothing answers to draws nothing rather than a placeholder: the legal
+            // texts share this renderer and will never carry one, and a broken-image box in
+            // the terms would be worse than a picture that is quietly absent. What keeps the
+            // guide honest is a test over every marker in every language, not a box here.
+            if let kind = TutorialPage.Illustration(rawValue: name) {
+                GuideIllustration(kind: kind)
+            }
         }
     }
 

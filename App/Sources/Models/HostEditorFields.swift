@@ -25,6 +25,8 @@ struct HostEditorFields: Equatable {
     var usesTmux: Bool
     /// Blank means the default session name.
     var tmuxSessionName: String
+    /// Which theme this connection opens in, or nil to follow Settings (D-079).
+    var themeID: String?
 }
 
 extension Host {
@@ -55,6 +57,10 @@ extension Host {
         // switched off would come back with it and surprise somebody.
         let tmuxName = fields.tmuxSessionName.trimmingCharacters(in: .whitespacesAndNewlines)
         host.tmuxSessionName = fields.usesTmux && !tmuxName.isEmpty ? tmuxName : nil
+        // An empty string is not a theme; storing one would make "follows Settings" and
+        // "asks for the theme called nothing" two different states that look identical.
+        let theme = fields.themeID?.trimmingCharacters(in: .whitespacesAndNewlines)
+        host.themeID = (theme?.isEmpty ?? true) ? nil : theme
         return host
     }
 }
