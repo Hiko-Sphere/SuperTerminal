@@ -372,8 +372,8 @@ struct RootView: View {
                 // worse than one that is not offered. Measured on iPhone: the layout held
                 // two panes and exactly one terminal was in the accessibility tree.
                 if scene.panes.paneCount > 1, scene.panes.panes.contains(where: { $0.content == route.paneContent }) {
-                    PaneContainerView(layout: paneBinding, panesShareOneToolbar: true) { content in
-                        paneContent(content, wrappedInItsOwnStack: false)
+                    PaneContainerView(layout: paneBinding, panesShareOneToolbar: true) { content, paneID in
+                        paneContent(content, paneID: paneID, wrappedInItsOwnStack: false)
                     }
                     .padding(DesignTokens.Spacing.xs)
                 } else {
@@ -434,8 +434,8 @@ struct RootView: View {
             // One pane or several, drawn the same way (D-055): with a single pane this is
             // exactly what it was before, and an arrangement grows from there rather than
             // being a separate mode to enter.
-            PaneContainerView(layout: paneBinding) { content in
-                paneContent(content)
+            PaneContainerView(layout: paneBinding) { content, paneID in
+                paneContent(content, paneID: paneID)
             }
             .padding(DesignTokens.Spacing.xs)
         }
@@ -463,7 +463,21 @@ struct RootView: View {
         )
     }
 
-    private func paneContent(_ content: PaneLayout.Content, wrappedInItsOwnStack: Bool = true) -> AnyView {
+    /// The offer a pane makes when what it was showing has gone: put something else *here*
+    /// (D-074). Replacing rather than splitting, because a dead session beside a live one is
+    /// not what "show something else" means.
+    private func showSomethingElse(in paneID: UUID) -> (title: String, perform: () -> Void) {
+        (
+            title: String(localized: "Show Something Else…"),
+            perform: { scene.pendingSplit = PendingSplit(placement: .replace(paneID)) }
+        )
+    }
+
+    private func paneContent(
+        _ content: PaneLayout.Content,
+        paneID: UUID,
+        wrappedInItsOwnStack: Bool = true
+    ) -> AnyView {
         switch content {
         case let .terminal(id):
             if let session = container.sessionManager.session(withID: id) {
@@ -476,8 +490,9 @@ struct RootView: View {
                 AnyView(
                     EmptyStateView(
                         title: String(localized: "Session ended"),
-                        message: String(localized: "This session is no longer open. Close the pane, or choose a connection."),
-                        systemImage: "terminal"
+                        message: String(localized: "This session is no longer open."),
+                        systemImage: "terminal",
+                        action: showSomethingElse(in: paneID)
                     )
                 )
             }
@@ -488,8 +503,9 @@ struct RootView: View {
                 AnyView(
                     EmptyStateView(
                         title: String(localized: "Browser closed"),
-                        message: String(localized: "This file browser is no longer open. Close the pane, or open a server's files again."),
-                        systemImage: "folder"
+                        message: String(localized: "This file browser is no longer open."),
+                        systemImage: "folder",
+                        action: showSomethingElse(in: paneID)
                     )
                 )
             }
@@ -502,8 +518,9 @@ struct RootView: View {
                 AnyView(
                     EmptyStateView(
                         title: String(localized: "Session ended"),
-                        message: String(localized: "This tmux session is no longer attached. Open the connection again to attach to it."),
-                        systemImage: "square.split.bottomrightquarter"
+                        message: String(localized: "This tmux session is no longer attached."),
+                        systemImage: "square.split.bottomrightquarter",
+                        action: showSomethingElse(in: paneID)
                     )
                 )
             }

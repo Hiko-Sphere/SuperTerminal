@@ -1409,4 +1409,5 @@ An index, so nothing has to be hunted for:
 | D-072 | `548631d` | visionOS as it actually stands: offered in compatibility mode, and never run |
 | D-073 | `c1463c8` | The File Provider crash: one missing Info.plist key, not the simulator |
 | D-074 | `a3272e2` | A split screen holds anything: another server, a screen, a folder, or one you have not added yet |
-| D-075 | this commit | The change tag CloudKit needs, and the failures nobody was reading |
+| D-075 | `2dad271` | The change tag CloudKit needs, and the failures nobody was reading |
+| D-076 | `882f586` | The pane that lost its session offers to show something else |

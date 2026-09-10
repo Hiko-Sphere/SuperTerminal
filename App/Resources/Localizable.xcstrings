@@ -10638,6 +10638,23 @@
         }
       }
     },
+    "Show Something Else…": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "显示其他内容…"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "顯示其他內容…"
+          }
+        }
+      }
+    },
     "Show hidden files": {
       "extractionState": "manual",
       "localizations": {

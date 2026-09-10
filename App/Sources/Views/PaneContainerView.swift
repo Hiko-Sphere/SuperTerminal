@@ -35,7 +35,10 @@ struct PaneContainerView: View {
     var panesShareOneToolbar = false
     /// Builds the view for one pane's content. Passed in so this file knows nothing about
     /// terminals or screens: it is a layout, and layouts should not care.
-    let content: (PaneLayout.Content) -> AnyView
+    ///
+    /// The pane's own id comes with it, because a pane whose session has ended has to be able
+    /// to offer to show something else *here* — which means naming the pane to replace (D-074).
+    let content: (PaneLayout.Content, UUID) -> AnyView
 
     var body: some View {
         if let root = layout.root {
@@ -72,7 +75,7 @@ struct PaneContainerView: View {
 
     private func pane(id: UUID, content paneContent: PaneLayout.Content) -> some View {
         let isFocused = layout.focused == id
-        return content(paneContent)
+        return content(paneContent, id)
             .environment(\.paneContributesToolbar, panesShareOneToolbar ? isFocused : true)
             .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.md, style: .continuous))
             .overlay {

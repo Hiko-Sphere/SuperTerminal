@@ -3,6 +3,24 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-10 — after D-076 (the pane that lost its session)
+
+| Command | Result |
+| --- | --- |
+| `bash scripts/app-integration-e2e.sh` | **353 tests in 67 suites passed**, no restarts |
+| `bash scripts/ui-terminal-e2e.sh` (iPhone 17 Pro) | **58 passed, 2 failed** — both `ZZSearchProbeUITests` |
+| `bash scripts/ui-terminal-e2e.sh` (iPad Pro 13-inch M5) | **59 passed, 2 failed** — the same two |
+| `bash scripts/localization-audit.sh` | **green**, 0 orphans |
+| Release archive | **ARCHIVE SUCCEEDED** |
+| `ApexTerminalFileProvider-*.ips` before / after | **11 / 11** — a second full regression with no new crash |
+| App warning gate | **1**, and it is not this work: `AppUITests/RebuildCaptureTests.swift:500`, an unused `let desktop` in another session's uncommitted file. Named here rather than fixed, because that file is theirs |
+
+`PaneLayout.replace(_:with:)` arrived in D-074 with tests and no way to reach it from the
+interface. A pane whose session, tmux attachment or file browser has gone now offers **Show
+Something Else…**, which raises the same picker with `.replace` instead of `.split` — the dead
+pane becomes the new thing rather than sitting beside it. `PaneContainerView` passes each pane
+its own id to make that possible, which is also the only thing the layout needs to know.
+
 ## 2026-09-10 — after D-073, D-074, D-075
 
 | Command | Result |
