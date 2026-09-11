@@ -3,6 +3,35 @@
 Commands actually run, and what they actually printed. Numbers here are recounted after
 every change rather than carried forward.
 
+## 2026-09-11 — the package suite, re-measured
+
+| Command | Result |
+| --- | --- |
+| `cd Packages/ApexTerminalKit && swift test --no-parallel` | **380 tests in 56 suites passed**, 0 failed — every real-`sshd` integration suite included, and the four `SecureEnclaveKeyTests` this machine's enclave sometimes refuses |
+
+`Marketing/Rebuild-2026-09-10/FINAL_VERIFICATION_REPORT.md` records **357 passed, 29 failed** for the
+same suite on 2026-09-10: the twelve real-server integration suites red, with `I/O on closed channel`
+and `Already closed`. It concludes that the assets should not be uploaded until that is fixed. That
+report belongs to the other session and is left as written; this is the measurement set beside it.
+
+What was checked before re-running, so that a green run is not mistaken for a fix:
+
+* **Nothing in the package changed.** `git log 89e530e..HEAD` (D-071 onwards) shows no commit touching
+  `Packages/ApexTerminalKit/Sources`, `Packages/swift-nio-ssh-rsa/Sources`, `Package.swift` or
+  `Package.resolved`. D-066's change to `SSHConnection.swift` predates D-071, after which a green run
+  was recorded. So there is no code regression to find — and none was fixed here.
+* **Dependencies are pinned.** `Package.resolved` is committed and pins swift-nio 2.102.0, and the
+  local workspace resolved exactly that. A clean checkout does not pick up a newer NIO.
+* **Something was holding the build.** The first attempt to run `swift test` waited on another
+  SwiftPM process: an orphaned `swift-test` (PID 8000, parent `launchd`) with a live
+  `swiftpm-testing-helper`, **alive for 25 hours on 2 seconds of CPU** — hung, not working. It was
+  killed and the suite ran.
+
+Whether that orphan caused the 29 failures is **not established**. It was alive on this machine when
+that report was written and a hung test holding fixtures would fit the symptoms, but nothing
+recorded here proves the connection. What is established is narrower: on this machine, today, at a
+commit whose package sources are byte-identical to the one that report read, the suite passes in full.
+
 ## 2026-09-11 — after D-081 (the iCloud diagnosis was wrong)
 
 | Command | Result |
