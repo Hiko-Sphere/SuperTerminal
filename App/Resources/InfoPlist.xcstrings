@@ -1,72 +1,78 @@
 {
-  "sourceLanguage" : "en",
-  "strings" : {
-    "Apex Terminal Backup" : {
-      "comment" : "The document type shown for a .apexbackup file, in Files and in Quick Look.",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Apex Terminal Backup"
+  "sourceLanguage": "en",
+  "strings": {
+    "Apex Terminal Backup": {
+      "comment": "The document type shown for a .apexbackup file, in Files and in Quick Look.",
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Apex Terminal Backup"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Apex Terminal 备份"
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apex Terminal 备份"
           }
         },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Apex Terminal 備份"
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apex Terminal 備份"
           }
         }
       }
     },
-    "CFBundleDisplayName" : {
-      "comment" : "Bundle display name",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Apex Terminal"
+    "CFBundleDisplayName": {
+      "comment": "Bundle display name",
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Apex Terminal"
           }
         }
       }
     },
-    "CFBundleName" : {
-      "comment" : "Bundle name. The product name, spelled the way a person reads it — the system falls back to this wherever the display name is absent.",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Apex Terminal"
+    "CFBundleName": {
+      "comment": "Bundle name. The product name, spelled the way a person reads it — the system falls back to this wherever the display name is absent.",
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apex Terminal"
           }
         }
       }
     },
-    "NSFaceIDUsageDescription" : {
-      "comment" : "Shown in the system Face ID sheet when unlocking a biometric-protected SSH key.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Apex Terminal 会在使用你选择用 Face ID 保护的 SSH 密钥前请求验证。"
+    "NSFaceIDUsageDescription": {
+      "comment": "Shown in the system Face ID sheet when unlocking a biometric-protected SSH key.",
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "开启「App 锁」后，Apex Terminal 会用 Face ID 解锁应用；使用你选择用 Face ID 保护的 SSH 密钥前，也会先请求验证。"
           }
         },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Apex Terminal 會在使用你選擇以 Face ID 保護的 SSH 金鑰前請求驗證。"
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "開啟「App 鎖定」後，Apex Terminal 會以 Face ID 解鎖應用程式；使用你選擇以 Face ID 保護的 SSH 金鑰前，也會先請求驗證。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apex Terminal asks for Face ID to unlock the app when App Lock is on, and before it uses an SSH key you chose to protect with Face ID."
           }
         }
       }
     }
   },
-  "version" : "1.0"
+  "version": "1.0"
 }

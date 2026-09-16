@@ -36,3 +36,14 @@ Marketing/AppStore/build/
 # run generates. That key authorises nothing but the run's own containers, and must still
 # never be committed.
 Marketing/Rebuild-2026-09-10/automation/build/
+
+# Generated site
+Website/dist/
+
+# Apple credentials — never commit these
+*.p8
+AuthKey_*.p8
+*.p12
+*.cer
+*.certSigningRequest
+*.mobileprovision

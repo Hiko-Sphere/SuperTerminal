@@ -47,9 +47,18 @@ app's usefulness to the audience its own localisation is aimed at.
 
 ## H-2 · App Store Connect encryption answers
 
-**Why a person.** Whether the app qualifies for the export exemption, and whether a
-self-classification report is needed, depends on where it is sold and is a legal judgement.
-This repository deliberately does not set `ITSAppUsesNonExemptEncryption`.
+**Answered on 2026-09-11**, in App Store Connect rather than in the binary. Putting
+`ITSAppUsesNonExemptEncryption = YES` in the build settings was tried and rejected at
+upload (altool 90592): that key obliges the binary to carry an
+`ITSEncryptionExportComplianceCode` too, and Apple only issues one once compliance
+documentation has been accepted. So the declaration is made against each version. The
+answers are: the app does use encryption (yes); no Category 5 Part 2 exemption applies
+(no); no proprietary or non-standard algorithm is implemented (no). The reasoning is in
+`docs/EXPORT_COMPLIANCE.md`.
+
+**What still needs a person, every year.** The classification is ECCN 5D992.c, which is
+self-classified but carries an annual reporting duty: send the self-classification report
+to `crypt@bis.doc.gov` and `enc@nsa.gov` by 1 February. Nothing in the build does this.
 
 **Steps.** App Store Connect → the app → App Information → answer the encryption
 questions using the table in `docs/EXPORT_COMPLIANCE.md`, which lists every algorithm, its

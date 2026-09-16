@@ -375,7 +375,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = App/ApexTerminal.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = 7CDDP73WJS;
 				ENABLE_PREVIEWS = YES;
@@ -384,7 +384,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "Apex Terminal";
 				INFOPLIST_KEY_CFBundleName = "Apex Terminal";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
-				INFOPLIST_KEY_NSFaceIDUsageDescription = "Apex Terminal asks for Face ID to unlock the app when App Lock is on, and before it uses an SSH key you chose to protect with it.";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Apex Terminal asks for Face ID to unlock the app when App Lock is on, and before it uses an SSH key you chose to protect with Face ID.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -392,7 +392,7 @@
 				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.apexterminal.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				ST_APS_ENVIRONMENT = production;
@@ -420,7 +420,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = FileProvider/ApexTerminalFileProvider.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 7CDDP73WJS;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Config/FileProviderInfo.plist;
@@ -431,7 +431,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.apexterminal.app.fileprovider;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -445,7 +445,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = FileProvider/ApexTerminalFileProvider.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 7CDDP73WJS;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Config/FileProviderInfo.plist;
@@ -456,7 +456,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.apexterminal.app.fileprovider;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -621,7 +621,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = App/ApexTerminal.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = 7CDDP73WJS;
 				ENABLE_PREVIEWS = YES;
@@ -630,7 +630,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "Apex Terminal";
 				INFOPLIST_KEY_CFBundleName = "Apex Terminal";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
-				INFOPLIST_KEY_NSFaceIDUsageDescription = "Apex Terminal asks for Face ID to unlock the app when App Lock is on, and before it uses an SSH key you chose to protect with it.";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Apex Terminal asks for Face ID to unlock the app when App Lock is on, and before it uses an SSH key you chose to protect with Face ID.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -638,7 +638,7 @@
 				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.apexterminal.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				ST_APS_ENVIRONMENT = development;

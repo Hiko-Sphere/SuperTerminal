@@ -84,8 +84,24 @@ Answer from this table, not from memory. The facts to answer with:
   is no digital-rights management and no proprietary algorithm.
 * Everything except `VNCBigInteger` comes from Apple's platform or from published,
   standard, open-source implementations.
-* `ITSAppUsesNonExemptEncryption` is **deliberately not set in this repository.** Whether
-  the app qualifies for the exemption, and whether a CCATS or a self-classification report
-  is required, depends on where it is distributed and is a decision for the owner with
-  advice — not something a build setting should assert on their behalf. See
-  `docs/HUMAN_ACTIONS.md`.
+* **The declaration is made per version in App Store Connect, not in the Info.plist.**
+  Setting `ITSAppUsesNonExemptEncryption = YES` in the build settings was tried on
+  2026-09-11 and the upload was rejected: *"Invalid Export Compliance Code. The export
+  compliance key value [] in the app's Info.plist doesn't match the key value of the
+  app's export compliance documentation."* (altool 90592). Declaring `YES` obliges the
+  binary to also carry `ITSEncryptionExportComplianceCode`, and Apple issues that code
+  only after export compliance documentation has been accepted in App Store Connect.
+  Until such documentation exists, neither key belongs in the build.
+* The substance of the answer, decided by the owner on 2026-09-11: the app **does** use
+  non-exempt encryption. None of the Category 5 Part 2 exemptions Apple lists
+  applies here. The encryption is not limited to authentication, the key lengths far
+  exceed the 56-bit symmetric and 512-bit asymmetric thresholds, the app is not making
+  calls over HTTPS only, and it bundles BoringSSL, libsodium and `bcrypt_pbkdf` rather
+  than using only the operating system's cryptography.
+* That places the app under **ECCN 5D992.c** as mass-market encryption software, which
+  is self-classified rather than requiring a CCATS. It carries one recurring obligation:
+  an annual self-classification report to BIS (`crypt@bis.doc.gov`) and NSA
+  (`enc@nsa.gov`), due by 1 February each year. See `docs/HUMAN_ACTIONS.md` H-2.
+* **This is the owner's classification, reached with advice and not legal advice.** If
+  the app's cryptography changes, or the countries it is distributed to change, the
+  classification has to be looked at again.
