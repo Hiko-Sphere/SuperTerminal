@@ -1,0 +1,360 @@
+/* Apex Terminal — site styles.
+   Palette from Marketing/Rebuild-2026-09-10/press-kit/MEDIA_KIT.md §3:
+   four neutrals and one accent, which is a pair chosen for its own ground.
+   No gradients, glows or colour washes (§3). */
+
+:root {
+  --ground: #ffffff;
+  --ink: #000000;
+  --secondary: #3a3a3a;
+  --quiet: #8a8a8a;
+  --accent: #2e7ac8;
+  --rule: #e2e2e0;
+  --raised: #f7f7f6;
+  --shot-edge: #d8d8d6;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground: #0d0f11;
+    --ink: #f2f2f0;
+    --secondary: #c2c2bf;
+    --quiet: #8f8f92;
+    --accent: #6fa8ff;
+    --rule: #26292c;
+    --raised: #16191c;
+    --shot-edge: #2c2f33;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+body[lang^="zh"] {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "PingFang TC",
+    "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", "Segoe UI", sans-serif;
+  line-height: 1.8;          /* Han characters have no descenders to separate lines */
+}
+
+code, kbd, samp, .mono {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { text-decoration-thickness: 2px; }
+
+img { max-width: 100%; height: auto; }
+
+h1, h2, h3 { line-height: 1.25; font-weight: 600; letter-spacing: -0.01em; }
+body[lang^="zh"] h1, body[lang^="zh"] h2, body[lang^="zh"] h3 {
+  line-height: 1.4; letter-spacing: 0;
+}
+
+.wrap { max-width: 1060px; margin: 0 auto; padding: 0 24px; }
+.narrow { max-width: 760px; }
+
+.skip {
+  position: absolute; left: -9999px; top: 0;
+  background: var(--ink); color: var(--ground); padding: 10px 16px; z-index: 10;
+}
+.skip:focus { left: 0; }
+
+/* ---- header ---- */
+
+.site-head {
+  border-bottom: 1px solid var(--rule);
+  position: sticky; top: 0; background: var(--ground); z-index: 5;
+}
+.site-head .wrap {
+  display: flex; align-items: center; gap: 24px;
+  min-height: 64px; flex-wrap: wrap;
+}
+.brand {
+  display: flex; align-items: center; gap: 12px;
+  color: var(--ink); text-decoration: none; font-weight: 600; font-size: 1.02rem;
+  margin-right: auto;
+}
+.brand img { width: 30px; height: 30px; display: block; }
+.site-nav { display: flex; gap: 22px; font-size: 0.95rem; }
+.site-nav a { color: var(--secondary); text-decoration: none; }
+.site-nav a:hover, .site-nav a[aria-current="page"] { color: var(--ink); text-decoration: underline; }
+
+/* ---- sections ---- */
+
+main { display: block; }
+section { padding: 64px 0; border-bottom: 1px solid var(--rule); }
+section:last-of-type { border-bottom: 0; }
+.section-label {
+  font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--quiet); margin: 0 0 14px;
+}
+body[lang^="zh"] .section-label { letter-spacing: 0.04em; text-transform: none; font-size: 0.82rem; }
+
+/* ---- hero ---- */
+
+.hero { padding: 72px 0 64px; }
+.hero-grid { display: grid; grid-template-columns: 1fr; gap: 44px; align-items: start; }
+.hero h1 { font-size: clamp(2rem, 5.2vw, 3.1rem); margin: 0 0 22px; max-width: 16em; }
+.hero .sub { font-size: 1.12rem; color: var(--secondary); margin: 0 0 28px; max-width: 34em; }
+.hero .under { font-size: 0.92rem; color: var(--quiet); margin: 18px 0 0; }
+
+.cta-row { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: center; }
+.btn {
+  display: inline-block; background: var(--ink); color: var(--ground);
+  padding: 12px 22px; border-radius: 6px; text-decoration: none;
+  font-weight: 600; font-size: 0.97rem; border: 1px solid var(--ink);
+}
+.btn:hover { opacity: 0.86; }
+.btn-quiet {
+  background: transparent; color: var(--ink); border: 1px solid var(--rule);
+}
+.holding {
+  margin: 0 0 20px; padding: 14px 18px; border: 1px solid var(--rule);
+  border-radius: 6px; background: var(--raised); color: var(--secondary);
+  font-size: 0.95rem; font-weight: 600; max-width: 34em;
+}
+
+.shot {
+  border: 1px solid var(--shot-edge); border-radius: 14px; overflow: hidden;
+  background: var(--raised); display: block;
+}
+.hero-shot { max-width: 320px; margin: 0 auto; }
+
+/* ---- cards ---- */
+
+.cards { display: grid; grid-template-columns: 1fr; gap: 28px; }
+.card { border: 1px solid var(--rule); border-radius: 10px; padding: 26px; }
+.card h3 { margin: 0 0 12px; font-size: 1.14rem; }
+.card p { margin: 0; color: var(--secondary); font-size: 0.97rem; }
+
+/* ---- proof band ---- */
+
+.proof { background: var(--raised); }
+.proof p { margin: 0; font-size: 1.06rem; max-width: 46em; }
+
+/* ---- feature list ---- */
+
+.features { display: grid; gap: 48px; }
+.feature { display: grid; grid-template-columns: 1fr; gap: 22px; align-items: center; }
+.feature h3 { margin: 0 0 10px; font-size: 1.24rem; }
+.feature p { margin: 0; color: var(--secondary); }
+.feature .shot { max-width: 250px; }
+
+/* ---- prose pages ---- */
+
+.page-head { padding: 56px 0 12px; }
+.page-head h1 { font-size: clamp(1.8rem, 4.4vw, 2.5rem); margin: 0 0 18px; }
+.page-head .lede { color: var(--secondary); margin: 0; max-width: 40em; }
+
+.prose { padding-bottom: 72px; }
+.prose h2 { font-size: 1.35rem; margin: 46px 0 14px; padding-top: 8px; }
+.prose h3 { font-size: 1.08rem; margin: 30px 0 10px; }
+.prose p { margin: 0 0 16px; }
+.prose ul { margin: 0 0 16px; padding-left: 1.3em; }
+.prose li { margin: 0 0 8px; }
+.prose strong { font-weight: 600; }
+.prose .note {
+  border-left: 3px solid var(--rule); padding: 4px 0 4px 18px;
+  color: var(--secondary); margin: 0 0 18px;
+}
+.prose hr { border: 0; border-top: 1px solid var(--rule); margin: 52px 0; }
+
+.faq-item { border-top: 1px solid var(--rule); padding: 20px 0; }
+.faq-item:last-child { border-bottom: 1px solid var(--rule); }
+.faq-item h3 { margin: 0 0 8px; font-size: 1.02rem; }
+.faq-item p { margin: 0; color: var(--secondary); }
+
+.contact-box {
+  border: 1px solid var(--rule); border-radius: 10px; padding: 26px;
+  margin: 28px 0 0;
+}
+.contact-box h2 { margin-top: 0; }
+.contact-box p { margin: 0 0 16px; }
+.contact-box p:last-child { margin: 14px 0 0; font-size: 0.92rem; color: var(--quiet); }
+
+/* ---- tables inside the reproduced policy ---- */
+
+.table-scroll { overflow-x: auto; margin: 0 0 20px; -webkit-overflow-scrolling: touch; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 620px; font-size: 0.9rem; }
+.prose th, .prose td {
+  border: 1px solid var(--rule); padding: 9px 12px; text-align: left; vertical-align: top;
+}
+.prose th { background: var(--raised); font-weight: 600; }
+
+/* ---- footer ---- */
+
+.site-foot { border-top: 1px solid var(--rule); padding: 52px 0 64px; background: var(--raised); }
+.foot-top { display: grid; grid-template-columns: 1fr; gap: 32px; margin-bottom: 40px; }
+.foot-line { color: var(--secondary); font-size: 0.95rem; margin: 12px 0 0; max-width: 26em; }
+.foot-col h2 { font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--quiet); margin: 0 0 12px; font-weight: 600; }
+body[lang^="zh"] .foot-col h2 { letter-spacing: 0.04em; text-transform: none; font-size: 0.85rem; }
+.foot-col ul { list-style: none; margin: 0; padding: 0; }
+.foot-col li { margin: 0 0 8px; }
+.foot-col a { color: var(--secondary); text-decoration: none; font-size: 0.94rem; }
+.foot-col a:hover { color: var(--ink); text-decoration: underline; }
+.foot-col a[aria-current="true"] { color: var(--ink); font-weight: 600; }
+.legal { border-top: 1px solid var(--rule); padding-top: 28px; }
+.legal p { margin: 0 0 10px; color: var(--quiet); font-size: 0.85rem; max-width: 60em; }
+
+/* ---- wider viewports ---- */
+
+@media (min-width: 760px) {
+  .cards { grid-template-columns: repeat(3, 1fr); }
+  .foot-top { grid-template-columns: 1.6fr 1fr 1fr; }
+}
+
+@media (min-width: 900px) {
+  .hero-grid { grid-template-columns: 1.25fr 0.75fr; gap: 56px; align-items: center; }
+  .hero-shot { margin: 0; max-width: 100%; }
+  .feature { grid-template-columns: 1fr 250px; gap: 44px; }
+  .feature.no-shot { grid-template-columns: 1fr; }
+  .feature .shot { justify-self: end; }
+}
+
+@media print {
+  .site-head, .site-foot, .skip { display: none; }
+  body { font-size: 12pt; }
+  /* Never let a reveal animation reach paper as a blank space. */
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .table-scroll { max-height: none; overflow: visible; }
+}
+
+/* ==========================================================================
+   Motion and interaction
+   --------------------------------------------------------------------------
+   Scroll-driven animation with no JavaScript, so the site keeps its promise:
+   nothing runs, nothing is measured, and the pages work with scripting off.
+
+   Everything here is progressive. `animation-timeline: view()` is guarded by
+   @supports, so a browser without it shows the finished state rather than a
+   hidden one — content is never dependent on an animation having run. The
+   whole layer is switched off under prefers-reduced-motion.
+
+   No gradients, glows or colour washes (MEDIA_KIT.md §3). Motion is confined
+   to opacity and small translations, which is what restraint looks like here.
+   ========================================================================== */
+
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+
+  @supports (animation-timeline: view()) {
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    .hero h1,
+    .hero .sub,
+    .hero .holding,
+    .hero .cta-row,
+    .hero .under,
+    .hero-shot,
+    .card,
+    .feature,
+    .proof p,
+    .faq-item,
+    .contact-box {
+      animation: rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 62%;
+    }
+
+    /* The hero is above the fold, so it gets an entrance rather than a
+       scroll-driven reveal. It is written as a transition out of
+       @starting-style, not as a keyframe animation, and that choice is a
+       correctness one rather than a stylistic one: a keyframe animation with
+       `fill: both` holds its first frame — opacity 0 — for as long as the
+       timeline fails to advance, which is what happens in a prerendered page,
+       a frozen background tab, a print job or a crawler's snapshot. The hero
+       headline would be invisible in all of them. A transition resolves to the
+       final style, so anything that cannot run it simply shows the finished
+       hero. It fails visible. */
+    .hero h1, .hero .sub, .hero .holding, .hero .cta-row, .hero .under, .hero-shot {
+      animation: none;
+      transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @starting-style {
+      .hero h1, .hero .sub, .hero .holding, .hero .cta-row, .hero .under, .hero-shot {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+    }
+    .hero-shot      { transition-delay: 0.10s; }
+    .hero .sub      { transition-delay: 0.06s; }
+    .hero .holding  { transition-delay: 0.12s; }
+    .hero .cta-row  { transition-delay: 0.16s; }
+    .hero .under    { transition-delay: 0.20s; }
+
+    /* Cards in a row arrive in reading order rather than all at once. */
+    .cards .card:nth-child(2) { animation-range: entry 4% entry 66%; }
+    .cards .card:nth-child(3) { animation-range: entry 8% entry 70%; }
+  }
+
+  .card, .btn, .shot, .site-nav a, .foot-col a {
+    transition: border-color 160ms ease, color 160ms ease,
+                background-color 160ms ease, transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 160ms ease;
+  }
+  .card:hover     { border-color: var(--quiet); transform: translateY(-2px); }
+  .btn:hover      { transform: translateY(-1px); }
+  .btn:active     { transform: translateY(0); }
+  .feature .shot:hover { transform: translateY(-2px); }
+}
+
+/* Keyboard focus, visible against both grounds and never removed. */
+a:focus-visible,
+.btn:focus-visible,
+.skip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+/* A pointer over a whole card should read as one target. */
+.card, .contact-box { position: relative; }
+
+/* Long legal tables: keep the header row in place while a reader scrolls one. */
+.table-scroll { max-height: 70vh; overflow: auto; overscroll-behavior: contain; }
+.prose thead th {
+  position: sticky; top: 0; z-index: 1;
+  background: var(--raised);
+  box-shadow: inset 0 -1px 0 var(--rule);
+}
+
+/* Reading progress is useful on the privacy page, which is long. Pure CSS. */
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .prose::before {
+      content: "";
+      position: fixed; inset: 0 auto auto 0;
+      height: 2px; width: 100%;
+      background: var(--accent);
+      transform-origin: 0 50%;
+      transform: scaleX(0);
+      animation: read-progress linear both;
+      animation-timeline: scroll(root block);
+      z-index: 6;
+    }
+    @keyframes read-progress { to { transform: scaleX(1); } }
+  }
+}

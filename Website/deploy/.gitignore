@@ -1,0 +1,6 @@
+# Snapshots of the live Cloudflare Tunnel ingress, written by route.py before it changes
+# anything. A snapshot is the WHOLE tunnel, not this site's rule: every hostname on the host
+# and the internal port behind it — SSH ingress and admin panels for unrelated services
+# included. It is a map of infrastructure this repository has no business publishing, and it
+# is only useful on the machine that took it, to roll a change back.
+backups/
